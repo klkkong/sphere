@@ -10,8 +10,8 @@ import pylab
 figformat = 'pdf'
 
 # Number of particles
-#np = 1e4
-np = 50
+np = 1e4
+#np = 50
 
 # Common simulation id
 sim_id = "ns"
@@ -29,25 +29,27 @@ init.defaultParams(mu_s = 0.4, mu_d = 0.4, nu = 8.9e-4)
 
 # Initialize positions in random grid (also sets world size)
 #init.initRandomGridPos(gridnum = numpy.array([80, 80, 1000]), periodic = 1, contactmodel = 1)
-init.initRandomGridPos(gridnum = numpy.array([6, 6, 1000]), periodic = 1, contactmodel = 1)
+init.initRandomGridPos(gridnum = numpy.array([40, 40, 1000]), periodic = 1, contactmodel = 1)
+#init.initRandomGridPos(gridnum = numpy.array([6, 6, 1000]), periodic = 1, contactmodel = 1)
 
 # Set duration of simulation
 #init.initTemporal(total = 2.5)
-#init.time_file_dt[0] = 0.05
+#init.time_file_dt[0] = 0.01
 
-#init.initTemporal(total = 0.05)
-#init.time_file_dt[0] = 0.005
+init.initTemporal(total = 0.01)
+init.time_file_dt[0] = 0.001
 
-init.initTemporal(1)
-init.time_file_dt[0] = init.time_dt[0]*0.9
-init.time_total[0] = init.time_file_dt[0]*10.5
+#init.initTemporal(1)
+#init.time_file_dt[0] = init.time_dt[0]*0.9
+#init.time_total[0] = init.time_file_dt[0]*10.5
 
 
 
 # Small pertubation
-#init.p_f[init.num[0]/2,init.num[1]/2,init.num[2]/2] = 2.0
+init.p_f[init.num[0]/2,init.num[1]/2,init.num[2]/2] = 2.0
 
-init.g[2] = 0.0
+#init.g[2] = -10.0
+init.g[2] = 0.0 # uncomment to disable gravity
 
 # Write input file for sphere
 init.writebin()

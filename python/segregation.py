@@ -30,7 +30,7 @@ init = Spherebin(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
 init.generateRadii(radius_mean = 0.08)
 
 # Use default params
-init.defaultParams(gamma_n = 0.0, mu_s = 0.4, mu_d = 0.4)
+init.defaultParams(gamma_n = 100.0, mu_s = 0.4, mu_d = 0.4)
 
 # Initialize positions in random grid (also sets world size)
 hcells = np**(1.0/3.0)*0.6

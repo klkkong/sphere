@@ -4,11 +4,11 @@
 from sphere import *
 
 ### EXPERIMENT SETUP ###
-initialization = False
+initialization = True
 consolidation  = True
 shearing       = True
 rendering      = True
-plots	       = True
+plots          = True
 
 # Number of particles
 np = 1e4
@@ -80,7 +80,14 @@ for devs in devslist:
     #cons.initTemporal(total = 0.0019, file_dt = 1e-6)
     #cons.initTemporal(total = 0.19, file_dt = 0.019)
 
+    """
     cons.w_m[0] *= 0.001
+    cons.mu_s[0] = 0.0
+    cons.mu_d[0] = 0.0
+    cons.gamma_wn[0] = 1e4
+    cons.gamma_wt[0] = 1e4
+    cons.contactmodel[0] = 1
+    """
 
     if (consolidation == True):
         # Write input file for sphere

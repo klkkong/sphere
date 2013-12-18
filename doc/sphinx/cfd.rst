@@ -1,79 +1,248 @@
 Fluid simulation by CFD
 =======================
-Fluid flow is governed by the Navier-Stokes continuity and momentum equations,
-assuming that the fluid is incompressible. In a single phase fluid without
-grains, the continuity equation is:
+Following the outline presented by `Limache and Idelsohn (2006)`_, the
+continuity equation for an incompressible fluid material is given by:
 
 .. math::
-    \nabla \cdot \boldsymbol{v}_f = 0
+    \nabla \cdot \boldsymbol{v} = 0
 
 and the momentum equation:
 
 .. math::
-    \frac{\partial \boldsymbol{v}_f}{\partial t}
-    + \boldsymbol{v}_f \cdot \nabla \boldsymbol{v}_f =
-    - \frac{1}{\rho_f} \nabla p_f + \nu \nabla^2 \boldsymbol{v}_f
-    + \boldsymbol{f}_g
+    \rho \frac{\partial \boldsymbol{v}}{\partial t}
+    + \rho (\boldsymbol{v} \cdot \nabla \boldsymbol{v})
+    = \nabla \cdot \boldsymbol{\sigma}
+    + \rho \boldsymbol{f}_g
 
-Here, :math:`\boldsymbol{v}_f` is the fluid velocity,
-and :math:`p_f` is the fluid pressure. :math:`\nu` is the fluid
-viscosity, and :math:`\boldsymbol{f}_g` is the gravitational force.  The
-`Laplacian`_ (:math:`\nabla^2`) is the `divergence`_ (:math:`\nabla \cdot`) of
-the `gradient`_ (:math:`\nabla`):
-
-.. math::
-    \nabla^2 = \nabla \cdot \nabla = 
-    \frac{\partial^2}{\partial x^2} +
-    \frac{\partial^2}{\partial y^2} +
-    \frac{\partial^2}{\partial z^2}
-
-In an averaged discretization the continuity equation becomes:
+Here, :math:`\boldsymbol{v}` is the fluid velocity, :math:`\rho` is the
+fluid density, :math:`\boldsymbol{\sigma}` is the `Cauchy stress tensor`_, and
+:math:`\boldsymbol{f}_g` is the gravitational force. For incompressible
+Newtonian fluids, the Cauchy stress is given by:
 
 .. math::
-    \nabla \cdot \bar{\boldsymbol{v}}_f = 0
+    \boldsymbol{\sigma} = -p \boldsymbol{I} + \boldsymbol{\tau}
 
-The bar symbol denotes that the value is averaged in the cell. The momentum
-equation, assuming that that the fluid is inviscid (zero
-viscosity), becomes:
+:math:`p` is the fluid pressure, :math:`\boldsymbol{I}` is the identity
+tensor, and :math:`\boldsymbol{\tau}` is the deviatoric stress tensor, given
+by:
 
 .. math::
-    \frac{\partial \bar{\boldsymbol{v}}_f}{\partial t}
-    + \bar{\boldsymbol{v}}_f \cdot \nabla \bar{\boldsymbol{v}}_f =
-    - \frac{1}{\rho_f} \nabla \bar{p}_f
-    + \boldsymbol{f}_g
+    \boldsymbol{\tau} =
+    \nu \nabla \boldsymbol{v}
+    + \nu (\nabla \boldsymbol{v})^T
 
-When the fluid flow happens in a porous medium, the equations are modified to
-take account for the porosity in the cell (:math:`\phi`) and the averaged drag
-from the particles (:math:`\boldsymbol{\bar{f}}_i`) (Shamy and Zeghal, 2005, and
-model A in Zhu et al. 2007). The continuity equation becomes:
+By using the following vector identities:
+
+.. math::
+    \nabla \cdot (p \boldsymbol{I}) = \nabla p
+
+    \nabla \cdot (\nabla \boldsymbol{v}) = \nabla^2 \boldsymbol{v}
+
+    \nabla \cdot (\nabla \boldsymbol{v})^T
+    = \nabla (\nabla \cdot \boldsymbol{v})
+
+the deviatoric component of the Cauchy stress tensor simplifies to the
+following, assuming that spatial variations in the viscosity can be neglected:
+
+.. math::
+    = -\nabla p
+    + \nu \nabla^2 \boldsymbol{v}
+
+The porosity value (in the saturated porous medium the volumetric fraction of
+the fluid phase) denoted :math:`\phi` is incorporated in the continuity and
+momentum equations. The continuity equation becomes:
 
 .. math::
     \frac{\partial \phi}{\partial t}
-    + \nabla \cdot (\phi \bar{\boldsymbol{v}}_f) = 0
+    + \nabla \cdot (\phi \boldsymbol{v}) = 0
 
-and the momentum equation becomes:
+For the :math:`x` component, the Lagrangian formulation of the momentum equation
+with a body force :math:`\boldsymbol{g}` becomes:
 
 .. math::
-    \frac{\partial (\phi \bar{\boldsymbol{v}}_f)}{\partial t}
-    + \nabla \cdot (\phi \bar{\boldsymbol{v}}_f \otimes \bar{\boldsymbol{v}}_f) =
-    - \frac{1}{\rho_f} \phi \nabla \bar{p}_f
-    - \frac{1}{\rho_f} \boldsymbol{\bar{f}}_i
-    + \phi \boldsymbol{f}_g
+    \frac{D (\phi v_x)}{D t}
+    = \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\sigma}) \right]_x
+    + \phi g_x
 
-The outer product :math:`\bar{\boldsymbol{v}}_f \otimes \bar{\boldsymbol{v}}_f`
-is equivalent to a matrix multiplication :math:`\bar{\boldsymbol{v}}_f
-\bar{\boldsymbol{v}}_f^T`, and results in a 3-by-3 matrix. The divergence of a
-matrix yields a vector field.
-The solution of the above equations is performed by operator splitting methods.
-The methodology presented by Langtangen et al. (2002) is for a viscous fluid
-without particles. A velocity prediction after a forward step in time
+In the Eulerian formulation, an advection term is added, and the Cauchy stress
+tensor is represented as isotropic and deviatoric components individually:
+
+.. math::
+    \frac{\partial (\phi v_x)}{\partial t}
+    + \boldsymbol{v} \cdot \nabla (\phi v_x)
+    = \frac{1}{\rho} \left[ \nabla \cdot (-\phi p \boldsymbol{I})
+    + \phi \boldsymbol{\tau}) \right]_x
+    + \phi g_x
+
+Using vector identities to rewrite the advection term, and expanding the fluid
+stress tensor term:
+
+.. math::
+    \frac{\partial (\phi v_x)}{\partial t}
+    + \nabla \cdot (\phi v_x \boldsymbol{v})
+    - \phi v_x (\nabla \cdot \boldsymbol{v})
+    = \frac{1}{\rho} \left[ -\nabla \phi p \right]_x
+    + \frac{1}{\rho} \left[ -\phi \nabla p \right]_x
+    + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
+    + \phi g_x
+
+Spatial variations in the porosity are neglected:
+
+.. math::
+    \nabla \phi := 0
+
+and the pressure is attributed to the fluid phase alone (model B in Zhu et al.
+2007 and Zhou et al. 2010). The divergence of fluid velocities is defined to be
+zero:
+
+.. math::
+    \nabla \cdot \boldsymbol{v} := 0
+
+With these assumptions, the momentum equation simplifies to:
+
+.. math::
+    \frac{\partial (\phi v_x)}{\partial t}
+    + \nabla \cdot (\phi v_x \boldsymbol{v})
+    = -\frac{1}{\rho} \frac{\partial p}{\partial x}
+    + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
+    + \phi g_x
+
+The remaining part of the advection equation is for the :math:`x` component
+found as:
+
+.. math::
+    \nabla \cdot (\phi v_x \boldsymbol{v}) =
+    \left[
+        \frac{\partial}{\partial x},
+        \frac{\partial}{\partial y},
+        \frac{\partial}{\partial z}
+    \right]
+    \left[
+        \begin{array}{c}
+            \phi v_x v_x\\
+            \phi v_x v_y\\
+            \phi v_x v_z\\
+        \end{array}
+    \right]
+    =
+    \frac{\partial (\phi v_x v_x)}{\partial x} +
+    \frac{\partial (\phi v_x v_y)}{\partial y} +
+    \frac{\partial (\phi v_x v_z)}{\partial z}
+
+The deviatoric stress tensor is in this case symmetrical, i.e. :math:`\tau_{ij}
+= \tau_{ji}`, and is found by:
+
+.. math::
+    \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
+    = \frac{1}{\rho}
+    \left[
+        \left[
+            \frac{\partial}{\partial x},
+            \frac{\partial}{\partial y},
+            \frac{\partial}{\partial z}
+        \right]
+        \phi
+        \left[
+            \begin{matrix}
+                \tau_{xx} & \tau_{xy} & \tau_{xz}\\
+                \tau_{yx} & \tau_{yy} & \tau_{yz}\\
+                \tau_{zx} & \tau_{zy} & \tau_{zz}\\
+            \end{matrix}
+        \right]
+    \right]_x
+
+    = \frac{1}{\rho}
+    \left[
+        \begin{array}{c}
+            \frac{\partial (\phi \tau_{xx})}{\partial x}
+            + \frac{\partial (\phi \tau_{xy})}{\partial y}
+            + \frac{\partial (\phi \tau_{xz})}{\partial z}\\
+            \frac{\partial (\phi \tau_{yx})}{\partial x}
+            + \frac{\partial (\phi \tau_{yy})}{\partial y}
+            + \frac{\partial (\phi \tau_{yz})}{\partial z}\\
+            \frac{\partial (\phi \tau_{zx})}{\partial x}
+            + \frac{\partial (\phi \tau_{zy})}{\partial y}
+            + \frac{\partial (\phi \tau_{zz})}{\partial z}\\
+        \end{array}
+    \right]_x
+    = \frac{1}{\rho}
+    \left(
+        \frac{\partial (\phi \tau_{xx})}{\partial x}
+        + \frac{\partial (\phi \tau_{xy})}{\partial y}
+        + \frac{\partial (\phi \tau_{xz})}{\partial z}
+    \right)
+
+In a linear viscous fluid, the stress and strain rate
+(:math:`\dot{\boldsymbol{\epsilon}}`) is linearly dependent, scaled by the
+viscosity parameter :math:`\nu`:
+
+.. math::
+    \tau_{ij} = 2 \nu \dot{\epsilon}_{ij}
+    = \nu \left(
+    \frac{\partial v_i}{\partial x_j} + \frac{\partial v_j}{\partial x_i}
+    \right)
+
+With this relationship, the deviatoric stress tensor components can be
+calculated as:
+
+.. math::
+    \tau_{xx} = 2 \nu \frac{\partial v_x}{\partial x} \qquad
+    \tau_{yy} = 2 \nu \frac{\partial v_y}{\partial y} \qquad
+    \tau_{zz} = 2 \nu \frac{\partial v_z}{\partial z}
+
+    \tau_{xy} = \nu \left(
+    \frac{\partial v_x}{\partial y} + \frac{\partial v_y}{\partial x} \right)
+
+    \tau_{xz} = \nu \left(
+    \frac{\partial v_x}{\partial z} + \frac{\partial v_z}{\partial x} \right)
+
+    \tau_{yz} = \nu \left(
+    \frac{\partial v_y}{\partial z} + \frac{\partial v_z}{\partial y} \right)
+
+The above formulation of the fluid rheology assumes identical bulk and shear
+viscosities.
+
+The equations are solved in a similar manner for the other spatial components.
+The partial differential terms in the equations presented above are found using
+finite central differences.
+
+Modifying the operator splitting methodology presented by Langtangen et al.
+(2002), the predicted velocity :math:`\boldsymbol{v}^*` after a finite time step
+:math:`\Delta t` is found by explicit integration of the momentum equation:
+
+.. math::
+    v_x^* = v_x^t + \Delta v_x
+
+    \Rightarrow 
+    v_x^* = v_x^t
+    - \frac{\Delta t}{\Delta \phi} \nabla \cdot (\phi v_x \boldsymbol{v})
+    - \frac{\beta \Delta t}{\rho \Delta \phi} \nabla p|_x
+    + \frac{\Delta t}{\rho \Delta \phi}
+      \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
+    + \frac{\Delta t}{\Delta \phi} \phi g_x
+
+The found velocity is only a prediction, since the estimate isn't constrained by
+the continuity equation. The term :math:`\beta` is an adjustable, dimensionless
+parameter in the range :math:`[0;1]`, and determines the importance of the old
+pressure values in the solution procedure. A value of 0 corresponds to `Chorin's
+projection method`_ originally described in `Chorin (1968)`_.
+
+
+
+
+
+
+
+The solution of the Navier-Stokes equations is performed by operator splitting
+methods.  The methodology presented by Langtangen et al. (2002) is for a viscous
+fluid without particles. A velocity prediction after a forward step in time
 (:math:`\Delta t`) in the momentum equation is found using an explicit scheme:
 
 .. math::
-    \bar{\boldsymbol{v}}^*_f = \bar{\boldsymbol{v}}^t_f
-    - \Delta t \bar{\boldsymbol{v}}^t_f \cdot \nabla \bar{\boldsymbol{v}}^t_f
-    - \Delta t \frac{\beta}{\rho_f} \nabla \bar{p}_f^t
-    + \Delta t \nu \nabla^2 \bar{\boldsymbol{v}}_f^t
+    \bar{\boldsymbol{v}}^* = \bar{\boldsymbol{v}}^t
+    - \Delta t \bar{\boldsymbol{v}}^t \cdot \nabla \bar{\boldsymbol{v}}^t
+    - \Delta t \frac{\beta}{\rho} \nabla \bar{p}^t
+    + \Delta t \nu \nabla^2 \bar{\boldsymbol{v}}^t
     + \Delta t \boldsymbol{f}_g^t
 
 This predicted velocity does not account for the incompressibility condition.
@@ -82,10 +251,11 @@ parameter. The above velocity prediction is modified to account for the presence
 of particles and the fluid inviscidity:
 
 .. math::
-    \bar{\boldsymbol{v}}^*_f = \bar{\boldsymbol{v}}^t_f 
-    - \Delta t \nabla \cdot (\phi^t \bar{\boldsymbol{v}}_f^t \otimes \bar{\boldsymbol{v}}_f^t)
-    - \Delta t \frac{\beta}{\rho_f} \phi^t \nabla \bar{p}_f^t
-    - \frac{\Delta t}{\rho_f} \boldsymbol{\bar{f}}_i^t
+    \bar{\boldsymbol{v}}^* = \bar{\boldsymbol{v}}^t 
+    - \Delta t \nabla \cdot (\phi^t \bar{\boldsymbol{v}}^t
+      \otimes \bar{\boldsymbol{v}}^t)
+    - \Delta t \frac{\beta}{\rho} \phi^t \nabla \bar{p}^t
+    - \Delta t \boldsymbol{\bar{F}}_i^t
     + \Delta t \phi^t \boldsymbol{f}_g^t
 
 The new velocities should fulfill the continuity (here incompressibility)
@@ -93,23 +263,23 @@ equation:
 
 .. math::
     \frac{\Delta \phi^t}{\Delta t} + \nabla \cdot (\phi^t
-    \bar{\boldsymbol{v}}_f^{t+\Delta t}) = 0
+    \bar{\boldsymbol{v}}^{t+\Delta t}) = 0
 
 The divergence of a scalar and vector can be `split`_:
 
 .. math::
-    \phi^t \nabla \cdot \bar{\boldsymbol{v}}_f^{t+\Delta t} +
-    \bar{\boldsymbol{v}}_f^{t+\Delta t} \cdot \nabla \phi^t
+    \phi^t \nabla \cdot \bar{\boldsymbol{v}}^{t+\Delta t} +
+    \bar{\boldsymbol{v}}^{t+\Delta t} \cdot \nabla \phi^t
     + \frac{\Delta \phi^t}{\Delta t} = 0
 
 The predicted velocity is corrected using the new pressure (Langtangen et al.
 2002):
 
 .. math::
-    \bar{\boldsymbol{v}}_f^{t+\Delta t} = \bar{\boldsymbol{v}}_f^*
+    \bar{\boldsymbol{v}}^{t+\Delta t} = \bar{\boldsymbol{v}}^*
     - \frac{\Delta t}{\rho} \nabla \epsilon
     \quad \text{where} \quad
-    \epsilon = p_f^{t+\Delta t} - \beta p_f^t
+    \epsilon = p^{t+\Delta t} - \beta p^t
 
 The above formulation of the future velocity is put into the continuity
 equation:
@@ -117,24 +287,24 @@ equation:
 .. math::
     \Rightarrow
     \phi^t \nabla \cdot
-    \left( \bar{\boldsymbol{v}}^*_f - \frac{\Delta t}{\rho_f} \nabla \epsilon \right)
+    \left( \bar{\boldsymbol{v}}^* - \frac{\Delta t}{\rho} \nabla \epsilon \right)
     +
-    \left( \bar{\boldsymbol{v}}^*_f - \frac{\Delta t}{\rho_f} \nabla \epsilon \right)
+    \left( \bar{\boldsymbol{v}}^* - \frac{\Delta t}{\rho} \nabla \epsilon \right)
     \cdot \nabla \phi^t + \frac{\Delta \phi^t}{\Delta t} = 0
 
 .. math::
     \Rightarrow
     \phi^t \nabla \cdot
-    \bar{\boldsymbol{v}}^*_f - \frac{\Delta t}{\rho_f} \phi^t \nabla^2 \epsilon
-    + \nabla \phi^t \cdot \bar{\boldsymbol{v}}^*_f
+    \bar{\boldsymbol{v}}^* - \frac{\Delta t}{\rho} \phi^t \nabla^2 \epsilon
+    + \nabla \phi^t \cdot \bar{\boldsymbol{v}}^*
     - \nabla \phi^t \cdot \nabla \epsilon \frac{\Delta t}{\rho}
     + \frac{\Delta \phi^t}{\Delta t} = 0
 
 .. math::
     \Rightarrow
     \frac{\Delta t}{\rho} \phi^t \nabla^2 \epsilon
-    = \phi^t \nabla \cdot \bar{\boldsymbol{v}}^*_f
-    + \nabla \phi^t \cdot \bar{\boldsymbol{v}}^*_f
+    = \phi^t \nabla \cdot \bar{\boldsymbol{v}}^*
+    + \nabla \phi^t \cdot \bar{\boldsymbol{v}}^*
     - \nabla \phi^t \cdot \nabla \epsilon \frac{\Delta t}{\rho}
     + \frac{\Delta \phi^t}{\Delta t}
 
@@ -143,8 +313,8 @@ The pressure difference in time becomes a `Poisson equation`_ with added terms:
 .. math::
     \Rightarrow
     \nabla^2 \epsilon
-    = \frac{\nabla \cdot \bar{\boldsymbol{v}}^*_f \rho}{\Delta t}
-    + \frac{\nabla \phi^t \cdot \bar{\boldsymbol{v}}^*_f \rho}{\Delta t \phi^t}
+    = \frac{\nabla \cdot \bar{\boldsymbol{v}}^* \rho}{\Delta t}
+    + \frac{\nabla \phi^t \cdot \bar{\boldsymbol{v}}^* \rho}{\Delta t \phi^t}
     - \frac{\nabla \phi^t \cdot \nabla \epsilon}{\phi^t}
     + \frac{\Delta \phi^t \rho}{\Delta t^2 \phi^t}
 
@@ -153,8 +323,8 @@ The right hand side of the above equation is termed the *forcing function*
 
 .. math::
     f_1 
-    = \frac{\nabla \cdot \bar{\boldsymbol{v}}^*_f \rho}{\Delta t}
-    + \frac{\nabla \phi^t \cdot \bar{\boldsymbol{v}}^*_f \rho}{\Delta t \phi^t}
+    = \frac{\nabla \cdot \bar{\boldsymbol{v}}^* \rho}{\Delta t}
+    + \frac{\nabla \phi^t \cdot \bar{\boldsymbol{v}}^* \rho}{\Delta t \phi^t}
     + \frac{\Delta \phi^t \rho}{\Delta t^2 \phi^t}
 
     f_2 =
@@ -226,18 +396,19 @@ After the values of :math:`\epsilon` are found, they are used to find the new
 pressures and velocities:
 
 .. math::
-    \bar{p}_f^{t+\Delta t} = \beta \bar{p}^t + \epsilon
+    \bar{p}^{t+\Delta t} = \beta \bar{p}^t + \epsilon
 
 .. math::
-    \bar{\boldsymbol{v}}_f^{t+\Delta t} =
-    \bar{\boldsymbol{v}}^*_f - \frac{\Delta t}{\rho} \nabla \epsilon
+    \bar{\boldsymbol{v}}^{t+\Delta t} =
+    \bar{\boldsymbol{v}}^* - \frac{\Delta t}{\rho} \nabla \epsilon
 
 
 
 
-.. _Laplacian: https://en.wikipedia.org/wiki/Laplace_operator 
-.. _divergence: https://en.wikipedia.org/wiki/Divergence
-.. _gradient: https://en.wikipedia.org/wiki/Gradient
+.. _Limache and Idelsohn (2006): http://www.cimec.org.ar/ojs/index.php/mc/article/view/486/464
+.. _Cauchy stress tensor: https://en.wikipedia.org/wiki/Cauchy_stress_tensor
+.. _`Chorin's projection method`: https://en.wikipedia.org/wiki/Projection_method_(fluid_dynamics)#Chorin.27s_projection_method
+.. _`Chorin (1968)`: http://www.ams.org/journals/mcom/1968-22-104/S0025-5718-1968-0242392-2/S0025-5718-1968-0242392-2.pdf
 .. _split: http://www.wolframalpha.com/input/?i=div(p+v)
 .. _Poisson equation: https://en.wikipedia.org/wiki/Poisson's_equation
 .. _`Jacobi iterative solution procedure`: http://www.rsmas.miami.edu/personal/miskandarani/Courses/MSC321/Projects/prjpoisson.pdf
