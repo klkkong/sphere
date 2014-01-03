@@ -12,11 +12,11 @@ and the momentum equation:
     \rho \frac{\partial \boldsymbol{v}}{\partial t}
     + \rho (\boldsymbol{v} \cdot \nabla \boldsymbol{v})
     = \nabla \cdot \boldsymbol{\sigma}
-    + \rho \boldsymbol{f}_g
+    + \rho \boldsymbol{f}
 
 Here, :math:`\boldsymbol{v}` is the fluid velocity, :math:`\rho` is the
 fluid density, :math:`\boldsymbol{\sigma}` is the `Cauchy stress tensor`_, and
-:math:`\boldsymbol{f}_g` is the gravitational force. For incompressible
+:math:`\boldsymbol{f}` is a body force (e.g. gravity). For incompressible
 Newtonian fluids, the Cauchy stress is given by:
 
 .. math::
@@ -57,12 +57,12 @@ momentum equations. The continuity equation becomes:
     + \nabla \cdot (\phi \boldsymbol{v}) = 0
 
 For the :math:`x` component, the Lagrangian formulation of the momentum equation
-with a body force :math:`\boldsymbol{g}` becomes:
+with a body force :math:`\boldsymbol{f}` becomes:
 
 .. math::
     \frac{D (\phi v_x)}{D t}
     = \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\sigma}) \right]_x
-    + \phi g_x
+    + \phi f_x
 
 In the Eulerian formulation, an advection term is added, and the Cauchy stress
 tensor is represented as isotropic and deviatoric components individually:
@@ -72,7 +72,7 @@ tensor is represented as isotropic and deviatoric components individually:
     + \boldsymbol{v} \cdot \nabla (\phi v_x)
     = \frac{1}{\rho} \left[ \nabla \cdot (-\phi p \boldsymbol{I})
     + \phi \boldsymbol{\tau}) \right]_x
-    + \phi g_x
+    + \phi f_x
 
 Using vector identities to rewrite the advection term, and expanding the fluid
 stress tensor term:
@@ -84,9 +84,9 @@ stress tensor term:
     = \frac{1}{\rho} \left[ -\nabla \phi p \right]_x
     + \frac{1}{\rho} \left[ -\phi \nabla p \right]_x
     + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
-    + \phi g_x
+    + \phi f_x
 
-Spatial variations in the porosity are neglected:
+Spatial variations in the porosity are neglected,
 
 .. math::
     \nabla \phi := 0
@@ -105,9 +105,9 @@ With these assumptions, the momentum equation simplifies to:
     + \nabla \cdot (\phi v_x \boldsymbol{v})
     = -\frac{1}{\rho} \frac{\partial p}{\partial x}
     + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
-    + \phi g_x
+    + \phi f_x
 
-The remaining part of the advection equation is for the :math:`x` component
+The remaining part of the advection term is for the :math:`x` component
 found as:
 
 .. math::
@@ -208,75 +208,81 @@ finite central differences.
 
 Modifying the operator splitting methodology presented by Langtangen et al.
 (2002), the predicted velocity :math:`\boldsymbol{v}^*` after a finite time step
-:math:`\Delta t` is found by explicit integration of the momentum equation:
+:math:`\Delta t` is found by explicit integration of the momentum equation.
+
+.. math::
+    \frac{\Delta (\phi v_x)}{\Delta t}
+    + \nabla \cdot (\phi v_x \boldsymbol{v})
+    = - \frac{1}{\rho} \frac{\Delta p}{\Delta x}
+    + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
+    + \phi f_x
+
+    \Downarrow
+
+    \phi \frac{\Delta v_x}{\Delta t}
+    + v_x \frac{\Delta \phi}{\Delta t}
+    + \nabla \cdot (\phi v_x \boldsymbol{v})
+    = - \frac{1}{\rho} \frac{\Delta p}{\Delta x}
+    + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
+    + \phi f_x
+
+We want to isolate :math:`\Delta v_x` in the above equation in order to project
+the new velocity.
+
+.. math::
+    \phi \frac{\Delta v_x}{\Delta t}
+    = - \frac{1}{\rho} \frac{\Delta p}{\Delta x}
+    + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
+    + \phi f_x
+    - v_x \frac{\Delta \phi}{\Delta t}
+    - \nabla \cdot (\phi v_x \boldsymbol{v})
+
+    \Delta v_x
+    = - \frac{1}{\rho} \frac{\Delta p}{\Delta x} \frac{\Delta t}{\phi}
+    + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
+      \frac{\Delta t}{\phi}
+    + \Delta t f_x
+    - v_x \frac{\Delta \phi}{\phi}
+    - \nabla \cdot (\phi v_x \boldsymbol{v}) \frac{\Delta t}{\phi}
+
+The term :math:`\beta` is introduced as an adjustable, dimensionless parameter
+in the range :math:`[0;1]`, and determines the importance of the old pressure
+values in the solution procedure (Langtangen et al. 2002).  A value of 0
+corresponds to `Chorin's projection method`_ originally described
+in `Chorin (1968)`_.
 
 .. math::
     v_x^* = v_x^t + \Delta v_x
 
-    \Rightarrow 
     v_x^* = v_x^t
-    - \frac{\Delta t}{\Delta \phi} \nabla \cdot (\phi v_x \boldsymbol{v})
-    - \frac{\beta \Delta t}{\rho \Delta \phi} \nabla p|_x
-    + \frac{\Delta t}{\rho \Delta \phi}
-      \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
-    + \frac{\Delta t}{\Delta \phi} \phi g_x
+    - \frac{\beta}{\rho} \frac{\Delta p^t}{\Delta x} \frac{\Delta t}{\phi^t}
+    + \frac{1}{\rho} \left[ \nabla \cdot (\phi^t \boldsymbol{\tau}^t) \right]_x
+      \frac{\Delta t}{\phi}
+    + \Delta t f_x
+    - v_x \frac{\Delta \phi}{\phi^t}
+    - \nabla \cdot (\phi^t v_x^t \boldsymbol{v}^t) \frac{\Delta t}{\phi^t}
 
-The found velocity is only a prediction, since the estimate isn't constrained by
-the continuity equation. The term :math:`\beta` is an adjustable, dimensionless
-parameter in the range :math:`[0;1]`, and determines the importance of the old
-pressure values in the solution procedure. A value of 0 corresponds to `Chorin's
-projection method`_ originally described in `Chorin (1968)`_.
-
-
-
-
-
-
-
-The solution of the Navier-Stokes equations is performed by operator splitting
-methods.  The methodology presented by Langtangen et al. (2002) is for a viscous
-fluid without particles. A velocity prediction after a forward step in time
-(:math:`\Delta t`) in the momentum equation is found using an explicit scheme:
-
-.. math::
-    \bar{\boldsymbol{v}}^* = \bar{\boldsymbol{v}}^t
-    - \Delta t \bar{\boldsymbol{v}}^t \cdot \nabla \bar{\boldsymbol{v}}^t
-    - \Delta t \frac{\beta}{\rho} \nabla \bar{p}^t
-    + \Delta t \nu \nabla^2 \bar{\boldsymbol{v}}^t
-    + \Delta t \boldsymbol{f}_g^t
-
-This predicted velocity does not account for the incompressibility condition.
-The parameter :math:`\beta` is an adjustable, dimensionless relaxation
-parameter. The above velocity prediction is modified to account for the presence
-of particles and the fluid inviscidity:
-
-.. math::
-    \bar{\boldsymbol{v}}^* = \bar{\boldsymbol{v}}^t 
-    - \Delta t \nabla \cdot (\phi^t \bar{\boldsymbol{v}}^t
-      \otimes \bar{\boldsymbol{v}}^t)
-    - \Delta t \frac{\beta}{\rho} \phi^t \nabla \bar{p}^t
-    - \Delta t \boldsymbol{\bar{F}}_i^t
-    + \Delta t \phi^t \boldsymbol{f}_g^t
-
-The new velocities should fulfill the continuity (here incompressibility)
+Here, :math:`\Delta x` denotes the cell spacing. The velocity found
+(:math:`v_x^*`) is only a prediction of the fluid velocity at time
+:math:`t+\Delta t`, since the estimate isn't constrained by the continuity
 equation:
 
 .. math::
     \frac{\Delta \phi^t}{\Delta t} + \nabla \cdot (\phi^t
-    \bar{\boldsymbol{v}}^{t+\Delta t}) = 0
+    \boldsymbol{v}^{t+\Delta t}) = 0
 
 The divergence of a scalar and vector can be `split`_:
 
 .. math::
-    \phi^t \nabla \cdot \bar{\boldsymbol{v}}^{t+\Delta t} +
-    \bar{\boldsymbol{v}}^{t+\Delta t} \cdot \nabla \phi^t
+    \phi^t \nabla \cdot \boldsymbol{v}^{t+\Delta t} +
+    \boldsymbol{v}^{t+\Delta t} \cdot \nabla \phi^t
     + \frac{\Delta \phi^t}{\Delta t} = 0
 
 The predicted velocity is corrected using the new pressure (Langtangen et al.
 2002):
 
 .. math::
-    \bar{\boldsymbol{v}}^{t+\Delta t} = \bar{\boldsymbol{v}}^*
+    \boldsymbol{v}^{t+\Delta t} = \boldsymbol{v}^*
     - \frac{\Delta t}{\rho} \nabla \epsilon
     \quad \text{where} \quad
     \epsilon = p^{t+\Delta t} - \beta p^t
@@ -287,24 +293,24 @@ equation:
 .. math::
     \Rightarrow
     \phi^t \nabla \cdot
-    \left( \bar{\boldsymbol{v}}^* - \frac{\Delta t}{\rho} \nabla \epsilon \right)
+    \left( \boldsymbol{v}^* - \frac{\Delta t}{\rho} \nabla \epsilon \right)
     +
-    \left( \bar{\boldsymbol{v}}^* - \frac{\Delta t}{\rho} \nabla \epsilon \right)
+    \left( \boldsymbol{v}^* - \frac{\Delta t}{\rho} \nabla \epsilon \right)
     \cdot \nabla \phi^t + \frac{\Delta \phi^t}{\Delta t} = 0
 
 .. math::
     \Rightarrow
     \phi^t \nabla \cdot
-    \bar{\boldsymbol{v}}^* - \frac{\Delta t}{\rho} \phi^t \nabla^2 \epsilon
-    + \nabla \phi^t \cdot \bar{\boldsymbol{v}}^*
+    \boldsymbol{v}^* - \frac{\Delta t}{\rho} \phi^t \nabla^2 \epsilon
+    + \nabla \phi^t \cdot \boldsymbol{v}^*
     - \nabla \phi^t \cdot \nabla \epsilon \frac{\Delta t}{\rho}
     + \frac{\Delta \phi^t}{\Delta t} = 0
 
 .. math::
     \Rightarrow
     \frac{\Delta t}{\rho} \phi^t \nabla^2 \epsilon
-    = \phi^t \nabla \cdot \bar{\boldsymbol{v}}^*
-    + \nabla \phi^t \cdot \bar{\boldsymbol{v}}^*
+    = \phi^t \nabla \cdot \boldsymbol{v}^*
+    + \nabla \phi^t \cdot \boldsymbol{v}^*
     - \nabla \phi^t \cdot \nabla \epsilon \frac{\Delta t}{\rho}
     + \frac{\Delta \phi^t}{\Delta t}
 
@@ -313,18 +319,18 @@ The pressure difference in time becomes a `Poisson equation`_ with added terms:
 .. math::
     \Rightarrow
     \nabla^2 \epsilon
-    = \frac{\nabla \cdot \bar{\boldsymbol{v}}^* \rho}{\Delta t}
-    + \frac{\nabla \phi^t \cdot \bar{\boldsymbol{v}}^* \rho}{\Delta t \phi^t}
+    = \frac{\nabla \cdot \boldsymbol{v}^* \rho}{\Delta t}
+    + \frac{\nabla \phi^t \cdot \boldsymbol{v}^* \rho}{\Delta t \phi^t}
     - \frac{\nabla \phi^t \cdot \nabla \epsilon}{\phi^t}
     + \frac{\Delta \phi^t \rho}{\Delta t^2 \phi^t}
 
 The right hand side of the above equation is termed the *forcing function*
-:math:`f`, which is decomposed into two functions, :math:`f_1` and :math:`f_2`:
+:math:`f`, which is decomposed into two terms, :math:`f_1` and :math:`f_2`:
 
 .. math::
     f_1 
-    = \frac{\nabla \cdot \bar{\boldsymbol{v}}^* \rho}{\Delta t}
-    + \frac{\nabla \phi^t \cdot \bar{\boldsymbol{v}}^* \rho}{\Delta t \phi^t}
+    = \frac{\nabla \cdot \boldsymbol{v}^* \rho}{\Delta t}
+    + \frac{\nabla \phi^t \cdot \boldsymbol{v}^* \rho}{\Delta t \phi^t}
     + \frac{\Delta \phi^t \rho}{\Delta t^2 \phi^t}
 
     f_2 =
@@ -332,9 +338,9 @@ The right hand side of the above equation is termed the *forcing function*
 
 
 During the `Jacobi iterative solution procedure`_ :math:`f_1` remains constant,
-while :math:`f_2` changes value. For this reason, :math:`f_1` is found only at
-the first iteration, while :math:`f_2` is updated every time. The value of the
-forcing function is found as:
+while :math:`f_2` changes value. For this reason, :math:`f_1` is found only
+during the first iteration, while :math:`f_2` is updated every time. The value
+of the forcing function is found as:
 
 .. math::
     f = f_1 - f_2
