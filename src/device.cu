@@ -979,8 +979,10 @@ __host__ void DEM::startTime()
                         &t_findNSstressTensor);
             checkForCudaErrors("Post findNSstressTensor", iter);
 
-            // TODO: Set stress tensor values in the ghost nodes
-
+            // Set stress tensor values in the ghost nodes
+            setNSghostNodes_tau<<<dimGridFluid, dimBlockFluid>>>(dev_ns_tau); 
+            cudaThreadSynchronize();
+            checkForCudaErrors("Post setNSghostNodes_tau", iter);
 
             // Find the divergence of phi*vi*v, needed for predicting the fluid
             // velocities

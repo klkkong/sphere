@@ -373,10 +373,10 @@ __global__ void setNSghostNodes(T* dev_scalarfield)
     }
 }
 
-// Update a scalar field for ghost nodes from their parent cell values. The edge
-// (diagonal) cells are not written since they are not read. Launch this kernel
-// for all cells in the grid.
-__global__ void setNSghostNodes_v_prod(Float* dev_ns_v_prod)
+// Update the tensor field for the ghost nodes from their parent cell values.
+// The edge (diagonal) cells are not written since they are not read. Launch
+// this kernel for all cells in the grid.
+__global__ void setNSghostNodes_tau(Float* dev_ns_tau)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -396,68 +396,68 @@ __global__ void setNSghostNodes_v_prod(Float* dev_ns_v_prod)
 
         // Read parent values
         __syncthreads();
-        const Float v0 = dev_ns_v_prod[cellidx6];
-        const Float v1 = dev_ns_v_prod[cellidx6+1];
-        const Float v2 = dev_ns_v_prod[cellidx6+2];
-        const Float v3 = dev_ns_v_prod[cellidx6+3];
-        const Float v4 = dev_ns_v_prod[cellidx6+4];
-        const Float v5 = dev_ns_v_prod[cellidx6+5];
+        const Float tau_xx = dev_ns_tau[cellidx6];
+        const Float tau_xy = dev_ns_tau[cellidx6+1];
+        const Float tau_xz = dev_ns_tau[cellidx6+2];
+        const Float tau_yy = dev_ns_tau[cellidx6+3];
+        const Float tau_yz = dev_ns_tau[cellidx6+4];
+        const Float tau_zz = dev_ns_tau[cellidx6+5];
 
         if (x == 0) {
             cellidx6 = idx(nx,y,z)*6;
-            dev_ns_v_prod[cellidx6] = v0;
-            dev_ns_v_prod[cellidx6+1] = v1;
-            dev_ns_v_prod[cellidx6+2] = v2;
-            dev_ns_v_prod[cellidx6+3] = v3;
-            dev_ns_v_prod[cellidx6+4] = v4;
-            dev_ns_v_prod[cellidx6+5] = v5;
+            dev_ns_tau[cellidx6]   = tau_xx;
+            dev_ns_tau[cellidx6+1] = tau_xy;
+            dev_ns_tau[cellidx6+2] = tau_xz;
+            dev_ns_tau[cellidx6+3] = tau_yy;
+            dev_ns_tau[cellidx6+4] = tau_yz;
+            dev_ns_tau[cellidx6+5] = tau_zz;
         }
         if (x == nx-1) {
             cellidx6 = idx(-1,y,z)*6;
-            dev_ns_v_prod[cellidx6] = v0;
-            dev_ns_v_prod[cellidx6+1] = v1;
-            dev_ns_v_prod[cellidx6+2] = v2;
-            dev_ns_v_prod[cellidx6+3] = v3;
-            dev_ns_v_prod[cellidx6+4] = v4;
-            dev_ns_v_prod[cellidx6+5] = v5;
+            dev_ns_tau[cellidx6]   = tau_xx;
+            dev_ns_tau[cellidx6+1] = tau_xy;
+            dev_ns_tau[cellidx6+2] = tau_xz;
+            dev_ns_tau[cellidx6+3] = tau_yy;
+            dev_ns_tau[cellidx6+4] = tau_yz;
+            dev_ns_tau[cellidx6+5] = tau_zz;
         }
 
         if (y == 0) {
             cellidx6 = idx(x,ny,z)*6;
-            dev_ns_v_prod[cellidx6] = v0;
-            dev_ns_v_prod[cellidx6+1] = v1;
-            dev_ns_v_prod[cellidx6+2] = v2;
-            dev_ns_v_prod[cellidx6+3] = v3;
-            dev_ns_v_prod[cellidx6+4] = v4;
-            dev_ns_v_prod[cellidx6+5] = v5;
+            dev_ns_tau[cellidx6]   = tau_xx;
+            dev_ns_tau[cellidx6+1] = tau_xy;
+            dev_ns_tau[cellidx6+2] = tau_xz;
+            dev_ns_tau[cellidx6+3] = tau_yy;
+            dev_ns_tau[cellidx6+4] = tau_yz;
+            dev_ns_tau[cellidx6+5] = tau_zz;
         }
         if (y == ny-1) {
             cellidx6 = idx(x,-1,z)*6;
-            dev_ns_v_prod[cellidx6] = v0;
-            dev_ns_v_prod[cellidx6+1] = v1;
-            dev_ns_v_prod[cellidx6+2] = v2;
-            dev_ns_v_prod[cellidx6+3] = v3;
-            dev_ns_v_prod[cellidx6+4] = v4;
-            dev_ns_v_prod[cellidx6+5] = v5;
+            dev_ns_tau[cellidx6]   = tau_xx;
+            dev_ns_tau[cellidx6+1] = tau_xy;
+            dev_ns_tau[cellidx6+2] = tau_xz;
+            dev_ns_tau[cellidx6+3] = tau_yy;
+            dev_ns_tau[cellidx6+4] = tau_yz;
+            dev_ns_tau[cellidx6+5] = tau_zz;
         }
 
         if (z == 0) {
             cellidx6 = idx(x,y,nz)*6;
-            dev_ns_v_prod[cellidx6] = v0;
-            dev_ns_v_prod[cellidx6+1] = v1;
-            dev_ns_v_prod[cellidx6+2] = v2;
-            dev_ns_v_prod[cellidx6+3] = v3;
-            dev_ns_v_prod[cellidx6+4] = v4;
-            dev_ns_v_prod[cellidx6+5] = v5;
+            dev_ns_tau[cellidx6]   = tau_xx;
+            dev_ns_tau[cellidx6+1] = tau_xy;
+            dev_ns_tau[cellidx6+2] = tau_xz;
+            dev_ns_tau[cellidx6+3] = tau_yy;
+            dev_ns_tau[cellidx6+4] = tau_yz;
+            dev_ns_tau[cellidx6+5] = tau_zz;
         }
         if (z == nz-1) {
             cellidx6 = idx(x,y,-1)*6;
-            dev_ns_v_prod[cellidx6] = v0;
-            dev_ns_v_prod[cellidx6+1] = v1;
-            dev_ns_v_prod[cellidx6+2] = v2;
-            dev_ns_v_prod[cellidx6+3] = v3;
-            dev_ns_v_prod[cellidx6+4] = v4;
-            dev_ns_v_prod[cellidx6+5] = v5;
+            dev_ns_tau[cellidx6]   = tau_xx;
+            dev_ns_tau[cellidx6+1] = tau_xy;
+            dev_ns_tau[cellidx6+2] = tau_xz;
+            dev_ns_tau[cellidx6+3] = tau_yy;
+            dev_ns_tau[cellidx6+4] = tau_yz;
+            dev_ns_tau[cellidx6+5] = tau_zz;
         }
     }
 }
@@ -1089,7 +1089,7 @@ __global__ void findNSdivphitau(
         const Float tau_zz_zn = dev_ns_tau[idx(x,y,z-1)*6+5];
 
         // Calculate div(phi*tau)
-        const Float div_phi_tau = MAKE_FLOAT3(
+        const Float3 div_phi_tau = MAKE_FLOAT3(
                 // x
                 (phi_xp*tau_xx_xp - phi_xn*tau_xx_xn)/dx +
                 (phi_yp*tau_xy_yp - phi_yn*tau_xy_yn)/dy +
