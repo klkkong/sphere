@@ -722,6 +722,7 @@ __host__ void DEM::startTime()
 
     double t_findPorositiesDev = 0.0;
     double t_findvvOuterProdNS = 0.0;
+    double t_findNSstressTensor = 0.0;
     double t_findNSdivphivv = 0.0;
     double t_findPredNSvelocities = 0.0;
     double t_setNSepsilon = 0.0;
@@ -964,6 +965,19 @@ __host__ void DEM::startTime()
                         &t_setNSghostNodesDev);
             checkForCudaErrors("Post setNSghostNodesDev", iter);
 
+            // Find the fluid stress tensor
+            if (PROFILING == 1)
+                startTimer(&kernel_tic);
+            findNSstressTensor<<<dimGridFluid, dimBlockFluid>>>(
+                    dev_ns_v,
+                    dev_ns_tau);
+            cudaThreadSynchronize();
+            if (PROFILING == 1)
+                stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                        &t_findNSstressTensor);
+            checkForCudaErrors("Post findNSstressTensor", iter);
+
+
             // Find the outer product of v v, meeded for predicting the fluid
             // velocities
             if (PROFILING == 1)
@@ -1039,6 +1053,8 @@ __host__ void DEM::startTime()
                             &t_setNSepsilon);
                 checkForCudaErrors("Post setNSepsilon");
 
+                // TODO: Check if these functions should be called every before
+                // every Jacobi iterative solver call or not
                 if (PROFILING == 1)
                     startTimer(&kernel_tic);
                 setNSdirichlet<<<dimGridFluid, dimBlockFluid>>>(
@@ -1381,10 +1397,10 @@ __host__ void DEM::startTime()
         double t_sum = t_calcParticleCellID + t_thrustsort + t_reorderArrays +
             t_topology + t_interact + t_bondsLinear + t_latticeBoltzmannD3Q19 +
             t_integrate + t_summation + t_integrateWalls + t_findPorositiesDev +
-            t_findvvOuterProdNS + t_findvvOuterProdNS + t_findNSdivphivv +
-            t_findPredNSvelocities + t_setNSepsilon + t_setNSdirichlet +
-            t_setNSghostNodesDev + t_findNSforcing + t_jacobiIterationNS +
-            t_updateNSvelocityPressure;
+            t_findvvOuterProdNS + t_findNSstressTensor + t_findvvOuterProdNS +
+            t_findNSdivphivv + t_findPredNSvelocities + t_setNSepsilon +
+            t_setNSdirichlet + t_setNSghostNodesDev + t_findNSforcing +
+            t_jacobiIterationNS + t_updateNSvelocityPressure;
 
         cout << "\nKernel profiling statistics:\n"
             << "  - calcParticleCellID:\t\t" << t_calcParticleCellID/1000.0
@@ -1425,6 +1441,8 @@ __host__ void DEM::startTime()
             << " s" << "\t(" << 100.0*t_findPorositiesDev/t_sum << " %)\n"
             << "  - findvvOuterProdNS:\t\t" << t_findvvOuterProdNS/1000.0
             << " s" << "\t(" << 100.0*t_findvvOuterProdNS/t_sum << " %)\n"
+            << "  - findNSstressTensor:\t\t" << t_findNSstressTensor/1000.0
+            << " s" << "\t(" << 100.0*t_findNSstressTensor/t_sum << " %)\n"
             << "  - findNSdivphivv:\t\t" << t_findNSdivphivv/1000.0
             << " s" << "\t(" << 100.0*t_findNSdivphivv/t_sum << " %)\n"
             << "  - findPredNSvelocities:\t" << t_findPredNSvelocities/1000.0

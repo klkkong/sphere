@@ -37,6 +37,7 @@ void DEM::initNSmemDev(void)
     cudaMalloc((void**)&dev_ns_f1, memSizeF);    // constant addition in forcing
     cudaMalloc((void**)&dev_ns_f2, memSizeF*3);  // constant slope in forcing
     cudaMalloc((void**)&dev_ns_v_prod, memSizeF*6); // outer product of velocity
+    cudaMalloc((void**)&dev_ns_tau, memSizeF*6); // stress tensor (symmetrical)
 
     checkForCudaErrors("End of initNSmemDev");
 }
@@ -58,6 +59,7 @@ void DEM::freeNSmemDev()
     cudaFree(dev_ns_f1);
     cudaFree(dev_ns_f2);
     cudaFree(dev_ns_v_prod);
+    cudaFree(dev_ns_tau);
 }
 
 // Transfer to device
@@ -700,13 +702,44 @@ __device__ Float3 gradient(
 {
     // Read 6 neighbor cells
     __syncthreads();
-    const Float p  = dev_scalarfield[idx(x,y,z)];
+    //const Float p  = dev_scalarfield[idx(x,y,z)];
     const Float xp = dev_scalarfield[idx(x+1,y,z)];
     const Float xn = dev_scalarfield[idx(x-1,y,z)];
     const Float yp = dev_scalarfield[idx(x,y+1,z)];
     const Float yn = dev_scalarfield[idx(x,y-1,z)];
     const Float zp = dev_scalarfield[idx(x,y,z+1)];
     const Float zn = dev_scalarfield[idx(x,y,z-1)];
+
+    //__syncthreads();
+    //if (p != 0.0)
+        //printf("p[%d,%d,%d] =\t%f\n", x,y,z, p);
+
+    // Calculate central-difference gradients
+    return MAKE_FLOAT3(
+            (xp - xn)/(2.0*dx),
+            (yp - yn)/(2.0*dy),
+            (zp - zn)/(2.0*dz));
+}
+
+// Find the dv_i/di gradients in a cell in a homogeneous, cubic 3D vector field
+// using finite central differences
+__device__ Float3 gradient(
+        const Float3* dev_vectorfield,
+        const unsigned int x,
+        const unsigned int y,
+        const unsigned int z,
+        const Float dx,
+        const Float dy,
+        const Float dz)
+{
+    // Read 6 neighbor cells
+    __syncthreads();
+    const Float xp = dev_vectorfield[idx(x+1,y,z)].x;
+    const Float xn = dev_vectorfield[idx(x-1,y,z)].x;
+    const Float yp = dev_vectorfield[idx(x,y+1,z)].y;
+    const Float yn = dev_vectorfield[idx(x,y-1,z)].y;
+    const Float zp = dev_vectorfield[idx(x,y,z+1)].z;
+    const Float zn = dev_vectorfield[idx(x,y,z-1)].z;
 
     //__syncthreads();
     //if (p != 0.0)
@@ -831,6 +864,83 @@ __global__ void findvvOuterProdNS(
         dev_ns_v_prod[cellidx6+5] = v.z*v.z;
     }
 }
+
+
+// Find the fluid stress tensor. It is symmetrical, and can thus be saved in 6
+// values in 3D.
+__global__ void findNSstressTensor(
+        Float3* dev_ns_v,       // in
+        Float*  dev_ns_tau)     // out
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    // Cell sizes
+    const Float dx = devC_grid.L[0]/nx;
+    const Float dy = devC_grid.L[1]/ny;
+    const Float dz = devC_grid.L[2]/nz;
+
+    // 1D thread index
+    const unsigned int cellidx6 = idx(x,y,z)*6;
+
+    // Check that we are not outside the fluid grid
+    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
+
+        // The fluid stress tensor (tau) looks like
+        // [[ tau_xx  tau_xy  tau_xz ]
+        //  [ tau_yx  tau_xy  tau_yz ]
+        //  [ tau_zx  tau_zy  tau_zz ]]
+
+        // The tensor is symmetrical: value i,j = j,i.
+        // Only the upper triangle is saved, with the cells given a linear index
+        // enumerated as:
+        // [[ 0 1 2 ]
+        //  [   3 4 ]
+        //  [     5 ]]
+
+        // Read neighbor values for central differences
+        __syncthreads();
+        const Float3 xp = dev_ns_v[idx(x+1,y,z)];
+        const Float3 xn = dev_ns_v[idx(x-1,y,z)];
+        const Float3 yp = dev_ns_v[idx(x,y+1,z)];
+        const Float3 yn = dev_ns_v[idx(x,y-1,z)];
+        const Float3 zp = dev_ns_v[idx(x,y,z+1)];
+        const Float3 zn = dev_ns_v[idx(x,y,z-1)];
+
+        // Fluid viscosity
+        const Float nu = devC_params.nu;
+
+        // The diagonal stress tensor components
+        const Float tau_xx = 2.0*nu*(xp.x - xn.x)/(2.0*dx);
+        const Float tau_yy = 2.0*nu*(yp.y - yn.y)/(2.0*dy);
+        const Float tau_zz = 2.0*nu*(zp.z - zn.z)/(2.0*dz);
+
+        // The off-diagonal stress tensor components
+        const Float tau_xy =
+            nu*((yp.x - yn.x)/(2.0*dy) + (xp.y - xn.y)/(2.0*dx));
+        const Float tau_xz =
+            nu*((zp.x - zn.x)/(2.0*dz) + (xp.z - xn.z)/(2.0*dx));
+        const Float tau_yz =
+            nu*((zp.y - zn.y)/(2.0*dz) + (yp.z - yn.z)/(2.0*dy));
+
+        // Store values in global memory
+        __syncthreads();
+        dev_ns_tau[cellidx6]   = tau_xx;
+        dev_ns_tau[cellidx6+1] = tau_xy;
+        dev_ns_tau[cellidx6+2] = tau_xz;
+        dev_ns_tau[cellidx6+3] = tau_yy;
+        dev_ns_tau[cellidx6+4] = tau_yz;
+        dev_ns_tau[cellidx6+5] = tau_zz;
+    }
+}
+
 
 // Find the divergence of phi v v
 __global__ void findNSdivphivv(

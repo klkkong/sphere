@@ -48,6 +48,11 @@ following, assuming that spatial variations in the viscosity can be neglected:
     = -\nabla p
     + \nu \nabla^2 \boldsymbol{v}
 
+Since we are dealing with fluid flow in a porous medium, additional terms are
+introduced to the equations for conservation of mass and momentum. In the
+following, the equations are derived for the first spatial component. The
+solution for the other components is trivial.
+
 The porosity value (in the saturated porous medium the volumetric fraction of
 the fluid phase) denoted :math:`\phi` is incorporated in the continuity and
 momentum equations. The continuity equation becomes:

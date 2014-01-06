@@ -178,6 +178,7 @@ class DEM {
         Float*  dev_ns_f1;          // Constant terms in forcing function
         Float3* dev_ns_f2;          // Constant slopes in forcing function
         Float*  dev_ns_v_prod;      // Outer product of fluid velocities
+        Float*  dev_ns_tau;         // Fluid stress tensor
 
 
         //// Navier Stokes functions
