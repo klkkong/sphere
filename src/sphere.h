@@ -163,22 +163,23 @@ class DEM {
         NavierStokes ns;
 
         // Navier Stokes values, device
-        Float*  dev_ns_p;           // Cell hydraulic pressure
-        //Float*  dev_ns_p_new;       // New cell hydraulic pressure
-        Float3* dev_ns_dp;          // Cell hydraulic pressure gradient
-        Float3* dev_ns_v;           // Cell fluid velocity
-        Float3* dev_ns_v_p;         // Predicted cell fluid velocity
-        Float*  dev_ns_phi;         // Cell porosity
-        Float*  dev_ns_dphi;        // Cell porosity change
-        Float3* dev_ns_div_phi_v_v; // Divegence used in velocity prediction
-        Float*  dev_ns_epsilon;     // Pressure difference
-        Float*  dev_ns_epsilon_new; // Pressure diff. after Jacobi iteration
-        Float*  dev_ns_norm;        // Normalized residual of epsilon values
-        Float*  dev_ns_f;           // Values of forcing function
-        Float*  dev_ns_f1;          // Constant terms in forcing function
-        Float3* dev_ns_f2;          // Constant slopes in forcing function
-        Float*  dev_ns_v_prod;      // Outer product of fluid velocities
-        Float*  dev_ns_tau;         // Fluid stress tensor
+        Float*  dev_ns_p;            // Cell hydraulic pressure
+        Float3* dev_ns_dp;           // Cell hydraulic pressure gradient
+        Float3* dev_ns_v;            // Cell fluid velocity
+        Float3* dev_ns_v_p;          // Predicted cell fluid velocity
+        Float*  dev_ns_phi;          // Cell porosity
+        Float*  dev_ns_dphi;         // Cell porosity change
+        Float3* dev_ns_div_phi_v_v;  // Divegence used in velocity prediction
+        Float*  dev_ns_epsilon;      // Pressure difference
+        Float*  dev_ns_epsilon_new;  // Pressure diff. after Jacobi iteration
+        Float*  dev_ns_norm;         // Normalized residual of epsilon values
+        Float*  dev_ns_f;            // Values of forcing function
+        Float*  dev_ns_f1;           // Constant terms in forcing function
+        Float3* dev_ns_f2;           // Constant slopes in forcing function
+        Float*  dev_ns_v_prod;       // Outer product of fluid velocities
+        Float*  dev_ns_tau;          // Fluid stress tensor
+        Float3* dev_ns_div_phi_vi_v; // div(phi*vi*v)
+        Float3* dev_ns_div_phi_tau;  // div(phi*tau)
 
 
         //// Navier Stokes functions

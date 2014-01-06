@@ -723,7 +723,8 @@ __host__ void DEM::startTime()
     double t_findPorositiesDev = 0.0;
     double t_findvvOuterProdNS = 0.0;
     double t_findNSstressTensor = 0.0;
-    double t_findNSdivphivv = 0.0;
+    double t_findNSdivphiviv = 0.0;
+    double t_findNSdivphitau = 0.0;
     double t_findPredNSvelocities = 0.0;
     double t_setNSepsilon = 0.0;
     double t_setNSdirichlet = 0.0;
@@ -929,10 +930,10 @@ __host__ void DEM::startTime()
         }
 
         // Solve Navier Stokes flow through the grid
-        if (params.nu > 0.0 && navierstokes == 1) {
+        if (navierstokes == 1) {
 
             checkForCudaErrors("Before findPorositiesDev", iter);
-            // Find cell porosities
+            // Find cell porosities, needed for predicting the fluid velocities
             if (PROFILING == 1)
                 startTimer(&kernel_tic);
             findPorositiesSphericalDev<<<dimGridFluid, dimBlockFluid>>>(
@@ -965,7 +966,8 @@ __host__ void DEM::startTime()
                         &t_setNSghostNodesDev);
             checkForCudaErrors("Post setNSghostNodesDev", iter);
 
-            // Find the fluid stress tensor
+            // Find the fluid stress tensor, needed for predicting the fluid
+            // velocities
             if (PROFILING == 1)
                 startTimer(&kernel_tic);
             findNSstressTensor<<<dimGridFluid, dimBlockFluid>>>(
@@ -977,44 +979,36 @@ __host__ void DEM::startTime()
                         &t_findNSstressTensor);
             checkForCudaErrors("Post findNSstressTensor", iter);
 
+            // TODO: Set stress tensor values in the ghost nodes
 
-            // Find the outer product of v v, meeded for predicting the fluid
+
+            // Find the divergence of phi*vi*v, needed for predicting the fluid
             // velocities
             if (PROFILING == 1)
                 startTimer(&kernel_tic);
-            findvvOuterProdNS<<<dimGridFluid, dimBlockFluid>>>(
-                    dev_ns_v,
-                    dev_ns_v_prod);
-            cudaThreadSynchronize();
-            if (PROFILING == 1)
-                stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                        &t_findvvOuterProdNS);
-            checkForCudaErrors("Post findvvouterprodNS", iter);
-
-            setNSghostNodes_v_prod<<<dimGridFluid, dimBlockFluid>>>(
-                    dev_ns_v_prod);
-            cudaThreadSynchronize();
-            checkForCudaErrors("Post setNSghostNodes_v_prod", iter);
-
-            // Find the divergence of phi v v, needed for predicting the fluid
-            // velocities
-            if (PROFILING == 1)
-                startTimer(&kernel_tic);
-            findNSdivphivv<<<dimGridFluid, dimBlockFluid>>>(
-                    dev_ns_v_prod,
+            findNSdivphiviv<<<dimGridFluid, dimBlockFluid>>>(
                     dev_ns_phi,
-                    dev_ns_div_phi_v_v);
+                    dev_ns_v,
+                    dev_ns_div_phi_vi_v);
             cudaThreadSynchronize();
             if (PROFILING == 1)
                 stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                        &t_findNSdivphivv);
-            checkForCudaErrors("Post findNSdivphiVV", iter);
+                        &t_findNSdivphiviv);
+            checkForCudaErrors("Post findNSdivphiviv", iter);
 
-            setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
-                    dev_ns_div_phi_v_v);
+            // Find the divergence of phi*tau, needed for predicting the fluid
+            // velocities
+            if (PROFILING == 1)
+                startTimer(&kernel_tic);
+            findNSdivphitau<<<dimGridFluid, dimBlockFluid>>>(
+                    dev_ns_phi,
+                    dev_ns_tau,
+                    dev_ns_div_phi_tau);
             cudaThreadSynchronize();
-            checkForCudaErrors("Post setNSghostNodesFloat3(dev_ns_div_phi_v_v)",
-                    iter);
+            if (PROFILING == 1)
+                stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                        &t_findNSdivphitau);
+            checkForCudaErrors("Post findNSdivphitau", iter);
 
             // Predict the fluid velocities on the base of the old pressure
             // field and ignoring the incompressibility constraint
@@ -1024,7 +1018,9 @@ __host__ void DEM::startTime()
                     dev_ns_p,
                     dev_ns_v,
                     dev_ns_phi,
-                    dev_ns_div_phi_v_v,
+                    dev_ns_dphi,
+                    dev_ns_div_phi_vi_v,
+                    dev_ns_div_phi_tau,
                     dev_ns_v_p);
             cudaThreadSynchronize();
             if (PROFILING == 1)
@@ -1398,9 +1394,9 @@ __host__ void DEM::startTime()
             t_topology + t_interact + t_bondsLinear + t_latticeBoltzmannD3Q19 +
             t_integrate + t_summation + t_integrateWalls + t_findPorositiesDev +
             t_findvvOuterProdNS + t_findNSstressTensor + t_findvvOuterProdNS +
-            t_findNSdivphivv + t_findPredNSvelocities + t_setNSepsilon +
-            t_setNSdirichlet + t_setNSghostNodesDev + t_findNSforcing +
-            t_jacobiIterationNS + t_updateNSvelocityPressure;
+            t_findNSdivphiviv + t_findNSdivphitau + t_findPredNSvelocities +
+            t_setNSepsilon + t_setNSdirichlet + t_setNSghostNodesDev +
+            t_findNSforcing + t_jacobiIterationNS + t_updateNSvelocityPressure;
 
         cout << "\nKernel profiling statistics:\n"
             << "  - calcParticleCellID:\t\t" << t_calcParticleCellID/1000.0
@@ -1443,8 +1439,10 @@ __host__ void DEM::startTime()
             << " s" << "\t(" << 100.0*t_findvvOuterProdNS/t_sum << " %)\n"
             << "  - findNSstressTensor:\t\t" << t_findNSstressTensor/1000.0
             << " s" << "\t(" << 100.0*t_findNSstressTensor/t_sum << " %)\n"
-            << "  - findNSdivphivv:\t\t" << t_findNSdivphivv/1000.0
-            << " s" << "\t(" << 100.0*t_findNSdivphivv/t_sum << " %)\n"
+            << "  - findNSdivphiviv:\t\t" << t_findNSdivphiviv/1000.0
+            << " s" << "\t(" << 100.0*t_findNSdivphiviv/t_sum << " %)\n"
+            << "  - findNSdivphitau:\t\t" << t_findNSdivphitau/1000.0
+            << " s" << "\t(" << 100.0*t_findNSdivphitau/t_sum << " %)\n"
             << "  - findPredNSvelocities:\t" << t_findPredNSvelocities/1000.0
             << " s" << "\t(" << 100.0*t_findPredNSvelocities/t_sum << " %)\n"
             << "  - setNSepsilon:\t\t" << t_setNSepsilon/1000.0
