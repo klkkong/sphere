@@ -18,11 +18,11 @@ orig.initRandomGridPos(gridnum = numpy.array([40, 40, 1000]), periodic = 1, cont
 orig.initTemporal(total = 0.002, file_dt = 0.001)
 orig.initFluid(nu = 8.9e-4)
 orig.g[2] = 0.0
-orig.writebin()
+orig.writebin(verbose=False)
 orig.run(verbose=False, cfd=True)
 #orig.writeVTKall()
 py = Spherebin(sid=orig.sid)
 ones = numpy.ones((orig.num))
-py.readlast()
+py.readlast(verbose=False)
 compareNumpyArrays(ones, py.p_f, "Fluid pressure conservation:")
 

@@ -52,7 +52,7 @@ int main(const int argc, const char *argv[])
             dry = 1;
 
         else if (argvi == "-q" || argvi == "--quiet")
-            verbose = 1;
+            verbose = 0;
 
         // The rest of the values must be input binary files
         else {

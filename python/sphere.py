@@ -1366,6 +1366,7 @@ class Spherebin:
 
     def initFluid(self, nu = 8.9e-4):
         """ Initialize the fluid arrays and the fluid viscosity """
+        self.nu[0] = nu
         self.p_f = numpy.ones((self.num[0], self.num[1], self.num[2]),
                 dtype=numpy.float64)
         self.v_f = numpy.zeros((self.num[0], self.num[1], self.num[2], self.nd),
@@ -1637,7 +1638,7 @@ class Spherebin:
             binary = "porousflow"
 
         cmd = "cd ..; " + valgrindbin + cudamemchk + "./" + binary + " " + quiet + dryarg + "input/" + self.sid + ".bin " + stdout
-        print(cmd)
+        #print(cmd)
         status = subprocess.call(cmd, shell=True)
 
         if (status != 0):
