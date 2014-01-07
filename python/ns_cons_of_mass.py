@@ -36,7 +36,8 @@ init.initRandomGridPos(gridnum = numpy.array([40, 40, 1000]), periodic = 1, cont
 #init.initTemporal(total = 2.5)
 #init.time_file_dt[0] = 0.01
 
-init.initTemporal(total = 0.01)
+#init.initTemporal(total = 0.01)
+init.initTemporal(total = 0.002)
 init.time_file_dt[0] = 0.001
 
 #init.initTemporal(1)
@@ -46,7 +47,9 @@ init.time_file_dt[0] = 0.001
 
 
 # Small pertubation
-init.p_f[init.num[0]/2,init.num[1]/2,init.num[2]/2] = 2.0
+#init.p_f[init.num[0]/2,init.num[1]/2,init.num[2]/2] = 2.0
+#init.p_f[:,:,init.num[2]-1] = 1.0
+#init.p_f[:,:,0] = 2.0
 
 #init.g[2] = -10.0
 init.g[2] = 0.0 # uncomment to disable gravity

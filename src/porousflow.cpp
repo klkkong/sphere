@@ -51,6 +51,9 @@ int main(const int argc, const char *argv[])
         else if (argvi == "-n" || argvi == "--dry")
             dry = 1;
 
+        else if (argvi == "-q" || argvi == "--quiet")
+            verbose = 1;
+
         // The rest of the values must be input binary files
         else {
             nfiles++;
