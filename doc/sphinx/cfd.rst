@@ -1,5 +1,16 @@
-Fluid simulation by CFD
-=======================
+Fluid simulation and particle-fluid interaction
+===============================================
+A new and experimental addition to *sphere* is the ability to simulate a mixture
+of particles and a Newtonian fluid. The fluid is simulated using a Eulerian
+continuum approach, using a custom CUDA solver for GPU computation. This
+approach allows for fast simulations due to the limited need for GPU-CPU
+communications, as well as a flexible code base.
+
+The following sections will describe the theoretical background, as well as the
+solution procedure and the numerical implementation.
+
+Derivation of the Navier Stokes equations with porosity
+-------------------------------------------------------
 Following the outline presented by `Limache and Idelsohn (2006)`_, the
 continuity equation for an incompressible fluid material is given by:
 
@@ -205,14 +216,19 @@ calculated as:
     \frac{\partial v_y}{\partial z} + \frac{\partial v_z}{\partial y} \right)
 
 The above formulation of the fluid rheology assumes identical bulk and shear
-viscosities.
+viscosities. The derivation of the equations for the other spatial components
+is trivial.
 
-The equations are solved in a similar manner for the other spatial components.
-The partial differential terms in the equations presented above are found using
-finite central differences.
+Porosity estimation
+-------------------
+---
 
-Modifying the operator splitting methodology presented by Langtangen et al.
-(2002), the predicted velocity :math:`\boldsymbol{v}^*` after a finite time step
+Solution procedure by operator splitting
+----------------------------------------
+The partial differential terms in the previously described equations are found
+using finite central differences. Modifying the operator splitting methodology
+presented by Langtangen et al.  (2002), the predicted velocity
+:math:`\boldsymbol{v}^*` after a finite time step
 :math:`\Delta t` is found by explicit integration of the momentum equation.
 
 .. math::
@@ -412,6 +428,11 @@ pressures and velocities:
 .. math::
     \bar{\boldsymbol{v}}^{t+\Delta t} =
     \bar{\boldsymbol{v}}^* - \frac{\Delta t}{\rho} \nabla \epsilon
+
+
+Numerical implementation
+------------------------
+---
 
 
 

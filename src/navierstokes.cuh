@@ -59,7 +59,6 @@ void DEM::freeNSmemDev()
     cudaFree(dev_ns_f);
     cudaFree(dev_ns_f1);
     cudaFree(dev_ns_f2);
-    cudaFree(dev_ns_v_prod);
     cudaFree(dev_ns_tau);
     cudaFree(dev_ns_div_phi_vi_v);
     cudaFree(dev_ns_div_phi_tau);
