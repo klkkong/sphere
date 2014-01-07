@@ -41,13 +41,19 @@ const unsigned int maxiter = 1e4;
 // The number of iterations to perform between checking the norm. residual value
 const unsigned int nijacnorm = 10;
 
-// Write max. residual to logfile 'max_norm_res.dat'
+// Write max. residual during the latest solution loop to logfile
+// 'max_norm_res.dat'
 // 0: False, 1: True
-const int write_reslog = 1;
+const int write_res_log = 0;
 
 // Report epsilon values during Jacobi iterations to stdout
 // 0: False, 1: True
 const int report_epsilon = 0;
+
+// Report the number of iterations it took before convergence to logfile
+// 'conv.dat'
+// 0: False, 1: True
+const int write_conv_log = 1;
 
 
 // Wrapper function for initializing the CUDA components.
@@ -742,6 +748,12 @@ __host__ void DEM::startTime()
     double t_start = time.current;
     double t_ratio;     // ration between time flow in model vs. reality
 
+    // Write a log file of the number of iterations it took before
+    // convergence in the fluid solver
+    std::ofstream convlog;
+    if (write_conv_log == 1)
+        convlog.open("conv.dat");
+
     if (verbose == 1)
         cout << "  Current simulation time: " << time.current << " s.";
 
@@ -1079,7 +1091,7 @@ __host__ void DEM::startTime()
             // Write a log file of the normalized residuals during the Jacobi
             // iterations
             std::ofstream reslog;
-            if (write_reslog == 1)
+            if (write_res_log == 1)
                 reslog.open("max_res_norm.dat");
 
             // transfer normalized residuals from GPU to CPU
@@ -1175,14 +1187,23 @@ __host__ void DEM::startTime()
 
                     // Write the Jacobi iteration number and maximum value of
                     // the normalized residual to the log file
-                    if (write_reslog == 1)
+                    if (write_res_log == 1)
                         reslog << nijac << '\t' << max_norm_res << std::endl;
                 }
 
-                if (max_norm_res < tolerance)
+                if (max_norm_res < tolerance) {
+
+                    if (write_conv_log == 1)
+                        convlog << iter << '\t' << nijac << std::endl;
+
                     break;  // solution has converged, exit jacobi iter. loop
+                }
 
                 if (nijac == maxiter-1) {
+
+                    if (write_conv_log == 1)
+                        convlog << iter << '\t' << nijac << std::endl;
+
                     std::cerr << "\nIteration " << iter << ", time " 
                         << iter*time.dt << " s: "
                         "Error, the epsilon solution in the fluid "
@@ -1193,7 +1214,7 @@ __host__ void DEM::startTime()
                 //break; // end after Jacobi first iteration
             } // end Jacobi iteration loop
 
-            if (write_reslog == 1)
+            if (write_res_log == 1)
                 reslog.close();
 
             // Find the new pressures and velocities
@@ -1362,6 +1383,10 @@ __host__ void DEM::startTime()
         // Uncomment break command to stop after the first iteration
         //break;
     }
+
+    if (write_conv_log == 1)
+        convlog.close();
+
 
     // Stop clock and display calculation time spent
     toc = clock();

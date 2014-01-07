@@ -685,7 +685,7 @@ __global__ void findPorositiesSphericalDev(
 
         // Save porosity and porosity change
         __syncthreads();
-        phi = 1.0; dphi = 0.0; // disable porosity effects
+        //phi = 1.0; dphi = 0.0; // disable porosity effects
         dev_ns_phi[idx(x,y,z)]  = phi;
         dev_ns_dphi[idx(x,y,z)] = dphi;
     }

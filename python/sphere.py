@@ -1376,7 +1376,7 @@ class Spherebin:
                 dtype=numpy.float64)
 
     def defaultParams(self,
-	    mu_s = 0.4,
+            mu_s = 0.4,
             mu_d = 0.4,
             mu_r = 0.0,
             rho = 2600,
