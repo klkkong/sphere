@@ -336,18 +336,6 @@ __host__ void DEM::allocateGlobalDeviceMemory(void)
     cudaMalloc((void**)&dev_walls_vel0, sizeof(Float)*walls.nw);
     // dev_walls_force_partial allocated later
 
-    // Fluid arrays
-#ifdef LBM_GPU
-    if (params.nu > 0.0 && navierstokes == 0) {
-        cudaMalloc((void**)&dev_f,
-                sizeof(Float)*grid.num[0]*grid.num[1]*grid.num[2]*19);
-        cudaMalloc((void**)&dev_f_new,
-                sizeof(Float)*grid.num[0]*grid.num[1]*grid.num[2]*19);
-        cudaMalloc((void**)&dev_v_rho,
-                sizeof(Float4)*grid.num[0]*grid.num[1]*grid.num[2]);
-    }
-#endif
-
     checkForCudaErrors("End of allocateGlobalDeviceMemory");
     if (verbose == 1)
         std::cout << "Done" << std::endl;
@@ -400,15 +388,7 @@ __host__ void DEM::freeGlobalDeviceMemory()
     cudaFree(dev_walls_vel0);
 
     // Fluid arrays
-#ifdef LBM_GPU
-    if (params.nu > 0.0 && navierstokes == 0) {
-        cudaFree(dev_f);
-        cudaFree(dev_f_new);
-        cudaFree(dev_v_rho);
-    }
-#endif
-
-    if (params.nu > 0.0 && navierstokes == 1) {
+    if (navierstokes == 1) {
         freeNSmemDev();
     }
 
@@ -492,22 +472,11 @@ __host__ void DEM::transferToGlobalDeviceMemory(int statusmsg)
     }
 
     // Fluid arrays
-    if (params.nu > 0.0) {
-        if (navierstokes == 0) {
-#ifdef LBM_GPU
-            cudaMemcpy( dev_f, f,
-                    sizeof(Float)*grid.num[0]*grid.num[1]*grid.num[2]*19,
-                    cudaMemcpyHostToDevice);
-            cudaMemcpy( dev_v_rho, v_rho,
-                    sizeof(Float4)*grid.num[0]*grid.num[1]*grid.num[2],
-                    cudaMemcpyHostToDevice);
-#endif
-        } else if (navierstokes == 1) {
-            transferNStoGlobalDeviceMemory(1);
-        } else {
-            std::cerr << "Error: navierstokes value not understood ("
-                << navierstokes << ")" << std::endl;
-        }
+    if (navierstokes == 1) {
+        transferNStoGlobalDeviceMemory(1);
+    } else if (navierstokes != 0) {
+        std::cerr << "Error: navierstokes value not understood ("
+            << navierstokes << ")" << std::endl;
     }
 
     checkForCudaErrors("End of transferToGlobalDeviceMemory");
@@ -579,19 +548,8 @@ __host__ void DEM::transferFromGlobalDeviceMemory()
             sizeof(Float4)*walls.nw, cudaMemcpyDeviceToHost);
 
     // Fluid arrays
-    if (params.nu > 0.0) {
-        if (navierstokes == 0) {
-#ifdef LBM_GPU
-        cudaMemcpy( f, dev_f,
-                sizeof(Float)*grid.num[0]*grid.num[1]*grid.num[2]*19,
-                cudaMemcpyDeviceToHost);
-        cudaMemcpy(v_rho, dev_v_rho,
-                sizeof(Float4)*grid.num[0]*grid.num[1]*grid.num[2],
-                cudaMemcpyDeviceToHost);
-#endif
-        } else {
-            transferNSfromGlobalDeviceMemory(0);
-        }
+    if (navierstokes == 1) {
+        transferNSfromGlobalDeviceMemory(0);
     }
 
     checkForCudaErrors("End of transferFromGlobalDeviceMemory");
@@ -664,7 +622,7 @@ __host__ void DEM::startTime()
             << dimBlock.x << "*" << dimBlock.y << "*" << dimBlock.z << "\n"
             << "  - Shared memory required per block: " << smemSize << " bytes"
             << endl;
-        if (params.nu > 0.0 && navierstokes == 0) {
+        if (navierstokes == 0) {
             cout << "  - Blocks per fluid grid: "
                 << dimGridFluid.x << "*" << dimGridFluid.y << "*" <<
                 dimGridFluid.z << "\n"
@@ -688,16 +646,6 @@ __host__ void DEM::startTime()
             100.0*time.current/time.total, 
             time.step_count);
     fclose(fp);
-
-    // Initialize fluid distribution array
-    if (params.nu > 0.0) {
-        if (navierstokes == 0) {
-#ifdef LBM_GPU
-            initFluid<<< dimGridFluid, dimBlockFluid >>>(dev_v_rho, dev_f);
-            cudaThreadSynchronize();
-#endif
-        }
-    }
 
     if (verbose == 1) {
         cout << "\n  Entering the main calculation time loop...\n\n"
@@ -911,38 +859,6 @@ __host__ void DEM::startTime()
             if (PROFILING == 1)
                 stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed, &t_bondsLinear);
             checkForCudaErrors("Post bondsLinear", iter);
-        }
-
-        // Process fluid and particle interaction in each cell
-        if (params.nu > 0.0 && navierstokes == 0 && grid.periodic == 1) {
-#ifdef LBM_GPU
-            if (PROFILING == 1)
-                startTimer(&kernel_tic);
-            latticeBoltzmannD3Q19<<<dimGridFluid, dimBlockFluid>>> (
-                    dev_f,
-                    dev_f_new,
-                    dev_v_rho,
-                    dev_cellStart,
-                    dev_cellEnd,
-                    dev_x_sorted,
-                    dev_vel_sorted,
-                    dev_force,
-                    dev_gridParticleIndex);
-            cudaThreadSynchronize();
-            if (PROFILING == 1)
-                stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                        &t_latticeBoltzmannD3Q19);
-            checkForCudaErrors("Post latticeBoltzmannD3Q19", iter);
-
-            // Flip flop
-            swapFloatArrays(dev_f, dev_f_new);
-#else
-            latticeBoltzmannD3Q19(f, f_new, v_rho,
-                    time.dt, grid, params);
-            // Flip flop
-            swapFloatArrays(f, f_new);
-#endif
-
         }
 
         // Solve Navier Stokes flow through the grid

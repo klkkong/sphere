@@ -20,8 +20,8 @@ py.readbin("../input/" + orig.sid + ".bin", verbose=False)
 compare(orig, py, "Python IO:")
 
 # Test C++ IO routines
-orig.run(verbose=True, hideinputfile=True, darcyflow=True)
-#orig.run(verbose=True, hideinputfile=False, darcyflow=True)
+orig.run(verbose=True, hideinputfile=True, cfd=True)
+#orig.run(verbose=True, hideinputfile=False, cfd=True)
 cpp = Spherebin()
 cpp.readbin("../output/" + orig.sid + ".output00000.bin", verbose=False)
 compare(orig, cpp, "C++ IO:   ")
