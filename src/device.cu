@@ -33,7 +33,7 @@
 //// Parameters for the iterative Jacobi solver
 
 // Tolerance criteria for the normalized residual
-const double tolerance = 1.0e-4;
+const double tolerance = 1.0e-3;
 
 // The maximal number of iterations to perform
 const unsigned int maxiter = 1e4;
@@ -51,11 +51,11 @@ const int write_res_log = 0;
 const int report_epsilon = 0;
 
 // Report the number of iterations it took before convergence to logfile
-// 'conv.dat'
+// 'output/<sid>-conv.dat'
 // 0: False, 1: True
 const int write_conv_log = 1;
 
-// The interval between iteration number reporting in 'conv.dat'
+// The interval between iteration number reporting in 'output/<sid>-conv.log'
 const int conv_log_interval = 10;
 
 // Wrapper function for initializing the CUDA components.
@@ -753,8 +753,10 @@ __host__ void DEM::startTime()
     // Write a log file of the number of iterations it took before
     // convergence in the fluid solver
     std::ofstream convlog;
-    if (write_conv_log == 1)
-        convlog.open("conv.dat");
+    if (write_conv_log == 1) {
+        std::string f = "output/" + sid + "-conv.log";
+        convlog.open(f.c_str());
+    }
 
     if (verbose == 1)
         cout << "  Current simulation time: " << time.current << " s.";
