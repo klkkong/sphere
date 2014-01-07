@@ -55,6 +55,8 @@ const int report_epsilon = 0;
 // 0: False, 1: True
 const int write_conv_log = 1;
 
+// The interval between iteration number reporting in 'conv.dat'
+const int conv_log_interval = 10;
 
 // Wrapper function for initializing the CUDA components.
 // Called from main.cpp
@@ -1193,7 +1195,7 @@ __host__ void DEM::startTime()
 
                 if (max_norm_res < tolerance) {
 
-                    if (write_conv_log == 1)
+                    if (write_conv_log == 1 && iter % conv_log_interval == 0)
                         convlog << iter << '\t' << nijac << std::endl;
 
                     break;  // solution has converged, exit jacobi iter. loop
