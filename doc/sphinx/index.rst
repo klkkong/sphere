@@ -26,6 +26,7 @@ Contents:
 
    introduction
    dem
+   cfd
    python_api
    sphere_internals
 

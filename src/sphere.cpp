@@ -49,7 +49,7 @@ DEM::DEM(const std::string inputbin,
     if (dry == 1)
         exit(0);
 
-    if (params.nu > 0.0 && navierstokes == 1) {
+    if (navierstokes == 1) {
         initNS();
     }
 
@@ -63,7 +63,7 @@ DEM::DEM(const std::string inputbin,
             transferToConstantDeviceMemory();
         }
 
-        if (params.nu > 0.0 && navierstokes == 1) {
+        if (navierstokes == 1) {
             initNSmemDev();
         }
 

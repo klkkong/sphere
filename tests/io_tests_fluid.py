@@ -5,7 +5,7 @@ from pytestutils import *
 print("### Fluid input/output tests ###")
 
 # Generate data in python
-orig = Spherebin(np=100, nw=0, sid="test-initgrid-fluid")
+orig = Spherebin(np=100, nw=0, sid="test-initgrid-fluid", fluid=True)
 orig.generateRadii(histogram=False, radius_mean=1.0)
 orig.defaultParams(nu=1e-5)
 orig.initRandomGridPos(g=numpy.zeros(orig.nd))
@@ -20,7 +20,7 @@ py.readbin("../input/" + orig.sid + ".bin", verbose=False)
 compare(orig, py, "Python IO:")
 
 # Test C++ IO routines
-orig.run(verbose=True, hideinputfile=True, cfd=True)
+orig.run(verbose=True, hideinputfile=True)
 #orig.run(verbose=True, hideinputfile=False, cfd=True)
 cpp = Spherebin()
 cpp.readbin("../output/" + orig.sid + ".output00000.bin", verbose=False)

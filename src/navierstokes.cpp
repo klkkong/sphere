@@ -189,12 +189,6 @@ double DEM::maxNormResNS()
 // Initialize fluid parameters
 void DEM::initNS()
 {
-    if (params.nu <= 0.0) {
-        std::cerr << "Error in initNS. The dymamic viscosity (params.nu), "
-            << "should be larger than 0.0, but is " << params.nu << std::endl;
-        exit(1);
-    }
-
     // Cell size 
     ns.dx = grid.L[0]/ns.nx;
     ns.dy = grid.L[1]/ns.ny;
