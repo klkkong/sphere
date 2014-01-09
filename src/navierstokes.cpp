@@ -152,7 +152,7 @@ double DEM::avgNormResNS()
                         << norm_res << ") in cell "
                         << x << "," << y << "," << z << std::endl;
                     std::cerr << "t = " << time.current << ", iter = "
-                        << time.step_count << std::endl;
+                        << int(time.current/time.dt) << std::endl;
                     exit(1);
                 }
                 norm_res_sum += norm_res;
@@ -179,7 +179,7 @@ double DEM::maxNormResNS()
                         << norm_res << ") in cell "
                         << x << "," << y << "," << z << std::endl;
                     std::cerr << "t = " << time.current << ", iter = "
-                        << time.step_count << std::endl;
+                        << int(time.current/time.dt) << std::endl;
                     exit(1);
                 }
                 if (norm_res > max_norm_res)

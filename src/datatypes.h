@@ -66,7 +66,7 @@ struct Time {
     double current;          // Current time
     double total;            // Total time (at the end of experiment)
     Float file_dt;           // Time between output files
-    unsigned int step_count; // Number of steps taken at current time
+    unsigned int step_count; // Number of output files written
 };
 
 // Structure containing constant, global physical parameters
