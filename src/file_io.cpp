@@ -426,19 +426,7 @@ void DEM::writebin(const char *target)
 
         ofs.write(as_bytes(params.nu), sizeof(params.nu));
         int x, y, z;
-        if (params.nu > 0.0 && navierstokes == 0) {    // Lattice Boltzmann flow
-            for (z = 0; z<grid.num[2]; ++z) {
-                for (y = 0; y<grid.num[1]; ++y) {
-                    for (x = 0; x<grid.num[0]; ++x) {
-                        i = x + grid.num[0]*y + grid.num[0]*grid.num[1]*z;
-                        ofs.write(as_bytes(v_rho[i].x), sizeof(Float));
-                        ofs.write(as_bytes(v_rho[i].y), sizeof(Float));
-                        ofs.write(as_bytes(v_rho[i].z), sizeof(Float));
-                        ofs.write(as_bytes(v_rho[i].w), sizeof(Float));
-                    }
-                }
-            }
-        } else if (params.nu > 0.0 && navierstokes == 1) { // Navier Stokes flow
+        if (navierstokes == 1) { // Navier Stokes flow
             for (z=0; z<ns.nz; z++) {
                 for (y=0; y<ns.ny; y++) {
                     for (x=0; x<ns.nx; x++) {
