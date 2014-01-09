@@ -539,7 +539,7 @@ class Spherebin:
         'Writes all output binaries from the simulation to VTK files'
 
         lastfile = status(self.sid)
-        sb = Spherebin()
+        sb = Spherebin(fluid = True)
         for i in range(lastfile+1):
             fn = "../output/{0}.output{1:0=5}.bin".format(self.sid, i)
             sb.sid = self.sid + ".{:0=5}".format(i)
