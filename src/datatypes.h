@@ -4,7 +4,6 @@
 
 #include <math.h>
 #include "vector_functions.h"
-//#include "vector_arithmetic.h"
 #include "typedefs.h"
 #include "constants.h"
 
@@ -25,7 +24,7 @@ struct Kinematics {
     Float4 *angacc;         // Angular accelerations
     Float4 *torque;         // Sums of torques
     unsigned int *contacts; // List of contacts per particle
-    Float4 *distmod;        // Distance modifiers for contacts across periodic boundaries
+    Float4 *distmod;        // Distance modifiers across periodic boundaries
     Float4 *delta_t;        // Accumulated shear distance of contacts
     uint2  *bonds;          // Particle bond pairs
     Float4 *bonds_delta;    // Particle bond displacement
@@ -51,9 +50,9 @@ struct Grid {
 
 struct Sorting {
     Float4 *x_sorted;                 // Positions + radii (w) (sorted)
-    Float4 *vel_sorted;               // Translational velocities + fixvels (w) (sorted)
+    Float4 *vel_sorted;               // Velocities + fixvels (w) (sorted)
     Float4 *angvel_sorted;            // Angular velocities (sorted)
-    unsigned int *gridParticleCellID; // Hash key (cell index) from position in grid
+    unsigned int *gridParticleCellID; // Hash key (cell idx) in grid
     unsigned int *gridParticleIndex;  // Original indexes of particles
     unsigned int *cellStart;          // First index of sorted idx'es in cells
     unsigned int *cellEnd;            // Last index of sorted idx'es in cells

@@ -151,7 +151,7 @@ double DEM::avgNormResNS()
                     std::cerr << "\nError: normalized residual is NaN ("
                         << norm_res << ") in cell "
                         << x << "," << y << "," << z << std::endl;
-                    std::cerr << "t = " << time.current << ", iter = "
+                    std::cerr << "\tt = " << time.current << ", iter = "
                         << int(time.current/time.dt) << std::endl;
                     exit(1);
                 }
@@ -178,7 +178,7 @@ double DEM::maxNormResNS()
                     std::cerr << "\nError: normalized residual is NaN ("
                         << norm_res << ") in cell "
                         << x << "," << y << "," << z << std::endl;
-                    std::cerr << "t = " << time.current << ", iter = "
+                    std::cerr << "\tt = " << time.current << ", iter = "
                         << int(time.current/time.dt) << std::endl;
                     exit(1);
                 }

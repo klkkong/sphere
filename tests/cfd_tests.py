@@ -2,7 +2,6 @@
 from pytestutils import *
 
 import sphere
-from sphere import visualize, status
 import sys
 import numpy
 
@@ -23,7 +22,7 @@ orig.run()
 orig.writeVTKall()
 py = Spherebin(sid = orig.sid, fluid = True)
 ones = numpy.ones((orig.num))
-py.readlast(verbose=False)
+py.readlast(verbose = False)
 compareNumpyArrays(ones, py.p_f, "Fluid pressure conservation:")
 
 # Convergence rate

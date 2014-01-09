@@ -882,10 +882,11 @@ __host__ void DEM::startTime()
             checkForCudaErrors("Post findPorositiesDev", iter);
 
             // Modify the pressures at the upper boundary
-            Float value = iter*0.01;
+            //*
+            Float value = iter*0.001;
             setUpperPressureNS<<<dimGridFluid, dimBlockFluid>>>(dev_ns_p, value);
             cudaThreadSynchronize();
-            checkForCudaErrors("Post setUpperPressureNS", iter);
+            checkForCudaErrors("Post setUpperPressureNS", iter); //*/
 
             // Set the values of the ghost nodes in the grid
             if (PROFILING == 1)
