@@ -55,7 +55,8 @@ const int report_epsilon = 0;
 const int write_conv_log = 1;
 
 // The interval between iteration number reporting in 'output/<sid>-conv.log'
-const int conv_log_interval = 10;
+//const int conv_log_interval = 10;
+const int conv_log_interval = 1;
 
 // Wrapper function for initializing the CUDA components.
 // Called from main.cpp
@@ -879,6 +880,12 @@ __host__ void DEM::startTime()
                 stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                         &t_findPorositiesDev);
             checkForCudaErrors("Post findPorositiesDev", iter);
+
+            // Modify the pressures at the upper boundary
+            Float value = iter*0.01;
+            setUpperPressureNS<<<dimGridFluid, dimBlockFluid>>>(dev_ns_p, value);
+            cudaThreadSynchronize();
+            checkForCudaErrors("Post setUpperPressureNS", iter);
 
             // Set the values of the ghost nodes in the grid
             if (PROFILING == 1)

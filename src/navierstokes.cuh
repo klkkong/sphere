@@ -691,6 +691,25 @@ __global__ void findPorositiesSphericalDev(
     }
 }
 
+// Set the hydraulic pressure at the upper boundary
+__global__ void setUpperPressureNS(Float* dev_ns_p, const Float value)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+    
+    // check that the thread is located at the top boundary
+    if (x < devC_grid.num[0] &&
+            y < devC_grid.num[1] &&
+            z == devC_grid.num[2]-1) {
+
+        // Write the new pressure value to the top boundary cells
+        __syncthreads();
+        dev_ns_p[idx(x,y,z)] = value;
+    }
+}
+
 // Find the gradient in a cell in a homogeneous, cubic 3D scalar field using
 // finite central differences
 __device__ Float3 gradient(
