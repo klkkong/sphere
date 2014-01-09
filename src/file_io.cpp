@@ -243,31 +243,7 @@ void DEM::readbin(const char *target)
     if (verbose == 1)
         cout << "Done\n";
 
-    if (params.nu > 0.0 && navierstokes == 0) {    // Lattice-Boltzmann flow
-
-        if (verbose == 1)
-            cout << "  - Reading LBM values:\t\t\t\t  ";
-
-        //f = new Float[grid.num[0]*grid.num[1]*grid.num[2]*19];
-        //f_new = new Float[grid.num[0]*grid.num[1]*grid.num[2]*19];
-        v_rho = new Float4[grid.num[0]*grid.num[1]*grid.num[2]];
-
-        for (z = 0; z<grid.num[2]; ++z) {
-            for (y = 0; y<grid.num[1]; ++y) {
-                for (x = 0; x<grid.num[0]; ++x) {
-                    i = x + grid.num[0]*y + grid.num[0]*grid.num[1]*z;
-                    ifs.read(as_bytes(v_rho[i].x), sizeof(Float));
-                    ifs.read(as_bytes(v_rho[i].y), sizeof(Float));
-                    ifs.read(as_bytes(v_rho[i].z), sizeof(Float));
-                    ifs.read(as_bytes(v_rho[i].w), sizeof(Float));
-                }
-            }
-        }
-
-        if (verbose == 1)
-            cout << "Done" << std::endl;
-
-    } else if (params.nu > 0.0 && navierstokes == 1) {    // Navier Stokes flow
+    if (navierstokes == 1) {    // Navier Stokes flow
 
         initNSmem();
 

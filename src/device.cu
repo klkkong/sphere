@@ -25,7 +25,6 @@
 #include "contactsearch.cuh"
 #include "integration.cuh"
 #include "raytracer.cuh"
-#include "latticeboltzmann.cuh"
 #include "navierstokes.cuh"
 
 
@@ -600,7 +599,7 @@ __host__ void DEM::startTime()
             iDivUp(grid.num[0], dimBlockFluid.x),
             iDivUp(grid.num[1], dimBlockFluid.y),
             iDivUp(grid.num[2], dimBlockFluid.z));
-    if (dimGridFluid.z > 64 && params.nu > 0.0) {
+    if (dimGridFluid.z > 64) {
         cerr << "Error: dimGridFluid.z > 64" << endl;
         exit(1);
     }
@@ -1253,7 +1252,7 @@ __host__ void DEM::startTime()
             writebin(file);
 
             // Write fluid arrays
-            /*if (params.nu > 0.0 && navierstokes == 1) {
+            /*if (navierstokes == 1) {
                 sprintf(file,"output/%s.ns_phi.output%05d.bin", sid.c_str(), time.step_count);
                 writeNSarray(ns.phi, file);
             }*/
@@ -1358,29 +1357,20 @@ __host__ void DEM::startTime()
             << "  - topology:\t\t\t" << t_topology/1000.0 << " s"
             << "\t(" << 100.0*t_topology/t_sum << " %)\n";
         }
-        cout
-            << "  - interact:\t\t\t" << t_interact/1000.0 << " s"
+        cout << "  - interact:\t\t\t" << t_interact/1000.0 << " s"
             << "\t(" << 100.0*t_interact/t_sum << " %)\n";
         if (params.nb0 > 0) {
-            cout
-            << "  - bondsLinear:\t\t" << t_bondsLinear/1000.0 << " s"
+            cout << "  - bondsLinear:\t\t" << t_bondsLinear/1000.0 << " s"
             << "\t(" << 100.0*t_bondsLinear/t_sum << " %)\n";
         }
-        if (params.nu > 0.0 && navierstokes == 0) {
-            cout
-            << "  - latticeBoltzmann:\t\t" << t_latticeBoltzmannD3Q19/1000.0 <<
-            " s" << "\t(" << 100.0*t_latticeBoltzmannD3Q19/t_sum << " %)\n";
-        }
-        cout
-            << "  - integrate:\t\t\t" << t_integrate/1000.0 << " s"
+        cout << "  - integrate:\t\t\t" << t_integrate/1000.0 << " s"
             << "\t(" << 100.0*t_integrate/t_sum << " %)\n"
             << "  - summation:\t\t\t" << t_summation/1000.0 << " s"
             << "\t(" << 100.0*t_summation/t_sum << " %)\n"
             << "  - integrateWalls:\t\t" << t_integrateWalls/1000.0 << " s"
             << "\t(" << 100.0*t_integrateWalls/t_sum << " %)\n";
-        if (params.nu > 0.0 && navierstokes == 1) {
-            cout 
-            << "  - findPorositiesDev:\t\t" << t_findPorositiesDev/1000.0
+        if (navierstokes == 1) {
+            cout << "  - findPorositiesDev:\t\t" << t_findPorositiesDev/1000.0
             << " s" << "\t(" << 100.0*t_findPorositiesDev/t_sum << " %)\n"
             << "  - findvvOuterProdNS:\t\t" << t_findvvOuterProdNS/1000.0
             << " s" << "\t(" << 100.0*t_findvvOuterProdNS/t_sum << " %)\n"
@@ -1416,7 +1406,7 @@ __host__ void DEM::startTime()
     delete[] k.distmod;
     delete[] k.delta_t;
 
-    if (navierstokes == 1 && params.nu > 0.0) {
+    if (navierstokes == 1) {
         endNS();
     }
 

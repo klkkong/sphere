@@ -18,7 +18,7 @@ class Spherebin:
     setup and data analysis.
     """
 
-    def __init__(self, np = 1, nd = 3, nw = 1, sid = 'unnamed'):
+    def __init__(self, np = 1, nd = 3, nw = 1, sid = 'unnamed', fluid = False):
         """
         Constructor - initializes arrays
 
@@ -127,6 +127,7 @@ class Spherebin:
         self.bonds_omega_t = numpy.zeros((self.nb0, self.nd),
                                          dtype=numpy.float64)
 
+        self.fluid = fluid
         self.nu = numpy.zeros(1, dtype=numpy.float64)
         self.v_f = numpy.zeros(
             (self.num[0], self.num[1], self.num[2], self.nd),
@@ -251,7 +252,7 @@ class Spherebin:
         self.p      = numpy.append(self.p, p)
 
     def readbin(self, targetbin, verbose = True, bonds = True, devsmod = True,
-            fluid = True, esysparticle = False):
+            esysparticle = False):
         'Reads a target SPHERE binary file'
 
         fh = None
@@ -383,37 +384,37 @@ class Spherebin:
             else:
                 self.nb0 = numpy.zeros(1, dtype=numpy.uint32)
 
-            if (fluid == True):
+            if (self.fluid == True):
                 self.nu = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                if (self.nu[0] > 0.0):
-                    self.v_f = numpy.empty(
-                            (self.num[0], self.num[1], self.num[2], self.nd),
-                            dtype=numpy.float64)
-                    self.p_f = \
-                            numpy.empty((self.num[0],self.num[1],self.num[2]),
-                            dtype=numpy.float64)
-                    self.phi = \
-                            numpy.empty((self.num[0],self.num[1],self.num[2]),
-                            dtype=numpy.float64)
-                    self.dphi = \
-                            numpy.empty((self.num[0],self.num[1],self.num[2]),
-                            dtype=numpy.float64)
 
-                    for z in range(self.num[2]):
-                        for y in range(self.num[1]):
-                            for x in range(self.num[0]):
-                                self.v_f[x,y,z,0] = \
-                                numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                                self.v_f[x,y,z,1] = \
-                                numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                                self.v_f[x,y,z,2] = \
-                                numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                                self.p_f[x,y,z] = \
-                                numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                                self.phi[x,y,z] = \
-                                numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                                self.dphi[x,y,z] = \
-                                numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                self.v_f = numpy.empty(
+                        (self.num[0], self.num[1], self.num[2], self.nd),
+                        dtype=numpy.float64)
+                self.p_f = \
+                        numpy.empty((self.num[0],self.num[1],self.num[2]),
+                        dtype=numpy.float64)
+                self.phi = \
+                        numpy.empty((self.num[0],self.num[1],self.num[2]),
+                        dtype=numpy.float64)
+                self.dphi = \
+                        numpy.empty((self.num[0],self.num[1],self.num[2]),
+                        dtype=numpy.float64)
+
+                for z in range(self.num[2]):
+                    for y in range(self.num[1]):
+                        for x in range(self.num[0]):
+                            self.v_f[x,y,z,0] = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                            self.v_f[x,y,z,1] = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                            self.v_f[x,y,z,2] = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                            self.p_f[x,y,z] = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                            self.phi[x,y,z] = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                            self.dphi[x,y,z] = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
         finally:
             if fh is not None:
@@ -519,7 +520,7 @@ class Spherebin:
             fh.write(self.bonds_omega_t.astype(numpy.float64))
 
             fh.write(self.nu.astype(numpy.float64))
-            if (self.nu[0] > 0.0):
+            if (self.fluid == True):
                 for z in range(self.num[2]):
                     for y in range(self.num[1]):
                         for x in range(self.num[0]):
@@ -544,7 +545,7 @@ class Spherebin:
             sb.sid = self.sid + ".{:0=5}".format(i)
             sb.readbin(fn, verbose = False)
             sb.writeVTK()
-            if (sb.nu > 0.0):
+            if (self.fluid == True):
                 sb.writeFluidVTK()
 
 
@@ -1615,7 +1616,7 @@ class Spherebin:
         return numpy.array(porosity), numpy.array(depth)
 
     def run(self, verbose=True, hideinputfile=False, dry=False, valgrind=False,
-            cudamemcheck=False, cfd=False):
+            cudamemcheck=False):
         'Execute sphere with target project'
 
         quiet = ""
@@ -1634,10 +1635,11 @@ class Spherebin:
             valgrindbin = "valgrind -q "
         if (cudamemcheck == True):
             cudamemchk = "cuda-memcheck --leak-check full "
-        if (cfd == True):
+        if (self.fluid == True):
             binary = "porousflow"
 
-        cmd = "cd ..; " + valgrindbin + cudamemchk + "./" + binary + " " + quiet + dryarg + "input/" + self.sid + ".bin " + stdout
+        cmd = "cd ..; " + valgrindbin + cudamemchk + "./" + binary + " " \
+                + quiet + dryarg + "input/" + self.sid + ".bin " + stdout
         #print(cmd)
         status = subprocess.call(cmd, shell=True)
 
@@ -1768,7 +1770,9 @@ class Spherebin:
         if (disp == '2d'):
             nd = '-2d '
 
-        subprocess.call("cd .. && ./forcechains " + nd + "-f " + outformat + " -lc " + str(lc) + " -uc " + str(uc) + " input/" + self.sid + ".bin > python/tmp.gp", shell=True)
+        subprocess.call("cd .. && ./forcechains " + nd + "-f " + outformat \
+                + " -lc " + str(lc) + " -uc " + str(uc) + " input/" + self.sid \
+                + ".bin > python/tmp.gp", shell=True)
         subprocess.call("gnuplot tmp.gp && rm tmp.bin && rm tmp.gp", shell=True)
 
 
@@ -1778,7 +1782,8 @@ class Spherebin:
         '''
         self.writebin(verbose=False)
 
-        subprocess.call("cd .. && ./forcechains -f txt input/" + self.sid + ".bin > python/fc-tmp.txt", shell=True)
+        subprocess.call("cd .. && ./forcechains -f txt input/" + self.sid \
+                + ".bin > python/fc-tmp.txt", shell=True)
 
         # data will have the shape (numcontacts, 7)
         data = numpy.loadtxt("fc-tmp.txt", skiprows=1)
@@ -1949,15 +1954,18 @@ class Spherebin:
             velarrowscale = 1.0,
             slipscale = 1.0,
             verbose = False):
-        ''' Produce a 2D image of particles on a x1,x3 plane, intersecting the second axis at x2.
+        ''' Produce a 2D image of particles on a x1,x3 plane, intersecting the
+            second axis at x2.
             Output is saved as '<sid>-ts-x1x3.txt' in the current folder.
 
-            An upper limit to the pressure color bar range can be set by the cbmax parameter.
+            An upper limit to the pressure color bar range can be set by the
+            cbmax parameter.
 
             The data can be plotted in gnuplot with:
                 gnuplot> set size ratio -1
                 gnuplot> set palette defined (0 "blue", 0.5 "gray", 1 "red")
-                gnuplot> plot '<sid>-ts-x1x3.txt' with circles palette fs transparent solid 0.4 noborder
+                gnuplot> plot '<sid>-ts-x1x3.txt' with circles palette fs \
+                        transparent solid 0.4 noborder
         '''
 
         if (x2 == 'center') :
@@ -2031,7 +2039,8 @@ class Spherebin:
                 dvylist.append(self.vel[i,2]*velarrowscale) # delta y for arrow end point
 
                 if (r_circ > self.radius[i]):
-                    raise Exception("Error, circle radius is larger than the particle radius")
+                    raise Exception("Error, circle radius is larger than the "
+                    + "particle radius")
                 if (self.p[i] > pmax):
                     pmax = self.p[i]
 
@@ -2066,7 +2075,8 @@ class Spherebin:
             if fh is not None:
                 fh.close()
 
-        # Save angular velocity data. The arrow lengths are normalized to max. radius
+        # Save angular velocity data. The arrow lengths are normalized to max.
+        # radius
         #   Output format: x, y, deltax, deltay
         #   gnuplot> plot '-' using 1:2:3:4 with vectors head filled lt 2
         filename = '../gnuplot/data/' + self.sid + '-ts-x1x3-arrows.txt'
@@ -2098,7 +2108,8 @@ class Spherebin:
 
 
 
-        # Check whether there are slips between the particles intersecting the plane
+        # Check whether there are slips between the particles intersecting the
+        # plane
         sxlist = []
         sylist = []
         dsxlist = []
@@ -2135,7 +2146,8 @@ class Spherebin:
                         angvel_i = self.angvel[i,:]
                         angvel_j = self.angvel[j,:]
 
-                        # Determine the tangential contact surface velocity in the x,z plane
+                        # Determine the tangential contact surface velocity in
+                        # the x,z plane
                         dot_delta = (vel_i - vel_j) \
                                 + r_i * numpy.cross(n_ij, angvel_i) \
                                 + r_j * numpy.cross(n_ij, angvel_j)
@@ -2154,9 +2166,12 @@ class Spherebin:
                             sylist.append(cpos[2])
                             dsxlist.append(dot_delta_t[0] * slipscale)
                             dsylist.append(dot_delta_t[2] * slipscale)
-                            #anglelist.append(math.degrees(math.atan(dot_delta_t[2]/dot_delta_t[0])))
-                            anglelist.append(math.atan(dot_delta_t[2]/dot_delta_t[0]))
-                            slipvellist.append(numpy.sqrt(dot_delta_t.dot(dot_delta_t)))
+                            #anglelist.append(math.degrees(\
+                                    #math.atan(dot_delta_t[2]/dot_delta_t[0])))
+                            anglelist.append(\
+                                    math.atan(dot_delta_t[2]/dot_delta_t[0]))
+                            slipvellist.append(\
+                                    numpy.sqrt(dot_delta_t.dot(dot_delta_t)))
 
 
         # Write slip lines to text file
@@ -2174,8 +2189,11 @@ class Spherebin:
 
         # Plot thinsection with gnuplot script
         gamma = self.shearstrain()
-        subprocess.call("""cd ../gnuplot/scripts && gnuplot -e "sid='{}'; gamma='{:.4}'; xmin='{}'; xmax='{}'; ymin='{}'; ymax='{}'" plotts.gp""".format(\
-                self.sid, self.shearstrain(), self.origo[0], self.L[0], self.origo[2], self.L[2]), shell=True)
+        subprocess.call("""cd ../gnuplot/scripts && gnuplot -e "sid='{}'; """ \
+                + """gamma='{:.4}'; xmin='{}'; xmax='{}'; ymin='{}'; """ \
+                + """ymax='{}'" plotts.gp""".format(\
+                self.sid, self.shearstrain(), self.origo[0], self.L[0], \
+                self.origo[2], self.L[2]), shell=True)
 
         # Find all particles who have a slip velocity higher than slipvel
         slipvellimit = 0.01
@@ -2184,14 +2202,16 @@ class Spherebin:
 
         # Bin slip angle data for histogram
         binno = 36/2
-        hist_ang, bins_ang = numpy.histogram(numpy.array(anglelist)[slipvels], bins=binno, density=False)
+        hist_ang, bins_ang = numpy.histogram(numpy.array(anglelist)[slipvels],\
+                bins=binno, density=False)
         center_ang = (bins_ang[:-1] + bins_ang[1:]) / 2.0
 
         center_ang_mirr = numpy.concatenate((center_ang, center_ang + math.pi))
         hist_ang_mirr = numpy.tile(hist_ang, 2)
 
         # Write slip angles to text file
-        #numpy.savetxt(self.sid + '-ts-x1x3-slipangles.txt', zip(center_ang, hist_ang), fmt="%f\t%f")
+        #numpy.savetxt(self.sid + '-ts-x1x3-slipangles.txt', zip(center_ang,\
+                #hist_ang), fmt="%f\t%f")
 
         fig = plt.figure()
         ax = fig.add_subplot(111, polar=True)
@@ -2320,7 +2340,8 @@ class Spherebin:
         (default value), the last output file will be shown. If the y value is
         -1, the center x,z plane will be rendered '''
 
-        phi = numpy.loadtxt('../output/{}.d_phi.output{:0=5}.bin'.format(self.sid, iteration))
+        phi = numpy.loadtxt('../output/{}.d_phi.output{:0=5}.bin'.format(\
+                self.sid, iteration))
 
         if (y == -1):
             y = self.num[2]/2
@@ -2389,9 +2410,11 @@ def video(project,
         qscale = 1,
         bitrate = 1800,
         verbose = False):
-    'Use ffmpeg to combine images to animation. All images should be rendered beforehand.'
+    'Use ffmpeg to combine images to animation. All images should be rendered \
+    beforehand.'
 
-    # Possible loglevels: quiet, panic, fatal, error, warning, info, verbose, debug
+    # Possible loglevels:
+    # quiet, panic, fatal, error, warning, info, verbose, debug
     loglevel = "info" # verbose = True
     if (verbose == False):
         loglevel = "error"
@@ -2399,7 +2422,8 @@ def video(project,
     subprocess.call(\
             "ffmpeg -qscale {0} -r {1} -b {2} -y ".format(qscale, fps, bitrate) \
             + "-loglevel " + loglevel + " " \
-            + "-i " + graphics_folder + project + ".output%05d." + graphics_format + " " \
+            + "-i " + graphics_folder + project + ".output%05d." \
+            + graphics_format + " " \
             + out_folder + "/" + project + "." + video_format, shell=True)
 
 def thinsectionVideo(project,
@@ -2423,7 +2447,8 @@ def thinsectionVideo(project,
         sb.thinsection_x1x3(cbmax = sb.w_devs[0]*4.0)
 
     # Combine images to animation
-    # Possible loglevels: quiet, panic, fatal, error, warning, info, verbose, debug
+    # Possible loglevels:
+    # quiet, panic, fatal, error, warning, info, verbose, debug
     loglevel = "info" # verbose = True
     if (verbose == False):
         loglevel = "error"
@@ -2446,9 +2471,6 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
     ### Plotting
     if (outformat != 'txt'):
         fig = plt.figure(figsize=(15,10),dpi=300)
-        #figtitle = "{0}, simulation {1}".format(method, project)
-        #fig.text(0.5,0.95,figtitle,horizontalalignment='center',fontproperties=FontProperties(size=18))
-
 
     if method == 'energy':
 
@@ -2553,7 +2575,8 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
             ax10.plot(t, Epot, '+-g')
             ax10.plot(t, Ekin, '+-b')
             ax10.plot(t, Erot, '+-r')
-            ax10.legend(('$\sum E_{pot}$','$\sum E_{kin}$','$\sum E_{rot}$'), 'upper right', shadow=True)
+            ax10.legend(('$\sum E_{pot}$','$\sum E_{kin}$','$\sum E_{rot}$'),\
+                    'upper right', shadow=True)
             ax10.grid()
 
             fig.tight_layout()
@@ -2568,10 +2591,14 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
 
             # Allocate arrays on first run
             if (i == 0):
-                wforce = numpy.zeros((lastfile+1)*sb.nw[0], dtype=numpy.float64).reshape((lastfile+1), sb.nw[0])
-                wvel   = numpy.zeros((lastfile+1)*sb.nw[0], dtype=numpy.float64).reshape((lastfile+1), sb.nw[0])
-                wpos   = numpy.zeros((lastfile+1)*sb.nw[0], dtype=numpy.float64).reshape((lastfile+1), sb.nw[0])
-                wdevs  = numpy.zeros((lastfile+1)*sb.nw[0], dtype=numpy.float64).reshape((lastfile+1), sb.nw[0])
+                wforce = numpy.zeros((lastfile+1)*sb.nw[0],\
+                        dtype=numpy.float64).reshape((lastfile+1), sb.nw[0])
+                wvel   = numpy.zeros((lastfile+1)*sb.nw[0],\
+                        dtype=numpy.float64).reshape((lastfile+1), sb.nw[0])
+                wpos   = numpy.zeros((lastfile+1)*sb.nw[0],\
+                        dtype=numpy.float64).reshape((lastfile+1), sb.nw[0])
+                wdevs  = numpy.zeros((lastfile+1)*sb.nw[0],\
+                        dtype=numpy.float64).reshape((lastfile+1), sb.nw[0])
                 maxpos = numpy.zeros((lastfile+1), dtype=numpy.float64)
                 logstress = numpy.zeros((lastfile+1), dtype=numpy.float64)
                 voidratio = numpy.zeros((lastfile+1), dtype=numpy.float64)
@@ -2634,7 +2661,8 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
             fn = "../output/{0}.output{1:0=5}.bin".format(project, i)
             sb.readbin(fn, verbose = False)
 
-            vol = (sb.w_x[0]-sb.origo[2]) * (sb.w_x[1]-sb.w_x[2]) * (sb.w_x[3] - sb.w_x[4])
+            vol = (sb.w_x[0]-sb.origo[2]) * (sb.w_x[1]-sb.w_x[2]) \
+                    * (sb.w_x[3] - sb.w_x[4])
 
             # Allocate arrays on first run
             if (i == 0):
@@ -2690,11 +2718,22 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
 
             # First iteration: Allocate arrays and find constant values
             if (i == 0):
-                xdisp     = numpy.zeros(lastfile+1, dtype=numpy.float64)  # Shear displacement
-                sigma_eff = numpy.zeros(lastfile+1, dtype=numpy.float64)  # Normal stress
-                sigma_def = numpy.zeros(lastfile+1, dtype=numpy.float64)  # Normal stress
-                tau       = numpy.zeros(lastfile+1, dtype=numpy.float64)  # Shear stress
-                dilation  = numpy.zeros(lastfile+1, dtype=numpy.float64)  # Upper wall position
+                # Shear displacement
+                xdisp     = numpy.zeros(lastfile+1, dtype=numpy.float64)
+
+                # Normal stress
+                sigma_eff = numpy.zeros(lastfile+1, dtype=numpy.float64)
+
+                # Normal stress
+                sigma_def = numpy.zeros(lastfile+1, dtype=numpy.float64)
+
+                # Shear stress
+                tau       = numpy.zeros(lastfile+1, dtype=numpy.float64)
+
+                # Upper wall position
+                dilation  = numpy.zeros(lastfile+1, dtype=numpy.float64)
+
+                # Upper wall position
                 tau_u = 0.0             # Peak shear stress
                 tau_u_shearstrain = 0.0 # Shear strain value of peak shear stress
 
@@ -2713,8 +2752,8 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
                 xdisp[i]    = xdisp[i-1] + sb.time_file_dt[0] * shearvel
             sigma_eff[i] = sb.w_force[0] / A
             sigma_def[i] = sb.w_devs[0]
-            dilation[i] = sb.w_x[0] - w_x0                 # dilation in meters
-            #dilation[i] = (sb.w_x[0] - w_x0)/w_x0 * 100.0   # dilation in percent
+            dilation[i] = sb.w_x[0] - w_x0                # dilation in meters
+            #dilation[i] = (sb.w_x[0] - w_x0)/w_x0 * 100.0 # dilation in percent
 
             # Test if this was the max. shear stress
             if (tau[i] > tau_u):
@@ -2724,7 +2763,8 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
 
         # Plot stresses
         if (outformat != 'txt'):
-            shearinfo = "$\\tau_u$ = {:.3} Pa at $\gamma$ = {:.3}".format(tau_u, tau_u_shearstrain)
+            shearinfo = "$\\tau_u$ = {:.3} Pa at $\gamma$ = {:.3}".format(tau_u,\
+                    tau_u_shearstrain)
             fig.text(0.5, 0.03, shearinfo, horizontalalignment='center',
                      fontproperties=FontProperties(size=14))
             ax1 = plt.subplot2grid((1, 2), (0, 0))
@@ -2752,7 +2792,8 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
                 fh = open(filename, "w")
                 L = sb.L[2] - sb.origo[2] # Initial height
                 for i in range(lastfile+1):
-                    # format: shear distance [mm], sigma [kPa], tau [kPa], Dilation [%]
+                    # format: shear distance [mm], sigma [kPa], tau [kPa],
+                    # Dilation [%]
                     fh.write("{0}\t{1}\t{2}\t{3}\n".format(xdisp[i],
                     sigma_eff[i]/1000.0,
                     tau[i]/1000.0,
@@ -2783,7 +2824,8 @@ def run(binary, verbose=True, hideinputfile=False):
         quiet = "-q"
     if (hideinputfile == True):
         stdout = " > /dev/null"
-    subprocess.call("cd ..; ./sphere " + quiet + " " + binary + " " + stdout, shell=True)
+    subprocess.call("cd ..; ./sphere " + quiet + " " + binary + " " + stdout, \
+            shell=True)
 
 def torqueScriptParallel3(obj1, obj2, obj3,
         email="adc@geo.au.dk",
@@ -2813,7 +2855,8 @@ def torqueScriptParallel3(obj1, obj2, obj3,
         fh.write('#PBS -m ' + email_alerts + '\n')
         fh.write('CUDAPATH=' + cudapath + '\n')
         fh.write('export PATH=$CUDAPATH/bin:$PATH\n')
-        fh.write('export LD_LIBRARY_PATH=$CUDAPATH/lib64:$CUDAPATH/lib:$LD_LIBRARY_PATH\n')
+        fh.write('export LD_LIBRARY_PATH=$CUDAPATH/lib64')
+        fh.write(':$CUDAPATH/lib:$LD_LIBRARY_PATH\n')
         fh.write('echo "`whoami`@`hostname`"\n')
         fh.write('echo "Start at `date`"\n')
         fh.write('ORIGDIR=' + spheredir + '\n')
@@ -2859,7 +2902,8 @@ def torqueScriptSerial3(obj1, obj2, obj3,
         fh.write('#PBS -m ' + email_alerts + '\n')
         fh.write('CUDAPATH=' + cudapath + '\n')
         fh.write('export PATH=$CUDAPATH/bin:$PATH\n')
-        fh.write('export LD_LIBRARY_PATH=$CUDAPATH/lib64:$CUDAPATH/lib:$LD_LIBRARY_PATH\n')
+        fh.write('export LD_LIBRARY_PATH=$CUDAPATH/lib64')
+        fh.write(':$CUDAPATH/lib:$LD_LIBRARY_PATH\n')
         fh.write('echo "`whoami`@`hostname`"\n')
         fh.write('echo "Start at `date`"\n')
         fh.write('ORIGDIR=' + spheredir + '\n')

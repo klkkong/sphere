@@ -1,7 +1,7 @@
 Fluid simulation and particle-fluid interaction
 ===============================================
 A new and experimental addition to *sphere* is the ability to simulate a mixture
-of particles and a Newtonian fluid. The fluid is simulated using a Eulerian
+of particles and a Newtonian fluid. The fluid is simulated using an Eulerian
 continuum approach, using a custom CUDA solver for GPU computation. This
 approach allows for fast simulations due to the limited need for GPU-CPU
 communications, as well as a flexible code base.
