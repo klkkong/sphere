@@ -4,7 +4,6 @@
 #include <string>
 #include <cstdio>
 #include <cuda.h>
-//#include <cutil_math.h>
 #include <helper_math.h>
 
 #include "vector_arithmetic.h"	// for arbitrary prec. vectors
@@ -35,7 +34,7 @@
 const double tolerance = 1.0e-3;
 
 // The maximal number of iterations to perform
-const unsigned int maxiter = 1e4;
+const unsigned int maxiter = 1e3;
 
 // The number of iterations to perform between checking the norm. residual value
 const unsigned int nijacnorm = 10;
@@ -47,7 +46,7 @@ const int write_res_log = 0;
 
 // Report epsilon values during Jacobi iterations to stdout
 // 0: False, 1: True
-const int report_epsilon = 0;
+const int report_epsilon = 1;
 
 // Report the number of iterations it took before convergence to logfile
 // 'output/<sid>-conv.dat'
@@ -779,7 +778,8 @@ __host__ void DEM::startTime()
         // Synchronization point
         cudaThreadSynchronize();
         if (PROFILING == 1)
-            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed, &t_reorderArrays);
+            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                    &t_reorderArrays);
         checkForCudaErrors("Post reorderArrays", iter);
 
         // The contact search in topology() is only necessary for determining
@@ -800,8 +800,12 @@ __host__ void DEM::startTime()
             // Synchronization point
             cudaThreadSynchronize();
             if (PROFILING == 1)
-                stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed, &t_topology);
-            checkForCudaErrors("Post topology: One or more particles moved outside the grid.\nThis could possibly be caused by a numerical instability.\nIs the computational time step too large?", iter);
+                stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                        &t_topology);
+            checkForCudaErrors("Post topology: One or more particles moved "
+                    "outside the grid.\nThis could possibly be caused by a "
+                    "numerical instability.\nIs the computational time step "
+                    "too large?", iter);
         }
 
 
@@ -838,7 +842,8 @@ __host__ void DEM::startTime()
         //cudaPrintfDisplay(stdout, true);
         if (PROFILING == 1)
             stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed, &t_interact);
-        checkForCudaErrors("Post interact - often caused if particles move outside the grid", iter);
+        checkForCudaErrors("Post interact - often caused if particles move "
+                "outside the grid", iter);
 
         // Process particle pairs
         if (params.nb0 > 0) {
@@ -857,7 +862,8 @@ __host__ void DEM::startTime()
             cudaThreadSynchronize();
             //cudaPrintfDisplay(stdout, true);
             if (PROFILING == 1)
-                stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed, &t_bondsLinear);
+                stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                        &t_bondsLinear);
             checkForCudaErrors("Post bondsLinear", iter);
         }
 
@@ -881,12 +887,20 @@ __host__ void DEM::startTime()
                         &t_findPorositiesDev);
             checkForCudaErrors("Post findPorositiesDev", iter);
 
-            // Modify the pressures at the upper boundary
+            // Set the pressures at the upper boundary cells
             //*
-            Float value = iter*0.001;
-            setUpperPressureNS<<<dimGridFluid, dimBlockFluid>>>(dev_ns_p, value);
+            Float new_pressure = 1.0 + (iter+1.0);
+            std::cout << new_pressure << std::endl;
+            setUpperPressureNS<<<dimGridFluid, dimBlockFluid>>>(
+                    dev_ns_p,
+                    dev_ns_epsilon,
+                    new_pressure);
             cudaThreadSynchronize();
             checkForCudaErrors("Post setUpperPressureNS", iter); //*/
+            std::cout << "\n###### EPSILON AFTER setUpperPressureNS ######"
+                << std::endl;
+            transferNSepsilonFromGlobalDeviceMemory();
+            printNSarray(stdout, ns.epsilon, "epsilon");
 
             // Set the values of the ghost nodes in the grid
             if (PROFILING == 1)
@@ -904,6 +918,10 @@ __host__ void DEM::startTime()
                 stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                         &t_setNSghostNodesDev);
             checkForCudaErrors("Post setNSghostNodesDev", iter);
+            std::cout << "\n###### EPSILON AFTER setNSghostNodesDev ######"
+                << std::endl;
+            transferNSepsilonFromGlobalDeviceMemory();
+            printNSarray(stdout, ns.epsilon, "epsilon");
 
             // Find the fluid stress tensor, needed for predicting the fluid
             // velocities
@@ -989,6 +1007,10 @@ __host__ void DEM::startTime()
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                             &t_setNSepsilon);
                 checkForCudaErrors("Post setNSepsilon");
+                std::cout << "\n###### EPSILON AFTER setNSepsilon ######"
+                    << std::endl;
+                transferNSepsilonFromGlobalDeviceMemory();
+                printNSarray(stdout, ns.epsilon, "epsilon");
 
                 // TODO: Check if these functions should be called every before
                 // every Jacobi iterative solver call or not
@@ -1002,12 +1024,20 @@ __host__ void DEM::startTime()
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                             &t_setNSdirichlet);
                 checkForCudaErrors("Post setNSdirichlet");
+                std::cout << "\n###### EPSILON AFTER setNSdirichlet ######"
+                    << std::endl;
+                transferNSepsilonFromGlobalDeviceMemory();
+                printNSarray(stdout, ns.epsilon, "epsilon");
                 
                 setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_epsilon);
                 cudaThreadSynchronize();
                 checkForCudaErrors("Post setNSghostNodesFloat(dev_ns_epsilon)",
                         iter);
+                std::cout << "\n###### EPSILON AFTER setNSghostNodes ######"
+                    << std::endl;
+                transferNSepsilonFromGlobalDeviceMemory();
+                printNSarray(stdout, ns.epsilon, "epsilon");
             }
 
             // Solve the system of epsilon using a Jacobi iterative solver.
@@ -1030,6 +1060,9 @@ __host__ void DEM::startTime()
             }
 
             for (unsigned int nijac = 0; nijac<maxiter; ++nijac) {
+
+                //std::cout << "\n###### JACOBI ITERATION " << nijac << " ######"
+                    //<< std::endl;
 
                 // Only grad(epsilon) changes during the Jacobi iterations. The
                 // remaining terms of the forcing function are only calculated
@@ -1078,17 +1111,17 @@ __host__ void DEM::startTime()
                         iter);
 
                 // Flip flop: swap new and current array pointers
-                Float* tmp         = dev_ns_epsilon;
+                /*Float* tmp         = dev_ns_epsilon;
                 dev_ns_epsilon     = dev_ns_epsilon_new;
-                dev_ns_epsilon_new = tmp;
+                dev_ns_epsilon_new = tmp;*/
 
                 // Copy new values to current values
-                /*copyValues<Float><<<dimGridFluid, dimBlockFluid>>>(
+                copyValues<Float><<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_epsilon_new,
                         dev_ns_epsilon);
                 cudaThreadSynchronize();
                 checkForCudaErrors("Post copyValues (epsilon->epsilon_new)",
-                        iter);*/
+                        iter);
 
                 if (report_epsilon == 1) {
                     std::cout << "\n###### JACOBI ITERATION "
@@ -1158,6 +1191,13 @@ __host__ void DEM::startTime()
                         &t_updateNSvelocityPressure);
             checkForCudaErrors("Post updateNSvelocityPressure", iter);
         }
+
+        /*std::cout << "\n###### ITERATION "
+            << iter << " ######" << std::endl;
+        transferNSepsilonFromGlobalDeviceMemory();
+        printNSarray(stdout, ns.epsilon, "epsilon");*/
+        //transferNSepsilonNewFromGlobalDeviceMemory();
+        //printNSarray(stdout, ns.epsilon_new, "epsilon_new");
 
         // Update particle kinematics
         if (PROFILING == 1)
@@ -1308,7 +1348,7 @@ __host__ void DEM::startTime()
         }
 
         // Uncomment break command to stop after the first iteration
-        //break;
+        break;
     }
 
     if (write_conv_log == 1)

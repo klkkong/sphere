@@ -10,6 +10,9 @@
 #include "sphere.h"
 #include "utility.h"
 
+// 1: Enable color output in array printing functions, 0: Disable
+const int color_output = 0;
+
 // Initialize memory
 void DEM::initNSmem()
 {
@@ -73,7 +76,11 @@ void DEM::printNSarray(FILE* stream, Float* arr)
     int x, y, z;
 
     // show ghost nodes
-    for (z=-1; z<=ns.nz; z++) {
+    //for (z=-1; z<=ns.nz; z++) { // bottom to top
+    for (z = ns.nz-1; z >= -1; z--) { // top to bottom
+
+        fprintf(stream, "z = %d\n", z);
+
         for (y=-1; y<=ns.ny; y++) {
             for (x=-1; x<=ns.nx; x++) {
 
@@ -84,10 +91,16 @@ void DEM::printNSarray(FILE* stream, Float* arr)
 
                 if (x > -1 && x < ns.nx &&
                         y > -1 && y < ns.ny &&
-                        z > -1 && z < ns.nz)
+                        z > -1 && z < ns.nz) {
                     fprintf(stream, "%f\t", arr[idx(x,y,z)]);
-                else
-                    fprintf(stream, "\x1b[30;1m%f\x1b[0m\t", arr[idx(x,y,z)]);
+                } else { // ghost node
+                    if (color_output) {
+                        fprintf(stream, "\x1b[30;1m%f\x1b[0m\t",
+                                arr[idx(x,y,z)]);
+                    } else {
+                        fprintf(stream, "%f\t", arr[idx(x,y,z)]);
+                    }
+                }
             }
             fprintf(stream, "\n");
         }

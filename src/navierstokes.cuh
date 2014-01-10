@@ -161,7 +161,7 @@ __global__ void setNSepsilon(Float* dev_ns_epsilon, Float* dev_ns_norm)
     const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
 
     // check that we are not outside the fluid grid
-    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
+    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]-1) {
         __syncthreads();
         const unsigned int cellidx = idx(x,y,z);
         dev_ns_epsilon[cellidx] = 0.0;
@@ -182,8 +182,10 @@ __global__ void setNSdirichlet(
     const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
 
     // check that we are not outside the fluid grid, and at the z boundaries
-    if (x < devC_grid.num[0] && y < devC_grid.num[1] &&
-            (z == devC_grid.num[2]-1 || z == 0)) {
+    //if (x < devC_grid.num[0] && y < devC_grid.num[1] &&
+            //(z == devC_grid.num[2]-1 || z == 0)) {
+    // check that we are not outside the fluid grid, and at the lower z boundary
+    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z == 0) {
 
         /*Float val;
 
@@ -692,7 +694,10 @@ __global__ void findPorositiesSphericalDev(
 }
 
 // Set the hydraulic pressure at the upper boundary
-__global__ void setUpperPressureNS(Float* dev_ns_p, const Float value)
+__global__ void setUpperPressureNS(
+        Float* dev_ns_p,
+        Float* dev_ns_epsilon,
+        const Float new_pressure)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -704,9 +709,21 @@ __global__ void setUpperPressureNS(Float* dev_ns_p, const Float value)
             y < devC_grid.num[1] &&
             z == devC_grid.num[2]-1) {
 
-        // Write the new pressure value to the top boundary cells
+        const unsigned int cellidx = idx(x,y,z);
+
+        // Read the current pressure
+        const Float pressure = dev_ns_p[cellidx];
+
+        // Determine the new epsilon boundary condition
+        const Float epsilon = new_pressure - BETA*pressure;
+
+        //printf("[%d,%d,%d]\tepsilon = %f\n", x,y,z, epsilon);
+
+        // Write the new pressure and epsilon values to the top boundary cells
         __syncthreads();
-        dev_ns_p[idx(x,y,z)] = value;
+        //dev_ns_epsilon[cellidx] = epsilon;
+        dev_ns_epsilon[cellidx] = 6.666666;
+        dev_ns_p[cellidx] = new_pressure;
     }
 }
 
@@ -1351,14 +1368,16 @@ __global__ void findNSforcing(
                 = gradient(dev_ns_phi, x, y, z, dx, dy, dz);
 
             // Find forcing function coefficients
+            //f1 = 0.0;
             f1 = div_v_p*rho/devC_dt
                 + dot(grad_phi, v_p)*rho/(devC_dt*phi)
                 + dphi*rho/(devC_dt*devC_dt*phi);
             f2 = grad_phi/phi;
 
-            // Save values
             //printf("[%d,%d,%d] dphi = %f\n", x,y,z, dphi);
             //printf("[%d,%d,%d] v_p = %f\tdiv_v_p = %f\n", x,y,z, v_p, div_v_p);
+
+            // Save values
             __syncthreads();
             dev_ns_f1[cellidx] = f1;
             dev_ns_f2[cellidx] = f2;
@@ -1377,7 +1396,7 @@ __global__ void findNSforcing(
 
         // Forcing function value
         const Float f = f1 - dot(f2, grad_epsilon);
-        //printf("[%d,%d,%d] f1 = %f\tf2 = %f\tf = %f\n", x,y,z, f1, f2, f);
+        //printf("[%d,%d,%d]\tf1 = %f\tf2 = %f\tf = %f\n", x,y,z, f1, f2, f);
 
         // Save forcing function value
         __syncthreads();
@@ -1431,25 +1450,23 @@ __global__ void jacobiIterationNS(
         const Float e_zp = dev_ns_epsilon[idx(x,y,z+1)];
 
         // Read the value of the forcing function
-        const Float f = dev_ns_f[cellidx];
-        //const Float f = 0.0;
+        //const Float f = dev_ns_f[cellidx];
+        const Float f = 0.0;
 
         // New value of epsilon in 3D update
         const Float dxdx = dx*dx;
         const Float dydy = dy*dy;
         const Float dzdz = dz*dz;
-        const Float e_new
+        /*const Float e_new
             = (-dxdx*dydy*dzdz*f
                     + dydy*dzdz*(e_xn + e_xp)
                     + dxdx*dzdz*(e_yn + e_yp)
                     + dxdx*dydy*(e_zn + e_zp))
             /(2.0*(dxdx*dydy + dxdx*dzdz + dydy*dzdz));
+            */
 
         // New value of epsilon in 1D update
-        //const Float e_new = (e_zp + e_zn - dz*dz*f)/2.0;
-
-        //if (z == 0 || z == nz-1)
-            //e_new = 0.0;
+        const Float e_new = (e_zp + e_zn - dz*dz*f)/2.0;
 
         // Find the normalized residual value. A small value is added to the
         // denominator to avoid a divide by zero.
@@ -1474,11 +1491,16 @@ __global__ void copyValues(
     const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
     const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
 
-    // 1D thread index
-    const unsigned int cellidx = idx(x,y,z);
-
-    // Check that we are not outside the fluid grid
+    // Internal nodes only
     if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
+
+    // Internal nodes + ghost nodes
+    /*if (x <= devC_grid.num[0]+1 &&
+            y <= devC_grid.num[1]+1 &&
+            z <= devC_grid.num[2]+1) {*/
+
+        const unsigned int cellidx = idx(x,y,z); // without ghost nodes
+        //const unsigned int cellidx = idx(x-1,y-1,z-1); // with ghost nodes
 
         // Read
         __syncthreads();
@@ -1547,7 +1569,8 @@ __global__ void updateNSvelocityPressure(
 
         // Write new values
         __syncthreads();
-        dev_ns_p[cellidx] = p;
+        //dev_ns_p[cellidx] = p;
+        dev_ns_p[cellidx] = epsilon;
         dev_ns_v[cellidx] = v;
     }
 }
