@@ -697,6 +697,7 @@ __global__ void findPorositiesSphericalDev(
 __global__ void setUpperPressureNS(
         Float* dev_ns_p,
         Float* dev_ns_epsilon,
+        Float* dev_ns_epsilon_new,
         const Float new_pressure)
 {
     // 3D thread index
@@ -721,8 +722,10 @@ __global__ void setUpperPressureNS(
 
         // Write the new pressure and epsilon values to the top boundary cells
         __syncthreads();
-        //dev_ns_epsilon[cellidx] = epsilon;
-        dev_ns_epsilon[cellidx] = 6.666666;
+        //dev_ns_epsilon[cellidx] = 6.666666;
+        //dev_ns_epsilon_new[cellidx] = 6.666666;
+        dev_ns_epsilon[cellidx] = epsilon;
+        dev_ns_epsilon_new[cellidx] = epsilon;
         dev_ns_p[cellidx] = new_pressure;
     }
 }
@@ -1454,19 +1457,19 @@ __global__ void jacobiIterationNS(
         const Float f = 0.0;
 
         // New value of epsilon in 3D update
+        //*
         const Float dxdx = dx*dx;
         const Float dydy = dy*dy;
         const Float dzdz = dz*dz;
-        /*const Float e_new
+        const Float e_new
             = (-dxdx*dydy*dzdz*f
                     + dydy*dzdz*(e_xn + e_xp)
                     + dxdx*dzdz*(e_yn + e_yp)
                     + dxdx*dydy*(e_zn + e_zp))
-            /(2.0*(dxdx*dydy + dxdx*dzdz + dydy*dzdz));
-            */
+            /(2.0*(dxdx*dydy + dxdx*dzdz + dydy*dzdz)); // */
 
         // New value of epsilon in 1D update
-        const Float e_new = (e_zp + e_zn - dz*dz*f)/2.0;
+        //const Float e_new = (e_zp + e_zn - dz*dz*f)/2.0;
 
         // Find the normalized residual value. A small value is added to the
         // denominator to avoid a divide by zero.
@@ -1479,7 +1482,6 @@ __global__ void jacobiIterationNS(
     }
 }
 
-///////////////////////////////// UNUSED ///////////////////////////////////////
 // Copy all values from one array to the other
 template<typename T>
 __global__ void copyValues(
@@ -1506,14 +1508,14 @@ __global__ void copyValues(
         __syncthreads();
         const T val = dev_read[cellidx];
 
-        //printf("[%d,%d,%d] = %f\n", x, y, z, val);
+        //if (z == devC_grid.num[2]-1)
+            //printf("[%d,%d,%d] = %f\n", x, y, z, val);
 
         // Write
         __syncthreads();
         dev_write[cellidx] = val;
     }
 }
-///////////////////////////////// UNUSED END ///////////////////////////////////
 
 // Computes the new velocity and pressure using the corrector
 __global__ void updateNSvelocityPressure(

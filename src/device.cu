@@ -894,6 +894,7 @@ __host__ void DEM::startTime()
             setUpperPressureNS<<<dimGridFluid, dimBlockFluid>>>(
                     dev_ns_p,
                     dev_ns_epsilon,
+                    dev_ns_epsilon_new,
                     new_pressure);
             cudaThreadSynchronize();
             checkForCudaErrors("Post setUpperPressureNS", iter); //*/
@@ -1120,7 +1121,7 @@ __host__ void DEM::startTime()
                         dev_ns_epsilon_new,
                         dev_ns_epsilon);
                 cudaThreadSynchronize();
-                checkForCudaErrors("Post copyValues (epsilon->epsilon_new)",
+                checkForCudaErrors("Post copyValues (epsilon_new->epsilon)",
                         iter);
 
                 if (report_epsilon == 1) {
@@ -1348,7 +1349,7 @@ __host__ void DEM::startTime()
         }
 
         // Uncomment break command to stop after the first iteration
-        break;
+        //break;
     }
 
     if (write_conv_log == 1)

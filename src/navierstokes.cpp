@@ -77,7 +77,8 @@ void DEM::printNSarray(FILE* stream, Float* arr)
 
     // show ghost nodes
     //for (z=-1; z<=ns.nz; z++) { // bottom to top
-    for (z = ns.nz-1; z >= -1; z--) { // top to bottom
+    //for (z = ns.nz-1; z >= -1; z--) { // top to bottom
+    for (z = ns.nz; z >= -1; z--) { // top to bottom
 
         fprintf(stream, "z = %d\n", z);
 
