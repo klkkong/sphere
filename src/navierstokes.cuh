@@ -15,7 +15,7 @@
 #include "debug.h"
 
 // Solver parameter, used in velocity prediction and pressure iteration
-#define BETA 1.0
+#define BETA 0.0
 
 // Initialize memory
 void DEM::initNSmemDev(void)
@@ -1304,7 +1304,8 @@ __global__ void findPredNSvelocities(
         const Float3 div_phi_tau  = dev_ns_div_phi_tau[cellidx];
 
         // Fluid density
-        const Float rho = 1000.0;
+        //const Float rho = 1000.0;
+        const Float rho = 1.0;
 
         // Particle interaction force
         //const Float3 f_i = MAKE_FLOAT3(0.0, 0.0, 0.0);
@@ -1328,8 +1329,8 @@ __global__ void findPredNSvelocities(
             - v*dphi/phi
             - div_phi_vi_v*devC_dt/phi;
 
-        //printf("[%d,%d,%d]\tv_p = %f\t%f\t%f,\tgrad_p = %f\t%f\t%f\n",
-                //x, y, z, v_p.x, v_p.y, v_p.z, grad_p.x, grad_p.y, grad_p.z);
+        printf("[%d,%d,%d]\tv_p = %f\t%f\t%f,\tgrad_p = %f\t%f\t%f\n",
+                x, y, z, v_p.x, v_p.y, v_p.z, grad_p.x, grad_p.y, grad_p.z);
 
         // Save the predicted velocity
         __syncthreads();
