@@ -30,12 +30,6 @@
 
 //// Parameters for the iterative Jacobi solver
 
-// Solver parameter, used in velocity prediction and pressure iteration
-#define BETA 0.0
-
-// Define the fluid density [kg/m^3]
-#define RHO 1000.0
-
 // Tolerance criteria for the normalized residual
 //const double tolerance = 1.0e-3;
 const double tolerance = 1.0e-5;
@@ -897,6 +891,9 @@ __host__ void DEM::startTime()
 
             // Initial guess for the top epsilon values. These may be changed in
             // setUpperPressureNS
+            if (BETA == 0.0) {
+                std::cout << "blah";
+            }
             setNSepsilonTop<<<dimGridFluid, dimBlockFluid>>>(
                     dev_ns_epsilon,
                     dev_ns_epsilon_new,

@@ -20,6 +20,7 @@
 // Define the fluid density [kg/m^3]
 #define RHO 1000.0
 
+
 // Initialize memory
 void DEM::initNSmemDev(void)
 {
