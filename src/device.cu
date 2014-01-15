@@ -891,13 +891,13 @@ __host__ void DEM::startTime()
 
             // Initial guess for the top epsilon values. These may be changed in
             // setUpperPressureNS
-            if (BETA == 0.0) {
-                std::cout << "blah";
-            }
+            Float pressure = ns.p[idx(0,0,ns.nz-1)];
+            Float pressure_new = pressure; // Dirichlet
+            Float epsilon_value = pressure_new - BETA*pressure;
             setNSepsilonTop<<<dimGridFluid, dimBlockFluid>>>(
                     dev_ns_epsilon,
                     dev_ns_epsilon_new,
-                    0.0);
+                    epsilon_value);
             cudaThreadSynchronize();
             checkForCudaErrors("Post setNSepsilonTop");
                 
@@ -1013,11 +1013,16 @@ __host__ void DEM::startTime()
             // manually estimate the values of epsilon. In the subsequent
             // iterations, the previous values are  used.
             if (iter == 0) {
-                // Define the first estimate of the values of epsilon
+
+                // Define the first estimate of the values of epsilon.
+                // The initial guess depends on the value of BETA.
+                Float pressure = ns.p[idx(2,2,2)];
+                Float pressure_new = pressure; // Guess p_current = p_new
+                Float epsilon_value = pressure_new - BETA*pressure;
                 if (PROFILING == 1)
                     startTimer(&kernel_tic);
                 setNSepsilonInterior<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_epsilon, 0.0);
+                        dev_ns_epsilon, epsilon_value);
                 cudaThreadSynchronize();
 
                 setNSnormZero<<<dimGridFluid, dimBlockFluid>>>(dev_ns_norm);
@@ -1032,12 +1037,16 @@ __host__ void DEM::startTime()
                 transferNSepsilonFromGlobalDeviceMemory();
                 printNSarray(stdout, ns.epsilon, "epsilon");*/
 
+                // Set the epsilon values at the lower boundary
+                pressure = ns.p[idx(0,0,0)];
+                pressure_new = pressure; // Guess p_current = p_new
+                epsilon_value = pressure_new - BETA*pressure;
                 if (PROFILING == 1)
                     startTimer(&kernel_tic);
                 setNSepsilonBottom<<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_epsilon,
                         dev_ns_epsilon_new,
-                        0.0);
+                        epsilon_value);
                 cudaThreadSynchronize();
                 if (PROFILING == 1)
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,

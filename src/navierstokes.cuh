@@ -15,7 +15,7 @@
 #include "debug.h"
 
 // Solver parameter, used in velocity prediction and pressure iteration
-#define BETA 0.0
+#define BETA 1.0
 
 // Define the fluid density [kg/m^3]
 #define RHO 1000.0
