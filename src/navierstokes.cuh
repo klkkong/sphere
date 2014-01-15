@@ -15,7 +15,12 @@
 #include "debug.h"
 
 // Solver parameter, used in velocity prediction and pressure iteration
-#define BETA 1.0
+// 1.0: Use old pressures for fluid velocity prediction (see Langtangen et al.
+// 2002)
+// 0.0: Do not use old pressures for fluid velocity prediction (Chorin's
+// original projection method, see Chorin (1968) and "Projection method (fluid
+// dynamics)" page on Wikipedia.
+#define BETA 0.0
 
 // Define the fluid density [kg/m^3]
 #define RHO 1000.0

@@ -32,8 +32,9 @@
 
 // Tolerance criteria for the normalized residual
 //const double tolerance = 1.0e-3;
-const double tolerance = 1.0e-5;
+//const double tolerance = 1.0e-5;
 //const double tolerance = 1.0e-7;
+const double tolerance = 1.0e-9;
 
 // The maximal number of iterations to perform
 const unsigned int maxiter = 1e4;

@@ -8,7 +8,7 @@ import numpy
 print("### CFD tests ###")
 
 # Iteration and conservation of mass test
-orig = sphere.Spherebin(np = 1e4, nd = 3, nw = 0, sid = "cfdtest", fluid = True)
+orig = sphere.Spherebin(np = 1e4, nd = 3, nw = 0, sid = "cfdtest-tol7", fluid = True)
 orig.generateRadii(radius_mean = 0.05, histogram=False)
 orig.defaultParams(mu_s = 0.4, mu_d = 0.4, nu = 8.9e-4)
 orig.initRandomGridPos(gridnum = numpy.array([40, 40, 1000]), periodic = 1, contactmodel = 1)
