@@ -31,10 +31,12 @@
 //// Parameters for the iterative Jacobi solver
 
 // Tolerance criteria for the normalized residual
-const double tolerance = 1.0e-3;
+//const double tolerance = 1.0e-3;
+const double tolerance = 1.0e-5;
+//const double tolerance = 1.0e-7;
 
 // The maximal number of iterations to perform
-const unsigned int maxiter = 1e3;
+const unsigned int maxiter = 1e4;
 
 // The number of iterations to perform between checking the norm. residual value
 const unsigned int nijacnorm = 10;
@@ -46,7 +48,7 @@ const int write_res_log = 0;
 
 // Report epsilon values during Jacobi iterations to stdout
 // 0: False, 1: True
-const int report_epsilon = 1;
+const int report_epsilon = 0;
 
 // Report the number of iterations it took before convergence to logfile
 // 'output/<sid>-conv.dat'
@@ -887,21 +889,31 @@ __host__ void DEM::startTime()
                         &t_findPorositiesDev);
             checkForCudaErrors("Post findPorositiesDev", iter);
 
+            // Initial guess for the top epsilon values. These may be changed in
+            // setUpperPressureNS
+            setNSepsilonTop<<<dimGridFluid, dimBlockFluid>>>(
+                    dev_ns_epsilon,
+                    dev_ns_epsilon_new,
+                    0.0);
+            cudaThreadSynchronize();
+            checkForCudaErrors("Post setNSepsilonTop");
+                
             // Set the pressures at the upper boundary cells
-            //*
-            Float new_pressure = 1.0 + (iter+1.0);
-            std::cout << new_pressure << std::endl;
+            /*
+            Float new_pressure = 1.0 + (iter+1.0)*0.01;
+            //Float new_epsilon = 1.0 + (iter+1.0)*0.01;
             setUpperPressureNS<<<dimGridFluid, dimBlockFluid>>>(
                     dev_ns_p,
                     dev_ns_epsilon,
                     dev_ns_epsilon_new,
                     new_pressure);
+                    //new_epsilon);
             cudaThreadSynchronize();
             checkForCudaErrors("Post setUpperPressureNS", iter); //*/
-            std::cout << "\n###### EPSILON AFTER setUpperPressureNS ######"
+            /*std::cout << "\n###### EPSILON AFTER setUpperPressureNS ######"
                 << std::endl;
             transferNSepsilonFromGlobalDeviceMemory();
-            printNSarray(stdout, ns.epsilon, "epsilon");
+            printNSarray(stdout, ns.epsilon, "epsilon");*/
 
             // Set the values of the ghost nodes in the grid
             if (PROFILING == 1)
@@ -919,10 +931,10 @@ __host__ void DEM::startTime()
                 stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                         &t_setNSghostNodesDev);
             checkForCudaErrors("Post setNSghostNodesDev", iter);
-            std::cout << "\n###### EPSILON AFTER setNSghostNodesDev ######"
+            /*std::cout << "\n###### EPSILON AFTER setNSghostNodesDev ######"
                 << std::endl;
             transferNSepsilonFromGlobalDeviceMemory();
-            printNSarray(stdout, ns.epsilon, "epsilon");
+            printNSarray(stdout, ns.epsilon, "epsilon");*/
 
             // Find the fluid stress tensor, needed for predicting the fluid
             // velocities
@@ -1001,44 +1013,47 @@ __host__ void DEM::startTime()
                 // Define the first estimate of the values of epsilon
                 if (PROFILING == 1)
                     startTimer(&kernel_tic);
-                setNSepsilon<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_epsilon, dev_ns_norm);
+                setNSepsilonInterior<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_epsilon, 0.0);
                 cudaThreadSynchronize();
+
+                setNSnormZero<<<dimGridFluid, dimBlockFluid>>>(dev_ns_norm);
+                cudaThreadSynchronize();
+
                 if (PROFILING == 1)
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                             &t_setNSepsilon);
-                checkForCudaErrors("Post setNSepsilon");
-                std::cout << "\n###### EPSILON AFTER setNSepsilon ######"
+                checkForCudaErrors("Post setNSepsilonInterior");
+                /*std::cout << "\n###### EPSILON AFTER setNSepsilon ######"
                     << std::endl;
                 transferNSepsilonFromGlobalDeviceMemory();
-                printNSarray(stdout, ns.epsilon, "epsilon");
+                printNSarray(stdout, ns.epsilon, "epsilon");*/
 
-                // TODO: Check if these functions should be called every before
-                // every Jacobi iterative solver call or not
                 if (PROFILING == 1)
                     startTimer(&kernel_tic);
-                setNSdirichlet<<<dimGridFluid, dimBlockFluid>>>(
+                setNSepsilonBottom<<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_epsilon,
-                        dev_ns_epsilon_new);
+                        dev_ns_epsilon_new,
+                        0.0);
                 cudaThreadSynchronize();
                 if (PROFILING == 1)
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                             &t_setNSdirichlet);
-                checkForCudaErrors("Post setNSdirichlet");
-                std::cout << "\n###### EPSILON AFTER setNSdirichlet ######"
+                checkForCudaErrors("Post setNSepsilonBottom");
+                /*std::cout << "\n###### EPSILON AFTER setNSdirichlet ######"
                     << std::endl;
                 transferNSepsilonFromGlobalDeviceMemory();
-                printNSarray(stdout, ns.epsilon, "epsilon");
+                printNSarray(stdout, ns.epsilon, "epsilon");*/
                 
                 setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_epsilon);
                 cudaThreadSynchronize();
                 checkForCudaErrors("Post setNSghostNodesFloat(dev_ns_epsilon)",
                         iter);
-                std::cout << "\n###### EPSILON AFTER setNSghostNodes ######"
+                /*std::cout << "\n###### EPSILON AFTER setNSghostNodes ######"
                     << std::endl;
                 transferNSepsilonFromGlobalDeviceMemory();
-                printNSarray(stdout, ns.epsilon, "epsilon");
+                printNSarray(stdout, ns.epsilon, "epsilon");*/
             }
 
             // Solve the system of epsilon using a Jacobi iterative solver.
@@ -1092,6 +1107,12 @@ __host__ void DEM::startTime()
                 cudaThreadSynchronize();
                 checkForCudaErrors("Post setNSghostNodesForcing", iter);*/
 
+                setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_epsilon);
+                cudaThreadSynchronize();
+                checkForCudaErrors("Post setNSghostNodesFloat(dev_ns_epsilon)",
+                        iter);
+
                 // Perform a single Jacobi iteration
                 if (PROFILING == 1)
                     startTimer(&kernel_tic);
@@ -1105,11 +1126,6 @@ __host__ void DEM::startTime()
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                             &t_jacobiIterationNS);
                 checkForCudaErrors("Post jacobiIterationNS", iter);
-                setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_epsilon_new);
-                cudaThreadSynchronize();
-                checkForCudaErrors("Post setNSghostNodesFloat(dev_ns_epsilon)",
-                        iter);
 
                 // Flip flop: swap new and current array pointers
                 /*Float* tmp         = dev_ns_epsilon;
@@ -1179,7 +1195,7 @@ __host__ void DEM::startTime()
                 reslog.close();
 
             // Find the new pressures and velocities
-            if (PROFILING == 1)
+            /*if (PROFILING == 1)
                 startTimer(&kernel_tic);
             updateNSvelocityPressure<<<dimGridFluid, dimBlockFluid>>>(
                     dev_ns_p,
@@ -1190,7 +1206,7 @@ __host__ void DEM::startTime()
             if (PROFILING == 1)
                 stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                         &t_updateNSvelocityPressure);
-            checkForCudaErrors("Post updateNSvelocityPressure", iter);
+            checkForCudaErrors("Post updateNSvelocityPressure", iter);*/
         }
 
         /*std::cout << "\n###### ITERATION "

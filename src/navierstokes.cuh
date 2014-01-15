@@ -14,7 +14,7 @@
 #include "constants.cuh"
 #include "debug.h"
 
-// Relaxation parameter, used in velocity prediction and pressure iteration
+// Solver parameter, used in velocity prediction and pressure iteration
 #define BETA 1.0
 
 // Initialize memory
@@ -151,9 +151,7 @@ __inline__ __device__ unsigned int idx(
 }
 
 // Set the initial guess of the values of epsilon.
-// The normalized residuals are given an initial value of 0, since the values at
-// the Dirichlet boundaries aren't written during the iterations.
-__global__ void setNSepsilon(Float* dev_ns_epsilon, Float* dev_ns_norm)
+__global__ void setNSepsilonInterior(Float* dev_ns_epsilon, Float value)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -161,20 +159,41 @@ __global__ void setNSepsilon(Float* dev_ns_epsilon, Float* dev_ns_norm)
     const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
 
     // check that we are not outside the fluid grid
-    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]-1) {
+    if (x < devC_grid.num[0] && y < devC_grid.num[1] &&
+            z > 0 && z < devC_grid.num[2]-1) {
         __syncthreads();
         const unsigned int cellidx = idx(x,y,z);
-        dev_ns_epsilon[cellidx] = 0.0;
-        dev_ns_norm[cellidx]    = 0.0;
+        dev_ns_epsilon[cellidx] = value;
     }
 }
 
-// Set the initial guess of the values of epsilon. Since the Dirichlet boundary
-// values aren't transfered during array swapping, the values also need to be
-// written to the new array of epsilons.
-__global__ void setNSdirichlet(
+// The normalized residuals are given an initial value of 0, since the values at
+// the Dirichlet boundaries aren't written during the iterations.
+__global__ void setNSnormZero(Float* dev_ns_norm)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // check that we are not outside the fluid grid
+    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
+        __syncthreads();
+        const unsigned int cellidx = idx(x,y,z);
+        dev_ns_norm[idx(x,y,z)]    = 0.0;
+    }
+}
+
+
+// Set the constant values of epsilon at the lower boundary.  Since the
+// Dirichlet boundary values aren't transfered during array swapping, the values
+// also need to be written to the new array of epsilons.  A value of 0 equals
+// the Dirichlet boundary condition: the new value should be identical to the
+// old value, i.e. the temporal gradient is 0
+__global__ void setNSepsilonBottom(
         Float* dev_ns_epsilon,
-        Float* dev_ns_epsilon_new)
+        Float* dev_ns_epsilon_new,
+        const Float value)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -183,29 +202,42 @@ __global__ void setNSdirichlet(
 
     // check that we are not outside the fluid grid, and at the z boundaries
     //if (x < devC_grid.num[0] && y < devC_grid.num[1] &&
-            //(z == devC_grid.num[2]-1 || z == 0)) {
+    //        (z == devC_grid.num[2]-1 || z == 0)) {
     // check that we are not outside the fluid grid, and at the lower z boundary
     if (x < devC_grid.num[0] && y < devC_grid.num[1] && z == 0) {
 
-        /*Float val;
-
-        if (z == 0)
-            val = 0.0;
-        if (z == devC_grid.num[2]-1)
-            val = devC_grid.num[2]-1;
-            //val = 0.0;*/
-
-        // the new value should be identical to the old value, i.e. the temporal
-        // gradient is 0
         __syncthreads();
         const unsigned int cellidx = idx(x,y,z);
-        dev_ns_epsilon[cellidx]     = 0.0;
-        dev_ns_epsilon_new[cellidx] = 0.0;
-        //dev_ns_epsilon[idx(x,y,z)]     = val;
-        //dev_ns_epsilon_new[idx(x,y,z)] = val;
+        dev_ns_epsilon[cellidx]     = value;
+        dev_ns_epsilon_new[cellidx] = value;
     }
 }
 
+// Set the constant values of epsilon at the lower boundary.  Since the
+// Dirichlet boundary values aren't transfered during array swapping, the values
+// also need to be written to the new array of epsilons.  A value of 0 equals
+// the Dirichlet boundary condition: the new value should be identical to the
+// old value, i.e. the temporal gradient is 0
+__global__ void setNSepsilonTop(
+        Float* dev_ns_epsilon,
+        Float* dev_ns_epsilon_new,
+        const Float value)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // check that we are not outside the fluid grid, and at the upper z boundary
+    if (x < devC_grid.num[0] && y < devC_grid.num[1] &&
+            z == devC_grid.num[2]-1) {
+
+        __syncthreads();
+        const unsigned int cellidx = idx(x,y,z);
+        dev_ns_epsilon[cellidx]     = value;
+        dev_ns_epsilon_new[cellidx] = value;
+    }
+}
 __device__ void copyNSvalsDev(
         unsigned int read, unsigned int write,
         Float* dev_ns_p, Float3* dev_ns_dp,
@@ -717,6 +749,7 @@ __global__ void setUpperPressureNS(
 
         // Determine the new epsilon boundary condition
         const Float epsilon = new_pressure - BETA*pressure;
+        //const Float epsilon = new_pressure;
 
         //printf("[%d,%d,%d]\tepsilon = %f\n", x,y,z, epsilon);
 
@@ -1295,9 +1328,10 @@ __global__ void findPredNSvelocities(
             - v*dphi/phi
             - div_phi_vi_v*devC_dt/phi;
 
+        //printf("[%d,%d,%d]\tv_p = %f\t%f\t%f,\tgrad_p = %f\t%f\t%f\n",
+                //x, y, z, v_p.x, v_p.y, v_p.z, grad_p.x, grad_p.y, grad_p.z);
+
         // Save the predicted velocity
-        //printf("[%d,%d,%d] v_p = %f\t%f\t%f,\tgrad_p = %f\t%f\t%f\n",
-         //       x, y, z, v_p.x, v_p.y, v_p.z, grad_p.x, grad_p.y, grad_p.z);
         __syncthreads();
         dev_ns_v_p[cellidx] = v_p;
     }
@@ -1453,8 +1487,8 @@ __global__ void jacobiIterationNS(
         const Float e_zp = dev_ns_epsilon[idx(x,y,z+1)];
 
         // Read the value of the forcing function
-        //const Float f = dev_ns_f[cellidx];
-        const Float f = 0.0;
+        const Float f = dev_ns_f[cellidx];
+        //const Float f = 0.0;
 
         // New value of epsilon in 3D update
         //*
@@ -1571,8 +1605,8 @@ __global__ void updateNSvelocityPressure(
 
         // Write new values
         __syncthreads();
-        //dev_ns_p[cellidx] = p;
-        dev_ns_p[cellidx] = epsilon;
+        dev_ns_p[cellidx] = p;
+        //dev_ns_p[cellidx] = epsilon;
         dev_ns_v[cellidx] = v;
     }
 }
