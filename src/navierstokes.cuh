@@ -17,6 +17,9 @@
 // Solver parameter, used in velocity prediction and pressure iteration
 #define BETA 0.0
 
+// Define the fluid density [kg/m^3]
+#define RHO 1000.0
+
 // Initialize memory
 void DEM::initNSmemDev(void)
 {
@@ -1303,19 +1306,15 @@ __global__ void findPredNSvelocities(
         const Float3 div_phi_vi_v = dev_ns_div_phi_vi_v[cellidx];
         const Float3 div_phi_tau  = dev_ns_div_phi_tau[cellidx];
 
-        // Fluid density
-        //const Float rho = 1000.0;
-        const Float rho = 1.0;
-
         // Particle interaction force
         //const Float3 f_i = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
         // Gravitational drag force on cell fluid mass
         //const Float3 g = MAKE_FLOAT3(0.0, 0.0, -10.0);
-        //const Float3 f_g = rho*dx*dy*dz*phi*g;
+        //const Float3 f_g = RHO*dx*dy*dz*phi*g;
         //const Float3 f_g
             //= MAKE_FLOAT3(devC_params.g[0], devC_params.g[1], devC_params.g[2])
-            //* rho * dx*dy*dz * phi;
+            //* RHO * dx*dy*dz * phi;
         const Float3 f_g = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
         // Find pressure gradient
@@ -1323,14 +1322,14 @@ __global__ void findPredNSvelocities(
 
         // Calculate the predicted velocity
         const Float3 v_p = v
-            - BETA/rho*grad_p*devC_dt/phi
-            + 1.0/rho*div_phi_tau*devC_dt/phi
+            - BETA/RHO*grad_p*devC_dt/phi
+            + 1.0/RHO*div_phi_tau*devC_dt/phi
             + devC_dt*f_g
             - v*dphi/phi
             - div_phi_vi_v*devC_dt/phi;
 
-        printf("[%d,%d,%d]\tv_p = %f\t%f\t%f,\tgrad_p = %f\t%f\t%f\n",
-                x, y, z, v_p.x, v_p.y, v_p.z, grad_p.x, grad_p.y, grad_p.z);
+        //printf("[%d,%d,%d]\tv_p = %f\t%f\t%f,\tgrad_p = %f\t%f\t%f\n",
+                //x, y, z, v_p.x, v_p.y, v_p.z, grad_p.x, grad_p.y, grad_p.z);
 
         // Save the predicted velocity
         __syncthreads();
@@ -1342,14 +1341,14 @@ __global__ void findPredNSvelocities(
 // the Jacobi iterations. The remaining, constant terms are only calculated
 // during the first iteration.
 // The forcing function is:
-//   f = (div(v_p)*rho)/dt
-//     + (grad(phi) dot v_p*rho)/(dt*phi)
-//     + (dphi*rho)/(dt*dt*phi)
+//   f = (div(v_p)*RHO)/dt
+//     + (grad(phi) dot v_p*RHO)/(dt*phi)
+//     + (dphi*RHO)/(dt*dt*phi)
 //     - (grad(phi) dot grad(epsilon))/phi
 // The following is calculated in the first Jacobi iteration and saved:
-//   f1 = (div(v_p)*rho)/dt
-//      + (grad(phi) dot v_p*rho)/(dt*phi)
-//      + (dphi*rho)/(dt*dt*phi)
+//   f1 = (div(v_p)*RHO)/dt
+//      + (grad(phi) dot v_p*RHO)/(dt*phi)
+//      + (dphi*RHO)/(dt*dt*phi)
 //   f2 = grad(phi)/phi
 // At each iteration, the value of the forcing function is found as:
 //   f = f1 - f2 dot grad(epsilon)
@@ -1397,7 +1396,6 @@ __global__ void findNSforcing(
             const Float3 v_p  = dev_ns_v_p[cellidx];
             const Float  phi  = dev_ns_phi[cellidx];
             const Float  dphi = dev_ns_dphi[cellidx];
-            const Float  rho  = 1000.0;
 
             // Calculate derivatives
             const Float  div_v_p
@@ -1407,9 +1405,9 @@ __global__ void findNSforcing(
 
             // Find forcing function coefficients
             //f1 = 0.0;
-            f1 = div_v_p*rho/devC_dt
-                + dot(grad_phi, v_p)*rho/(devC_dt*phi)
-                + dphi*rho/(devC_dt*devC_dt*phi);
+            f1 = div_v_p*RHO/devC_dt
+                + dot(grad_phi, v_p)*RHO/(devC_dt*phi)
+                + dphi*RHO/(devC_dt*devC_dt*phi);
             f2 = grad_phi/phi;
 
             //printf("[%d,%d,%d] dphi = %f\n", x,y,z, dphi);
@@ -1593,11 +1591,8 @@ __global__ void updateNSvelocityPressure(
         const Float3 grad_epsilon
             = gradient(dev_ns_epsilon, x, y, z, dx, dy, dz);
 
-        // Fluid density
-        const Float rho = 1000.0;
-
         // Find new velocity
-        Float3 v = v_p - devC_dt/rho*grad_epsilon;
+        Float3 v = v_p - devC_dt/RHO*grad_epsilon;
 
         /*if (z == 0 || z == nz-1) {
             p = p_old;

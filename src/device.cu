@@ -30,6 +30,12 @@
 
 //// Parameters for the iterative Jacobi solver
 
+// Solver parameter, used in velocity prediction and pressure iteration
+#define BETA 0.0
+
+// Define the fluid density [kg/m^3]
+#define RHO 1000.0
+
 // Tolerance criteria for the normalized residual
 //const double tolerance = 1.0e-3;
 const double tolerance = 1.0e-5;
@@ -1195,7 +1201,7 @@ __host__ void DEM::startTime()
                 reslog.close();
 
             // Find the new pressures and velocities
-            /*if (PROFILING == 1)
+            if (PROFILING == 1)
                 startTimer(&kernel_tic);
             updateNSvelocityPressure<<<dimGridFluid, dimBlockFluid>>>(
                     dev_ns_p,
@@ -1206,7 +1212,7 @@ __host__ void DEM::startTime()
             if (PROFILING == 1)
                 stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                         &t_updateNSvelocityPressure);
-            checkForCudaErrors("Post updateNSvelocityPressure", iter);*/
+            checkForCudaErrors("Post updateNSvelocityPressure", iter);
         }
 
         /*std::cout << "\n###### ITERATION "
