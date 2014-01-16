@@ -21,7 +21,7 @@ orig.time_file_dt = orig.time_dt*0.99
 orig.time_total = orig.time_dt*50
 orig.initFluid(nu = 0.0)
 orig.g[2] = 0.0
-orig.p_f[:,:,-1] = 1.1
+#orig.p_f[:,:,-1] = 1.1
 orig.writebin(verbose=False)
 #orig.run(verbose=False)
 orig.run(dry=True)
@@ -31,8 +31,10 @@ orig.writeVTKall()
 py = Spherebin(sid = orig.sid, fluid = True)
 ones = numpy.ones((orig.num))
 py.readlast(verbose = False)
-#compareNumpyArrays(ones, py.p_f, "Fluid pressure conservation:")
+compareNumpyArrays(ones, py.p_f, "Fluid pressure conservation:")
 
 # Convergence rate
-#it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
-#compare(it[:,1].sum(), 0.0, "Convergence rate:\t")
+it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
+compare(it[:,1].sum(), 0.0, "Convergence rate:\t")
+
+cleanup(orig)

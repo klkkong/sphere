@@ -20,6 +20,8 @@
 // 0.0: Do not use old pressures for fluid velocity prediction (Chorin's
 // original projection method, see Chorin (1968) and "Projection method (fluid
 // dynamics)" page on Wikipedia.
+// The best results precision and performance-wise are obtained by using BETA=0
+// and a very low tolerance criteria value (e.g. 1.0e-9)
 #define BETA 0.0
 
 // Define the fluid density [kg/m^3]
@@ -1324,7 +1326,13 @@ __global__ void findPredNSvelocities(
         const Float3 f_g = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
         // Find pressure gradient
-        const Float3 grad_p = gradient(dev_ns_p, x, y, z, dx, dy, dz);
+        Float3 grad_p = MAKE_FLOAT3(0.0, 0.0, 0.0);
+
+        // The pressure gradient is not needed in Chorin's projection method
+        // (BETA=0), so only has to be looked up in pressure-dependant
+        // projection methods
+        if (BETA > 0.0)
+            grad_p = gradient(dev_ns_p, x, y, z, dx, dy, dz);
 
         // Calculate the predicted velocity
         const Float3 v_p = v
