@@ -18,8 +18,8 @@ def compare(first, second, string):
     print(string + failed())
     return(1)
 
-def compareFloats(first, second, string, criterion=1e-5):
-    if abs(first-second) < criterion:
+def compareFloats(first, second, string, tolerance=1e-5):
+    if abs(first-second) < tolerance:
         print(string + passed())
     else :
         print(string + failed())
@@ -30,6 +30,13 @@ def compareFloats(first, second, string, criterion=1e-5):
 
 def compareNumpyArrays(first, second, string):
     if ((first == second).all()):
+        print(string + passed())
+    else :
+        print(string + failed())
+        return(1)
+
+def compareNumpyArraysClose(first, second, string, tolerance=1e-5):
+    if (numpy.allclose(first, second, atol=tolerance)):
         print(string + passed())
     else :
         print(string + failed())
