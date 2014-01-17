@@ -280,7 +280,7 @@ in `Chorin (1968)`_.
     + \frac{1}{\rho} \left[ \nabla \cdot (\phi^t \boldsymbol{\tau}^t) \right]_x
       \frac{\Delta t}{\phi}
     + \Delta t f_x
-    - v_x \frac{\Delta \phi}{\phi^t}
+    - v^t_x \frac{\Delta \phi}{\phi^t}
     - \nabla \cdot (\phi^t v_x^t \boldsymbol{v}^t) \frac{\Delta t}{\phi^t}
 
 Here, :math:`\Delta x` denotes the cell spacing. The velocity found

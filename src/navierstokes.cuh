@@ -1015,6 +1015,17 @@ __global__ void findNSstressTensor(
         const Float tau_yz =
             nu*((zp.y - zn.y)/(2.0*dz) + (yp.z - yn.z)/(2.0*dy));
 
+        /*
+        if (x == 0 && y == 0 && z == 0)
+            printf("nu = %f\n", nu);
+        if (tau_xz > 1.0e-6)
+            printf("%d,%d,%d\ttau_xx = %f\n", x,y,z, tau_xx);
+        if (tau_yz > 1.0e-6)
+            printf("%d,%d,%d\ttau_yy = %f\n", x,y,z, tau_yy);
+        if (tau_zz > 1.0e-6)
+            printf("%d,%d,%d\ttau_zz = %f\n", x,y,z, tau_zz);
+            */
+
         // Store values in global memory
         __syncthreads();
         dev_ns_tau[cellidx6]   = tau_xx;
