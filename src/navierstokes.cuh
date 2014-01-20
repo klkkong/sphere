@@ -1084,17 +1084,17 @@ __global__ void findNSdivphiviv(
         // Calculate the divergence: div(phi*v_i*v)
         const Float3 div_phi_vi_v = MAKE_FLOAT3(
                 // x
-                (phi_xp*v_xp.x*v_xp.x - phi_xn*v_xn.x*v_xn.x)/dx +
-                (phi_yp*v_yp.x*v_yp.y - phi_yn*v_yn.x*v_yn.y)/dy +
-                (phi_zp*v_zp.x*v_zp.z - phi_zn*v_zn.x*v_zn.z)/dz,
+                (phi_xp*v_xp.x*v_xp.x - phi_xn*v_xn.x*v_xn.x)/(2.0*dx) +
+                (phi_yp*v_yp.x*v_yp.y - phi_yn*v_yn.x*v_yn.y)/(2.0*dy) +
+                (phi_zp*v_zp.x*v_zp.z - phi_zn*v_zn.x*v_zn.z)/(2.0*dz),
                 // y
-                (phi_xp*v_xp.y*v_xp.x - phi_xn*v_xn.y*v_xn.x)/dx +
-                (phi_yp*v_yp.y*v_yp.y - phi_yn*v_yn.y*v_yn.y)/dy +
-                (phi_zp*v_zp.y*v_zp.z - phi_zn*v_zn.y*v_zn.z)/dz,
+                (phi_xp*v_xp.y*v_xp.x - phi_xn*v_xn.y*v_xn.x)/(2.0*dx) +
+                (phi_yp*v_yp.y*v_yp.y - phi_yn*v_yn.y*v_yn.y)/(2.0*dy) +
+                (phi_zp*v_zp.y*v_zp.z - phi_zn*v_zn.y*v_zn.z)/(2.0*dz),
                 // z
-                (phi_xp*v_xp.z*v_xp.x - phi_xn*v_xn.z*v_xn.x)/dx +
-                (phi_yp*v_yp.z*v_yp.y - phi_yn*v_yn.z*v_yn.y)/dy +
-                (phi_zp*v_zp.z*v_zp.z - phi_zn*v_zn.z*v_zn.z)/dz);
+                (phi_xp*v_xp.z*v_xp.x - phi_xn*v_xn.z*v_xn.x)/(2.0*dx) +
+                (phi_yp*v_yp.z*v_yp.y - phi_yn*v_yn.z*v_yn.y)/(2.0*dy) +
+                (phi_zp*v_zp.z*v_zp.z - phi_zn*v_zn.z*v_zn.z)/(2.0*dz));
 
         // Write divergence
         __syncthreads();

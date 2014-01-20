@@ -57,12 +57,12 @@ else:
 # Add viscosity which will limit the fluid flow. Used to test the stress tensor
 # in the fluid velocity prediction
 #print(numpy.mean(py.v_f[:,:,:,2]))
-orig.time_file_dt[0] = .1
-orig.time_total[0] = 1.
+orig.time_file_dt[0] = 1.0e-2
+orig.time_total[0] = 1.0e-1
 orig.initFluid(nu = 0.0)
-#orig.nu[0] = 1.0e7
-orig.nu[0] = 0.0
-orig.p_f[:,:,-1] = 100000.0
+orig.nu[0] = 4.0
+#orig.nu[0] = 0.0
+orig.p_f[:,:,-1] = 2.0
 #orig.time_total[0] = 0.01
 #orig.time_file_dt[0] = 0.001
 orig.writebin(verbose=False)
@@ -70,6 +70,25 @@ orig.run(verbose=True)
 #orig.writeVTKall()
 py.readlast(verbose=False)
 print(numpy.mean(py.v_f[:,:,:,2]))
+
+
+# Compare contributions to the velocity from diffusion and advection at top
+# boundary, assuming the flow is 1D along the z-axis, phi = 1, and dphi = 0.
+# This solution is analog to the predicted velocity and not constrained by the
+# conservation of mass.
+
+# The v_z values are read from py.v_f[0,0,:,2]
+dz = py.L[2]/py.num[2]
+
+# Central difference gradients
+dvz_dz = (py.v_f[0,0,1:,2] - py.v_f[0,0,:-1,2])/(2.0*dz)
+dvzvz_dz = (py.v_f[0,0,1:,2]**2 - py.v_f[0,0,:-1,2]**2)/dz  # denominator maybe wrong!
+
+# Diffusive contribution to velocity change
+dvz_diff = 2.0*py.nu/1000.0*dvz_dz*py.time_dt
+
+# Advective contribution to velocity change
+dvz_adv = dvzvz_dz*py.time_dt
 
 
 
