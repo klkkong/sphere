@@ -34,7 +34,8 @@ void DEM::readbin(const char *target)
     unsigned int i;
 
     // Open input file
-    // if target is string: std::ifstream ifs(target.c_str(), std::ios_base::binary);
+    // if target is string:
+    // std::ifstream ifs(target.c_str(), std::ios_base::binary);
     std::ifstream ifs(target, std::ios_base::binary);
     if (!ifs) {
         cerr << "Could not read input binary file '"
@@ -42,12 +43,21 @@ void DEM::readbin(const char *target)
         exit(1);
     }
 
+    Float version;
+    ifs.read(as_bytes(version), sizeof(Float));
+    if (version != VERSION) {
+        std::cerr << "Error: The input file '" << target << "' is written by "
+            "sphere version " << version << ", which is incompatible with this "
+            "version (" << VERSION << ")." << std::endl;
+        exit(1);
+    }
+
     ifs.read(as_bytes(nd), sizeof(nd));
     ifs.read(as_bytes(np), sizeof(np));
 
     if (nd != ND) {
-        cerr << "Dimensionality mismatch between dataset and this SPHERE program.\n"
-            << "The dataset is " << nd 
+        cerr << "Dimensionality mismatch between dataset and this SPHERE "
+            "program.\nThe dataset is " << nd 
             << "D, this SPHERE binary is " << ND << "D.\n"
             << "This execution is terminating." << endl;
         exit(-1); // Return unsuccessful exit status
@@ -66,8 +76,8 @@ void DEM::readbin(const char *target)
     ifs.read(as_bytes(time.file_dt), sizeof(time.file_dt));
     ifs.read(as_bytes(time.step_count), sizeof(time.step_count));
 
-    // For spatial vectors an array of Float4 vectors is chosen for best fit with 
-    // GPU memory handling. Vector variable structure: ( x, y, z, <empty>).
+    // For spatial vectors an array of Float4 vectors is chosen for best fit
+    // with GPU memory handling. Vector variable structure: ( x, y, z, <empty>).
     // Indexing starts from 0.
 
     // Allocate host arrays
@@ -264,6 +274,11 @@ void DEM::readbin(const char *target)
             }
         }
 
+        ifs.read(as_bytes(ns.rho), sizeof(Float));
+        ifs.read(as_bytes(ns.p_mod_A), sizeof(Float));
+        ifs.read(as_bytes(ns.p_mod_f), sizeof(Float));
+        ifs.read(as_bytes(ns.p_mod_phi), sizeof(Float));
+
         if (verbose == 1)
             cout << "Done" << std::endl;
     }
@@ -284,12 +299,15 @@ void DEM::writebin(const char *target)
     std::ofstream ofs(target, std::ios_base::binary);
     if (!ofs) {
         std::cerr << "could create output binary file '"
-            << target << std::endl;
-        exit(1); // Return unsuccessful exit status
+            << target << "'" << std::endl;
+        exit(1);
     }
 
     // If double precision: Values can be written directly
     if (sizeof(Float) == sizeof(double)) {
+
+        double version = VERSION;
+        ofs.write(as_bytes(version), sizeof(Float));
 
         ofs.write(as_bytes(nd), sizeof(nd));
         ofs.write(as_bytes(np), sizeof(np));
@@ -441,6 +459,11 @@ void DEM::writebin(const char *target)
                 }
             }
         }
+
+        ofs.write(as_bytes(ns.rho), sizeof(Float));
+        ofs.write(as_bytes(ns.p_mod_A), sizeof(Float));
+        ofs.write(as_bytes(ns.p_mod_f), sizeof(Float));
+        ofs.write(as_bytes(ns.p_mod_phi), sizeof(Float));
 
         // Close file if it is still open
         if (ofs.is_open())

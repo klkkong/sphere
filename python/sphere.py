@@ -12,7 +12,7 @@ numpy.seterr(all='warn', over='raise')
 
 class Spherebin:
     """
-    Class containing all data SPHERE data.
+    Class containing all SPHERE data.
 
     Contains functions for reading and writing binaries, as well as simulation
     setup and data analysis.
@@ -33,6 +33,7 @@ class Spherebin:
 
         """
 
+        self.version = numpy.ones(1, dtype=numpy.float64) * 0.36
         self.nd = numpy.ones(1, dtype=numpy.int32) * nd
         self.np = numpy.ones(1, dtype=numpy.uint32) * np
         self.sid = sid
@@ -82,7 +83,7 @@ class Spherebin:
         self.mu_ws    = numpy.ones(1, dtype=numpy.float64)
         self.mu_wd    = numpy.ones(1, dtype=numpy.float64)
         self.rho      = numpy.ones(1, dtype=numpy.float64) * 2600.0
-        self.contactmodel = numpy.ones(1, dtype=numpy.uint32) * 2    # contactLinear default
+        self.contactmodel = numpy.ones(1, dtype=numpy.uint32) * 2 # lin-visc-el
         self.kappa        = numpy.zeros(1, dtype=numpy.float64)
         self.db           = numpy.zeros(1, dtype=numpy.float64)
         self.V_b          = numpy.zeros(1, dtype=numpy.float64)
@@ -139,10 +140,16 @@ class Spherebin:
         self.dphi = numpy.zeros((self.num[0], self.num[1], self.num[2]),
                                dtype=numpy.float64)
 
+        self.rho_f = numpy.ones(1, dtype=numpy.float64) * 1.0e3
+        self.p_mod_A = numpy.zeros(0, dtype=numpy.float64)
+        self.p_mod_f = numpy.zeros(0, dtype=numpy.float64)
+        self.p_mod_phi = numpy.zeros(0, dtype=numpy.float64)
+
     def __cmp__(self, other):
         """ Called when to Spherebin objects are compared.
             Returns 0 if the values are identical """
         if ( (\
+                self.version == other.version and\
                 self.nd == other.nd and\
                 self.np == other.np and\
                 self.time_dt == other.time_dt and\
@@ -208,7 +215,11 @@ class Spherebin:
                 (self.v_f == other.v_f).all() and\
                 (self.p_f == other.p_f).all() and\
                 (self.phi == other.phi).all() and\
-                (self.dphi == other.dphi).all()\
+                (self.dphi == other.dphi).all() and\
+                self.rho_f == other.rho_f and\
+                self.p_mod_A == other.p_mod_A and\
+                self.p_mod_f == other.p_mod_f and\
+                self.p_mod_phi == other.p_mod_phi \
                 ).all() == True):
                     return 0 # All equal
         else:
@@ -261,16 +272,24 @@ class Spherebin:
                 print("Input file: {0}".format(targetbin))
             fh = open(targetbin, "rb")
 
+            # Read the file version
+            self.version = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+
             # Read the number of dimensions and particles
             self.nd = numpy.fromfile(fh, dtype=numpy.int32, count=1)
             self.np = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
 
             # Read the time variables
-            self.time_dt         = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-            self.time_current    = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-            self.time_total      = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-            self.time_file_dt    = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-            self.time_step_count = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
+            self.time_dt = \
+                    numpy.fromfile(fh, dtype=numpy.float64, count=1)
+            self.time_current =\
+                    numpy.fromfile(fh, dtype=numpy.float64, count=1)
+            self.time_total =\
+                    numpy.fromfile(fh, dtype=numpy.float64, count=1)
+            self.time_file_dt =\
+                    numpy.fromfile(fh, dtype=numpy.float64, count=1)
+            self.time_step_count =\
+                    numpy.fromfile(fh, dtype=numpy.uint32, count=1)
 
             # Allocate array memory for particles
             self.x       = numpy.empty((self.np, self.nd), dtype=numpy.float64)
@@ -285,40 +304,49 @@ class Spherebin:
             self.p       = numpy.empty(self.np, dtype=numpy.float64)
 
             # Read remaining data from binary
-            self.origo    = numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
-            self.L        = numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
-            self.num      = numpy.fromfile(fh, dtype=numpy.uint32, count=self.nd)
+            self.origo = numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
+            self.L = numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
+            self.num = numpy.fromfile(fh, dtype=numpy.uint32, count=self.nd)
             self.periodic = numpy.fromfile(fh, dtype=numpy.int32, count=1)
 
             # Per-particle vectors
             for i in range(self.np):
-                self.x[i,:]    = numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
-                self.radius[i] = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                self.x[i,:] =\
+                        numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
+                self.radius[i] =\
+                        numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
-            self.xysum = numpy.fromfile(fh, dtype=numpy.float64, count=self.np*2).reshape(self.np,2)
+            self.xysum = numpy.fromfile(fh, dtype=numpy.float64,\
+                    count=self.np*2).reshape(self.np,2)
 
             for i in range(self.np):
-                self.vel[i,:]  = numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
-                self.fixvel[i] = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                self.vel[i,:] =\
+                        numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
+                self.fixvel[i] =\
+                        numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
-            self.force = numpy.fromfile(fh, dtype=numpy.float64, count=self.np*self.nd).reshape(self.np, self.nd)
+            self.force = numpy.fromfile(fh, dtype=numpy.float64,\
+                    count=self.np*self.nd).reshape(self.np, self.nd)
 
-            self.angpos = numpy.fromfile(fh, dtype=numpy.float64, count=self.np*self.nd).reshape(self.np, self.nd)
-            self.angvel = numpy.fromfile(fh, dtype=numpy.float64, count=self.np*self.nd).reshape(self.np, self.nd)
-            self.torque = numpy.fromfile(fh, dtype=numpy.float64, count=self.np*self.nd).reshape(self.np, self.nd)
+            self.angpos = numpy.fromfile(fh, dtype=numpy.float64,\
+                    count=self.np*self.nd).reshape(self.np, self.nd)
+            self.angvel = numpy.fromfile(fh, dtype=numpy.float64,\
+                    count=self.np*self.nd).reshape(self.np, self.nd)
+            self.torque = numpy.fromfile(fh, dtype=numpy.float64,\
+                    count=self.np*self.nd).reshape(self.np, self.nd)
 
             if (esysparticle == True):
                 return
 
             # Per-particle single-value parameters
-            self.es_dot  = numpy.fromfile(fh, dtype=numpy.float64, count=self.np)
-            self.es      = numpy.fromfile(fh, dtype=numpy.float64, count=self.np)
-            self.ev_dot  = numpy.fromfile(fh, dtype=numpy.float64, count=self.np)
-            self.ev      = numpy.fromfile(fh, dtype=numpy.float64, count=self.np)
-            self.p       = numpy.fromfile(fh, dtype=numpy.float64, count=self.np)
+            self.es_dot = numpy.fromfile(fh, dtype=numpy.float64, count=self.np)
+            self.es     = numpy.fromfile(fh, dtype=numpy.float64, count=self.np)
+            self.ev_dot = numpy.fromfile(fh, dtype=numpy.float64, count=self.np)
+            self.ev     = numpy.fromfile(fh, dtype=numpy.float64, count=self.np)
+            self.p      = numpy.fromfile(fh, dtype=numpy.float64, count=self.np)
 
             # Constant, global physical parameters
-            self.g            = numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
+            self.g      = numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
             self.k_n          = numpy.fromfile(fh, dtype=numpy.float64, count=1)
             self.k_t          = numpy.fromfile(fh, dtype=numpy.float64, count=1)
             self.k_r          = numpy.fromfile(fh, dtype=numpy.float64, count=1)
@@ -341,7 +369,8 @@ class Spherebin:
             # Wall data
             self.nw      = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
             self.wmode   = numpy.empty(self.nw, dtype=numpy.int32)
-            self.w_n     = numpy.empty(self.nw*self.nd, dtype=numpy.float64).reshape(self.nw,self.nd)
+            self.w_n     = numpy.empty(self.nw*self.nd, dtype=numpy.float64)\
+                    .reshape(self.nw,self.nd)
             self.w_x     = numpy.empty(self.nw, dtype=numpy.float64)
             self.w_m     = numpy.empty(self.nw, dtype=numpy.float64)
             self.w_vel   = numpy.empty(self.nw, dtype=numpy.float64)
@@ -350,20 +379,23 @@ class Spherebin:
 
             self.wmode   = numpy.fromfile(fh, dtype=numpy.int32, count=self.nw)
             for i in range(self.nw):
-                self.w_n[i,:] = numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
+                self.w_n[i,:] =\
+                        numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
                 self.w_x[i]   = numpy.fromfile(fh, dtype=numpy.float64, count=1)
             for i in range(self.nw):
-                self.w_m[i]     = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                self.w_vel[i]   = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                self.w_force[i] = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                self.w_devs[i]  = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                self.w_m[i]   = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                self.w_vel[i] = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                self.w_force[i] =\
+                        numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                self.w_devs[i]= numpy.fromfile(fh, dtype=numpy.float64, count=1)
             if (devsmod == True):
                 self.w_devs_A = numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.w_devs_f = numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
             if (bonds == True):
                 # Inter-particle bonds
-                self.lambda_bar = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                self.lambda_bar =\
+                        numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.nb0 = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
                 self.sigma_b = numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.tau_b = numpy.fromfile(fh, dtype=numpy.float64, count=1)
@@ -416,6 +448,16 @@ class Spherebin:
                             self.dphi[x,y,z] = \
                             numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
+                if (self.version >= 0.36):
+                    self.rho_f =\
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    self.p_mod_A =\
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    self.p_mod_f =\
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    self.p_mod_phi =\
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+
         finally:
             if fh is not None:
                 fh.close()
@@ -430,6 +472,9 @@ class Spherebin:
                 print("Output file: {0}".format(targetbin))
 
             fh = open(targetbin, "wb")
+
+            # Write the current version number
+            fh.write(self.version.astype(numpy.float64))
 
             # Write the number of dimensions and particles
             fh.write(self.nd.astype(numpy.int32))
@@ -531,6 +576,11 @@ class Spherebin:
                             fh.write(self.phi[x,y,z].astype(numpy.float64))
                             fh.write(self.dphi[x,y,z].astype(numpy.float64))
 
+            fh.write(self.rho_f.astype(numpy.float64))
+            fh.write(self.p_mod_A.astype(numpy.float64))
+            fh.write(self.p_mod_f.astype(numpy.float64))
+            fh.write(self.p_mod_phi.astype(numpy.float64))
+
         finally:
             if fh is not None:
                 fh.close()
@@ -564,16 +614,20 @@ class Spherebin:
             # http://www.vtk.org/VTK/img/file-formats.pdf
 
             fh.write('<?xml version="1.0"?>\n') # XML header
-            fh.write('<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian">\n') # VTK header
+            fh.write('<VTKFile type="UnstructuredGrid" version="0.1" '
+                    + 'byte_order="LittleEndian">\n') # VTK header
             fh.write('  <UnstructuredGrid>\n')
-            fh.write('    <Piece NumberOfPoints="{}" NumberOfCells="0">\n'.format(self.np[0]))
+            fh.write('    <Piece NumberOfPoints="{}" '
+                    + 'NumberOfCells="0">\n'.format(self.np[0]))
 
             # Coordinates for each point (positions)
             fh.write('      <Points>\n')
-            fh.write('        <DataArray name="Position" type="Float32" NumberOfComponents="3" format="ascii">\n')
+            fh.write('        <DataArray name="Position" type="Float32" '
+                    + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} {} {} '.format(self.x[i,0], self.x[i,1], self.x[i,2]))
+                fh.write('{} {} {} '.format(\
+                        self.x[i,0], self.x[i,1], self.x[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
             fh.write('      </Points>\n')
@@ -582,7 +636,8 @@ class Spherebin:
             fh.write('      <PointData Scalars="Radius" Vectors="vector">\n')
 
             # Radii
-            fh.write('        <DataArray type="Float32" Name="Radius" format="ascii">\n')
+            fh.write('        <DataArray type="Float32" Name="Radius" '
+                    + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
                 fh.write('{} '.format(self.radius[i]))
@@ -590,7 +645,8 @@ class Spherebin:
             fh.write('        </DataArray>\n')
 
             # xysum.x
-            fh.write('        <DataArray type="Float32" Name="Xdisplacement" format="ascii">\n')
+            fh.write('        <DataArray type="Float32" Name="Xdisplacement" '
+                    + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
                 fh.write('{} '.format(self.xysum[i,0]))
@@ -598,7 +654,8 @@ class Spherebin:
             fh.write('        </DataArray>\n')
 
             # xysum.y
-            fh.write('        <DataArray type="Float32" Name="Ydisplacement" format="ascii">\n')
+            fh.write('        <DataArray type="Float32" Name="Ydisplacement" '
+                    + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
                 fh.write('{} '.format(self.xysum[i,1]))
@@ -606,15 +663,18 @@ class Spherebin:
             fh.write('        </DataArray>\n')
 
             # Velocity
-            fh.write('        <DataArray type="Float32" Name="Velocity" NumberOfComponents="3" format="ascii">\n')
+            fh.write('        <DataArray type="Float32" Name="Velocity" '
+                    + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} {} {} '.format(self.vel[i,0], self.vel[i,1], self.vel[i,2]))
+                fh.write('{} {} {} '.format(\
+                        self.vel[i,0], self.vel[i,1], self.vel[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
             # fixvel
-            fh.write('        <DataArray type="Float32" Name="FixedVel" format="ascii">\n')
+            fh.write('        <DataArray type="Float32" Name="FixedVel" '
+                    + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
                 fh.write('{} '.format(self.fixvel[i]))
@@ -622,39 +682,48 @@ class Spherebin:
             fh.write('        </DataArray>\n')
 
             # Force
-            fh.write('        <DataArray type="Float32" Name="Force" NumberOfComponents="3" format="ascii">\n')
+            fh.write('        <DataArray type="Float32" Name="Force" '
+                    + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} {} {} '.format(self.force[i,0], self.force[i,1], self.force[i,2]))
+                fh.write('{} {} {} '.format(\
+                        self.force[i,0], self.force[i,1], self.force[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
             # Angular Position
-            fh.write('        <DataArray type="Float32" Name="AngularPosition" NumberOfComponents="3" format="ascii">\n')
+            fh.write('        <DataArray type="Float32" Name="AngularPosition" '
+                    + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} {} {} '.format(self.angpos[i,0], self.angpos[i,1], self.angpos[i,2]))
+                fh.write('{} {} {} '.format(\
+                        self.angpos[i,0], self.angpos[i,1], self.angpos[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
             # Angular Velocity
-            fh.write('        <DataArray type="Float32" Name="AngularVelocity" NumberOfComponents="3" format="ascii">\n')
+            fh.write('        <DataArray type="Float32" Name="AngularVelocity" '
+                    + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} {} {} '.format(self.angvel[i,0], self.angvel[i,1], self.angvel[i,2]))
+                fh.write('{} {} {} '.format(\
+                        self.angvel[i,0], self.angvel[i,1], self.angvel[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
             # Torque
-            fh.write('        <DataArray type="Float32" Name="Torque" NumberOfComponents="3" format="ascii">\n')
+            fh.write('        <DataArray type="Float32" Name="Torque" '
+                    + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} {} {} '.format(self.torque[i,0], self.torque[i,1], self.torque[i,2]))
+                fh.write('{} {} {} '.format(\
+                        self.torque[i,0], self.torque[i,1], self.torque[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
             # Shear energy rate
-            fh.write('        <DataArray type="Float32" Name="ShearEnergyRate" format="ascii">\n')
+            fh.write('        <DataArray type="Float32" Name="ShearEnergyRate" '
+                    + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
                 fh.write('{} '.format(self.es_dot[i]))
@@ -662,7 +731,8 @@ class Spherebin:
             fh.write('        </DataArray>\n')
 
             # Shear energy
-            fh.write('        <DataArray type="Float32" Name="ShearEnergy" format="ascii">\n')
+            fh.write('        <DataArray type="Float32" Name="ShearEnergy" '
+                    + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
                 fh.write('{} '.format(self.es[i]))
@@ -670,7 +740,8 @@ class Spherebin:
             fh.write('        </DataArray>\n')
 
             # Viscous energy rate
-            fh.write('        <DataArray type="Float32" Name="ViscousEnergyRate" format="ascii">\n')
+            fh.write('        <DataArray type="Float32" '
+                    + 'Name="ViscousEnergyRate" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
                 fh.write('{} '.format(self.ev_dot[i]))
@@ -678,7 +749,8 @@ class Spherebin:
             fh.write('        </DataArray>\n')
 
             # Shear energy
-            fh.write('        <DataArray type="Float32" Name="ViscousEnergy" format="ascii">\n')
+            fh.write('        <DataArray type="Float32" Name="ViscousEnergy" '
+                    + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
                 fh.write('{} '.format(self.ev[i]))
@@ -686,7 +758,8 @@ class Spherebin:
             fh.write('        </DataArray>\n')
 
             # Pressure
-            fh.write('        <DataArray type="Float32" Name="Pressure" format="ascii">\n')
+            fh.write('        <DataArray type="Float32" Name="Pressure" '
+                    + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
                 fh.write('{} '.format(self.p[i]))
@@ -696,11 +769,14 @@ class Spherebin:
 
             fh.write('      </PointData>\n')
             fh.write('      <Cells>\n')
-            fh.write('        <DataArray type="Int32" Name="connectivity" format="ascii">\n')
+            fh.write('        <DataArray type="Int32" Name="connectivity"'
+                    + '"format="ascii">\n')
             fh.write('        </DataArray>\n')
-            fh.write('        <DataArray type="Int32" Name="offsets" format="ascii">\n')
+            fh.write('        <DataArray type="Int32" Name="offsets"'
+                    + 'format="ascii">\n')
             fh.write('        </DataArray>\n')
-            fh.write('        <DataArray type="UInt8" Name="types" format="ascii">\n')
+            fh.write('        <DataArray type="UInt8" Name="types"'
+                    + 'format="ascii">\n')
             fh.write('        </DataArray>\n')
             fh.write('      </Cells>\n')
             fh.write('    </Piece>\n')
@@ -796,13 +872,14 @@ class Spherebin:
             radius_mean = 440e-6,
             radius_variance = 8.8e-9,
             histogram = True):
-        """ Draw random particle radii from the selected probability distribution.
-            Specify mean radius and variance. The variance should be kept at a
-            very low value.
+        """ Draw random particle radii from the selected probability
+        distribution. Specify mean radius and variance. The variance should be
+        kept at a very low value.
         """
 
         if psd == 'logn': # Log-normal probability distribution
-            mu = math.log((radius_mean**2)/math.sqrt(radius_variance+radius_mean**2))
+            mu = math.log(\
+                    (radius_mean**2)/math.sqrt(radius_variance+radius_mean**2))
             sigma = math.sqrt(math.log(radius_variance/(radius_mean**2)+1))
             self.radius = numpy.random.lognormal(mu, sigma, self.np)
         if psd == 'uni':  # Uniform distribution
@@ -813,8 +890,10 @@ class Spherebin:
         # Show radii as histogram
         if (histogram == True):
             fig = plt.figure(figsize=(15,10), dpi=300)
-            figtitle = 'Particle size distribution, {0} particles'.format(self.np[0])
-            fig.text(0.5,0.95,figtitle,horizontalalignment='center',fontproperties=FontProperties(size=18))
+            figtitle = 'Particle size distribution, {0} particles'.format(\
+                    self.np[0])
+            fig.text(0.5,0.95,figtitle,horizontalalignment='center',\
+                    fontproperties=FontProperties(size=18))
             bins = 20
 
             # Create histogram
@@ -856,7 +935,9 @@ class Spherebin:
             raise Exception("Volumetric ratio seems wrong")
 
         if (verbose == True):
-            print("generateBimodalRadii created " + str(nlarge) + " large particles, and " + str(self.np[0] - nlarge) + " small")
+            print("generateBimodalRadii created " + str(nlarge)
+                    + " large particles, and " + str(self.np[0] - nlarge)
+                    + " small")
 
 
     def initRandomPos(self, g = numpy.array([0.0, 0.0, -9.80665]),
@@ -901,7 +982,8 @@ class Spherebin:
                             - (self.radius[i] + self.radius[j])
                     if (delta_len < 0.0):
                         overlaps = True
-            print("\rFinding non-overlapping particle positions, {0} % complete".format(numpy.ceil(i/self.np[0]*100)))
+            print("\rFinding non-overlapping particle positions, "
+                    + "{0} % complete".format(numpy.ceil(i/self.np[0]*100)))
 
         # Print newline
         print()
@@ -923,7 +1005,8 @@ class Spherebin:
 
         if (self.num[0] < 4 or self.num[1] < 4 or self.num[2] < 4):
             print("Error: The grid must be at least 3 cells in each direction")
-            print(" Grid: x={}, y={}, z={}".format(self.num[0], self.num[1], self.num[2]))
+            print(" Grid: x={}, y={}, z={}".format(\
+                    self.num[0], self.num[1], self.num[2]))
 
         # Init fluid arrays
         self.initFluid(nu=0.0)
@@ -978,7 +1061,8 @@ class Spherebin:
             self.w_x[0] = self.L[0]
 
 
-    # Initialize particle positions to regular, grid-like, non-overlapping configuration
+    # Initialize particle positions to regular, grid-like, non-overlapping
+    # configuration
     def initGridPos(self, g = numpy.array([0.0, 0.0, -9.80665]),
             gridnum = numpy.array([12, 12, 36]),
             periodic = 1,
@@ -1020,7 +1104,6 @@ class Spherebin:
         # Particle positions randomly distributed without overlap
         for i in range(self.np):
 
-
             # Find position in 3d mesh from linear index
             gridpos[0] = (i % (self.num[0]))
             gridpos[1] = numpy.floor(i/(self.num[0])) % (self.num[0])
@@ -1030,7 +1113,8 @@ class Spherebin:
             for d in range(self.nd):
                 self.x[i,d] = gridpos[d] * cellsize + 0.5*cellsize
 
-            if (self.periodic[0] == 1): # Allow pushing every 2.nd level out of lateral boundaries
+            # Allow pushing every 2.nd level out of lateral boundaries
+            if (self.periodic[0] == 1):
                 # Offset every second level
                 if (gridpos[2] % 2):
                     self.x[i,0] += 0.5*cellsize
@@ -1064,7 +1148,9 @@ class Spherebin:
 
         # World size
         r_max = numpy.amax(self.radius)
-        cellsize = 2.1 * r_max * 2 # Cells in grid 2*size to make space for random offset
+
+        # Cells in grid 2*size to make space for random offset
+        cellsize = 2.1 * r_max * 2
 
         # Check whether there are enough grid cells
         if (((coarsegrid[0]-1)*(coarsegrid[1]-1)*(coarsegrid[2]-1)) < self.np):
@@ -1081,8 +1167,8 @@ class Spherebin:
             gridpos[1] = numpy.floor(i/(coarsegrid[0])) % (coarsegrid[0])
             gridpos[2] = numpy.floor(i/((coarsegrid[0])*(coarsegrid[1])))
 
-            # Place particles in grid structure, and randomly adjust the positions
-            # within the oversized cells (uniform distribution)
+            # Place particles in grid structure, and randomly adjust the
+            # positions within the oversized cells (uniform distribution)
             for d in range(self.nd):
                 r = self.radius[i]*1.05
                 self.x[i,d] = gridpos[d] * cellsize \
@@ -1154,8 +1240,8 @@ class Spherebin:
 
 
     def random2bonds(self, ratio=0.3, spacing=-0.1):
-        """ Bond an amount of particles in two-particle clusters
-        @param ratio: The amount of particles to bond, values in ]0.0;1.0] (float)
+        """ Bond an amount of particles in two-particle clusters @param ratio:
+        The amount of particles to bond, values in ]0.0;1.0] (float)
         @param spacing: The distance relative to the sum of radii between bonded
         particles, neg. values denote an overlap. Values in ]0.0,inf[ (float).
         The particles should be initialized beforehand.
@@ -1163,10 +1249,13 @@ class Spherebin:
         specified, due to the random selection algorithm.
         """
 
-        bondparticles = numpy.unique(numpy.random.random_integers(0, high=self.np-1, size=int(self.np*ratio)))
+        bondparticles = numpy.unique(\
+                numpy.random.random_integers(0, high=self.np-1,\
+                size=int(self.np*ratio)))
         if (bondparticles.size % 2 > 0):
             bondparticles = bondparticles[:-1].copy()
-        bondparticles = bondparticles.reshape(int(bondparticles.size/2), 2).copy()
+        bondparticles =\
+                bondparticles.reshape(int(bondparticles.size/2), 2).copy()
 
         for n in numpy.arange(bondparticles.shape[0]):
             self.createBondPair(bondparticles[n,0], bondparticles[n,1], spacing)
@@ -1191,7 +1280,8 @@ class Spherebin:
         # Initialize upper wall
         self.nw = numpy.ones(1)
         self.wmode = numpy.zeros(1) # fixed BC
-        self.w_n = numpy.zeros(self.nw*self.nd, dtype=numpy.float64).reshape(self.nw,self.nd)
+        self.w_n = numpy.zeros(self.nw*self.nd, dtype=numpy.float64).reshape(\
+                self.nw,self.nd)
         self.w_n[0,2] = -1.0
         self.w_vel = numpy.zeros(1)
         self.w_force = numpy.zeros(1)
@@ -1226,7 +1316,8 @@ class Spherebin:
             self.w_x[idx] = numpy.array([xmax])
         else:
             self.w_x[idx] = numpy.array([xmin])
-        self.w_m[idx] = numpy.array([self.rho[0] * self.np * math.pi * (cellsize/2.0)**3])
+        self.w_m[idx] = numpy.array([self.rho[0]*self.np*math.pi \
+                *(cellsize/2.0)**3])
 
 
     def consolidate(self, deviatoric_stress = 10e3,
@@ -1270,7 +1361,7 @@ class Spherebin:
 
         # Initialize walls
         self.nw[0] = 5  # five dynamic walls
-        self.wmode  = numpy.array([2,1,1,1,1]) # define BCs (vel, stress, stress, ...)
+        self.wmode  = numpy.array([2,1,1,1,1]) # BCs (vel, stress, stress, ...)
         self.w_vel  = numpy.array([1,0,0,0,0]) * wvel
         self.w_devs = numpy.array([0,1,1,1,1]) * deviatoric_stress
         self.w_n = numpy.array(([0,0,-1], [-1,0,0], [1,0,0], [0,-1,0], [0,1,0]),
@@ -1281,7 +1372,6 @@ class Spherebin:
         for i in range(5):
             self.adjustWall(idx=i)
 
-        
 
     def shear(self,
             shear_strain_rate = 1,
@@ -1355,9 +1445,12 @@ class Spherebin:
         r_min = numpy.amin(self.radius)
 
         # Computational time step (O'Sullivan et al, 2003)
-        #self.time_dt[0] = 0.17 * math.sqrt((4.0/3.0 * math.pi * r_min**3 * self.rho[0]) / numpy.amax([self.k_n[:], self.k_t[:]]) )
+        #self.time_dt[0] = 0.17 * \
+                #math.sqrt((4.0/3.0 * math.pi * r_min**3 * self.rho[0]) \
+                #/ numpy.amax([self.k_n[:], self.k_t[:]]) )
         # Computational time step (Zhang and Campbell, 1992)
-        self.time_dt[0] = 0.075 * math.sqrt((V_sphere(r_min) * self.rho[0]) / numpy.amax([self.k_n[:], self.k_t[:]]) )
+        self.time_dt[0] = 0.075 * math.sqrt((V_sphere(r_min) * self.rho[0]) \
+                / numpy.amax([self.k_n[:], self.k_t[:]]) )
 
         # Time at start
         self.time_current[0] = current
@@ -1414,7 +1507,8 @@ class Spherebin:
         # Contact normal viscosity. Critical damping: 2*sqrt(m*k_n).
         # Normal force component elastic if nu = 0.0.
         #self.gamma_n = numpy.ones(self.np, dtype=numpy.float64) \
-                #          * nu_frac * 2.0 * math.sqrt(4.0/3.0 * math.pi * numpy.amin(self.radius)**3 \
+                #          * nu_frac * 2.0 * math.sqrt(4.0/3.0 * math.pi \
+                #          * numpy.amin(self.radius)**3 \
                 #          * self.rho[0] * self.k_n[0])
         self.gamma_n = numpy.ones(1, dtype=numpy.float64) * gamma_n
 
@@ -1425,15 +1519,18 @@ class Spherebin:
         self.gamma_r = numpy.ones(1, dtype=numpy.float64) * gamma_r
 
         # Contact static shear friction coefficient
-        #self.mu_s = numpy.ones(1, dtype=numpy.float64) * numpy.tan(numpy.radians(ang_s))
+        #self.mu_s = numpy.ones(1, dtype=numpy.float64) * \
+                #numpy.tan(numpy.radians(ang_s))
         self.mu_s = numpy.ones(1, dtype=numpy.float64) * mu_s
 
         # Contact dynamic shear friction coefficient
-        #self.mu_d = numpy.ones(1, dtype=numpy.float64) * numpy.tan(numpy.radians(ang_d))
+        #self.mu_d = numpy.ones(1, dtype=numpy.float64) * \
+                #numpy.tan(numpy.radians(ang_d))
         self.mu_d = numpy.ones(1, dtype=numpy.float64) * mu_d
 
         # Contact rolling friction coefficient
-        #self.mu_r = numpy.ones(1, dtype=numpy.float64) * numpy.tan(numpy.radians(ang_r))
+        #self.mu_r = numpy.ones(1, dtype=numpy.float64) * \
+                #numpy.tan(numpy.radians(ang_r))
         self.mu_r = numpy.ones(1, dtype=numpy.float64) * mu_r
 
         # Wall viscosities
@@ -1449,7 +1546,8 @@ class Spherebin:
         # Wettability, 0=perfect
         theta = 0.0;
         if (capillaryCohesion == 1):
-            self.kappa[0] = 2.0 * math.pi * gamma_t * numpy.cos(theta)  # Prefactor
+            # Prefactor
+            self.kappa[0] = 2.0 * math.pi * gamma_t * numpy.cos(theta)
             self.V_b[0] = 1e-12  # Liquid volume at bond
         else :
             self.kappa[0] = 0.0;  # Zero capillary force
@@ -1479,9 +1577,11 @@ class Spherebin:
             self.bonds_delta_n = numpy.append(self.bonds_delta_n, [0.0])
 
         if (hasattr(self, 'bonds_delta_t') == False):
-            self.bonds_delta_t = numpy.array([[0.0, 0.0, 0.0]], dtype=numpy.uint32)
+            self.bonds_delta_t = numpy.array([[0.0, 0.0, 0.0]],\
+                    dtype=numpy.uint32)
         else :
-            self.bonds_delta_t = numpy.vstack((self.bonds_delta_t, [0.0, 0.0, 0.0]))
+            self.bonds_delta_t = numpy.vstack((self.bonds_delta_t,\
+                    [0.0, 0.0, 0.0]))
 
         if (hasattr(self, 'bonds_omega_n') == False):
             self.bonds_omega_n = numpy.array([0.0], dtype=numpy.uint32)
@@ -1490,38 +1590,42 @@ class Spherebin:
             self.bonds_omega_n = numpy.append(self.bonds_omega_n, [0.0])
 
         if (hasattr(self, 'bonds_omega_t') == False):
-            self.bonds_omega_t = numpy.array([[0.0, 0.0, 0.0]], dtype=numpy.uint32)
+            self.bonds_omega_t = numpy.array([[0.0, 0.0, 0.0]],\
+                    dtype=numpy.uint32)
         else :
-            self.bonds_omega_t = numpy.vstack((self.bonds_omega_t, [0.0, 0.0, 0.0]))
+            self.bonds_omega_t = numpy.vstack((self.bonds_omega_t,\
+                    [0.0, 0.0, 0.0]))
 
         # Increment the number of bonds with one
         self.nb0 += 1
 
     def currentDevs(self):
         ''' Return current magnitude of the deviatoric normal stress '''
-        return w_devs[0] + w_devs_A * numpy.sin(2.0 * numpy.pi * self.time_current)
+        return w_devs[0] + w_devs_A*numpy.sin(2.0*numpy.pi*self.time_current)
 
     def energy(self, method):
         """ Calculate the sum of the energy components of all particles.
         """
 
         if method == 'pot':
-            m = numpy.ones(self.np) * 4.0/3.0 * math.pi * self.radius**3 * self.rho
-            return numpy.sum(m * math.sqrt(numpy.dot(self.g,self.g)) * self.x[:,2])
+            m = numpy.ones(self.np)*4.0/3.0*math.pi*self.radius**3*self.rho
+            return numpy.sum(m*math.sqrt(numpy.dot(self.g,self.g))*self.x[:,2])
 
         elif method == 'kin':
-            m = numpy.ones(self.np) * 4.0/3.0 * math.pi * self.radius**3 * self.rho
+            m = numpy.ones(self.np)*4.0/3.0*math.pi*self.radius**3*self.rho
             esum = 0.0
             for i in range(self.np):
-                esum += 0.5 * m[i] * math.sqrt(numpy.dot(self.vel[i,:],self.vel[i,:]))**2
+                esum += 0.5*m[i]*math.sqrt(\
+                        numpy.dot(self.vel[i,:],self.vel[i,:]))**2
             return esum
 
         elif method == 'rot':
-            m = numpy.ones(self.np) * 4.0/3.0 * math.pi * self.radius**3 * self.rho
+            m = numpy.ones(self.np)*4.0/3.0*math.pi*self.radius**3*self.rho
             esum = 0.0
             for i in range(self.np):
-                esum += 0.5 * 2.0/5.0 * m[i] * self.radius[i]**2 \
-                        * math.sqrt(numpy.dot(self.angvel[i,:],self.angvel[i,:]))**2
+                esum += 0.5*2.0/5.0*m[i]*self.radius[i]**2 \
+                        *math.sqrt(\
+                        numpy.dot(self.angvel[i,:],self.angvel[i,:]))**2
             return esum
 
         elif method == 'shear':
@@ -1538,14 +1642,20 @@ class Spherebin:
 
         elif method == 'bondpot':
             if (self.nb0 > 0):
-                R_bar = self.lambda_bar * numpy.minimum(self.radius[self.bonds[:,0]], self.radius[self.bonds[:,1]])
-                A = numpy.pi * R_bar**2
-                I = 0.25 * numpy.pi * R_bar**4
+                R_bar = self.lambda_bar*numpy.minimum(\
+                        self.radius[self.bonds[:,0]],\
+                        self.radius[self.bonds[:,1]])
+                A = numpy.pi*R_bar**2
+                I = 0.25*numpy.pi*R_bar**4
                 J = I*2.0
-                bondpot_fn = numpy.sum(0.5 * A * self.k_n * numpy.abs(self.bonds_delta_n)**2)
-                bondpot_ft = numpy.sum(0.5 * A * self.k_t * numpy.linalg.norm(self.bonds_delta_t)**2)
-                bondpot_tn = numpy.sum(0.5 * J * self.k_t * numpy.abs(self.bonds_omega_n)**2)
-                bondpot_tt = numpy.sum(0.5 * I * self.k_n * numpy.linalg.norm(self.bonds_omega_t)**2)
+                bondpot_fn = numpy.sum(\
+                        0.5*A*self.k_n*numpy.abs(self.bonds_delta_n)**2)
+                bondpot_ft = numpy.sum(\
+                        0.5*A*self.k_t*numpy.linalg.norm(self.bonds_delta_t)**2)
+                bondpot_tn = numpy.sum(\
+                        0.5*J*self.k_t*numpy.abs(self.bonds_omega_n)**2)
+                bondpot_tt = numpy.sum(\
+                        0.5*I*self.k_n*numpy.linalg.norm(self.bonds_omega_t)**2)
                 return bondpot_fn + bondpot_ft + bondpot_tn + bondpot_tt
             else :
                 return 0.0
@@ -1670,7 +1780,8 @@ class Spherebin:
             fh.write('#PBS -m ' + email_alerts + '\n')
             fh.write('CUDAPATH=' + cudapath + '\n')
             fh.write('export PATH=$CUDAPATH/bin:$PATH\n')
-            fh.write('export LD_LIBRARY_PATH=$CUDAPATH/lib64:$CUDAPATH/lib:$LD_LIBRARY_PATH\n')
+            fh.write('export LD_LIBRARY_PATH=$CUDAPATH/lib64'
+                    + ':$CUDAPATH/lib:$LD_LIBRARY_PATH\n')
             fh.write('echo "`whoami`@`hostname`"\n')
             fh.write('echo "Start at `date`"\n')
             fh.write('ORIGDIR=' + spheredir + '\n')
@@ -1693,7 +1804,8 @@ class Spherebin:
             lower_cutoff = 0.0,
             graphicsformat = "png",
             verbose=True):
-        'Render all output files that belong to the simulation, determined by sid.'
+        ''' Render all output files that belong to the simulation, determined by
+        sid.'''
 
         print("Rendering {} images with the raytracer".format(self.sid))
 
@@ -1703,15 +1815,15 @@ class Spherebin:
 
         # Render images using sphere raytracer
         if (method == "normal"):
-            subprocess.call("cd ..; for F in `ls output/" + self.sid + "*.bin`; do ./sphere " + quiet \
-                    + " --render $F; done" \
-                    , shell=True)
+            subprocess.call("cd ..; for F in `ls output/" + self.sid
+                    + "*.bin`; do ./sphere " + quiet
+                    + " --render $F; done", shell=True)
         else :
-            subprocess.call("cd ..; for F in `ls output/" + self.sid + "*.bin`; do ./sphere " + quiet \
-                    + " --method " + method + " {}".format(max_val) \
-                    + " -l {}".format(lower_cutoff) \
-                    + " --render $F; done" \
-                    , shell=True)
+            subprocess.call("cd ..; for F in `ls output/" + self.sid
+                    + "*.bin`; do ./sphere " + quiet
+                    + " --method " + method + " {}".format(max_val)
+                    + " -l {}".format(lower_cutoff)
+                    + " --render $F; done", shell=True)
 
         # Convert images to compressed format
         convert()
@@ -1725,13 +1837,15 @@ class Spherebin:
         qscale = 1,
         bitrate = 1800,
         verbose = False):
-        'Use ffmpeg to combine images to animation. All images should be rendered beforehand.'
+        ''' Use ffmpeg to combine images to animation. All images should be
+        rendered beforehand.'''
 
         video(self.sid, out_folder, video_format, graphics_folder, \
               graphics_format, fps, qscale, bitrate, verbose)
 
     def shearvel(self):
-        'Calculates and returns the shear velocity (gamma_dot) of the experiment'
+        ''' Calculates and returns the shear velocity (gamma_dot) of the
+        experiment'''
 
         # Find the fixed particles
         fixvel = numpy.nonzero(self.fixvel > 0.0)
@@ -1740,7 +1854,8 @@ class Spherebin:
         return self.vel[fixvel,0].max()
 
     def shearstrain(self):
-        'Calculates and returns the current shear strain (gamma) value of the experiment'
+        ''' Calculates and returns the current shear strain (gamma) value of the
+        experiment. '''
 
         # Current height
         w_x0 = self.w_x[0]
@@ -1797,7 +1912,8 @@ class Spherebin:
         # find the indexes of these contacts
         I = numpy.nonzero(data[:,6] > f_n_lim)
 
-        # loop through these contacts and find the strike and dip of the contacts
+        # loop through these contacts and find the strike and dip of the
+        # contacts
         strikelist = [] # strike direction of the normal vector, [0:360[
         diplist = [] # dip of the normal vector, [0:90]
         for i in I[0]:
@@ -1844,7 +1960,8 @@ class Spherebin:
     def bondsRose(self, imgformat = "pdf"):
         ''' Visualize strike- and dip angles of the bond pairs in a rose plot.
         '''
-        # loop through these contacts and find the strike and dip of the contacts
+        # loop through these contacts and find the strike and dip of the
+        # contacts
         strikelist = [] # strike direction of the normal vector, [0:360[
         diplist = [] # dip of the normal vector, [0:90]
         for n in numpy.arange(self.nb0):
@@ -1887,7 +2004,8 @@ class Spherebin:
         ax.scatter(strikelist, diplist, c='k', marker='+')
         ax.set_rmax(90)
         ax.set_rticks([])
-        plt.savefig("bonds-" + self.sid + "-rose." + imgformat, transparent=True)
+        plt.savefig("bonds-" + self.sid + "-rose." + imgformat,\
+                transparent=True)
 
     def status(self):
         ''' Show the current simulation status '''
@@ -2027,16 +2145,28 @@ class Spherebin:
                 # Save two arrows per particle
                 axlist.append(self.x[i,0]) # x starting point of arrow
                 axlist.append(self.x[i,0]) # x starting point of arrow
-                aylist.append(self.x[i,2] + r_circ*0.5) # y starting point of arrow
-                aylist.append(self.x[i,2] - r_circ*0.5) # y starting point of arrow
-                daxlist.append(self.angvel[i,1]*arrowscale) # delta x for arrow end point
-                daxlist.append(-self.angvel[i,1]*arrowscale) # delta x for arrow end point
+
+                # y starting point of arrow
+                aylist.append(self.x[i,2] + r_circ*0.5)
+
+                # y starting point of arrow
+                aylist.append(self.x[i,2] - r_circ*0.5)
+
+                # delta x for arrow end point
+                daxlist.append(self.angvel[i,1]*arrowscale)
+
+                # delta x for arrow end point
+                daxlist.append(-self.angvel[i,1]*arrowscale)
                 daylist.append(0.0) # delta y for arrow end point
                 daylist.append(0.0) # delta y for arrow end point
 
                 # Store linear velocity data
-                dvxlist.append(self.vel[i,0]*velarrowscale) # delta x for arrow end point
-                dvylist.append(self.vel[i,2]*velarrowscale) # delta y for arrow end point
+
+                # delta x for arrow end point
+                dvxlist.append(self.vel[i,0]*velarrowscale)
+
+                # delta y for arrow end point
+                dvylist.append(self.vel[i,2]*velarrowscale)
 
                 if (r_circ > self.radius[i]):
                     raise Exception("Error, circle radius is larger than the "
@@ -2118,7 +2248,8 @@ class Spherebin:
         slipvellist = [] # velocity of the slip
         for i in ilist:
 
-            # Loop through other particles, and check whether they are in contact
+            # Loop through other particles, and check whether they are in
+            # contact
             for j in ilist:
                 #if (i < j):
                 if (i != j):
@@ -2475,7 +2606,8 @@ def video(project,
         loglevel = "error"
 
     subprocess.call(\
-            "ffmpeg -qscale {0} -r {1} -b {2} -y ".format(qscale, fps, bitrate) \
+            "ffmpeg -qscale {0} -r {1} -b {2} -y ".format(\
+            qscale, fps, bitrate) \
             + "-loglevel " + loglevel + " " \
             + "-i " + graphics_folder + project + ".output%05d." \
             + graphics_format + " " \
@@ -2509,7 +2641,8 @@ def thinsectionVideo(project,
         loglevel = "error"
 
     subprocess.call(\
-            "ffmpeg -qscale {0} -r {1} -b {2} -y ".format(qscale, fps, bitrate) \
+            "ffmpeg -qscale {0} -r {1} -b {2} -y ".format(\
+            qscale, fps, bitrate) \
             + "-loglevel " + loglevel + " " \
             + "-i ../img_out/" + project + ".output%05d-ts-x1x3.png " \
             + "-vf 'crop=((in_w/2)*2):((in_h/2)*2)' " \
@@ -2790,7 +2923,7 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
 
                 # Upper wall position
                 tau_u = 0.0             # Peak shear stress
-                tau_u_shearstrain = 0.0 # Shear strain value of peak shear stress
+                tau_u_shearstrain = 0.0 # Shear strain value of peak sh. stress
 
                 fixvel = numpy.nonzero(sb.fixvel > 0.0)
                 #fixvel_upper = numpy.nonzero(sb.vel[fixvel,0] > 0.0)
@@ -2818,8 +2951,8 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
 
         # Plot stresses
         if (outformat != 'txt'):
-            shearinfo = "$\\tau_u$ = {:.3} Pa at $\gamma$ = {:.3}".format(tau_u,\
-                    tau_u_shearstrain)
+            shearinfo = "$\\tau_u$ = {:.3} Pa at $\gamma$ = {:.3}".format(\
+                    tau_u, tau_u_shearstrain)
             fig.text(0.5, 0.03, shearinfo, horizontalalignment='center',
                      fontproperties=FontProperties(size=14))
             ax1 = plt.subplot2grid((1, 2), (0, 0))
