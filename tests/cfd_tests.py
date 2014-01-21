@@ -71,7 +71,7 @@ orig.writebin(verbose=False)
 orig.run(verbose=False)
 #orig.writeVTKall()
 
-
+#py.plotConvergence()
 
 py.readsecond(verbose=False)
 #py.plotFluidDiffAdvPresZ()
@@ -120,5 +120,4 @@ if ((numpy.sign(dvz_diff) == numpy.sign(-dvz_adv)).all()):
 else:
     print("Diffusion-advection (2/2):" + failed())
 
-
-cleanup(orig)
+#cleanup(orig)

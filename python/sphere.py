@@ -2511,7 +2511,6 @@ class Spherebin:
         # Pressure gradient
         dp_dz = (self.p_f[0,0,1:] - self.p_f[0,0,:-1])/(2.0*dz)
 
-        #cellno = numpy.arange(self.num[2]-1)
         cellno = numpy.arange(1, self.num[2])
 
         fig = plt.figure()
@@ -2547,6 +2546,25 @@ class Spherebin:
                 self.sid, self.time_current[0], self.nu[0]))
         plt.clf()
         plt.close(fig)
+
+    def plotConvergence(self, format='png'):
+        ''' Plot the convergence evolution in the CFD solver. The plot is saved 
+        in the output folder with the file name <simulation ID>-conv.<format>.
+        :param format The plot file type. Default = 'png'.
+        '''
+
+        fig = plt.figure()
+        conv = numpy.loadtxt('../output/' + self.sid + '-conv.log')
+
+        plt.title('Convergence evolution in CFD solver in "' + self.sid + '"')
+        plt.xlabel('Time step')
+        plt.ylabel('Jacobi iterations')
+        plt.plot(conv[:,0], conv[:,1])
+        plt.grid()
+        plt.savefig('../output/' + self.sid + '-conv.' + format)
+        plt.clf()
+        plt.close(fig)
+
 
 def convert(graphicsformat = "png",
         folder = "../img_out"):
