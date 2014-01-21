@@ -37,6 +37,7 @@ orig.writebin(verbose=False)
 orig.run(verbose=False)
 py.readlast(verbose = False)
 ideal_grad_p_z = numpy.linspace(orig.p_f[0,0,0], orig.p_f[0,0,-1], orig.num[2])
+#py.writeVTKall()
 compareNumpyArraysClose(numpy.zeros((1,orig.num[2])),\
         ideal_grad_p_z - py.p_f[0,0,:],\
         "Pressure gradient:\t", tolerance=1.0e-2)
@@ -120,4 +121,47 @@ if ((numpy.sign(dvz_diff) == numpy.sign(-dvz_adv)).all()):
 else:
     print("Diffusion-advection (2/2):" + failed())
 
-#cleanup(orig)
+
+# Slow pressure modulation test
+orig.time_total[0] = 1.0e-1
+orig.time_file_dt[0] = 0.101*orig.time_total[0]
+orig.nu[0] = 0.0 # dont let diffusion add transient effects
+orig.setFluidPressureModulation(A=1.0, f=1.0/orig.time_total[0])
+orig.plotPrescribedFluidPressures()
+orig.writebin(verbose=False)
+orig.run(verbose=False)
+#py.readlast()
+#py.plotConvergence()
+#py.plotFluidDiffAdvPresZ()
+#py.writeVTKall()
+for it in range(py.status()): # gradient should be smooth in all output files
+    py.readstep(it)
+    ideal_grad_p_z =\
+            numpy.linspace(py.p_f[0,0,0], py.p_f[0,0,-1], py.num[2])
+    compareNumpyArraysClose(numpy.zeros((1,py.num[2])),\
+            ideal_grad_p_z - py.p_f[0,0,:],\
+            'Slow pressure modulation (' + 
+            str(it+1) + '/' + str(py.status()) + '):', tolerance=1.0e-1)
+
+# Fast pressure modulation test
+orig.time_total[0] = 1.0e-2
+orig.time_file_dt[0] = 0.101*orig.time_total[0]
+orig.nu[0] = 0.0 # dont let diffusion add transient effects
+orig.setFluidPressureModulation(A=1.0, f=1.0/orig.time_total[0])
+orig.plotPrescribedFluidPressures()
+orig.writebin(verbose=False)
+orig.run(verbose=False)
+#py.readlast()
+#py.plotConvergence()
+#py.plotFluidDiffAdvPresZ()
+#py.writeVTKall()
+for it in range(py.status()): # gradient should be smooth in all output files
+    py.readstep(it)
+    ideal_grad_p_z =\
+            numpy.linspace(py.p_f[0,0,0], py.p_f[0,0,-1], py.num[2])
+    compareNumpyArraysClose(numpy.zeros((1,py.num[2])),\
+            ideal_grad_p_z - py.p_f[0,0,:],\
+            'Fast pressure modulation (' + 
+            str(it+1) + '/' + str(py.status()) + '):', tolerance=1.0e-1)
+
+cleanup(orig)

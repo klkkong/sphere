@@ -733,11 +733,11 @@ __global__ void findPorositiesSphericalDev(
 }
 
 // Modulate the hydraulic pressure at the upper boundary
-__global__ void modUpperPressureNS(
+__global__ void setUpperPressureNS(
         Float* dev_ns_p,
         Float* dev_ns_epsilon,
         Float* dev_ns_epsilon_new,
-        const Float pressure_mod)
+        const Float new_pressure)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -753,7 +753,6 @@ __global__ void modUpperPressureNS(
 
         // Read the current pressure
         const Float pressure = dev_ns_p[cellidx];
-        const Float new_pressure = pressure + pressure_mod;
 
         // Determine the new epsilon boundary condition
         const Float epsilon = new_pressure - BETA*pressure;

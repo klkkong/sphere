@@ -141,9 +141,9 @@ class Spherebin:
                                dtype=numpy.float64)
 
         self.rho_f = numpy.ones(1, dtype=numpy.float64) * 1.0e3
-        self.p_mod_A = numpy.zeros(0, dtype=numpy.float64)
-        self.p_mod_f = numpy.zeros(0, dtype=numpy.float64)
-        self.p_mod_phi = numpy.zeros(0, dtype=numpy.float64)
+        self.p_mod_A = numpy.zeros(1, dtype=numpy.float64)
+        self.p_mod_f = numpy.zeros(1, dtype=numpy.float64)
+        self.p_mod_phi = numpy.zeros(1, dtype=numpy.float64)
 
     def __cmp__(self, other):
         """ Called when to Spherebin objects are compared.
@@ -2564,6 +2564,40 @@ class Spherebin:
         plt.savefig('../output/' + self.sid + '-conv.' + format)
         plt.clf()
         plt.close(fig)
+
+    def setFluidPressureModulation(self, A, f, phi=0.0):
+        ''' Set the parameters for the sine wave modulating the fluid pressures
+        at the top boundary. Note that a cos-wave is obtained with phi=pi/2.
+        :param A Fluctuation amplitude [Pa]
+        :param f Fluctuation frequency [Hz]
+        :param phi Fluctuation phase shift (default=0.0)
+        '''
+        self.p_mod_A[0] = A
+        self.p_mod_f[0] = f
+        self.p_mod_phi[0] = phi
+
+    def plotPrescribedFluidPressures(self, format='png'):
+        ''' Plot the prescribed fluid pressures through time that may be
+        modulated through the class parameters p_mod_A, p_mod_f, and p_mod_phi.
+        '''
+
+        fig = plt.figure()
+        conv = numpy.loadtxt('../output/' + self.sid + '-conv.log')
+
+        plt.title('Prescribed fluid pressures at the top in "' + self.sid + '"')
+        plt.xlabel('Time [s]')
+        plt.ylabel('Pressure [Pa]')
+        t = numpy.linspace(0,self.time_total,\
+                self.time_total/self.time_file_dt)
+        p = self.p_f[0,0,-1] + \
+                self.p_mod_A * \
+                numpy.sin(2.0*numpy.pi*self.p_mod_f*t + self.p_mod_phi)
+        plt.plot(t, p, '.-')
+        plt.grid()
+        plt.savefig('../output/' + self.sid + '-pres.' + format)
+        plt.clf()
+        plt.close(fig)
+
 
 
 def convert(graphicsformat = "png",

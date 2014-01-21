@@ -903,19 +903,22 @@ __host__ void DEM::startTime()
             checkForCudaErrors("Post setNSepsilonTop");
                 
             // Modulate the pressures at the upper boundary cells
-            Float pressure_mod =
-                ns.p_mod_A*sin(2.0*M_PI*ns.p_mod_f*time.current + ns.p_mod_phi);
-            modUpperPressureNS<<<dimGridFluid, dimBlockFluid>>>(
-                    dev_ns_p,
-                    dev_ns_epsilon,
-                    dev_ns_epsilon_new,
-                    pressure_mod);
-            cudaThreadSynchronize();
-            checkForCudaErrors("Post modUpperPressureNS", iter); //*/
-            /*std::cout << "\n###### EPSILON AFTER setUpperPressureNS ######"
-                << std::endl;
-            transferNSepsilonFromGlobalDeviceMemory();
-            printNSarray(stdout, ns.epsilon, "epsilon");*/
+            if ((ns.p_mod_A > 1.0e-5 || ns.p_mod_A < 1.0e-5) &&
+                    ns.p_mod_f > 1.0e-7) {
+                Float new_pressure = ns.p[idx(0,0,ns.nz-1)] + // original pressure
+                    ns.p_mod_A*sin(2.0*M_PI*ns.p_mod_f*time.current + ns.p_mod_phi);
+                setUpperPressureNS<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_p,
+                        dev_ns_epsilon,
+                        dev_ns_epsilon_new,
+                        new_pressure);
+                cudaThreadSynchronize();
+                checkForCudaErrors("Post setUpperPressureNS", iter); //*/
+                /*std::cout << "\n###### EPSILON AFTER setUpperPressureNS ######"
+                  << std::endl;
+                  transferNSepsilonFromGlobalDeviceMemory();
+                  printNSarray(stdout, ns.epsilon, "epsilon");*/
+            }
 
             // Set the values of the ghost nodes in the grid
             if (PROFILING == 1)
