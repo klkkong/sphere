@@ -4,6 +4,7 @@ from pytestutils import *
 import sphere
 import sys
 import numpy
+import matplotlib.pyplot as plt
 
 print("### CFD tests ###")
 
@@ -57,39 +58,122 @@ else:
 # Add viscosity which will limit the fluid flow. Used to test the stress tensor
 # in the fluid velocity prediction
 #print(numpy.mean(py.v_f[:,:,:,2]))
-orig.time_file_dt[0] = 1.0e-2
-orig.time_total[0] = 1.0e-1
+orig.time_file_dt[0] = 1.0e-4
+orig.time_total[0] = 1.0e-3
 orig.initFluid(nu = 0.0)
-orig.nu[0] = 4.0
+#orig.nu[0] = 4.0
 #orig.nu[0] = 0.0
+orig.nu[0] = 8.9e-4     # water
 orig.p_f[:,:,-1] = 2.0
 #orig.time_total[0] = 0.01
 #orig.time_file_dt[0] = 0.001
 orig.writebin(verbose=False)
-orig.run(verbose=True)
+orig.run(verbose=False)
 #orig.writeVTKall()
-py.readlast(verbose=False)
-print(numpy.mean(py.v_f[:,:,:,2]))
 
 
 # Compare contributions to the velocity from diffusion and advection at top
 # boundary, assuming the flow is 1D along the z-axis, phi = 1, and dphi = 0.
 # This solution is analog to the predicted velocity and not constrained by the
 # conservation of mass.
+def plotFluidDiffAdvPresZ(sb):
 
-# The v_z values are read from py.v_f[0,0,:,2]
+    # The v_z values are read from sb.v_f[0,0,:,2]
+    dz = sb.L[2]/sb.num[2]
+    rho = 1000.0 # fluid density
+
+    # Central difference gradients
+    dvz_dz = (sb.v_f[0,0,1:,2] - sb.v_f[0,0,:-1,2])/(2.0*dz)
+    dvzvz_dz = (sb.v_f[0,0,1:,2]**2 - sb.v_f[0,0,:-1,2]**2)/(2.0*dz)  # denominator maybe wrong!
+
+    # Diffusive contribution to velocity change
+    dvz_diff = 2.0*sb.nu/rho*dvz_dz*sb.time_dt
+
+    # Advective contribution to velocity change
+    dvz_adv = dvzvz_dz*sb.time_dt
+
+    # Pressure gradient
+    dp_dz = (sb.p_f[0,0,1:] - sb.p_f[0,0,:-1])/(2.0*dz)
+
+    cellno = numpy.arange(sb.num[2]-1)
+
+
+    fig = plt.figure()
+    plt.suptitle('{}, $i_t = {}$, t = {:.2e} s, $\\nu = {:.2e}$ Pa s'.format(\
+            sb.sid,
+            int(sb.time_current[0]/sb.time_dt[0]),
+            sb.time_current[0],
+            sb.nu[0]))
+
+    plt.subplot(1,2,1)
+    plt.title('Magnitude of velocity prediction terms', fontsize=10)
+    plt.ylabel('$i_z$')
+    plt.xlabel('$\Delta v_z$')
+    plt.plot(dvz_diff, cellno, label='Diffusion')
+    plt.plot(dvz_adv, cellno, label='Advection')
+    plt.plot(dvz_diff+dvz_adv, cellno, '--', label='Sum')
+    leg = plt.legend(loc='best', prop={'size':8})
+    leg.get_frame().set_alpha(0.5)
+    plt.grid()
+
+    plt.subplot(1,2,2)
+    plt.title('Pressure gradient', fontsize=10)
+    plt.ylabel('$i_z$')
+    plt.xlabel('$\Delta p_z$')
+    plt.plot(dp_dz, cellno)
+    plt.grid()
+
+    plt.savefig('../output/{}-diff_adv-t={:.2e}s.png'.format(\
+            sb.sid, sb.time_current[0]))
+    plt.clf()
+    plt.close(fig)
+
+py.readsecond(verbose=False)
+#plotFluidDiffAdvPresZ(py)
+
+# The v_z values are read from sb.v_f[0,0,:,2]
 dz = py.L[2]/py.num[2]
+rho = 1000.0 # fluid density
 
 # Central difference gradients
 dvz_dz = (py.v_f[0,0,1:,2] - py.v_f[0,0,:-1,2])/(2.0*dz)
-dvzvz_dz = (py.v_f[0,0,1:,2]**2 - py.v_f[0,0,:-1,2]**2)/dz  # denominator maybe wrong!
+dvzvz_dz = (py.v_f[0,0,1:,2]**2 - py.v_f[0,0,:-1,2]**2)/(2.0*dz)
 
 # Diffusive contribution to velocity change
-dvz_diff = 2.0*py.nu/1000.0*dvz_dz*py.time_dt
+dvz_diff = 2.0*py.nu/rho*dvz_dz*py.time_dt
 
 # Advective contribution to velocity change
 dvz_adv = dvzvz_dz*py.time_dt
 
+# Diffusive and advective terms should have opposite terms
+if ((numpy.sign(dvz_diff) == numpy.sign(-dvz_adv)).all()):
+    print("Diffusion-advection (1/2):" + passed())
+else:
+    print("Diffusion-advection (1/2):" + failed())
 
 
-#cleanup(orig)
+py.readlast(verbose=False)
+#plotFluidDiffAdvPresZ(py)
+
+# The v_z values are read from sb.v_f[0,0,:,2]
+dz = py.L[2]/py.num[2]
+rho = 1000.0 # fluid density
+
+# Central difference gradients
+dvz_dz = (py.v_f[0,0,1:,2] - py.v_f[0,0,:-1,2])/(2.0*dz)
+dvzvz_dz = (py.v_f[0,0,1:,2]**2 - py.v_f[0,0,:-1,2]**2)/(2.0*dz)
+
+# Diffusive contribution to velocity change
+dvz_diff = 2.0*py.nu/rho*dvz_dz*py.time_dt
+
+# Advective contribution to velocity change
+dvz_adv = dvzvz_dz*py.time_dt
+
+# Diffusive and advective terms should have opposite terms
+if ((numpy.sign(dvz_diff) == numpy.sign(-dvz_adv)).all()):
+    print("Diffusion-advection (2/2):" + passed())
+else:
+    print("Diffusion-advection (2/2):" + failed())
+
+
+cleanup(orig)
