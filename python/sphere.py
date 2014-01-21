@@ -2521,8 +2521,8 @@ class Spherebin:
                     self.time_current[0],
                     self.nu[0]))
 
-        plt.subplot(1,2,1)
-        plt.title('Magnitude of velocity prediction terms', fontsize=10)
+        plt.subplot(1,3,1)
+        plt.title('Velocity prediction terms', fontsize=10)
         plt.ylabel('$i_z$')
         plt.xlabel('$\Delta v_z$')
         plt.plot(dvz_diff, cellno, label='Diffusion')
@@ -2532,11 +2532,18 @@ class Spherebin:
         leg.get_frame().set_alpha(0.5)
         plt.grid()
 
-        plt.subplot(1,2,2)
+        plt.subplot(1,3,2)
         plt.title('Pressure gradient', fontsize=10)
         plt.ylabel('$i_z$')
         plt.xlabel('$\Delta p_z$')
         plt.plot(dp_dz, cellno)
+        plt.grid()
+
+        plt.subplot(1,3,3)
+        plt.title('Pressure', fontsize=10)
+        plt.ylabel('$i_z$')
+        plt.xlabel('$p_z$')
+        plt.plot(self.p_f[0,0,:], numpy.arange(self.num[2]))
         plt.grid()
 
         plt.savefig('../output/{}-diff_adv-t={:.2e}s.png'.format(\
