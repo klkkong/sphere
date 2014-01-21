@@ -2357,6 +2357,61 @@ class Spherebin:
         plt.savefig(self.sid + '-porosities.output{1:0=5}'.format(iteration)\
                 + '-y' + str(y) + '.' + imgformat, transparent=False)
 
+    def plotFluidDiffAdvPresZ(self):
+        ''' Compare contributions to the velocity from diffusion and advection
+        at top boundary, assuming the flow is 1D along the z-axis, phi = 1, and
+        dphi = 0. This solution is analog to the predicted velocity and not
+        constrained by the conservation of mass. '''
+
+        # The v_z values are read from self.v_f[0,0,:,2]
+        dz = self.L[2]/self.num[2]
+        rho = 1000.0 # fluid density
+
+        # Central difference gradients
+        dvz_dz = (self.v_f[0,0,1:,2] - self.v_f[0,0,:-1,2])/(2.0*dz)
+        dvzvz_dz = (self.v_f[0,0,1:,2]**2 - self.v_f[0,0,:-1,2]**2)/(2.0*dz)
+
+        # Diffusive contribution to velocity change
+        dvz_diff = 2.0*self.nu/rho*dvz_dz*self.time_dt
+
+        # Advective contribution to velocity change
+        dvz_adv = dvzvz_dz*self.time_dt
+
+        # Pressure gradient
+        dp_dz = (self.p_f[0,0,1:] - self.p_f[0,0,:-1])/(2.0*dz)
+
+        cellno = numpy.arange(self.num[2]-1)
+
+
+        fig = plt.figure()
+        plt.suptitle('{}, $i_t = {}$, t = {:.2e} s, $\\nu = {:.2e}$ Pa s'\
+                .format(self.sid,
+                    int(self.time_current[0]/self.time_dt[0]),
+                    self.time_current[0],
+                    self.nu[0]))
+
+        plt.subplot(1,2,1)
+        plt.title('Magnitude of velocity prediction terms', fontsize=10)
+        plt.ylabel('$i_z$')
+        plt.xlabel('$\Delta v_z$')
+        plt.plot(dvz_diff, cellno, label='Diffusion')
+        plt.plot(dvz_adv, cellno, label='Advection')
+        plt.plot(dvz_diff+dvz_adv, cellno, '--', label='Sum')
+        leg = plt.legend(loc='best', prop={'size':8})
+        leg.get_frame().set_alpha(0.5)
+        plt.grid()
+
+        plt.subplot(1,2,2)
+        plt.title('Pressure gradient', fontsize=10)
+        plt.ylabel('$i_z$')
+        plt.xlabel('$\Delta p_z$')
+        plt.plot(dp_dz, cellno)
+        plt.grid()
+
+        plt.savefig('../output/{}-diff_adv-t={:.2e}s.png'.format(\
+                self.sid, self.time_current[0]))
+        plt.clf()
+        plt.close(fig)
 
 
 def convert(graphicsformat = "png",
