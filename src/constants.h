@@ -17,7 +17,7 @@ const Float PI = 3.14159265358979;
 const unsigned int ND = 3;
 
 // Define source code version
-const Float VERS = 0.35;
+const double VERSION = 0.36;
 
 // Max. number of contacts per particle
 //const int NC = 16;

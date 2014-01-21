@@ -110,16 +110,19 @@ struct Walls {
 struct NavierStokes {
     int     nx, ny, nz;  // Number of cells in each dim
     Float   dx, dy, dz;  // Cell length in each dim
-    Float*  p;           // Cell hydraulic heads
-    //Float*  p_new;       // Cell hydraulic heads
+    Float*  p;           // Cell hydraulic pressures
     Float3* dp;          // Cell fluid velocity
     Float3* v;           // Cell fluid velocity
     Float3* v_p;         // Predicted fluid velocity
     Float*  phi;         // Cell porosity
     Float*  dphi;        // Cell porosity change
     Float*  norm;        // Normalized residual of epsilon updates
-    Float*  epsilon;
-    Float*  epsilon_new;
+    Float*  epsilon;     // Iterative solution parameter
+    Float*  epsilon_new; // Updated value of iterative solution parameter
+    Float   rho;         // Fluid density
+    Float   p_mod_A;     // Pressure modulation amplitude at top
+    Float   p_mod_f;     // Pressure modulation frequency at top
+    Float   p_mod_phi;   // Pressure modulation phase at top
 };
 
 

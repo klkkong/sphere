@@ -1,14 +1,3 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/*  SPHERE source code by Anders Damsgaard Christensen, 2010-12,       */
-/*  a 3D Discrete Element Method algorithm with CUDA GPU acceleration. */
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-// Licence: GNU Public License (GPL) v. 3. See license.txt.
-// See doc/sphere-doc.pdf for full documentation.
-// Compile with GNU make by typing 'make' in the src/ directory.               
-// SPHERE is called from the command line with './sphere_<architecture> projectname' 
-
-
 // Including library files
 #include <iostream>
 #include <string>
@@ -43,23 +32,28 @@ int main(const int argc, const char *argv[])
         // Display help if requested
         if (argvi == "-h" || argvi == "--help") {
             std::cout << argv[0] << ": sphere force chain visualizer\n"
-                << "Usage: " << argv[0] << " [OPTION[S]]... [FILE1 ...] > outputfile\nOptions:\n"
-                << "-h, --help\t\tPrint help\n"
-                << "-V, --version\t\tPrint version information and exit\n"
-                << "-v, --verbose\t\tDisplay in-/output file names\n"
-                << "-lc <val>, --lower-cutoff <val>\t\tOnly show contacts where the force value is greater\n"
-                << "-uc <val>, --upper-cutoff <val>\t\tOnly show contacts where the force value is greater\n"
-                << "-f, --format\t\tOutput format to stdout, interactive default. Possible values:\n"
-                << "\t\t\tinteractive, png, epslatex, epslatex-color\n"
-                << "-2d\t\t\twrite output as 2d coordinates (3d default)\n"
-                << "The values below the cutoff are not visualized, the values above are truncated to the upper limit\n"
+                << "Usage: " << argv[0] << " [OPTION[S]]... [FILE1 ...] > "
+                "outputfile\nOptions:\n"
+                "-h, --help\t\tPrint help\n"
+                "-V, --version\t\tPrint version information and exit\n"
+                "-v, --verbose\t\tDisplay in-/output file names\n"
+                "-lc <val>, --lower-cutoff <val>\t\tOnly show contacts where "
+                "the force value is greater\n"
+                "-uc <val>, --upper-cutoff <val>\t\tOnly show contacts where "
+                "the force value is greater\n"
+                "-f, --format\t\tOutput format to stdout, interactive default. "
+                "Possible values:\n"
+                "\t\t\tinteractive, png, epslatex, epslatex-color\n"
+                "-2d\t\t\twrite output as 2d coordinates (3d default)\n"
+                "The values below the cutoff are not visualized, the values "
+                "above are truncated to the upper limit\n"
                 << std::endl;
             return 0; // Exit with success
         }
 
         // Display version with fancy ASCII art
         else if (argvi == "-V" || argvi == "--version") {
-            std::cout << "Force chain calculator, sphere version " << VERS
+            std::cout << "Force chain calculator, sphere version " << VERSION
                 << std::endl;
             return 0;
         }
@@ -84,7 +78,8 @@ int main(const int argc, const char *argv[])
             nfiles++;
 
             if (verbose == 1)
-                std::cout << argv[0] << ": processing input file: " << argvi << std::endl;
+                std::cout << argv[0] << ": processing input file: " << argvi <<
+                    std::endl;
 
             // Create DEM class, read data from input binary, check values
             DEM dem(argvi, verbose, 0, 0, 0);
