@@ -24,10 +24,6 @@
 // and a very low tolerance criteria value (e.g. 1.0e-9)
 #define BETA 0.0
 
-// Define the fluid density [kg/m^3]
-#define RHO 1000.0
-
-
 // Initialize memory
 void DEM::initNSmemDev(void)
 {
@@ -736,12 +732,12 @@ __global__ void findPorositiesSphericalDev(
     }
 }
 
-// Set the hydraulic pressure at the upper boundary
-__global__ void setUpperPressureNS(
+// Modulate the hydraulic pressure at the upper boundary
+__global__ void modUpperPressureNS(
         Float* dev_ns_p,
         Float* dev_ns_epsilon,
         Float* dev_ns_epsilon_new,
-        const Float new_pressure)
+        const Float pressure_mod)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -757,17 +753,13 @@ __global__ void setUpperPressureNS(
 
         // Read the current pressure
         const Float pressure = dev_ns_p[cellidx];
+        const Float new_pressure = pressure + pressure_mod;
 
         // Determine the new epsilon boundary condition
         const Float epsilon = new_pressure - BETA*pressure;
-        //const Float epsilon = new_pressure;
-
-        //printf("[%d,%d,%d]\tepsilon = %f\n", x,y,z, epsilon);
 
         // Write the new pressure and epsilon values to the top boundary cells
         __syncthreads();
-        //dev_ns_epsilon[cellidx] = 6.666666;
-        //dev_ns_epsilon_new[cellidx] = 6.666666;
         dev_ns_epsilon[cellidx] = epsilon;
         dev_ns_epsilon_new[cellidx] = epsilon;
         dev_ns_p[cellidx] = new_pressure;
@@ -1294,6 +1286,7 @@ __global__ void findPredNSvelocities(
         Float*  dev_ns_dphi,            // in
         Float3* dev_ns_div_phi_vi_v,    // in
         Float3* dev_ns_div_phi_tau,     // in
+        Float   rho,
         Float3* dev_ns_v_p)             // out
 {
     // 3D thread index
@@ -1330,10 +1323,10 @@ __global__ void findPredNSvelocities(
 
         // Gravitational drag force on cell fluid mass
         //const Float3 g = MAKE_FLOAT3(0.0, 0.0, -10.0);
-        //const Float3 f_g = RHO*dx*dy*dz*phi*g;
+        //const Float3 f_g = rho*dx*dy*dz*phi*g;
         //const Float3 f_g
             //= MAKE_FLOAT3(devC_params.g[0], devC_params.g[1], devC_params.g[2])
-            //* RHO * dx*dy*dz * phi;
+            //* rho * dx*dy*dz * phi;
         const Float3 f_g = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
         // Find pressure gradient
@@ -1347,8 +1340,8 @@ __global__ void findPredNSvelocities(
 
         // Calculate the predicted velocity
         const Float3 v_p = v
-            - BETA/RHO*grad_p*devC_dt/phi
-            + 1.0/RHO*div_phi_tau*devC_dt/phi
+            - BETA/rho*grad_p*devC_dt/phi
+            + 1.0/rho*div_phi_tau*devC_dt/phi
             + devC_dt*f_g
             - v*dphi/phi
             - div_phi_vi_v*devC_dt/phi;
@@ -1366,14 +1359,14 @@ __global__ void findPredNSvelocities(
 // the Jacobi iterations. The remaining, constant terms are only calculated
 // during the first iteration.
 // The forcing function is:
-//   f = (div(v_p)*RHO)/dt
-//     + (grad(phi) dot v_p*RHO)/(dt*phi)
-//     + (dphi*RHO)/(dt*dt*phi)
+//   f = (div(v_p)*rho)/dt
+//     + (grad(phi) dot v_p*rho)/(dt*phi)
+//     + (dphi*rho)/(dt*dt*phi)
 //     - (grad(phi) dot grad(epsilon))/phi
 // The following is calculated in the first Jacobi iteration and saved:
-//   f1 = (div(v_p)*RHO)/dt
-//      + (grad(phi) dot v_p*RHO)/(dt*phi)
-//      + (dphi*RHO)/(dt*dt*phi)
+//   f1 = (div(v_p)*rho)/dt
+//      + (grad(phi) dot v_p*rho)/(dt*phi)
+//      + (dphi*rho)/(dt*dt*phi)
 //   f2 = grad(phi)/phi
 // At each iteration, the value of the forcing function is found as:
 //   f = f1 - f2 dot grad(epsilon)
@@ -1385,6 +1378,7 @@ __global__ void findNSforcing(
         Float*  dev_ns_phi,
         Float*  dev_ns_dphi,
         Float3* dev_ns_v_p,
+        Float   rho,
         unsigned int nijac)
 {
     // 3D thread index
@@ -1430,9 +1424,9 @@ __global__ void findNSforcing(
 
             // Find forcing function coefficients
             //f1 = 0.0;
-            f1 = div_v_p*RHO/devC_dt
-                + dot(grad_phi, v_p)*RHO/(devC_dt*phi)
-                + dphi*RHO/(devC_dt*devC_dt*phi);
+            f1 = div_v_p*rho/devC_dt
+                + dot(grad_phi, v_p)*rho/(devC_dt*phi)
+                + dphi*rho/(devC_dt*devC_dt*phi);
             f2 = grad_phi/phi;
 
             //printf("[%d,%d,%d] dphi = %f\n", x,y,z, dphi);
@@ -1580,7 +1574,8 @@ __global__ void updateNSvelocityPressure(
         Float*  dev_ns_p,
         Float3* dev_ns_v,
         Float3* dev_ns_v_p,
-        Float*  dev_ns_epsilon)
+        Float*  dev_ns_epsilon,
+        Float   rho)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -1617,7 +1612,7 @@ __global__ void updateNSvelocityPressure(
             = gradient(dev_ns_epsilon, x, y, z, dx, dy, dz);
 
         // Find new velocity
-        Float3 v = v_p - devC_dt/RHO*grad_epsilon;
+        Float3 v = v_p - devC_dt/rho*grad_epsilon;
 
         /*if (z == 0 || z == nz-1) {
             p = p_old;

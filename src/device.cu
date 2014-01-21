@@ -902,18 +902,16 @@ __host__ void DEM::startTime()
             cudaThreadSynchronize();
             checkForCudaErrors("Post setNSepsilonTop");
                 
-            // Set the pressures at the upper boundary cells
-            /*
-            Float new_pressure = 1.0 + (iter+1.0)*0.01;
-            //Float new_epsilon = 1.0 + (iter+1.0)*0.01;
-            setUpperPressureNS<<<dimGridFluid, dimBlockFluid>>>(
+            // Modulate the pressures at the upper boundary cells
+            Float pressure_mod =
+                ns.p_mod_A*sin(2.0*M_PI*ns.p_mod_f*time.current + ns.p_mod_phi);
+            modUpperPressureNS<<<dimGridFluid, dimBlockFluid>>>(
                     dev_ns_p,
                     dev_ns_epsilon,
                     dev_ns_epsilon_new,
-                    new_pressure);
-                    //new_epsilon);
+                    pressure_mod);
             cudaThreadSynchronize();
-            checkForCudaErrors("Post setUpperPressureNS", iter); //*/
+            checkForCudaErrors("Post modUpperPressureNS", iter); //*/
             /*std::cout << "\n###### EPSILON AFTER setUpperPressureNS ######"
                 << std::endl;
             transferNSepsilonFromGlobalDeviceMemory();
@@ -997,6 +995,7 @@ __host__ void DEM::startTime()
                     dev_ns_dphi,
                     dev_ns_div_phi_vi_v,
                     dev_ns_div_phi_tau,
+                    ns.rho,
                     dev_ns_v_p);
             cudaThreadSynchronize();
             if (PROFILING == 1)
@@ -1106,6 +1105,7 @@ __host__ void DEM::startTime()
                         dev_ns_phi,
                         dev_ns_dphi,
                         dev_ns_v_p,
+                        ns.rho,
                         nijac);
                 cudaThreadSynchronize();
                 if (PROFILING == 1)
@@ -1214,7 +1214,8 @@ __host__ void DEM::startTime()
                     dev_ns_p,
                     dev_ns_v,
                     dev_ns_v_p,
-                    dev_ns_epsilon);
+                    dev_ns_epsilon,
+                    ns.rho);
             cudaThreadSynchronize();
             if (PROFILING == 1)
                 stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
