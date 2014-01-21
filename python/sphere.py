@@ -2511,18 +2511,28 @@ class Spherebin:
         # Pressure gradient
         dp_dz = (self.p_f[0,0,1:] - self.p_f[0,0,:-1])/(2.0*dz)
 
-        cellno = numpy.arange(self.num[2]-1)
-
+        #cellno = numpy.arange(self.num[2]-1)
+        cellno = numpy.arange(1, self.num[2])
 
         fig = plt.figure()
-        plt.suptitle('{}, $i_t = {}$, t = {:.2e} s, $\\nu = {:.2e}$ Pa s'\
-                .format(self.sid,
-                    int(self.time_current[0]/self.time_dt[0]),
-                    self.time_current[0],
-                    self.nu[0]))
+        titlesize=12
 
         plt.subplot(1,3,1)
-        plt.title('Velocity prediction terms', fontsize=10)
+        plt.title('Pressure', fontsize=titlesize)
+        plt.ylabel('$i_z$')
+        plt.xlabel('$p_z$')
+        plt.plot(self.p_f[0,0,:], numpy.arange(self.num[2]))
+        plt.grid()
+
+        plt.subplot(1,3,2)
+        plt.title('Pressure gradient', fontsize=titlesize)
+        plt.ylabel('$i_z$')
+        plt.xlabel('$\Delta p_z$')
+        plt.plot(dp_dz, cellno)
+        plt.grid()
+
+        plt.subplot(1,3,3)
+        plt.title('Velocity prediction terms', fontsize=titlesize)
         plt.ylabel('$i_z$')
         plt.xlabel('$\Delta v_z$')
         plt.plot(dvz_diff, cellno, label='Diffusion')
@@ -2532,25 +2542,11 @@ class Spherebin:
         leg.get_frame().set_alpha(0.5)
         plt.grid()
 
-        plt.subplot(1,3,2)
-        plt.title('Pressure gradient', fontsize=10)
-        plt.ylabel('$i_z$')
-        plt.xlabel('$\Delta p_z$')
-        plt.plot(dp_dz, cellno)
-        plt.grid()
-
-        plt.subplot(1,3,3)
-        plt.title('Pressure', fontsize=10)
-        plt.ylabel('$i_z$')
-        plt.xlabel('$p_z$')
-        plt.plot(self.p_f[0,0,:], numpy.arange(self.num[2]))
-        plt.grid()
-
-        plt.savefig('../output/{}-diff_adv-t={:.2e}s.png'.format(\
-                self.sid, self.time_current[0]))
+        plt.tight_layout()
+        plt.savefig('../output/{}-diff_adv-t={:.2e}s-nu={:.2e}Pa-s.png'.format(\
+                self.sid, self.time_current[0], self.nu[0]))
         plt.clf()
         plt.close(fig)
-
 
 def convert(graphicsformat = "png",
         folder = "../img_out"):
