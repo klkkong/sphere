@@ -15,23 +15,23 @@ class Spherebin:
     Class containing all SPHERE data.
 
     Contains functions for reading and writing binaries, as well as simulation
-    setup and data analysis.
+    setup and data analysis. Most arrays are initialized to default values.
+
+    :param np: The number of particles to allocate memory for (default = 1)
+    :type np: int
+    :param nd: The number of spatial dimensions (default = 3). Note that 2D and
+        1D simulations currently are not possible.
+    :type nd: int
+    :param nw: The number of dynamic walls (default = 1)
+    :type nw: int
+    :param sid: The simulation id (default = 'unnamed'). The simulation files
+        will be written with this base name.
+    :type sid: str
+    :param fluid: Setup fluid simulation (default = False)
+    :type fluid: bool
     """
 
     def __init__(self, np = 1, nd = 3, nw = 1, sid = 'unnamed', fluid = False):
-        """
-        Constructor - initializes arrays
-
-        :param np: the number of particles to allocate memory for
-        :param nd: the number of spatial dimensions
-        :param nw: the number of dynamic walls
-        :param sid: the simulation id
-        :type np: int
-        :type nd: int
-        :type nw: int
-        :type sid: string
-
-        """
 
         self.version = numpy.ones(1, dtype=numpy.float64) * 0.36
         self.nd = numpy.ones(1, dtype=numpy.int32) * nd
@@ -240,9 +240,34 @@ class Spherebin:
             ev_dot = numpy.zeros(1),
             ev = numpy.zeros(1),
             p = numpy.zeros(1)):
-        ''' Add a single particle to the simulation object. The only required
-        parameters are the position (x), a length-three array, and the
-        radius (radius), a length-one array.
+        '''
+        Add a single particle to the simulation object. The only required
+        parameters are the position (x) and the radius (radius).
+
+        :param x: A vector pointing to the particle center coordinate.
+        :type x: numpy.array
+        :param radius: The particle radius
+        :type radius: float
+        :param vel: The particle linear velocity (default = [0,0,0])
+        :type vel: numpy.array
+        :param fixvel: Fix horizontal linear velocity (0: No, 1: Yes, default=0)
+        :type fixvel: float
+        :param angpos: The particle angular position (default = [0,0,0])
+        :type angpos: numpy.array
+        :param angvel: The particle angular velocity (default = [0,0,0])
+        :type angvel: numpy.array
+        :param torque: The particle torque (default = [0,0,0])
+        :type torque: numpy.array
+        :param es_dot: The particle shear energy loss rate (default = 0)
+        :type es_dot: float
+        :param es: The particle shear energy loss (default = 0)
+        :type es: float
+        :param ev_dot: The particle viscous energy rate loss (default = 0)
+        :type ev_dot: float
+        :param ev: The particle viscous energy loss (default = 0)
+        :type ev: float
+        :param p: The particle pressure (default = 0)
+        :type p: float
         '''
 
         self.np = self.np + 1
@@ -260,11 +285,29 @@ class Spherebin:
         self.es     = numpy.append(self.es, es)
         self.ev_dot = numpy.append(self.ev_dot, ev_dot)
         self.ev     = numpy.append(self.ev, ev)
-        self.p      = numpy.append(self.p, p)
+        self.p      = numpy.append(self.p, p) 
 
     def readbin(self, targetbin, verbose = True, bonds = True, devsmod = True,
             esysparticle = False):
-        'Reads a target SPHERE binary file'
+        '''
+        Reads a target SPHERE binary file.
+
+        :param targetbin: The path to the binary sphere file
+        :type targetbin: str
+        :param verbose: Show diagnostic information (default = True)
+        :type verbose: bool
+        :param bonds: The input file contains bond information (default = True).
+            This parameter should be true for all recent sphere versions.
+        :type bonds: bool
+        :param devsmod: The input file contains information about modulating
+            stresses at the top wall (default = True). This parameter should be
+            true for all recent sphere versions.
+        :type devsmod: bool
+        :param esysparticle: Stop reading the file after reading the kinematics,
+            which is useful for reading output files from other DEM programs.
+            (default = False)
+        :type esysparticle: bool
+        '''
 
         fh = None
         try :
