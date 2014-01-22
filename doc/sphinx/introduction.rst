@@ -31,6 +31,10 @@ The build requirements are:
   * The `GNU Compiler Collection <http://gcc.gnu.org/>`_ (GCC)
   * The `Nvidia CUDA toolkit and SDK <https://developer.nvidia.com/cuda-downloads>`_
 
+In Debian GNU/Linux, these dependencies can be installed by running::
+
+ $ sudo apt-get install build-essential cmake nvidia-cuda-toolkit
+
 The runtime requirements are:
   * A `CUDA-enabled GPU <http://www.nvidia.com/object/cuda_gpus.html>`_ with
     compute capability 1.1 or greater.
@@ -40,8 +44,13 @@ Optional tools, required for simulation setup and data processing:
   * `Python 2.7 <http://www.python.org/getit/releases/2.7/>`_
   * `Numpy <http://numpy.scipy.org>`_
   * `Matplotlib <http://matplotlib.org>`_
+  * `Python bindings for VTK <http://www.vtk.org>`_
   * `Imagemagick <http://www.imagemagick.org/script/index.php>`_
   * `ffmpeg <http://ffmpeg.org/>`_
+
+In Debian GNU/Linux, these dependencies can be installed by running::
+
+ $ sudo apt-get install python python-numpy python-matplotlib python-vtk imagemagick
 
 Optional tools, required for building the documentation:
   * `Sphinx <http://sphinx-doc.org>`_
@@ -51,6 +60,11 @@ Optional tools, required for building the documentation:
   * `Doxygen <http://www.stack.nl/~dimitri/doxygen/>`_
   * `Breathe <http://michaeljones.github.com/breathe/>`_
   * `dvipng <http://www.nongnu.org/dvipng/>`_
+
+In Debian GNU/Linux, these dependencies can be installed by running::
+
+ $ sudo apt-get install python-sphinx python-pip doxygen dvipng
+ $ sudo pip install breathe
 
 `Git <http://git-scm.com>`_ is used as the distributed version control system
 platform, and the source code is maintained at `Github
