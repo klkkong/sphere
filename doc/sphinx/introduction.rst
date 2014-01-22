@@ -112,6 +112,7 @@ Work flow
 ---------
 After compiling the *sphere* binary, the procedure of a creating and handling a
 simulation is typically arranged in the following order:
+
   * Setup of particle assemblage, physical properties and conditions using the
     Python API.
   * Execution of *sphere* software, which simulates the particle behavior as a
