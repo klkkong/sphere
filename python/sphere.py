@@ -506,7 +506,15 @@ class Spherebin:
                 fh.close()
 
     def writebin(self, folder = "../input/", verbose = True):
-        'Writes to a target SPHERE binary file'
+        '''
+        Writes a SPHERE binary file to the `../input/` folder by default. The
+        file name will be in the format `<self.sid>.bin`.
+
+        :param folder: The folder where to place the output binary file
+        :type folder: str
+        :param verbose: Show diagnostic information (default = True)
+        :type verbose: bool
+        '''
 
         fh = None
         try :
@@ -629,7 +637,9 @@ class Spherebin:
                 fh.close()
 
     def writeVTKall(self):
-        'Writes all output binaries from the simulation to VTK files'
+        '''
+        Writes all output binaries from the simulation to VTK files
+        '''
 
         lastfile = status(self.sid)
         sb = Spherebin(fluid = True)
@@ -643,7 +653,17 @@ class Spherebin:
 
 
     def writeVTK(self, folder = '../output/', verbose = True):
-        'Writes to a target VTK file'
+        '''
+        Writes a VTK file with particle information to the `../output/` folder
+        by default. The file name will be in the format `<self.sid>.vtu`.
+        The particles are visualized in ParaView using
+
+        :param folder: The folder where to place the output binary file (default
+            (default = '../output/')
+        :type folder: str
+        :param verbose: Show diagnostic information (default = True)
+        :type verbose: bool
+        '''
 
         fh = None
         try :
@@ -660,8 +680,8 @@ class Spherebin:
             fh.write('<VTKFile type="UnstructuredGrid" version="0.1" '
                     + 'byte_order="LittleEndian">\n') # VTK header
             fh.write('  <UnstructuredGrid>\n')
-            fh.write('    <Piece NumberOfPoints="{}" '
-                    + 'NumberOfCells="0">\n'.format(self.np[0]))
+            fh.write('    <Piece NumberOfPoints="{}" '.format(self.np[0])
+                    + 'NumberOfCells="0">\n')
 
             # Coordinates for each point (positions)
             fh.write('      <Points>\n')
@@ -813,7 +833,7 @@ class Spherebin:
             fh.write('      </PointData>\n')
             fh.write('      <Cells>\n')
             fh.write('        <DataArray type="Int32" Name="connectivity"'
-                    + '"format="ascii">\n')
+                    + 'format="ascii">\n')
             fh.write('        </DataArray>\n')
             fh.write('        <DataArray type="Int32" Name="offsets"'
                     + 'format="ascii">\n')
