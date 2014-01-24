@@ -636,9 +636,55 @@ class Spherebin:
             if fh is not None:
                 fh.close()
 
-    def writeVTKall(self):
+    def writeVTKall(self, verbose = True):
         '''
-        Writes all output binaries from the simulation to VTK files
+        Writes a VTK file for each simulation output file with particle
+        information and the fluid grid to the `../output/` folder by default.
+        The file name will be in the format `<self.sid>.vtu` and
+        `fluid-<self.sid>.vti`. The vtu files can be used to visualize the
+        particles, and the vti files for visualizing the fluid in ParaView.
+
+        After opening the vtu files, the particle fields will show up in the
+        "Properties" list. Press "Apply" to import all fields into the ParaView
+        session. The particles are visualized by selecting the imported data in
+        the "Pipeline Browser". Afterwards, click the "Glyph" button in the
+        "Common" toolbar, or go to the "Filters" menu, and press "Glyph" from
+        the "Common" list. Choose "Sphere" as the "Glyph Type", set "Radius" to
+        1.0, choose "scalar" as the "Scale Mode". Check the "Edit" checkbox, and
+        set the "Set Scale Factor" to 1.0. The field "Maximum Number of Points"
+        may be increased if the number of particles exceed the default value.
+        Finally press "Apply", and the particles will appear in the main window. 
+
+        The sphere resolution may be adjusted ("Theta resolution", "Phi
+        resolution") to increase the quality and the computational requirements
+        of the rendering.
+
+        The fluid grid is visualized by opening the vti files, and pressing
+        "Apply" to import all fluid field properties. To visualize the scalar
+        fields, such as the pressure, the porosity, the porosity change or the
+        velocity magnitude, choose "Surface" or "Surface With Edges" as the
+        "Representation". Choose the desired property as the "Coloring" field.
+        It may be desirable to show the color bar by pressing the "Show" button,
+        and "Rescale" to fit the color range limits to the current file. The
+        coordinate system can be displayed by checking the "Show Axis" field.
+        All adjustments by default require the "Apply" button to be pressed
+        before regenerating the view.
+
+        The fluid vector fields (e.g. the fluid velocity) can be visualizing by
+        e.g. arrows. To do this, select the fluid data in the "Pipeline
+        Browser". Press "Glyph" from the "Common" toolbar, or go to the
+        "Filters" mennu, and press "Glyph" from the "Common" list. Make sure
+        that "Arrow" is selected as the "Glyph type", and "Velocity" as the
+        "Vectors" value. Adjust the "Maximum Number of Points" to be at least as
+        big as the number of fluid cells in the grid. Press "Apply" to visualize
+        the arrows.
+
+        If several data files are generated for the same simulation (e.g. using
+        the writeVTKall() function), it is able to step the visualization
+        through time by using the ParaView controls.
+
+        :param verbose: Show diagnostic information (default = True)
+        :type verbose: bool
         '''
 
         lastfile = status(self.sid)
@@ -649,14 +695,34 @@ class Spherebin:
             sb.readbin(fn, verbose = False)
             sb.writeVTK()
             if (self.fluid == True):
-                sb.writeFluidVTK()
+                sb.writeFluidVTK(verbose=verbose)
 
 
     def writeVTK(self, folder = '../output/', verbose = True):
         '''
         Writes a VTK file with particle information to the `../output/` folder
         by default. The file name will be in the format `<self.sid>.vtu`.
-        The particles are visualized in ParaView using
+        The vtu files can be used to visualize the particles in ParaView.
+
+        After opening the vtu files, the particle fields will show up in the
+        "Properties" list. Press "Apply" to import all fields into the ParaView
+        session. The particles are visualized by selecting the imported data in
+        the "Pipeline Browser". Afterwards, click the "Glyph" button in the
+        "Common" toolbar, or go to the "Filters" menu, and press "Glyph" from
+        the "Common" list. Choose "Sphere" as the "Glyph Type", set "Radius" to
+        1.0, choose "scalar" as the "Scale Mode". Check the "Edit" checkbox, and
+        set the "Set Scale Factor" to 1.0. The field "Maximum Number of Points"
+        may be increased if the number of particles exceed the default value.
+        Finally press "Apply", and the particles will appear in the main window. 
+
+        The sphere resolution may be adjusted ("Theta resolution", "Phi
+        resolution") to increase the quality and the computational requirements
+        of the rendering. All adjustments by default require the "Apply" button
+        to be pressed before regenerating the view.
+
+        If several vtu files are generated for the same simulation (e.g. using
+        the writeVTKall() function), it is able to step the visualization
+        through time by using the ParaView controls.
 
         :param folder: The folder where to place the output binary file (default
             (default = '../output/')
@@ -832,13 +898,13 @@ class Spherebin:
 
             fh.write('      </PointData>\n')
             fh.write('      <Cells>\n')
-            fh.write('        <DataArray type="Int32" Name="connectivity"'
+            fh.write('        <DataArray type="Int32" Name="connectivity" '
                     + 'format="ascii">\n')
             fh.write('        </DataArray>\n')
-            fh.write('        <DataArray type="Int32" Name="offsets"'
+            fh.write('        <DataArray type="Int32" Name="offsets" '
                     + 'format="ascii">\n')
             fh.write('        </DataArray>\n')
-            fh.write('        <DataArray type="UInt8" Name="types"'
+            fh.write('        <DataArray type="UInt8" Name="types" '
                     + 'format="ascii">\n')
             fh.write('        </DataArray>\n')
             fh.write('      </Cells>\n')
@@ -851,7 +917,41 @@ class Spherebin:
                 fh.close()
 
     def writeFluidVTK(self, folder = '../output/', verbose = True):
-        'Writes fluid data to a target VTK file'
+        '''
+        Writes a VTK file for the fluid grid to the `../output/` folder by
+        default. The file name will be in the format `fluid-<self.sid>.vti`. The
+        vti files can be used for visualizing the fluid in ParaView.
+
+        The fluid grid is visualized by opening the vti files, and pressing
+        "Apply" to import all fluid field properties. To visualize the scalar
+        fields, such as the pressure, the porosity, the porosity change or the
+        velocity magnitude, choose "Surface" or "Surface With Edges" as the
+        "Representation". Choose the desired property as the "Coloring" field.
+        It may be desirable to show the color bar by pressing the "Show" button,
+        and "Rescale" to fit the color range limits to the current file. The
+        coordinate system can be displayed by checking the "Show Axis" field.
+        All adjustments by default require the "Apply" button to be pressed
+        before regenerating the view.
+
+        The fluid vector fields (e.g. the fluid velocity) can be visualizing by
+        e.g. arrows. To do this, select the fluid data in the "Pipeline
+        Browser". Press "Glyph" from the "Common" toolbar, or go to the
+        "Filters" mennu, and press "Glyph" from the "Common" list. Make sure
+        that "Arrow" is selected as the "Glyph type", and "Velocity" as the
+        "Vectors" value. Adjust the "Maximum Number of Points" to be at least as
+        big as the number of fluid cells in the grid. Press "Apply" to visualize
+        the arrows.
+
+        If several data files are generated for the same simulation (e.g. using
+        the writeVTKall() function), it is able to step the visualization
+        through time by using the ParaView controls.
+
+        :param folder: The folder where to place the output binary file (default
+            (default = '../output/')
+        :type folder: str
+        :param verbose: Show diagnostic information (default = True)
+        :type verbose: bool
+        '''
 
         filename = folder + '/fluid-' + self.sid + '.vti' # image grid
 
