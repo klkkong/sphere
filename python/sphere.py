@@ -11,8 +11,8 @@ import vtk
 numpy.seterr(all='warn', over='raise')
 
 class Spherebin:
-    """
-    Class containing all SPHERE data.
+    '''
+    Class containing all ``sphere`` data.
 
     Contains functions for reading and writing binaries, as well as simulation
     setup and data analysis. Most arrays are initialized to default values.
@@ -29,7 +29,7 @@ class Spherebin:
     :type sid: str
     :param fluid: Setup fluid simulation (default = False)
     :type fluid: bool
-    """
+    '''
 
     def __init__(self, np = 1, nd = 3, nw = 1, sid = 'unnamed', fluid = False):
 
@@ -146,8 +146,10 @@ class Spherebin:
         self.p_mod_phi = numpy.zeros(1, dtype=numpy.float64)
 
     def __cmp__(self, other):
-        """ Called when to Spherebin objects are compared.
-            Returns 0 if the values are identical """
+        '''
+        Called when to Spherebin objects are compared. Returns 0 if the values
+        are identical.
+        '''
         if ( (\
                 self.version == other.version and\
                 self.nd == other.nd and\
@@ -290,18 +292,21 @@ class Spherebin:
     def readbin(self, targetbin, verbose = True, bonds = True, devsmod = True,
             esysparticle = False):
         '''
-        Reads a target SPHERE binary file.
+        Reads a target ``sphere`` binary file.
 
-        :param targetbin: The path to the binary sphere file
+        See also :func:`writebin()`, :func:`readfirst()`, :func:`readlast()`,
+        :func:`readsecond`, and :func:`readstep`.
+
+        :param targetbin: The path to the binary ``sphere`` file
         :type targetbin: str
         :param verbose: Show diagnostic information (default = True)
         :type verbose: bool
         :param bonds: The input file contains bond information (default = True).
-            This parameter should be true for all recent sphere versions.
+            This parameter should be true for all recent ``sphere`` versions.
         :type bonds: bool
         :param devsmod: The input file contains information about modulating
             stresses at the top wall (default = True). This parameter should be
-            true for all recent sphere versions.
+            true for all recent ``sphere`` versions.
         :type devsmod: bool
         :param esysparticle: Stop reading the file after reading the kinematics,
             which is useful for reading output files from other DEM programs.
@@ -507,8 +512,10 @@ class Spherebin:
 
     def writebin(self, folder = "../input/", verbose = True):
         '''
-        Writes a SPHERE binary file to the `../input/` folder by default. The
-        file name will be in the format `<self.sid>.bin`.
+        Writes a ``sphere`` binary file to the ``../input/`` folder by default. The
+        file name will be in the format ``<self.sid>.bin``.
+
+        See also :func:`readbin()`.
 
         :param folder: The folder where to place the output binary file
         :type folder: str
@@ -639,9 +646,9 @@ class Spherebin:
     def writeVTKall(self, verbose = True):
         '''
         Writes a VTK file for each simulation output file with particle
-        information and the fluid grid to the `../output/` folder by default.
-        The file name will be in the format `<self.sid>.vtu` and
-        `fluid-<self.sid>.vti`. The vtu files can be used to visualize the
+        information and the fluid grid to the ``../output/`` folder by default.
+        The file name will be in the format ``<self.sid>.vtu`` and
+        ``fluid-<self.sid>.vti``. The vtu files can be used to visualize the
         particles, and the vti files for visualizing the fluid in ParaView.
 
         After opening the vtu files, the particle fields will show up in the
@@ -680,7 +687,7 @@ class Spherebin:
         the arrows.
 
         If several data files are generated for the same simulation (e.g. using
-        the writeVTKall() function), it is able to step the visualization
+        the :func:`writeVTKall()` function), it is able to step the visualization
         through time by using the ParaView controls.
 
         :param verbose: Show diagnostic information (default = True)
@@ -700,8 +707,8 @@ class Spherebin:
 
     def writeVTK(self, folder = '../output/', verbose = True):
         '''
-        Writes a VTK file with particle information to the `../output/` folder
-        by default. The file name will be in the format `<self.sid>.vtu`.
+        Writes a VTK file with particle information to the ``../output/`` folder
+        by default. The file name will be in the format ``<self.sid>.vtu``.
         The vtu files can be used to visualize the particles in ParaView.
 
         After opening the vtu files, the particle fields will show up in the
@@ -721,8 +728,8 @@ class Spherebin:
         to be pressed before regenerating the view.
 
         If several vtu files are generated for the same simulation (e.g. using
-        the writeVTKall() function), it is able to step the visualization
-        through time by using the ParaView controls.
+        the :func:``writeVTKall()`` function), it is able to step the
+        visualization through time by using the ParaView controls.
 
         :param folder: The folder where to place the output binary file (default
             (default = '../output/')
@@ -918,9 +925,9 @@ class Spherebin:
 
     def writeFluidVTK(self, folder = '../output/', verbose = True):
         '''
-        Writes a VTK file for the fluid grid to the `../output/` folder by
-        default. The file name will be in the format `fluid-<self.sid>.vti`. The
-        vti files can be used for visualizing the fluid in ParaView.
+        Writes a VTK file for the fluid grid to the ``../output/`` folder by
+        default. The file name will be in the format ``fluid-<self.sid>.vti``.
+        The vti files can be used for visualizing the fluid in ParaView.
 
         The fluid grid is visualized by opening the vti files, and pressing
         "Apply" to import all fluid field properties. To visualize the scalar
@@ -943,8 +950,8 @@ class Spherebin:
         the arrows.
 
         If several data files are generated for the same simulation (e.g. using
-        the writeVTKall() function), it is able to step the visualization
-        through time by using the ParaView controls.
+        the :func:`writeVTKall()` function), it is able to step the
+        visualization through time by using the ParaView controls.
 
         :param folder: The folder where to place the output binary file (default
             (default = '../output/')
@@ -1012,21 +1019,60 @@ class Spherebin:
 
 
     def readfirst(self, verbose=True):
-        ''' Read first output file of self.sid '''
+        '''
+        Read the first output file from the ``../output/`` folder, corresponding
+        to the object simulation id (``self.sid``).
+
+        :param verbose: Display diagnostic information (default = True)
+        :type verbose: bool
+
+        See also :func:`readbin()`, :func:`readlast()`, :func:`readsecond`, and
+        :func:`readstep`.
+        '''
+
         fn = "../output/{0}.output00000.bin".format(self.sid)
         self.readbin(fn, verbose)
 
     def readsecond(self, verbose=True):
-        ''' Read second output file of self.sid '''
+        '''
+        Read the second output file from the ``../output/`` folder,
+        corresponding to the object simulation id (``self.sid``).
+
+        :param verbose: Display diagnostic information (default = True)
+        :type verbose: bool
+
+        See also :func:`readbin()`, :func:`readfirst()`, :func:`readlast()`,
+        and :func:`readstep`.
+        '''
         fn = "../output/{0}.output00001.bin".format(self.sid)
         self.readbin(fn, verbose)
 
     def readstep(self, step, verbose=True):
-        ''' Read output binary from time step 'step' from output/ folder. '''
+        '''
+        Read a output file from the ``../output/`` folder, corresponding
+        to the object simulation id (``self.sid``).
+
+        :param step: The output file number to read, starting from 0.
+        :type step: int
+        :param verbose: Display diagnostic information (default = True)
+        :type verbose: bool
+
+        See also :func:`readbin()`, :func:`readfirst()`, :func:`readlast()`,
+        and :func:`readsecond`.
+        '''
         fn = "../output/{0}.output{1:0=5}.bin".format(self.sid, step)
 
     def readlast(self, verbose=True):
-        ''' Read last output binary of self.sid from output/ folder. '''
+        '''
+        Read the last output file from the ``../output/`` folder, corresponding
+        to the object simulation id (``self.sid``).
+
+        :param verbose: Display diagnostic information (default = True)
+        :type verbose: bool
+
+        See also :func:`readbin()`, :func:`readfirst()`, :func:`readsecond`, and
+        :func:`readstep`.
+        '''
         lastfile = status(self.sid)
         fn = "../output/{0}.output{1:0=5}.bin".format(self.sid, lastfile)
         self.readbin(fn, verbose)
@@ -1035,10 +1081,29 @@ class Spherebin:
             radius_mean = 440e-6,
             radius_variance = 8.8e-9,
             histogram = True):
-        """ Draw random particle radii from the selected probability
-        distribution. Specify mean radius and variance. The variance should be
-        kept at a very low value.
-        """
+        '''
+        Draw random particle radii from a selected probability distribution.
+        The larger the variance of radii is, the slower the computations will
+        run. The reason is two-fold: The smallest particle dictates the time
+        step length, where smaller particles cause shorter time steps. At the
+        same time, the largest particle determines the sorting cell size, where
+        larger particles cause larger cells. Larger cells are likely to contain
+        more particles, causing more contact checks.
+
+        :param psd: The particle side distribution. One possible value is
+            ``logn``, which is a log-normal probability distribution, suitable
+            for approximating well-sorted, coarse sediments. The other possible
+            value is ``uni``, which is a uniform distribution from
+            ``radius_mean-radius_variance`` to ``radius_mean+radius_variance``.
+        :type psd: str
+        :param radius_mean: The mean radius [m] (default = 440e-6 m)
+        :type radius_mean: float
+        :param radius_variance: The variance in the probability distribution
+            [m].
+        :type radius_variance: float
+
+        See also: :func:`generateBimodalRadii()`.
+        '''
 
         if psd == 'logn': # Log-normal probability distribution
             mu = math.log(\
@@ -1066,7 +1131,7 @@ class Spherebin:
             plt.xlabel('Radii [m]')
             plt.ylabel('Count')
             plt.axis('tight')
-            fig.savefig('psd.png')
+            fig.savefig(self.sid + '-psd.png')
             fig.clf()
 
     def generateBimodalRadii(self,
@@ -1074,12 +1139,17 @@ class Spherebin:
             r_large = 0.05,
             ratio = 0.2,
             verbose = True):
-        """ Draw radii from two sizes
-            @param r_small: Radii of small population (float), in ]0;r_large[
-            @param r_large: Radii of large population (float), in ]r_small;inf[
-            @param ratio: Approximate volumetric ratio between the two
+        '''
+        Draw random radii from two distinct sizes.
+
+        :param r_small: Radii of small population [m], in ]0;r_large[
+        :type r_small: float
+        :param r_large: Radii of large population [m], in ]r_small;inf[
+        :type r_large: float
+        :param ratio: Approximate volumetric ratio between the two
             populations (large/small).
-        """
+        :type ratio: float
+        '''
         if (r_small >= r_large):
             raise Exception("r_large should be larger than r_small")
 
@@ -1107,10 +1177,10 @@ class Spherebin:
             gridnum = numpy.array([12, 12, 36]),
             periodic = 1,
             contactmodel = 2):
-        """ Initialize particle positions in loose, cubic configuration.
+        ''' Initialize particle positions in loose, cubic configuration.
             Radii must be set beforehand.
             xynum is the number of rows in both x- and y- directions.
-        """
+        '''
         self.g = g
         self.periodic[0] = periodic
 
@@ -1155,10 +1225,10 @@ class Spherebin:
 
 
     def initGrid(self):
-        """ Initialize grid suitable for the particle positions set previously.
+        ''' Initialize grid suitable for the particle positions set previously.
             The margin parameter adjusts the distance (in no. of max. radii)
             from the particle boundaries.
-        """
+        '''
 
         # Cell configuration
         cellsize_min = 2.1 * numpy.amax(self.radius)
@@ -1184,10 +1254,10 @@ class Spherebin:
             margin = 2.0,
             periodic = 1,
             contactmodel = 2):
-        """ Initialize grid suitable for the particle positions set previously.
+        ''' Initialize grid suitable for the particle positions set previously.
             The margin parameter adjusts the distance (in no. of max. radii)
             from the particle boundaries.
-        """
+        '''
 
         self.g = g
         self.periodic[0] = periodic
@@ -1230,10 +1300,10 @@ class Spherebin:
             gridnum = numpy.array([12, 12, 36]),
             periodic = 1,
             contactmodel = 2):
-        """ Initialize particle positions in loose, cubic configuration.
+        ''' Initialize particle positions in loose, cubic configuration.
             Radii must be set beforehand.
             xynum is the number of rows in both x- and y- directions.
-        """
+        '''
 
         self.g = g
         self.periodic[0] = periodic
@@ -1298,10 +1368,10 @@ class Spherebin:
             gridnum = numpy.array([12, 12, 32]),
             periodic = 1,
             contactmodel = 2):
-        """ Initialize particle positions in loose, cubic configuration.
+        ''' Initialize particle positions in loose, cubic configuration.
             Radii must be set beforehand.
             xynum is the number of rows in both x- and y- directions.
-        """
+        '''
 
         self.g = g
         self.periodic[0] = periodic
@@ -1353,12 +1423,12 @@ class Spherebin:
         self.initFluid(nu=0.0)
 
     def createBondPair(self, i, j, spacing=-0.1):
-        """ Bond particles i and j. Particle j is moved adjacent to particle i,
+        ''' Bond particles i and j. Particle j is moved adjacent to particle i,
         and oriented randomly.
         @param spacing (float) The inter-particle distance prescribed. Positive
         values result in a inter-particle distance, negative equal an overlap.
         The value is relative to the sum of the two radii.
-        """
+        '''
 
         x_i = self.x[i]
         r_i = self.radius[i]
@@ -1403,14 +1473,14 @@ class Spherebin:
 
 
     def random2bonds(self, ratio=0.3, spacing=-0.1):
-        """ Bond an amount of particles in two-particle clusters @param ratio:
+        ''' Bond an amount of particles in two-particle clusters @param ratio:
         The amount of particles to bond, values in ]0.0;1.0] (float)
         @param spacing: The distance relative to the sum of radii between bonded
         particles, neg. values denote an overlap. Values in ]0.0,inf[ (float).
         The particles should be initialized beforehand.
         Note: The actual number of bonds is likely to be somewhat smaller than
         specified, due to the random selection algorithm.
-        """
+        '''
 
         bondparticles = numpy.unique(\
                 numpy.random.random_integers(0, high=self.np-1,\
@@ -1485,9 +1555,9 @@ class Spherebin:
 
     def consolidate(self, deviatoric_stress = 10e3,
             periodic = 1):
-        """ Setup consolidation experiment. Specify the upper wall
+        ''' Setup consolidation experiment. Specify the upper wall
             deviatoric stress in Pascal, default value is 10 kPa.
-        """
+        '''
 
         # Zero the kinematics of all particles
         self.zeroKinematics()
@@ -1501,9 +1571,9 @@ class Spherebin:
 
     def uniaxialStrainRate(self, wvel = -0.001,
             periodic = 1):
-        """ Setup consolidation experiment. Specify the upper wall
+        ''' Setup consolidation experiment. Specify the upper wall
             velocity in m/s, default value is -0.001 m/s (i.e. downwards).
-        """
+        '''
 
         # zero kinematics
         self.zeroKinematics()
@@ -1514,10 +1584,10 @@ class Spherebin:
         self.w_vel = numpy.array([wvel])
 
     def triaxial(self, wvel = -0.001, deviatoric_stress = 10.0e3):
-        """ Setup triaxial experiment. The upper wall is moved at a fixed
+        ''' Setup triaxial experiment. The upper wall is moved at a fixed
             velocity in m/s, default values is -0.001 m/s (i.e. downwards).
             The side walls are exerting a deviatoric stress
-        """
+        '''
 
         # zero kinematics
         self.zeroKinematics()
@@ -1539,11 +1609,11 @@ class Spherebin:
     def shear(self,
             shear_strain_rate = 1,
             periodic = 1):
-        """ Setup shear experiment. Specify the upper wall
+        ''' Setup shear experiment. Specify the upper wall
             deviatoric stress in Pascal, default value is 10 kPa.
             The shear strain rate is the shear length divided by the
             initial height per second.
-        """
+        '''
 
         # Find lowest and heighest point
         z_min = numpy.min(self.x[:,2] - self.radius)
@@ -1600,10 +1670,10 @@ class Spherebin:
             current = 0.0,
             file_dt = 0.05,
             step_count = 0):
-        """ Set temporal parameters for the simulation.
+        ''' Set temporal parameters for the simulation.
             Particle radii and physical parameters need to be set
             prior to these.
-        """
+        '''
 
         r_min = numpy.amin(self.radius)
 
@@ -1622,7 +1692,7 @@ class Spherebin:
         self.time_step_count[0] = 0
 
     def initFluid(self, nu = 8.9e-4):
-        """ Initialize the fluid arrays and the fluid viscosity """
+        ''' Initialize the fluid arrays and the fluid viscosity '''
         self.nu[0] = nu
         self.p_f = numpy.ones((self.num[0], self.num[1], self.num[2]),
                 dtype=numpy.float64)
@@ -1648,9 +1718,9 @@ class Spherebin:
             gamma_wt = 1e4,
             capillaryCohesion = 0,
             nu = 0.0):
-        """ Initialize particle parameters to default values.
+        ''' Initialize particle parameters to default values.
             Radii must be set prior to calling this function.
-        """
+        '''
 
         # Particle material density, kg/m^3
         self.rho = numpy.ones(1, dtype=numpy.float64) * rho
@@ -1724,7 +1794,7 @@ class Spherebin:
 
 
     def bond(self, i, j):
-        """ Create a bond between particles i and j """
+        ''' Create a bond between particles i and j '''
 
         self.lambda_bar[0] = 1.0 # Radius multiplier to parallel-bond radii
 
@@ -1767,8 +1837,8 @@ class Spherebin:
         return w_devs[0] + w_devs_A*numpy.sin(2.0*numpy.pi*self.time_current)
 
     def energy(self, method):
-        """ Calculate the sum of the energy components of all particles.
-        """
+        ''' Calculate the sum of the energy components of all particles.
+        '''
 
         if method == 'pot':
             m = numpy.ones(self.np)*4.0/3.0*math.pi*self.radius**3*self.rho
@@ -1839,7 +1909,7 @@ class Spherebin:
         return e
 
     def bulkPorosity(self):
-        """ Calculate and return the bulk porosity """
+        ''' Calculate and return the bulk porosity '''
 
         if (self.nw == 0):
             V_total = self.L[0] * self.L[1] * self.L[2]
@@ -1855,10 +1925,10 @@ class Spherebin:
     def porosity(self,
             slices = 10,
             verbose = False):
-        """ Calculate the porosity as a function of depth, by averaging values
+        ''' Calculate the porosity as a function of depth, by averaging values
             in horizontal slabs.
             Returns porosity values and depth
-        """
+        '''
 
         # Write data as binary
         self.writebin(verbose=False)
@@ -1890,7 +1960,7 @@ class Spherebin:
 
     def run(self, verbose=True, hideinputfile=False, dry=False, valgrind=False,
             cudamemcheck=False):
-        'Execute sphere with target project'
+        'Execute ``sphere`` with target project'
 
         quiet = ""
         stdout = ""
@@ -2483,9 +2553,9 @@ class Spherebin:
 
         # Plot thinsection with gnuplot script
         gamma = self.shearstrain()
-        subprocess.call("""cd ../gnuplot/scripts && gnuplot -e "sid='{}'; """ \
-                + """gamma='{:.4}'; xmin='{}'; xmax='{}'; ymin='{}'; """ \
-                + """ymax='{}'" plotts.gp""".format(\
+        subprocess.call('''cd ../gnuplot/scripts && gnuplot -e "sid='{}'; ''' \
+                + '''gamma='{:.4}'; xmin='{}'; xmax='{}'; ymin='{}'; ''' \
+                + '''ymax='{}'" plotts.gp'''.format(\
                 self.sid, self.shearstrain(), self.origo[0], self.L[0], \
                 self.origo[2], self.L[2]), shell=True)
 
@@ -2711,11 +2781,13 @@ class Spherebin:
         plt.close(fig)
 
     def plotConvergence(self, format='png'):
-        ''' Plot the convergence evolution in the CFD solver. The plot is saved 
-        in the output folder with the file name <simulation ID>-conv.<format>.
-        :param format The plot file type. Default = 'png'.
         '''
+        Plot the convergence evolution in the CFD solver. The plot is saved 
+        in the output folder with the file name <simulation ID>-conv.<format>.
 
+        :param format: The plot file type (default = 'png')
+        :type format: str
+        '''
         fig = plt.figure()
         conv = numpy.loadtxt('../output/' + self.sid + '-conv.log')
 
@@ -2729,11 +2801,16 @@ class Spherebin:
         plt.close(fig)
 
     def setFluidPressureModulation(self, A, f, phi=0.0):
-        ''' Set the parameters for the sine wave modulating the fluid pressures
+        '''
+        Set the parameters for the sine wave modulating the fluid pressures
         at the top boundary. Note that a cos-wave is obtained with phi=pi/2.
-        :param A Fluctuation amplitude [Pa]
-        :param f Fluctuation frequency [Hz]
-        :param phi Fluctuation phase shift (default=0.0)
+
+        :param A: Fluctuation amplitude [Pa]
+        :type A: float
+        :param f: Fluctuation frequency [Hz]
+        :type f: float
+        :param phi: Fluctuation phase shift (default=0.0)
+        :type phi: float
         '''
         self.p_mod_A[0] = A
         self.p_mod_f[0] = f
@@ -2785,7 +2862,7 @@ def render(binary,
         lower_cutoff = 0.0,
         graphicsformat = "png",
         verbose=True):
-    'Render target binary using the sphere raytracer.'
+    'Render target binary using the ``sphere`` raytracer.'
 
     quiet = ""
     if (verbose == False):
@@ -2868,9 +2945,9 @@ def thinsectionVideo(project,
             shell=True)
 
 def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
-    """ Visualize output from the target project,
+    ''' Visualize output from the target project,
         where the temporal progress is of interest.
-    """
+    '''
 
     lastfile = status(project)
 
@@ -3222,7 +3299,7 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
             plt.show()
 
 def run(binary, verbose=True, hideinputfile=False):
-    'Execute sphere with target binary as input'
+    'Execute ``sphere`` with target binary as input'
 
     quiet = ""
     stdout = ""
@@ -3330,9 +3407,9 @@ def torqueScriptSerial3(obj1, obj2, obj3,
 
 
 def status(project):
-    """ Check the status.dat file for the target project,
+    ''' Check the status.dat file for the target project,
         and return the last file numer.
-    """
+    '''
 
     fh = None
     try :
@@ -3353,8 +3430,8 @@ def cleanup(spherebin):
     subprocess.call("rm -f ../img_out/" + spherebin.sid + ".*", shell=True)
 
 def V_sphere(r):
-    """ Returns the volume of a sphere with radius r
-    """
+    ''' Returns the volume of a sphere with radius r
+    '''
     return 4.0/3.0 * math.pi * r**3.0
 
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Example of two particles colliding.
-Place script in sphere/python folder, and invoke with `python collision.py`
+Place script in sphere/python/ folder, and invoke with `python collision.py`
 """
 
 # Import the sphere module for setting up, running, and analyzing the
@@ -58,3 +58,8 @@ sphere.visualize(SB.sid, method = 'energy')
 
 # Render the particles using the built-in raytracer
 SB.render()
+
+# Alternative visualization using ParaView. See the documentation of
+# ``Spherebin.writeVTKall()`` for more information about displaying the
+# particles in ParaView.
+SB.writeVTKall()
