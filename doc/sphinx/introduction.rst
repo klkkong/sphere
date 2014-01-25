@@ -64,7 +64,8 @@ Optional tools, required for simulation setup and data processing:
 
 In Debian GNU/Linux, these dependencies can be installed by running::
 
- $ sudo apt-get install python python-numpy python-matplotlib python-vtk imagemagick libav-tools
+ $ sudo apt-get install python python-numpy python-matplotlib python-vtk \
+     imagemagick libav-tools
 
 ``sphere`` is distributed with a HTML and PDF build of the documentation. The
 following tools are required for building the documentation:
@@ -80,7 +81,8 @@ following tools are required for building the documentation:
 
 In Debian GNU/Linux, these dependencies can be installed by running::
 
- $ sudo apt-get install python-sphinx python-pip doxygen dvipng python-sphinxcontrib-programoutput texlive-full
+ $ sudo apt-get install python-sphinx python-pip doxygen dvipng \
+     python-sphinxcontrib-programoutput texlive-full
  $ sudo pip install breathe
 
 `Git <http://git-scm.com>`_ is used as the distributed version control system
@@ -184,12 +186,12 @@ directory::
 Work flow
 ---------
 
-After compiling the ``sphere`` binary, the procedure of a creating and handling a
-simulation is typically arranged in the following order:
+After compiling the ``sphere`` binary, the procedure of a creating and handling
+a simulation is typically arranged in the following order:
 
   * Setup of particle assemblage, physical properties and conditions using the
     Python API.
-  * Execution of ``sphere``* software, which simulates the particle behavior as a
+  * Execution of ``sphere`` software, which simulates the particle behavior as a
     function of time, as a result of the conditions initially specified in the
     input file.
   * Inspection, analysis, interpretation and visualization of ``sphere`` output
