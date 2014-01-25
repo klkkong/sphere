@@ -17,8 +17,8 @@ general documentation.
 
 Documentation
 -------------
-See the `separate documentation <doc/sphinx/index.rst>`_ for general reference
-and installation instructions. The documentation is also by default available in
+See the separate documentation for general reference and installation
+instructions. The documentation is by default available in
 the `html <doc/html/index.html>`_ and `pdf <doc/pdf/sphere.pdf>`_ formats.
 
 Author
