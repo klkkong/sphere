@@ -22,6 +22,6 @@ See the ``doc/`` folder for general reference, by default available in the `html
 
 Author
 ------
-Anders Damsgaard, `anders.damsgaard@geo.au.dk <mailto:anders.damsgaard@geo.au.dk>`_
-`Blog <http://anders-dc.github.io>`_,
+Anders Damsgaard, `anders.damsgaard@geo.au.dk <mailto:anders.damsgaard@geo.au.dk>`_,
+`blog <http://anders-dc.github.io>`_,
 `more contact information <https://cs.au.dk/~adc>`_.
