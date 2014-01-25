@@ -30,9 +30,10 @@ The build requirements are:
   * A Nvidia CUDA-supported version of Linux or Mac OS X (see the `CUDA toolkit
     release notes <http://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html>`_ for more information)
   * `GNU Make <https://www.gnu.org/software/make/>`_
-  * `CMake <http://www.cmake.org>`_
+  * `CMake <http://www.cmake.org>`_, version 2.8 or newer
   * The `GNU Compiler Collection <http://gcc.gnu.org/>`_ (GCC)
-  * The `Nvidia CUDA toolkit and SDK <https://developer.nvidia.com/cuda-downloads>`_
+  * The `Nvidia CUDA toolkit <https://developer.nvidia.com/cuda-downloads>`_,
+    version 5.0 or newer
 
 In Debian GNU/Linux, these dependencies can be installed by running::
 
@@ -84,17 +85,52 @@ Public License, v.3 <https://www.gnu.org/licenses/gpl.html>`_.
 
      make install-debian-pkgs
 
+Obtaining sphere
+----------------
+The best way to keep up to date with subsequent updates, bugfixes and 
+development, is to use the Git version control system. To obtain a local 
+copy, execute::
 
-Building *sphere*
------------------
-All instructions required for building *sphere* are provided in a number of
-``Makefile``'s. To generate the main *sphere* command-line executable, go to the
-root directory, and invoke CMake and GNU Make::
+ $ git clone git@github.com:anders-dc/sphere.git
+
+Building ``sphere``
+-------------------
+``sphere`` is built using ``cmake``, the platform-specific C/C++ compilers,
+and ``nvcc`` from the Nvidia CUDA toolkit.
+
+If you plan to run ``sphere`` on a Kepler GPU, execute the following commands
+from the root directory::
+
+ $ cmake . && make
+
+If you instead plan to execute it on a Fermi GPU, change ``set(GPU_GENERATION
+1)`` to ``set(GPU_GENERATION 0`` in ``CMakeLists.txt``.
+
+In some cases the CMake FindCUDA module will have troubles locating the
+CUDA samples directory, and will complain about ``helper_math.h`` not being 
+found.
+
+In that case, modify the ``CUDA_SDK_ROOT_DIR`` variable in ``src/CMakeLists.txt`
+to the path where you installed the CUDA samples, and run ``cmake . && make``
+again. Alternatively, copy ``helper_math.h`` from the CUDA sample subdirectory 
+``common/inc/helper_math.h`` into the sphere ``src/`` directory, and run
+``cmake`` and ``make`` again. Due to license restrictions, sphere cannot be
+distributed with this file.
+
+After a successfull installation, the ``sphere`` executable will be located
+in the root folder. To make sure that all components are working correctly,
+execute::
+
+ $ make test
+
+All instructions required for building ``sphere`` are provided in a number of
+``Makefile``'s. To generate the main ``sphere`` command-line executable, go to
+the root directory, and invoke CMake and GNU Make::
 
  $ cmake . && make
 
 If successfull, the Makefiles will create the required data folders, object
-files, as well as the *sphere* executable in the root folder. Issue the
+files, as well as the ``sphere`` executable in the root folder. Issue the
 following commands to check the executable::
 
  $ ./sphere --version
@@ -109,8 +145,10 @@ The build can be verified by running a number of automated tests::
 
 The documentation can be read in the `reStructuredText
 <http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html>`_-format in
-the ``doc/sphinx/`` folder, or build into e.g. HTML or PDF format with the
-following commands::
+the ``doc/sphinx/`` folder, or in the HTML or PDF formats in the folders
+``doc/html`` and ``doc/pdf``.
+
+Optionally, the documentation can be built using the following commands::
 
  $ cd doc/sphinx
  $ make html
@@ -120,6 +158,12 @@ To see all available output formats, execute::
 
  $ make help
 
+Updating sphere
+---------------
+To update your local version, type the following commands in the ``sphere`` root 
+directory::
+
+ $ git pull && cmake . && make
 
 Work flow
 ---------

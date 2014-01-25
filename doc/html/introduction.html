@@ -36,6 +36,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="dem.html" title="Discrete element method"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -82,9 +85,10 @@ files are typeset with strict respect to the SI unit system.</p>
 <li>A Nvidia CUDA-supported version of Linux or Mac OS X (see the <a class="reference external" href="http://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html">CUDA toolkit
 release notes</a> for more information)</li>
 <li><a class="reference external" href="https://www.gnu.org/software/make/">GNU Make</a></li>
-<li><a class="reference external" href="http://www.cmake.org">CMake</a></li>
+<li><a class="reference external" href="http://www.cmake.org">CMake</a>, version 2.8 or newer</li>
 <li>The <a class="reference external" href="http://gcc.gnu.org/">GNU Compiler Collection</a> (GCC)</li>
-<li>The <a class="reference external" href="https://developer.nvidia.com/cuda-downloads">Nvidia CUDA toolkit and SDK</a></li>
+<li>The <a class="reference external" href="https://developer.nvidia.com/cuda-downloads">Nvidia CUDA toolkit</a>,
+version 5.0 or newer</li>
 </ul>
 </dd>
 </dl>
@@ -145,34 +149,72 @@ mentioned above can be installed by executing the following command from the
 </div>
 </div>
 </div>
+<div class="section" id="obtaining-sphere">
+<h2>Obtaining sphere<a class="headerlink" href="#obtaining-sphere" title="Permalink to this headline">¶</a></h2>
+<p>The best way to keep up to date with subsequent updates, bugfixes and
+development, is to use the Git version control system. To obtain a local
+copy, execute:</p>
+<div class="highlight-python"><pre>$ git clone git@github.com:anders-dc/sphere.git</pre>
+</div>
+</div>
 <div class="section" id="building-sphere">
-<h2>Building <em>sphere</em><a class="headerlink" href="#building-sphere" title="Permalink to this headline">¶</a></h2>
-<p>All instructions required for building <em>sphere</em> are provided in a number of
-<tt class="docutils literal"><span class="pre">Makefile</span></tt>&#8216;s. To generate the main <em>sphere</em> command-line executable, go to the
-root directory, and invoke CMake and GNU Make:</p>
+<h2>Building <tt class="docutils literal"><span class="pre">sphere</span></tt><a class="headerlink" href="#building-sphere" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">sphere</span></tt> is built using <tt class="docutils literal"><span class="pre">cmake</span></tt>, the platform-specific C/C++ compilers,
+and <tt class="docutils literal"><span class="pre">nvcc</span></tt> from the Nvidia CUDA toolkit.</p>
+<p>If you plan to run <tt class="docutils literal"><span class="pre">sphere</span></tt> on a Kepler GPU, execute the following commands
+from the root directory:</p>
+<div class="highlight-python"><pre>$ cmake . &amp;&amp; make</pre>
+</div>
+<p>If you instead plan to execute it on a Fermi GPU, change <tt class="docutils literal"><span class="pre">set(GPU_GENERATION</span>
+<span class="pre">1)</span></tt> to <tt class="docutils literal"><span class="pre">set(GPU_GENERATION</span> <span class="pre">0</span></tt> in <tt class="docutils literal"><span class="pre">CMakeLists.txt</span></tt>.</p>
+<p>In some cases the CMake FindCUDA module will have troubles locating the
+CUDA samples directory, and will complain about <tt class="docutils literal"><span class="pre">helper_math.h</span></tt> not being
+found.</p>
+<p>In that case, modify the <tt class="docutils literal"><span class="pre">CUDA_SDK_ROOT_DIR</span></tt> variable in <tt class="docutils literal"><span class="pre">src/CMakeLists.txt`</span>
+<span class="pre">to</span> <span class="pre">the</span> <span class="pre">path</span> <span class="pre">where</span> <span class="pre">you</span> <span class="pre">installed</span> <span class="pre">the</span> <span class="pre">CUDA</span> <span class="pre">samples,</span> <span class="pre">and</span> <span class="pre">run</span> <span class="pre">``cmake</span> <span class="pre">.</span> <span class="pre">&amp;&amp;</span> <span class="pre">make</span></tt>
+again. Alternatively, copy <tt class="docutils literal"><span class="pre">helper_math.h</span></tt> from the CUDA sample subdirectory
+<tt class="docutils literal"><span class="pre">common/inc/helper_math.h</span></tt> into the sphere <tt class="docutils literal"><span class="pre">src/</span></tt> directory, and run
+<tt class="docutils literal"><span class="pre">cmake</span></tt> and <tt class="docutils literal"><span class="pre">make</span></tt> again. Due to license restrictions, sphere cannot be
+distributed with this file.</p>
+<p>After a successfull installation, the <tt class="docutils literal"><span class="pre">sphere</span></tt> executable will be located
+in the root folder. To make sure that all components are working correctly,
+execute:</p>
+<div class="highlight-python"><pre>$ make test</pre>
+</div>
+<p>All instructions required for building <tt class="docutils literal"><span class="pre">sphere</span></tt> are provided in a number of
+<tt class="docutils literal"><span class="pre">Makefile</span></tt>&#8216;s. To generate the main <tt class="docutils literal"><span class="pre">sphere</span></tt> command-line executable, go to
+the root directory, and invoke CMake and GNU Make:</p>
 <div class="highlight-python"><pre>$ cmake . &amp;&amp; make</pre>
 </div>
 <p>If successfull, the Makefiles will create the required data folders, object
-files, as well as the <em>sphere</em> executable in the root folder. Issue the
+files, as well as the <tt class="docutils literal"><span class="pre">sphere</span></tt> executable in the root folder. Issue the
 following commands to check the executable:</p>
 <div class="highlight-python"><pre>$ ./sphere --version</pre>
 </div>
 <p>The output should look similar to this:</p>
 <div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">/home/adc/code/sphere/doc/sphinx/introduction.rst</tt>, line 104)</p>
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">/home/adc/code/sphere/doc/sphinx/introduction.rst</tt>, line 140)</p>
 Command u&#8217;../../sphere &#8211;version&#8217; failed: [Errno 2] No such file or directory</div>
 <p>The build can be verified by running a number of automated tests:</p>
 <div class="highlight-python"><pre>$ make test</pre>
 </div>
 <p>The documentation can be read in the <a class="reference external" href="http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html">reStructuredText</a>-format in
-the <tt class="docutils literal"><span class="pre">doc/sphinx/</span></tt> folder, or build into e.g. HTML or PDF format with the
-following commands:</p>
+the <tt class="docutils literal"><span class="pre">doc/sphinx/</span></tt> folder, or in the HTML or PDF formats in the folders
+<tt class="docutils literal"><span class="pre">doc/html</span></tt> and <tt class="docutils literal"><span class="pre">doc/pdf</span></tt>.</p>
+<p>Optionally, the documentation can be built using the following commands:</p>
 <div class="highlight-python"><pre>$ cd doc/sphinx
 $ make html
 $ make latexpdf</pre>
 </div>
 <p>To see all available output formats, execute:</p>
 <div class="highlight-python"><pre>$ make help</pre>
+</div>
+</div>
+<div class="section" id="updating-sphere">
+<h2>Updating sphere<a class="headerlink" href="#updating-sphere" title="Permalink to this headline">¶</a></h2>
+<p>To update your local version, type the following commands in the <tt class="docutils literal"><span class="pre">sphere</span></tt> root
+directory:</p>
+<div class="highlight-python"><pre>$ git pull &amp;&amp; cmake . &amp;&amp; make</pre>
 </div>
 </div>
 <div class="section" id="work-flow">
@@ -203,7 +245,9 @@ Python, and/or scene rendering using the built-in ray tracer.</li>
   <ul>
 <li><a class="reference internal" href="#">Introduction</a><ul>
 <li><a class="reference internal" href="#requirements">Requirements</a></li>
-<li><a class="reference internal" href="#building-sphere">Building <em>sphere</em></a></li>
+<li><a class="reference internal" href="#obtaining-sphere">Obtaining sphere</a></li>
+<li><a class="reference internal" href="#building-sphere">Building <tt class="docutils literal"><span class="pre">sphere</span></tt></a></li>
+<li><a class="reference internal" href="#updating-sphere">Updating sphere</a></li>
 <li><a class="reference internal" href="#work-flow">Work flow</a></li>
 </ul>
 </li>
@@ -243,6 +287,9 @@ Python, and/or scene rendering using the built-in ray tracer.</li>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="dem.html" title="Discrete element method"
              >next</a> |</li>
