@@ -6,7 +6,7 @@ sphere readme
 License
 -------
 ``sphere`` is licensed under the GNU General Public License, v.3.
-See ``LICENSE.txt`` for more information.
+See `LICENSE.txt <LICENSE.txt>`_ for more information.
 
 Important release notes
 -----------------------
@@ -17,8 +17,9 @@ general documentation.
 
 Documentation
 -------------
-See the ``doc/`` folder for general reference, by default available in the `html 
-<doc/html/index.html>`_ and `pdf <doc/pdf/sphere.pdf>`_ formats.
+See the `separate documentation <doc/sphinx/index.rst>`_ for general reference
+and installation instructions. The documentation is also by default available in
+the `html <doc/html/index.html>`_ and `pdf <doc/pdf/sphere.pdf>`_ formats.
 
 Author
 ------
