@@ -30,12 +30,12 @@ Makefile
 *.toc
 *.sty
 *.cls
-*.png
-*.txt
-*.js
-*.html
-*.inv
-*.css
+#*.png
+#*.txt
+#*.js
+#*.html
+#*.inv
+#*.css
 
 # Rights prohibit inclusion of NVIDIA header file
 helper_math.h
@@ -50,7 +50,7 @@ CMakeFiles
 doc/doctrees
 doc/doxygen/man
 doc/doxygen/xml
-doc/html
+#doc/html
 src/CMakeFiles
 src/forcechains.dir
 src/porosity.dir
