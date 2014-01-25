@@ -27,7 +27,7 @@ Contents
    dem
    cfd
    python_api
-   sphere_internals
+   .. sphere_internals
 
 
 
