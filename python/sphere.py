@@ -1239,8 +1239,8 @@ class Spherebin:
         self.num[2] = numpy.ceil((self.L[2]-self.origo[2])/cellsize_min)
 
         if (self.num[0] < 4 or self.num[1] < 4 or self.num[2] < 4):
-            print("Error: The grid must be at least 3 cells in each direction")
-            print(" Grid: x={}, y={}, z={}".format(\
+            raise Exception("Error: The grid must be at least 3 cells in each "
+            + "direction\nGrid: x={}, y={}, z={}".format(\
                     self.num[0], self.num[1], self.num[2]))
 
         # Init fluid arrays
@@ -1283,8 +1283,8 @@ class Spherebin:
         self.num[2] = numpy.ceil((self.L[2]-self.origo[2])/cellsize_min)
 
         if (self.num[0] < 4 or self.num[1] < 4 or self.num[2] < 4):
-            print("Error: The grid must be at least 3 cells in each direction")
-            print(self.num)
+            raise Exception("Error: The grid must be at least 3 cells in each "
+            + "direction, num = " + str(self.num))
 
         # Init fluid arrays
         self.initFluid(nu=0.0)
@@ -1686,6 +1686,21 @@ class Spherebin:
         # Computational time step (Zhang and Campbell, 1992)
         self.time_dt[0] = 0.075 * math.sqrt((V_sphere(r_min) * self.rho[0]) \
                 / numpy.amax([self.k_n[:], self.k_t[:]]) )
+
+        # Check numerical stability of the fluid phase, by criteria derived by
+        # von Neumann stability analysis of the diffusion and advection terms
+        if (self.fluid == True):
+            dx = numpy.amin((\
+                    self.L[0]/self.num[0],\
+                    self.L[1]/self.num[1],\
+                    self.L[2]/self.num[2]))
+
+            # Diffusion term
+            if (self.nu[0]*self.time_dt[0]/(dx*dx) > 0.5):
+                raise Exception("Error: The time step is too large to ensure "
+                        + "stability in the diffusive term of the fluid "
+                        + "momentum equation.")
+
 
         # Time at start
         self.time_current[0] = current

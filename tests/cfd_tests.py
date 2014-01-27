@@ -58,6 +58,7 @@ else:
 
 # Long test
 # This test passes with BETA=0.0 and tolerance=1.0e-9
+'''
 orig.p_f[:,:,-1] = 1.1
 orig.time_total[0] = 5.0
 orig.time_file_dt[0] = orig.time_total[0]/10.0
@@ -83,6 +84,7 @@ if (it[0,1] < 700 and it[1,1] < 250 and (it[2:,1] < 20).all()):
     print("Convergence rate (2/2):\t" + passed())
 else:
     print("Convergence rate (2/2):\t" + failed())
+'''
 
 # Add viscosity which will limit the fluid flow. Used to test the stress tensor
 # in the fluid velocity prediction
