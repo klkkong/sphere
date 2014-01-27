@@ -1493,6 +1493,9 @@ __global__ void jacobiIterationNS(
     // boundaries at z=0 and z=nz-1
     if (x < nx && y < ny && z > 0 && z < nz-1) {
 
+    // Lower boundary: Neumann. Upper boundary: Dirichlet
+    //if (x < nx && y < ny && z < nz-1) {
+
         // Read the epsilon values from the cell and its 6 neighbors
         __syncthreads();
         const Float e    = dev_ns_epsilon[cellidx];

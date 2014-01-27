@@ -1673,8 +1673,8 @@ class Spherebin:
             file_dt = 0.05,
             step_count = 0):
         ''' Set temporal parameters for the simulation.
-            Particle radii and physical parameters need to be set
-            prior to these.
+            Particle radii, physical parameters, and the optional fluid grid
+            need to be set prior to these.
         '''
 
         r_min = numpy.amin(self.radius)
@@ -1690,6 +1690,8 @@ class Spherebin:
         # Check numerical stability of the fluid phase, by criteria derived by
         # von Neumann stability analysis of the diffusion and advection terms
         if (self.fluid == True):
+
+            # Cell spacing
             dx = numpy.amin((\
                     self.L[0]/self.num[0],\
                     self.L[1]/self.num[1],\
@@ -1700,6 +1702,25 @@ class Spherebin:
                 raise Exception("Error: The time step is too large to ensure "
                         + "stability in the diffusive term of the fluid "
                         + "momentum equation.")
+
+            # Normalized velocities
+            v_norm = numpy.empty(self.num[0]*self.num[1]*self.num[2])
+            idx = 0
+            for x in numpy.arange(self.num[0]):
+                for y in numpy.arange(self.num[1]):
+                    for z in numpy.arange(self.num[2]):
+                        v_norm[idx] = numpy.sqrt(self.v_f[x,y,z,:].dot(\
+                                self.v_f[x,y,z,:]))
+                        idx = idx + 1
+
+            # Advection term. This term has to be reevaluated during the
+            # computations, as the fluid velocity changes.
+            if (numpy.amax(v_norm)*self.time_dt[0]/dx > 1.0):
+                raise Exception("Error: The time step is too large to ensure "
+                        + "stability in the advective term of the fluid "
+                        + "momentum equation.")
+
+
 
 
         # Time at start
