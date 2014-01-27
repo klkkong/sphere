@@ -12,6 +12,10 @@ Important release notes
 -----------------------
 2013-03-13: Sphere has been updated to work with CUDA 5.0 or newer *only*.
 
+2014-01-20: Version fingerprints have been added to the input/output binary
+files, and causes old files to be incompatible with either ``sphere`` or
+``sphere.py``.
+
 2014-01-25: The description of the installation procedure is moved to the
 general documentation.
 
