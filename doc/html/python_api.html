@@ -428,9 +428,29 @@ xynum is the number of rows in both x- and y- directions.</p>
 <dl class="method">
 <dt id="sphere.Spherebin.initRandomPos">
 <tt class="descname">initRandomPos</tt><big>(</big><em>g=array([ 0.</em>, <em>0.</em>, <em>-9.80665])</em>, <em>gridnum=array([12</em>, <em>12</em>, <em>36])</em>, <em>periodic=1</em>, <em>contactmodel=2</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.initRandomPos" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize particle positions in loose, cubic configuration.
-Radii must be set beforehand.
-xynum is the number of rows in both x- and y- directions.</p>
+<dd><p>Initialize particle positions in loose, cubic configuration. Radii
+<em>must</em> be set beforehand. If the x and y boundaries are set as periodic,
+the particle centers will be placed all the way to the edge. On regular,
+non-periodic boundaries, the particles are restrained at the edges to
+make space for their radii within the bounding box.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>g</strong> (<em>numpy.array</em>) &#8211; The vector of gravitational acceleration (default = [0, 0,
+-9.90665])</li>
+<li><strong>gridnum</strong> (<em>numpy.array</em>) &#8211; The number of sorting cells in each spatial direction
+(default = [12, 12, 36])</li>
+<li><strong>periodic</strong> (<em>int</em>) &#8211; Set if the x and y boundaries are periodic (no = 0, yes 
+= 1, default = 1)</li>
+<li><strong>contactmodel</strong> (<em>int</em>) &#8211; The type of tangential contact model to use
+(visco-frictional = 1, elasto-visco-frictional = 2, default = 2)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
