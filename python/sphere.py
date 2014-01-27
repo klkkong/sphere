@@ -1,8 +1,11 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python2.7;
 import math
 import numpy
 import matplotlib
+
+# Generate images without windows appearing by using a non-interavtive backend
 matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import subprocess
