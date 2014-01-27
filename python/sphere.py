@@ -1,8 +1,8 @@
 #!/usr/bin/env python2.7
 import math
 import numpy
-import matplotlib as mpl
-mpl.use('Agg')
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import subprocess
