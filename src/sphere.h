@@ -204,6 +204,9 @@ class DEM {
         void endNS();
         void endNSdev();
 
+        // Check for stability in the FTCS solution
+        void checkNSstability();
+
         // Returns the average value of the normalized residual norm in host mem
         double avgNormResNS();
 

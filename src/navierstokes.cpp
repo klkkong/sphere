@@ -70,6 +70,57 @@ unsigned int DEM::idx(
     return (x+1) + (ns.nx+2)*(y+1) + (ns.nx+2)*(ns.ny+2)*(z+1);
 }
 
+// Determine if the FTCS (forward time, central space) solution of the Navier
+// Stokes equations is unstable
+void DEM::checkNSstability()
+{
+    // Cell dimensions
+    const Float dx = grid.L[0]/grid.num[0];
+    const Float dy = grid.L[1]/grid.num[1];
+    const Float dz = grid.L[2]/grid.num[2];
+
+    // The smallest grid spacing
+    const Float dmin = fmin(dx, fmin(dy, dz));
+
+    // Check the diffusion term using von Neumann stability analysis
+    if (params.nu*time.dt/(dmin*dmin) > 0.5) {
+        std::cerr << "Error: The time step is too large to ensure stability in "
+            "the diffusive term of the fluid momentum equation.\n"
+            "Decrease the viscosity, decrease the time step, and/or increase "
+            "the fluid grid cell size." << std::endl;
+        exit(1);
+    }
+
+    int x,y,z;
+    Float3 v;
+    for (x=0; x<ns.nx; ++x) {
+        for (y=0; y<ns.ny; ++y) {
+            for (z=0; z<ns.nz; ++z) {
+
+                v = ns.v[idx(x,y,z)];
+
+                // Check the advection term using the Courant-Friedrichs-Lewy
+                // condition
+                if (v.x*time.dt/dx + v.y*time.dt/dy + v.z*time.dt/dz > 1.0) {
+                    std::cerr << "Error: The time step is too large to ensure "
+                        "stability in the advective term of the fluid momentum "
+                        "equation.\n"
+                        "This is caused by too high fluid velocities. "
+                        "You can try to decrease the time step, and/or "
+                        "increase the fluid grid cell size.\n"
+                        "v(" << x << ',' << y << ',' << z << ") = ["
+                        << v.x << ',' << v.y << ',' << v.z << "] m/s"
+                        << std::endl;
+                    exit(1);
+                }
+            }
+        }
+    }
+
+
+
+}
+
 // Print array values to file stream (stdout, stderr, other file)
 void DEM::printNSarray(FILE* stream, Float* arr)
 {

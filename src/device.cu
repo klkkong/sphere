@@ -1290,7 +1290,8 @@ __host__ void DEM::startTime()
         // Synchronization point
         cudaThreadSynchronize();
         if (PROFILING == 1)
-            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed, &t_integrateWalls);
+            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                    &t_integrateWalls);
         checkForCudaErrors("Post integrateWalls");
 
         // Update timers and counters
@@ -1318,24 +1319,31 @@ __host__ void DEM::startTime()
         // between output files has been reached
         if (filetimeclock >= time.file_dt) {
 
-            // Pause the CPU thread until all CUDA calls previously issued are completed
+            // Pause the CPU thread until all CUDA calls previously issued are
+            // completed
             cudaThreadSynchronize();
             checkForCudaErrors("Beginning of file output section");
 
             //// Copy device data to host memory
             transferFromGlobalDeviceMemory();
 
-            // Pause the CPU thread until all CUDA calls previously issued are completed
+            // Pause the CPU thread until all CUDA calls previously issued are
+            // completed
             cudaThreadSynchronize();
+
+            // Check the numerical stability of the NS solver
+            if (navierstokes == 1)
+                checkNSstability();
 
             // Write binary output file
             time.step_count += 1;
-            sprintf(file,"output/%s.output%05d.bin", sid.c_str(), time.step_count);
-            writebin(file);
+            sprintf(file,"output/%s.output%05d.bin", sid.c_str(),
+                    time.step_count); writebin(file);
 
             // Write fluid arrays
             /*if (navierstokes == 1) {
-                sprintf(file,"output/%s.ns_phi.output%05d.bin", sid.c_str(), time.step_count);
+                sprintf(file,"output/%s.ns_phi.output%05d.bin", sid.c_str(),
+                    time.step_count);
                 writeNSarray(ns.phi, file);
             }*/
 
@@ -1350,7 +1358,8 @@ __host__ void DEM::startTime()
 
                     cout  << "- contacts:\n";
                     for (int nc = 0; nc < NC; ++nc) 
-                        cout << "[" << nc << "]=" << k.contacts[nc+NC*n] << '\n';
+                        cout << "[" << nc << "]=" << k.contacts[nc+NC*n] <<
+                            '\n';
 
                     cout << "\n- delta_t:\n";
                     for (int nc = 0; nc < NC; ++nc) 
