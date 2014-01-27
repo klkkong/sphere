@@ -903,7 +903,7 @@ __host__ void DEM::startTime()
             checkForCudaErrors("Post setNSepsilonTop");
                 
             // Modulate the pressures at the upper boundary cells
-            if ((ns.p_mod_A > 1.0e-5 || ns.p_mod_A < 1.0e-5) &&
+            if ((ns.p_mod_A > 1.0e-5 || ns.p_mod_A < -1.0e-5) &&
                     ns.p_mod_f > 1.0e-7) {
                 Float new_pressure = ns.p[idx(0,0,ns.nz-1)] + // original pressure
                     ns.p_mod_A*sin(2.0*M_PI*ns.p_mod_f*time.current + ns.p_mod_phi);
