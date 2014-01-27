@@ -56,6 +56,34 @@ if (it[0,1] < 700 and it[1,1] < 250 and (it[2:,1] < 20).all()):
 else:
     print("Convergence rate (2/2):\t" + failed())
 
+# Long test
+# This test passes with BETA=0.0 and tolerance=1.0e-9
+orig.p_f[:,:,-1] = 1.1
+orig.time_total[0] = 5.0
+orig.time_file_dt[0] = orig.time_total[0]/10.0
+orig.writebin(verbose=False)
+orig.run(verbose=True)
+py.readlast(verbose = False)
+ideal_grad_p_z = numpy.linspace(orig.p_f[0,0,0], orig.p_f[0,0,-1], orig.num[2])
+py.writeVTKall()
+compareNumpyArraysClose(numpy.zeros((1,orig.num[2])),\
+        ideal_grad_p_z - py.p_f[0,0,:],\
+        "Pressure gradient (long test):", tolerance=1.0e-2)
+
+# Fluid flow direction, opposite of gradient (i.e. towards -z)
+if ((py.v_f[:,:,:,2] < 0.0).all() and (py.v_f[:,:,:,0:1] < 1.0e-7).all()):
+    print("Flow field:\t\t" + passed())
+else:
+    print("Flow field:\t\t" + failed())
+
+# Convergence rate (2/2)
+# This test passes with BETA=0.0 and tolerance=1.0e-9
+it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
+if (it[0,1] < 700 and it[1,1] < 250 and (it[2:,1] < 20).all()):
+    print("Convergence rate (2/2):\t" + passed())
+else:
+    print("Convergence rate (2/2):\t" + failed())
+
 # Add viscosity which will limit the fluid flow. Used to test the stress tensor
 # in the fluid velocity prediction
 #print(numpy.mean(py.v_f[:,:,:,2]))
@@ -153,7 +181,7 @@ orig.writebin(verbose=False)
 orig.run(verbose=False)
 py.plotConvergence()
 py.plotFluidDiffAdvPresZ()
-py.writeVTKall()
+#py.writeVTKall()
 for it in range(1,py.status()): # gradient should be smooth in all output files
     py.readstep(it)
     py.plotFluidDiffAdvPresZ()
@@ -163,5 +191,6 @@ for it in range(1,py.status()): # gradient should be smooth in all output files
             ideal_grad_p_z - py.p_f[0,0,:],\
             'Fast pressure modulation (' + 
             str(it+1) + '/' + str(py.status()) + '):', tolerance=1.0e-1)
+
 
 #cleanup(orig)

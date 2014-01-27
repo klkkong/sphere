@@ -10,6 +10,8 @@ import vtk
 
 numpy.seterr(all='warn', over='raise')
 
+VERSION=1.0
+
 class Spherebin:
     '''
     Class containing all ``sphere`` data.
@@ -33,9 +35,9 @@ class Spherebin:
 
     def __init__(self, np = 1, nd = 3, nw = 1, sid = 'unnamed', fluid = False):
 
-        self.version = numpy.ones(1, dtype=numpy.float64) * 0.36
-        self.nd = numpy.ones(1, dtype=numpy.int32) * nd
-        self.np = numpy.ones(1, dtype=numpy.uint32) * np
+        self.version = numpy.ones(1, dtype=numpy.float64)*VERSION
+        self.nd = numpy.ones(1, dtype=numpy.int32)*nd
+        self.np = numpy.ones(1, dtype=numpy.uint32)*np
         self.sid = sid
 
         # Time parameters
