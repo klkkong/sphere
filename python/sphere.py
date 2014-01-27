@@ -1720,9 +1720,6 @@ class Spherebin:
                         + "stability in the advective term of the fluid "
                         + "momentum equation.")
 
-
-
-
         # Time at start
         self.time_current[0] = current
         self.time_total[0] = total
