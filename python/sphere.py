@@ -1151,6 +1151,8 @@ class Spherebin:
         :param ratio: Approximate volumetric ratio between the two
             populations (large/small).
         :type ratio: float
+
+        See also: :func:`generateRadii()`.
         '''
         if (r_small >= r_large):
             raise Exception("r_large should be larger than r_small")
@@ -1179,9 +1181,25 @@ class Spherebin:
             gridnum = numpy.array([12, 12, 36]),
             periodic = 1,
             contactmodel = 2):
-        ''' Initialize particle positions in loose, cubic configuration.
-            Radii must be set beforehand.
-            xynum is the number of rows in both x- and y- directions.
+        '''
+        Initialize particle positions in loose, cubic configuration. Radii
+        *must* be set beforehand. If the x and y boundaries are set as periodic,
+        the particle centers will be placed all the way to the edge. On regular,
+        non-periodic boundaries, the particles are restrained at the edges to
+        make space for their radii within the bounding box.
+
+        :param g: The vector of gravitational acceleration (default = [0, 0,
+            -9.90665])
+        :type g: numpy.array
+        :param gridnum: The number of sorting cells in each spatial direction
+            (default = [12, 12, 36])
+        :type gridnum: numpy.array
+        :param periodic: Set if the x and y boundaries are periodic (no = 0, yes 
+            = 1, default = 1)
+        :type periodic: int
+        :param contactmodel: The type of tangential contact model to use
+            (visco-frictional = 1, elasto-visco-frictional = 2, default = 2)
+        :type contactmodel: int
         '''
         self.g = g
         self.periodic[0] = periodic
