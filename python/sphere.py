@@ -10,6 +10,8 @@ import vtk
 
 numpy.seterr(all='warn', over='raise')
 
+# Sphere version number. This field should correspond to the value in
+# `../src/constants.h`.
 VERSION=1.0
 
 class Spherebin:
@@ -35,69 +37,164 @@ class Spherebin:
 
     def __init__(self, np = 1, nd = 3, nw = 1, sid = 'unnamed', fluid = False):
 
+        # Sphere version number
         self.version = numpy.ones(1, dtype=numpy.float64)*VERSION
+
+        # The number of spatial dimensions. Values other that 3 do not work
         self.nd = numpy.ones(1, dtype=numpy.int32)*nd
+
+        # The number of particles
         self.np = numpy.ones(1, dtype=numpy.uint32)*np
+
+        # The simulation id (text string)
         self.sid = sid
 
-        # Time parameters
+        ## Time parameters
+        # Computational time step length [s]
         self.time_dt         = numpy.zeros(1, dtype=numpy.float64)
+
+        # Current time [s]
         self.time_current    = numpy.zeros(1, dtype=numpy.float64)
+
+        # Total time [s]
         self.time_total      = numpy.zeros(1, dtype=numpy.float64)
+
+        # File output interval [s]
         self.time_file_dt    = numpy.zeros(1, dtype=numpy.float64)
+
+        # The number of files written
         self.time_step_count = numpy.zeros(1, dtype=numpy.uint32)
 
-        # World dimensions and grid data
+        ## World dimensions and grid data
+        # The Euclidean coordinate to the origo of the sorting grid
         self.origo   = numpy.zeros(self.nd, dtype=numpy.float64)
+
+        # The sorting grid size (x,y,z)
         self.L       = numpy.zeros(self.nd, dtype=numpy.float64)
+
+        # The number of sorting cells in each dimension
         self.num     = numpy.zeros(self.nd, dtype=numpy.uint32)
+
+        # Whether to treat the lateral boundaries as periodic (1) or not (0)
         self.periodic = numpy.zeros(1, dtype=numpy.uint32)
 
-        # Particle data
+        ## Particle data
+        # Particle position vectors [m]
         self.x       = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+
+        # Particle radii [m]
         self.radius  = numpy.ones(self.np, dtype=numpy.float64)
+
+        # The sums of x and y movement [m]
         self.xysum   = numpy.zeros((self.np, 2), dtype=numpy.float64)
+
+        # The linear velocities [m/s]
         self.vel     = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+
+        # Fix the particle horizontal velocities? 0: No, 1: Yes
         self.fixvel  = numpy.zeros(self.np, dtype=numpy.float64)
+
+        # The linear force vectors [N]
         self.force   = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+
+        # The angular position vectors [rad]
         self.angpos  = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+
+        # The angular velocity vectors [rad/s]
         self.angvel  = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+
+        # The torque vectors [N*m]
         self.torque  = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
 
+        # The shear friction energy dissipation rates [W]
         self.es_dot  = numpy.zeros(self.np, dtype=numpy.float64)
+
+        # The total shear energy dissipations [J]
         self.es      = numpy.zeros(self.np, dtype=numpy.float64)
+
+        # The viscous energy dissipation rates [W]
         self.ev_dot  = numpy.zeros(self.np, dtype=numpy.float64)
+
+        # The total viscois energy dissipation [J]
         self.ev      = numpy.zeros(self.np, dtype=numpy.float64)
+
+        # The total particle pressures [Pa]
         self.p       = numpy.zeros(self.np, dtype=numpy.float64)
 
+        # The gravitational acceleration vector [N*m/s]
         self.g        = numpy.array([0.0, 0.0, 0.0], dtype=numpy.float64)
+
+        # The Hookean coefficient for elastic stiffness normal to the contacts
+        # [N/m]
         self.k_n      = numpy.ones(1, dtype=numpy.float64) * 1.16e9
+
+        # The Hookean coefficient for elastic stiffness tangential to the
+        # contacts [N/m]
         self.k_t      = numpy.ones(1, dtype=numpy.float64) * 1.16e9
+
+        # The Hookean coefficient for elastic stiffness opposite of contact
+        # rotations. UNUSED
         self.k_r      = numpy.zeros(1, dtype=numpy.float64)
+
+        # The viscosity normal to the contact [N/(m/s)]
         self.gamma_n  = numpy.zeros(1, dtype=numpy.float64)
+
+        # The viscosity tangential to the contact [N/(m/s)]
         self.gamma_t  = numpy.zeros(1, dtype=numpy.float64)
+
+        # The viscosity to contact rotation [N/(m/s)]
         self.gamma_r  = numpy.zeros(1, dtype=numpy.float64)
+
+        # The coefficient of static friction on the contact [-]
         self.mu_s     = numpy.ones(1, dtype=numpy.float64)
+
+        # The coefficient of dynamic friction on the contact [-]
         self.mu_d     = numpy.ones(1, dtype=numpy.float64)
+
+        # The coefficient of rotational friction on the contact [-]
         self.mu_r     = numpy.zeros(1, dtype=numpy.float64)
+
+        # The viscosity normal to the walls [N/(m/s)]
         self.gamma_wn = numpy.ones(1, dtype=numpy.float64) * 1.0e3
+
+        # The viscosity tangential to the walls [N/(m/s)]
         self.gamma_wt = numpy.ones(1, dtype=numpy.float64) * 1.0e3
+
+        # The coeffient of static friction of the walls [-]
         self.mu_ws    = numpy.ones(1, dtype=numpy.float64)
+
+        # The coeffient of dynamic friction of the walls [-]
         self.mu_wd    = numpy.ones(1, dtype=numpy.float64)
+
+        # The particle density [kg/(m^3)]
         self.rho      = numpy.ones(1, dtype=numpy.float64) * 2600.0
+
+        # The contact model to use
+        # 1: Normal: elasto-viscous, tangential: visco-frictional
+        # 2: Normal: elasto-viscous, tangential: elasto-visco-frictional
         self.contactmodel = numpy.ones(1, dtype=numpy.uint32) * 2 # lin-visc-el
+
+        # Capillary bond prefactor
         self.kappa        = numpy.zeros(1, dtype=numpy.float64)
+
+        # Capillary bond debonding distance [m]
         self.db           = numpy.zeros(1, dtype=numpy.float64)
+
+        # Capillary bond liquid volume [m^3]
         self.V_b          = numpy.zeros(1, dtype=numpy.float64)
 
-        # Wall data
-        # nw: Number of dynamic walls
+        ## Wall data
+        # Number of dynamic walls
         # nw = 1: Uniaxial
         # nw = 2: Biaxial
         # nw = 5: Triaxial
         self.nw      = numpy.ones(1, dtype=numpy.uint32) * nw
+
+        # Wall modes
+        # 0: Fixed, 1: Normal stress condition, 2: Normal velocity condition
         self.wmode   = numpy.zeros(self.nw, dtype=numpy.int32)
 
+        # Wall normals
         self.w_n     = numpy.zeros((self.nw, self.nd), dtype=numpy.float64)
         if (self.nw >= 1):
             self.w_n[0,2] = -1.0
@@ -110,39 +207,83 @@ class Spherebin:
         if (self.nw >= 5):
             self.w_n[4,1] =  1.0
             
+        # Wall positions on the axes that are parallel to the wall normal [m]
         self.w_x     = numpy.ones(self.nw, dtype=numpy.float64)
+
+        # Wall masses [kg]
         self.w_m     = numpy.zeros(self.nw, dtype=numpy.float64)
+
+        # Wall velocities on the axes that are parallel to the wall normal [m/s]
         self.w_vel   = numpy.zeros(self.nw, dtype=numpy.float64)
+
+        # Wall forces on the axes that are parallel to the wall normal [m/s]
         self.w_force = numpy.zeros(self.nw, dtype=numpy.float64)
+
+        # Wall stress on the axes that are parallel to the wall normal [Pa]
         self.w_devs  = numpy.zeros(self.nw, dtype=numpy.float64)
+
+        # Wall stress modulation amplitude [Pa]
         self.w_devs_A = numpy.zeros(1, dtype=numpy.float64)
+
+        # Wall stress modulation frequency [Hz]
         self.w_devs_f = numpy.zeros(1, dtype=numpy.float64)
 
+        ## Bond parameters
+        # Radius multiplier to the parallel-bond radii
         self.lambda_bar = numpy.ones(1, dtype=numpy.float64)
+
+        # Number of bonds
         self.nb0 = numpy.zeros(1, dtype=numpy.uint32)
+
+        # Bond tensile strength [Pa]
         self.sigma_b = numpy.ones(1, dtype=numpy.uint32) * numpy.infty
+
+        # Bond shear strength [Pa]
         self.tau_b = numpy.ones(1, dtype=numpy.uint32) * numpy.infty
+
+        # Bond pairs
         self.bonds = numpy.zeros((self.nb0, 2), dtype=numpy.uint32)
+
+        # Parallel bond movement
         self.bonds_delta_n = numpy.zeros(self.nb0, dtype=numpy.float64)
+
+        # Shear bond movement
         self.bonds_delta_t = numpy.zeros((self.nb0, self.nd),
                                          dtype=numpy.float64)
+
+        # Twisting bond movement
         self.bonds_omega_n = numpy.zeros(self.nb0, dtype=numpy.float64)
+
+        # Bending bond movement
         self.bonds_omega_t = numpy.zeros((self.nb0, self.nd),
                                          dtype=numpy.float64)
 
+        ## Fluid parameters
+
+        # Simulate fluid? True: Yes, False: no
         self.fluid = fluid
+
+        # Fluid dynamic viscosity [N/(m/s)]
         self.nu = numpy.zeros(1, dtype=numpy.float64)
+
+        # Fluid velocities [m/s]
         self.v_f = numpy.zeros(
             (self.num[0], self.num[1], self.num[2], self.nd),
             dtype=numpy.float64)
+
+        # Fluid pressures [Pa]
         self.p_f = numpy.zeros((self.num[0], self.num[1], self.num[2]),
                                dtype=numpy.float64)
+
+        # Fluid cell porosities [-]
         self.phi = numpy.zeros((self.num[0], self.num[1], self.num[2]),
                                dtype=numpy.float64)
+
+        # Fluid cell porosity change [1/s]
         self.dphi = numpy.zeros((self.num[0], self.num[1], self.num[2]),
                                dtype=numpy.float64)
 
-        # Fluid density
+        # Fluid density [kg/(m^3)]
         self.rho_f = numpy.ones(1, dtype=numpy.float64) * 1.0e3
 
         # Pressure modulation at the top boundary
@@ -151,8 +292,10 @@ class Spherebin:
         self.p_mod_phi = numpy.zeros(1, dtype=numpy.float64) # Phase shift [rad]
 
         # Boundary conditions at the top and bottom of the fluid grid
+        # 0: Dirichlet, 1: Neumann
         self.bc_bot = numpy.zeros(1, dtype=numpy.int32)
         self.bc_top = numpy.zeros(1, dtype=numpy.int32)
+        # Free slip boundaries? 0: No, 1: yes
         self.free_slip_bot = numpy.zeros(1, dtype=numpy.int32)
         self.free_slip_top = numpy.zeros(1, dtype=numpy.int32)
 

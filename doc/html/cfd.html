@@ -419,13 +419,30 @@ pressures and velocities:</p>
 <h2>Boundary conditions<a class="headerlink" href="#boundary-conditions" title="Permalink to this headline">¶</a></h2>
 <p>The lateral boundaries are periodic. This cannot be changed in the current
 version of <tt class="docutils literal"><span class="pre">sphere</span></tt>. This means that the fluid properties at the paired,
-parallel lateral (<img class="math" src="_images/math/26eeb5258ca5099acf8fe96b2a1049c48c89a5e6.png" alt="x"/> and <img class="math" src="_images/math/092e364e1d9d19ad5fffb0b46ef4cc7f2da02c1c.png" alt="y"/>) boundaries are identical. This
-means that a flow leaving through one side reappears on the opposite sides.</p>
+parallel lateral (<img class="math" src="_images/math/26eeb5258ca5099acf8fe96b2a1049c48c89a5e6.png" alt="x"/> and <img class="math" src="_images/math/092e364e1d9d19ad5fffb0b46ef4cc7f2da02c1c.png" alt="y"/>) boundaries are identical. A flow
+leaving through one side reappears on the opposite side.</p>
 <p>The top and bottom boundary conditions of the fluid grid can be either: 1)
 prescribed pressure (Dirichlet), or 2) prescribed velocity (Neumann). The
-(horizontal) velocities parallel to the boundaries may either be fixed to 0 (no
-slip), or free to attain other values (free slip).</p>
-</div>
+(horizontal) velocities parallel to the boundaries may either be fixed to zero
+(no slip), or free to attain other values (free slip). The Dirichlet boundary
+condition is enforced by keeping the value of <img class="math" src="_images/math/eaf4418fbe935c15a606516d8f55dc380cd8e822.png" alt="\epsilon"/> constant at the
+boundaries, e.g.:</p>
+<div class="math">
+<p><img src="_images/math/01be15303939c78ee40a848a717482d046a9ad48.png" alt="\epsilon^{n+1}_{i_x,i_y,i_z = 1 \vee n_z}
+=
+\epsilon^{n}_{i_x,i_y,i_z = 1 \vee n_z}"/></p>
+</div><p>The Neumann boundary condition of no flow across the boundary is enforced by
+setting the gradient of <img class="math" src="_images/math/eaf4418fbe935c15a606516d8f55dc380cd8e822.png" alt="\epsilon"/> perpendicular to the boundary to zero,
+e.g.:</p>
+<div class="math">
+<p><img src="_images/math/bdc15139139f2cc22f5656d0456d7b432a72c4e8.png" alt="\nabla_z \epsilon^{n+1}_{i_x,i_y,i_z = 1 \vee n_z} = 0"/></p>
+</div><p>The no-slip boundary condition is enforced by setting the gradient of
+<img class="math" src="_images/math/eaf4418fbe935c15a606516d8f55dc380cd8e822.png" alt="\epsilon"/> parallel to the boundary to zero, e.g.:</p>
+<div class="math">
+<p><img src="_images/math/5c4e627793fb72f14a14540abaf5b0789767498b.png" alt="\nabla_x \epsilon^{n+1}_{i_x,i_y,i_z = 1 \vee n_z} = 0
+
+\nabla_y \epsilon^{n+1}_{i_x,i_y,i_z = 1 \vee n_z} = 0"/></p>
+</div></div>
 <div class="section" id="numerical-implementation">
 <h2>Numerical implementation<a class="headerlink" href="#numerical-implementation" title="Permalink to this headline">¶</a></h2>
 <p>Ghost nodes</p>
