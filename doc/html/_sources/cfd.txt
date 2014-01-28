@@ -430,8 +430,24 @@ pressures and velocities:
     \bar{\boldsymbol{v}}^* - \frac{\Delta t}{\rho} \nabla \epsilon
 
 
+Boundary conditions
+-------------------
+The lateral boundaries are periodic. This cannot be changed in the current
+version of ``sphere``. This means that the fluid properties at the paired,
+parallel lateral (:math:`x` and :math:`y`) boundaries are identical. This
+means that a flow leaving through one side reappears on the opposite sides.
+
+The top and bottom boundary conditions of the fluid grid can be either: 1) 
+prescribed pressure (Dirichlet), or 2) prescribed velocity (Neumann). The
+(horizontal) velocities parallel to the boundaries may either be fixed to 0 (no
+slip), or free to attain other values (free slip).
+
+
+
 Numerical implementation
 ------------------------
+Ghost nodes
+
 ---
 
 

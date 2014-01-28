@@ -142,10 +142,19 @@ class Spherebin:
         self.dphi = numpy.zeros((self.num[0], self.num[1], self.num[2]),
                                dtype=numpy.float64)
 
+        # Fluid density
         self.rho_f = numpy.ones(1, dtype=numpy.float64) * 1.0e3
-        self.p_mod_A = numpy.zeros(1, dtype=numpy.float64)
-        self.p_mod_f = numpy.zeros(1, dtype=numpy.float64)
-        self.p_mod_phi = numpy.zeros(1, dtype=numpy.float64)
+
+        # Pressure modulation at the top boundary
+        self.p_mod_A = numpy.zeros(1, dtype=numpy.float64)   # Amplitude [Pa]
+        self.p_mod_f = numpy.zeros(1, dtype=numpy.float64)   # Frequency [Hz]
+        self.p_mod_phi = numpy.zeros(1, dtype=numpy.float64) # Phase shift [rad]
+
+        # Boundary conditions at the top and bottom of the fluid grid
+        self.bc_bot = numpy.zeros(1, dtype=numpy.int32)
+        self.bc_top = numpy.zeros(1, dtype=numpy.int32)
+        self.free_slip_bot = numpy.zeros(1, dtype=numpy.int32)
+        self.free_slip_top = numpy.zeros(1, dtype=numpy.int32)
 
     def __cmp__(self, other):
         '''
@@ -223,7 +232,11 @@ class Spherebin:
                 self.rho_f == other.rho_f and\
                 self.p_mod_A == other.p_mod_A and\
                 self.p_mod_f == other.p_mod_f and\
-                self.p_mod_phi == other.p_mod_phi \
+                self.p_mod_phi == other.p_mod_phi and\
+                self.bc_bot == other.bc_bot and\
+                self.bc_top == other.bc_top and\
+                self.free_slip_bot == other.free_slip_bot and\
+                self.free_slip_top == other.free_slip_top \
                 ).all() == True):
                     return 0 # All equal
         else:
@@ -486,17 +499,23 @@ class Spherebin:
                     for y in range(self.num[1]):
                         for x in range(self.num[0]):
                             self.v_f[x,y,z,0] = \
-                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                                    numpy.fromfile(fh, dtype=numpy.float64,\
+                                    count=1)
                             self.v_f[x,y,z,1] = \
-                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                                    numpy.fromfile(fh, dtype=numpy.float64,\
+                                    count=1)
                             self.v_f[x,y,z,2] = \
-                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                                    numpy.fromfile(fh, dtype=numpy.float64,\
+                                    count=1)
                             self.p_f[x,y,z] = \
-                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                                    numpy.fromfile(fh, dtype=numpy.float64,\
+                                    count=1)
                             self.phi[x,y,z] = \
-                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                                    numpy.fromfile(fh, dtype=numpy.float64,\
+                                    count=1)
                             self.dphi[x,y,z] = \
-                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                                    numpy.fromfile(fh, dtype=numpy.float64,\
+                                    count=1)
 
                 if (self.version >= 0.36):
                     self.rho_f =\
@@ -507,6 +526,16 @@ class Spherebin:
                             numpy.fromfile(fh, dtype=numpy.float64, count=1)
                     self.p_mod_phi =\
                             numpy.fromfile(fh, dtype=numpy.float64, count=1)
+
+                    self.bc_bot =\
+                            numpy.fromfile(fh, dtype=numpy.int32, count=1)
+                    self.bc_top =\
+                            numpy.fromfile(fh, dtype=numpy.int32, count=1)
+                    self.free_slip_bot =\
+                            numpy.fromfile(fh, dtype=numpy.int32, count=1)
+                    self.free_slip_top =\
+                            numpy.fromfile(fh, dtype=numpy.int32, count=1)
+
 
         finally:
             if fh is not None:
@@ -636,10 +665,15 @@ class Spherebin:
                             fh.write(self.phi[x,y,z].astype(numpy.float64))
                             fh.write(self.dphi[x,y,z].astype(numpy.float64))
 
-            fh.write(self.rho_f.astype(numpy.float64))
-            fh.write(self.p_mod_A.astype(numpy.float64))
-            fh.write(self.p_mod_f.astype(numpy.float64))
-            fh.write(self.p_mod_phi.astype(numpy.float64))
+                fh.write(self.rho_f.astype(numpy.float64))
+                fh.write(self.p_mod_A.astype(numpy.float64))
+                fh.write(self.p_mod_f.astype(numpy.float64))
+                fh.write(self.p_mod_phi.astype(numpy.float64))
+
+                fh.write(self.bc_bot.astype(numpy.int32))
+                fh.write(self.bc_top.astype(numpy.int32))
+                fh.write(self.free_slip_bot.astype(numpy.int32))
+                fh.write(self.free_slip_top.astype(numpy.int32))
 
         finally:
             if fh is not None:

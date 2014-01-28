@@ -279,6 +279,11 @@ void DEM::readbin(const char *target)
         ifs.read(as_bytes(ns.p_mod_f), sizeof(Float));
         ifs.read(as_bytes(ns.p_mod_phi), sizeof(Float));
 
+        ifs.read(as_bytes(ns.bc_bot), sizeof(int));
+        ifs.read(as_bytes(ns.bc_top), sizeof(int));
+        ifs.read(as_bytes(ns.free_slip_bot), sizeof(int));
+        ifs.read(as_bytes(ns.free_slip_top), sizeof(int));
+
         if (verbose == 1)
             cout << "Done" << std::endl;
     }
@@ -458,12 +463,18 @@ void DEM::writebin(const char *target)
                     }
                 }
             }
+
+            ofs.write(as_bytes(ns.rho), sizeof(Float));
+            ofs.write(as_bytes(ns.p_mod_A), sizeof(Float));
+            ofs.write(as_bytes(ns.p_mod_f), sizeof(Float));
+            ofs.write(as_bytes(ns.p_mod_phi), sizeof(Float));
+
+            ofs.write(as_bytes(ns.bc_bot), sizeof(int));
+            ofs.write(as_bytes(ns.bc_top), sizeof(int));
+            ofs.write(as_bytes(ns.free_slip_bot), sizeof(int));
+            ofs.write(as_bytes(ns.free_slip_top), sizeof(int));
         }
 
-        ofs.write(as_bytes(ns.rho), sizeof(Float));
-        ofs.write(as_bytes(ns.p_mod_A), sizeof(Float));
-        ofs.write(as_bytes(ns.p_mod_f), sizeof(Float));
-        ofs.write(as_bytes(ns.p_mod_phi), sizeof(Float));
 
         // Close file if it is still open
         if (ofs.is_open())

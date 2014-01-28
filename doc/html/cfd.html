@@ -415,8 +415,20 @@ pressures and velocities:</p>
 <p><img src="_images/math/b55687e1799df2d682b5ba0c207ca16fa9c014fe.png" alt="\bar{\boldsymbol{v}}^{t+\Delta t} =
 \bar{\boldsymbol{v}}^* - \frac{\Delta t}{\rho} \nabla \epsilon"/></p>
 </div></div>
+<div class="section" id="boundary-conditions">
+<h2>Boundary conditions<a class="headerlink" href="#boundary-conditions" title="Permalink to this headline">¶</a></h2>
+<p>The lateral boundaries are periodic. This cannot be changed in the current
+version of <tt class="docutils literal"><span class="pre">sphere</span></tt>. This means that the fluid properties at the paired,
+parallel lateral (<img class="math" src="_images/math/26eeb5258ca5099acf8fe96b2a1049c48c89a5e6.png" alt="x"/> and <img class="math" src="_images/math/092e364e1d9d19ad5fffb0b46ef4cc7f2da02c1c.png" alt="y"/>) boundaries are identical. This
+means that a flow leaving through one side reappears on the opposite sides.</p>
+<p>The top and bottom boundary conditions of the fluid grid can be either: 1)
+prescribed pressure (Dirichlet), or 2) prescribed velocity (Neumann). The
+(horizontal) velocities parallel to the boundaries may either be fixed to 0 (no
+slip), or free to attain other values (free slip).</p>
+</div>
 <div class="section" id="numerical-implementation">
 <h2>Numerical implementation<a class="headerlink" href="#numerical-implementation" title="Permalink to this headline">¶</a></h2>
+<p>Ghost nodes</p>
 <p>&#8212;</p>
 </div>
 </div>
@@ -433,6 +445,7 @@ pressures and velocities:</p>
 <li><a class="reference internal" href="#derivation-of-the-navier-stokes-equations-with-porosity">Derivation of the Navier Stokes equations with porosity</a></li>
 <li><a class="reference internal" href="#porosity-estimation">Porosity estimation</a></li>
 <li><a class="reference internal" href="#solution-procedure-by-operator-splitting">Solution procedure by operator splitting</a></li>
+<li><a class="reference internal" href="#boundary-conditions">Boundary conditions</a></li>
 <li><a class="reference internal" href="#numerical-implementation">Numerical implementation</a></li>
 </ul>
 </li>
