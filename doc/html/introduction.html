@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -14,7 +16,7 @@
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
+        URL_ROOT:    '',
         VERSION:     '1.00-alpha',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -194,9 +196,20 @@ following commands to check the executable:</p>
 <div class="highlight-python"><pre>$ ./sphere --version</pre>
 </div>
 <p>The output should look similar to this:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">/home/adc/code/sphere/doc/sphinx/introduction.rst</tt>, line 155)</p>
-Command u&#8217;../../sphere &#8211;version&#8217; failed: [Errno 2] No such file or directory</div>
+<div class="highlight-text"><div class="highlight"><pre>.-------------------------------------.
+|              _    Compiled for 3D   |
+|             | |                     |
+|    ___ _ __ | |__   ___ _ __ ___    |
+|   / __| &#39;_ \| &#39;_ \ / _ \ &#39;__/ _ \   |
+|   \__ \ |_) | | | |  __/ | |  __/   |
+|   |___/ .__/|_| |_|\___|_|  \___|   |
+|       | |                           |
+|       |_|           Version: 0.35   |
+`-------------------------------------´
+ A discrete element method particle dynamics simulator.
+ Written by Anders Damsgaard Christensen, license GPLv3+.
+</pre></div>
+</div>
 <p>The build can be verified by running a number of automated tests:</p>
 <div class="highlight-python"><pre>$ make test</pre>
 </div>
@@ -303,7 +316,7 @@ in Python, and/or scene rendering using the built-in ray tracer.</li>
     </div>
     <div class="footer">
         &copy; Copyright 2014, Anders Damsgaard.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>
