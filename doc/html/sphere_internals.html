@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -16,7 +14,7 @@
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
+        URL_ROOT:    './',
         VERSION:     '1.00-alpha',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -50,26 +48,9 @@
   <div class="section" id="sphere-internals">
 <h1>sphere internals<a class="headerlink" href="#sphere-internals" title="Permalink to this headline">¶</a></h1>
 <p>The <em>sphere</em> executable has the following options:</p>
-<div class="highlight-text"><div class="highlight"><pre>$ ../../sphere --help
-../../sphere: particle dynamics simulator
-Usage: ../../sphere [OPTION[S]]... [FILE1 ...]
-Options:
--h, --help		print help
--V, --version		print version information and exit
--q, --quiet		suppress status messages to stdout
--n, --dry		show key experiment parameters and quit
--r, --render		render input files instead of simulating temporal evolution
--dc, --dont-check	don&#39;t check values before running
-
-Raytracer (-r) specific options:
--m &lt;method&gt; &lt;maxval&gt; [-l &lt;lower cutoff val&gt;], or
---method &lt;method&gt; &lt;maxval&gt; [-l &lt;lower cutoff val&gt;]
-	color visualization method, possible values:
-	normal, pres, vel, angvel, xdisp, angpos
-	&#39;normal&#39; is the default mode
-	if -l is appended, don&#39;t render particles with value below
-</pre></div>
-</div>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">/home/adc/code/sphere/doc/sphinx/sphere_internals.rst</tt>, line 6)</p>
+Command u&#8217;../../sphere &#8211;help&#8217; failed: [Errno 2] No such file or directory</div>
 <p>The most common way to invoke <em>sphere</em> is however via the Python API (e.g. <a class="reference internal" href="python_api.html#sphere.run" title="sphere.run"><tt class="xref py py-func docutils literal"><span class="pre">sphere.run()</span></tt></a>, <a class="reference internal" href="python_api.html#sphere.render" title="sphere.render"><tt class="xref py py-func docutils literal"><span class="pre">sphere.render()</span></tt></a>, etc.).</p>
 <p>subsection{The <em>sphere</em> algorithm}
 label{subsec:spherealgo}
@@ -236,14 +217,14 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 </div>
 <div class="section" id="c-reference">
 <h2>C++ reference<a class="headerlink" href="#c-reference" title="Permalink to this headline">¶</a></h2>
-<div class="line-block">
-<div class="line" id=""><span id="project0classDEM"></span><em>class</em> <strong>DEM</strong></div>
+<div class="line-block" id="project0classDEM">
+<div class="line"><em>class</em> <strong>DEM</strong></div>
 </div>
 <blockquote>
 <div><p></p>
 <p></p>
 <em>Public Functions</em><blockquote>
-<div><p id=""><span id="project0classDEM_1a59ab83e9cbdb7bbeb3f43564fbb294b4"></span><div class="line-block">
+<div><p><span class="target" id="project0classDEM_1a59ab83e9cbdb7bbeb3f43564fbb294b4"></span><div class="line-block">
 <div class="line"> <strong>DEM</strong>(std::string inputbin, const int verbosity = 1, const int checkVals = 1, const int dry = 0, const int initCuda = 1, const int transferConstMem = 1, const int darcyflow = 0)</div>
 </div>
 </p>
@@ -251,7 +232,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1aa3066aa501f982c2df51f58fb5a91148"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1aa3066aa501f982c2df51f58fb5a91148"></span><div class="line-block">
 <div class="line"> <strong>~DEM</strong>(void)</div>
 </div>
 </p>
@@ -259,7 +240,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1ac32ef9094b25ee9c35e30f4488491fe2"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1ac32ef9094b25ee9c35e30f4488491fe2"></span><div class="line-block">
 <div class="line">void <strong>readbin</strong>(const char * target)</div>
 </div>
 </p>
@@ -267,7 +248,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1a242634f10a9bc1f19e4eb46b7168f288"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1a242634f10a9bc1f19e4eb46b7168f288"></span><div class="line-block">
 <div class="line">void <strong>writebin</strong>(const char * target)</div>
 </div>
 </p>
@@ -275,7 +256,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1a101aafa4f3197948fafbb1500e58f0f5"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1a101aafa4f3197948fafbb1500e58f0f5"></span><div class="line-block">
 <div class="line">void <strong>checkValues</strong>(void)</div>
 </div>
 </p>
@@ -283,7 +264,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1ae2a1e6696686617f9cbe05b1a264212d"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1ae2a1e6696686617f9cbe05b1a264212d"></span><div class="line-block">
 <div class="line">void <strong>reportValues</strong>(void)</div>
 </div>
 </p>
@@ -291,7 +272,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1a870787f68a947706aac1960e5cc1eda8"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1a870787f68a947706aac1960e5cc1eda8"></span><div class="line-block">
 <div class="line">void <strong>startTime</strong>(void)</div>
 </div>
 </p>
@@ -299,7 +280,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1ab28a7813c5848d3b27e6f1ed5196d649"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1ab28a7813c5848d3b27e6f1ed5196d649"></span><div class="line-block">
 <div class="line">void <strong>render</strong>(const int method = 1, const float maxval = 1.0e3f, const float lower_cutoff = 0.0f, const float focalLength = 1.0f, const unsigned int img_width = 800, const unsigned int img_height = 800)</div>
 </div>
 </p>
@@ -307,7 +288,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1a5abc32b3691e7336e80cfab162d0a237"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1a5abc32b3691e7336e80cfab162d0a237"></span><div class="line-block">
 <div class="line">void <strong>writePPM</strong>(const char * target)</div>
 </div>
 </p>
@@ -315,7 +296,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1ad4e191a3aa8491ae04f1897ff1f24bde"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1ad4e191a3aa8491ae04f1897ff1f24bde"></span><div class="line-block">
 <div class="line">void <strong>porosity</strong>(const int z_slices = 10)</div>
 </div>
 </p>
@@ -323,7 +304,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1ad686ac121d845e804515bcf7209b9f71"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1ad686ac121d845e804515bcf7209b9f71"></span><div class="line-block">
 <div class="line">Float3 <strong>minPos</strong>(void)</div>
 </div>
 </p>
@@ -331,7 +312,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1ab6c76ee881de3d710fe1fdcb3ca46dfc"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1ab6c76ee881de3d710fe1fdcb3ca46dfc"></span><div class="line-block">
 <div class="line">Float3 <strong>maxPos</strong>(void)</div>
 </div>
 </p>
@@ -339,7 +320,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1a9fa9b39cf7f038cc961337f9d4e162e5"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1a9fa9b39cf7f038cc961337f9d4e162e5"></span><div class="line-block">
 <div class="line">void <strong>findOverlaps</strong>(std::vector&lt; std::vector&lt; unsigned int &gt; &gt; &amp; ij, std::vector&lt; Float &gt; &amp; delta_n_ij)</div>
 </div>
 </p>
@@ -347,7 +328,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1ad94250277dec22f68e096bbf149ff0a8"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1ad94250277dec22f68e096bbf149ff0a8"></span><div class="line-block">
 <div class="line">void <strong>forcechains</strong>(const std::string format = &#8220;interactive&#8221;, const int threedim = 1, const double lower_cutoff = 0.0, const double upper_cutoff = 1.0e9)</div>
 </div>
 </p>
@@ -355,7 +336,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1a4f398ac462ce442eff0b649286c03bcb"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1a4f398ac462ce442eff0b649286c03bcb"></span><div class="line-block">
 <div class="line">void <strong>printNSarray</strong>(FILE * stream, Float * arr)</div>
 </div>
 </p>
@@ -363,7 +344,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1a5495c54f09b7a9d157352daf7de77500"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1a5495c54f09b7a9d157352daf7de77500"></span><div class="line-block">
 <div class="line">void <strong>printNSarray</strong>(FILE * stream, Float * arr, std::string desc)</div>
 </div>
 </p>
@@ -371,7 +352,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1ae7b0770eb976dbc262e76f414444f78d"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1ae7b0770eb976dbc262e76f414444f78d"></span><div class="line-block">
 <div class="line">void <strong>printNSarray</strong>(FILE * stream, Float3 * arr)</div>
 </div>
 </p>
@@ -379,7 +360,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1add65316e75fc181c73ab636dff42187a"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1add65316e75fc181c73ab636dff42187a"></span><div class="line-block">
 <div class="line">void <strong>printNSarray</strong>(FILE * stream, Float3 * arr, std::string desc)</div>
 </div>
 </p>
@@ -387,7 +368,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1a777844d118f6d317b17466ec0760bbff"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1a777844d118f6d317b17466ec0760bbff"></span><div class="line-block">
 <div class="line">void <strong>writeNSarray</strong>(Float * array, const char * filename)</div>
 </div>
 </p>
@@ -395,7 +376,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="project0classDEM_1a9eb88295a2de9273d24605e960e1b6f0"></span><div class="line-block">
+<p><span class="target" id="project0classDEM_1a9eb88295a2de9273d24605e960e1b6f0"></span><div class="line-block">
 <div class="line">void <strong>writeNSarray</strong>(Float3 * array, const char * filename)</div>
 </div>
 </p>
@@ -459,7 +440,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
     </div>
     <div class="footer">
         &copy; Copyright 2014, Anders Damsgaard.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
     </div>
   </body>
 </html>
