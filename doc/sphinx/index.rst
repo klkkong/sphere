@@ -10,7 +10,7 @@ software. This document aims at guiding the installation process, documenting
 the usage, and explaining the relevant theory.
 
 ``sphere`` is developed by Anders Damsgaard as part as his Ph.D. project, under
-supervision of David Lunbek Egholm and Jan A. Piotrowski, all of the Department
+supervision of David Lundbek Egholm and Jan A. Piotrowski, all of the Department
 of Geoscience, Aarhus University, Denmark. The author welcomes interested third
 party developers. This document is a work in progress.
 
