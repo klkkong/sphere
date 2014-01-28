@@ -11,6 +11,7 @@
 
 // Including library files
 #include <iostream>
+#include <cstdio>
 #include <string>
 #include <cstdlib>
 
@@ -67,18 +68,20 @@ int main(const int argc, const char *argv[])
 
         // Display version with fancy ASCII art
         else if (argvi == "-V" || argvi == "--version") {
-            std::cout << ".-------------------------------------.\n"
-                "|              _    Compiled for " << ND << "D   |\n" 
+            printf(
+                ".-------------------------------------.\n"
+                "|              _                      |\n" 
                 "|             | |                     |\n" 
                 "|    ___ _ __ | |__   ___ _ __ ___    |\n"
                 "|   / __| '_ \\| '_ \\ / _ \\ '__/ _ \\   |\n"
                 "|   \\__ \\ |_) | | | |  __/ | |  __/   |\n"
                 "|   |___/ .__/|_| |_|\\___|_|  \\___|   |\n"
                 "|       | |                           |\n"
-                "|       |_|           Version: " << VERSION << "   |\n"           
+                "|       |_|           Version: %.2f   |\n"           
                 "`-------------------------------------´\n"
                 " A discrete element method particle dynamics simulator.\n"
-                " Written by Anders Damsgaard Christensen, license GPLv3+.\n";
+                " Written by Anders Damsgaard, license GPLv3+.\n"
+                " https://cs.au.dk/~adc/\n", VERSION);
             return 0;
         }
 
