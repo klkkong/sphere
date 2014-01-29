@@ -874,7 +874,7 @@ class Spherebin:
         '''
 
         lastfile = status(self.sid)
-        sb = Spherebin(fluid = True)
+        sb = Spherebin(fluid = self.fluid)
         for i in range(lastfile+1):
             fn = "../output/{0}.output{1:0=5}.bin".format(self.sid, i)
             sb.sid = self.sid + ".{:0=5}".format(i)
@@ -3188,7 +3188,7 @@ def thinsectionVideo(project,
 
     # Render thin section images (png)
     lastfile = status(project)
-    sb = Spherebin()
+    sb = Spherebin(fluid = self.fluid)
     for i in range(lastfile+1):
         fn = "../output/{0}.output{1:0=5}.bin".format(project, i)
         sb.sid = project + ".output{:0=5}".format(i)
@@ -3236,7 +3236,7 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
         Esum = numpy.zeros(lastfile+1)
 
         # Read energy values from project binaries
-        sb = Spherebin()
+        sb = Spherebin(fluid = self.fluid)
         for i in range(lastfile+1):
             fn = "../output/{0}.output{1:0=5}.bin".format(project, i)
             sb.readbin(fn, verbose = False)
@@ -3334,7 +3334,7 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
     elif method == 'walls':
 
         # Read energy values from project binaries
-        sb = Spherebin()
+        sb = Spherebin(fluid = self.fluid)
         for i in range(lastfile+1):
             fn = "../output/{0}.output{1:0=5}.bin".format(project, i)
             sb.readbin(fn, verbose = False)
@@ -3406,7 +3406,7 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
     elif method == 'triaxial':
 
         # Read energy values from project binaries
-        sb = Spherebin()
+        sb = Spherebin(fluid = self.fluid)
         for i in range(lastfile+1):
             fn = "../output/{0}.output{1:0=5}.bin".format(project, i)
             sb.readbin(fn, verbose = False)
@@ -3460,7 +3460,7 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
 
     elif method == 'shear':
 
-        sb = Spherebin()
+        sb = Spherebin(fluid = self.fluid)
         # Read stress values from project binaries
         for i in range(lastfile+1):
             fn = "../output/{0}.output{1:0=5}.bin".format(project, i)
