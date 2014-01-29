@@ -1425,7 +1425,8 @@ class Spherebin:
         '''
         Set the boundaries of the world. Particles will only be able to interact
         within this domain. With dynamic walls, allow space for expansions.
-        *Important*: The particle radii have to be set beforehand.
+        *Important*: The particle radii have to be set beforehand. The world
+        edges act as static walls.
 
         :param L: The upper boundary of the domain [m]
         :type L: numpy.array
@@ -1448,6 +1449,12 @@ class Spherebin:
         self.num[0] = numpy.ceil((self.L[0]-self.origo[0])/cellsize_min)
         self.num[1] = numpy.ceil((self.L[1]-self.origo[1])/cellsize_min)
         self.num[2] = numpy.ceil((self.L[2]-self.origo[2])/cellsize_min)
+
+        if (self.num.any() < 4):
+            raise Exception("Error: The grid must be at least 3 cells in each "
+            + "direction\nGrid: x={}, y={}, z={}\n".format(\
+                    self.num[0], self.num[1], self.num[2])
+            + "Please increase the world size.")
 
 
     def initGrid(self):
