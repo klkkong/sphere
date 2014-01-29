@@ -602,7 +602,7 @@ __host__ void DEM::startTime()
             iDivUp(grid.num[0], dimBlockFluid.x),
             iDivUp(grid.num[1], dimBlockFluid.y),
             iDivUp(grid.num[2], dimBlockFluid.z));
-    if (dimGridFluid.z > 64) {
+    if (dimGridFluid.z > 64 && navierstokes == 1) {
         cerr << "Error: dimGridFluid.z > 64" << endl;
         exit(1);
     }
@@ -624,7 +624,7 @@ __host__ void DEM::startTime()
             << dimBlock.x << "*" << dimBlock.y << "*" << dimBlock.z << "\n"
             << "  - Shared memory required per block: " << smemSize << " bytes"
             << endl;
-        if (navierstokes == 0) {
+        if (navierstokes == 1) {
             cout << "  - Blocks per fluid grid: "
                 << dimGridFluid.x << "*" << dimGridFluid.y << "*" <<
                 dimGridFluid.z << "\n"
