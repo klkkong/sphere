@@ -311,6 +311,28 @@ Radii must be set prior to calling this function.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="sphere.Spherebin.defineWorldBoundaries">
+<tt class="descname">defineWorldBoundaries</tt><big>(</big><em>L, origo=[0.0, 0.0, 0.0]</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.defineWorldBoundaries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the boundaries of the world. Particles will only be able to interact
+within this domain. With dynamic walls, allow space for expansions.
+<em>Important</em>: The particle radii have to be set beforehand.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>L</strong> (<em>numpy.array</em>) &#8211; The upper boundary of the domain [m]</li>
+<li><strong>origo</strong> &#8211; The lower boundary of the domain [m]. Negative values</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>won&#8217;t work. Default = [0.0, 0.0, 0.0].
+:type origo: numpy.array</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="sphere.Spherebin.energy">
 <tt class="descname">energy</tt><big>(</big><em>method</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the sum of the energy components of all particles.</p>

@@ -1421,6 +1421,35 @@ class Spherebin:
         self.contactmodel[0] = contactmodel
 
 
+    def defineWorldBoundaries(self, L, origo=[0.0, 0.0, 0.0]):
+        '''
+        Set the boundaries of the world. Particles will only be able to interact
+        within this domain. With dynamic walls, allow space for expansions.
+        *Important*: The particle radii have to be set beforehand.
+
+        :param L: The upper boundary of the domain [m]
+        :type L: numpy.array
+        :param origo: The lower boundary of the domain [m]. Negative values
+        won't work. Default = [0.0, 0.0, 0.0].
+        :type origo: numpy.array
+        '''
+
+        # Cell configuration
+        cellsize_min = 2.1 * numpy.amax(self.radius)
+
+        # Lower boundary of the sorting grid
+        self.origo[:] = origo[:]
+
+        # Upper boundary of the sorting grid
+        self.L[:] = L[:]
+
+        # Adjust the number of sorting cells along each axis to fit the largest
+        # particle size and the world size
+        self.num[0] = numpy.ceil((self.L[0]-self.origo[0])/cellsize_min)
+        self.num[1] = numpy.ceil((self.L[1]-self.origo[1])/cellsize_min)
+        self.num[2] = numpy.ceil((self.L[2]-self.origo[2])/cellsize_min)
+
+
     def initGrid(self):
         ''' Initialize grid suitable for the particle positions set previously.
             The margin parameter adjusts the distance (in no. of max. radii)

@@ -1445,6 +1445,8 @@ __global__ void findNSforcing(
         }
 
         // Find the gradient of epsilon, which changes during Jacobi iterations
+        // TODO: Should the gradient of epsilon also be fixed according to BC's
+        // here?
         const Float3 grad_epsilon
             = gradient(dev_ns_epsilon, x, y, z, dx, dy, dz);
 
