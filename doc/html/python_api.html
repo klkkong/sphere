@@ -315,7 +315,8 @@ Radii must be set prior to calling this function.</p>
 <tt class="descname">defineWorldBoundaries</tt><big>(</big><em>L, origo=[0.0, 0.0, 0.0]</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.defineWorldBoundaries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the boundaries of the world. Particles will only be able to interact
 within this domain. With dynamic walls, allow space for expansions.
-<em>Important</em>: The particle radii have to be set beforehand.</p>
+<em>Important</em>: The particle radii have to be set beforehand. The world
+edges act as static walls.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -716,7 +717,17 @@ experiment</p>
 <dl class="method">
 <dt id="sphere.Spherebin.status">
 <tt class="descname">status</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.Spherebin.status" title="Permalink to this definition">¶</a></dt>
-<dd><p>Show the current simulation status</p>
+<dd><p>Returns the current simulation status</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The number of the last output file written</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">

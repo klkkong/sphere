@@ -46,6 +46,12 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
     // Normal force component: Elastic - viscous damping
     Float3 f_n = (-devC_params.k_n * delta - devC_params.gamma_wn * vel_n) * n;
 
+    // Print data for contact model validation
+    /*printf("f_n_elast = %f\tgamma_wn = %f\tf_n_visc = %f\n",
+            devC_params.k_n*delta,
+            devC_params.gamma_wn,
+            devC_params.gamma_wn*vel_n);*/
+
     // Make sure the viscous damping doesn't exceed the elastic component,
     // i.e. the damping factor doesn't exceed the critical damping, 2*sqrt(m*k_n)
     if (dot(f_n, n) < 0.0f)
@@ -59,9 +65,15 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
 
     // Check that the tangential velocity is high enough to avoid
     // divide by zero (producing a NaN)
-    if (vel_t_length > 0.f) {
+    if (vel_t_length > 0.f && devC_params.gamma_wt > 0.f) {
 
-        Float f_t_visc  = devC_params.gamma_wt * vel_t_length; // Tangential force by viscous model
+        // Tangential force by viscous model
+        Float f_t_visc  = devC_params.gamma_wt * vel_t_length;
+
+        // Print data for contact model validation
+        /*printf("gamma_wt = %f\tf_t_visc = %f\n\n",
+                devC_params.gamma_wt,
+                devC_params.gamma_wt*vel_t_length);*/
 
         // Determine max. friction
         Float f_t_limit;

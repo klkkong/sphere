@@ -2508,8 +2508,25 @@ class Spherebin:
                 transparent=True)
 
     def status(self):
-        ''' Show the current simulation status '''
+        '''
+        Returns the current simulation status by using the simulation id
+        (``sid``) as an identifier.
+        
+        :returns: The number of the last output file written
+        :return type: int
+        '''
         return status(self.sid)
+
+
+    def totalMomentum(self):
+        '''
+        Returns the sum of particle momentums.
+
+        :returns: The sum of particle momentums (m*v) [N*s]
+        :return type: float
+        '''
+        v_norm = vector_norm(self.vel)
+        return numpy.sum(V_sphere(self.radius))*self.rho*v_norm
 
     def sheardisp(self, outformat='pdf', zslices=32):
         ''' Show particle x-displacement vs. the z-pos '''
@@ -3691,10 +3708,31 @@ def status(project):
             fh.close()
 
 def cleanup(spherebin):
-    'Remove input/output files and images from simulation'
+    '''
+    Removes the input/output files and images belonging to the object simulation
+    ID from the ``input/``, ``output/`` and ``img_out/`` folders.
+
+    :param spherebin: A Spherebin object
+    :type spherebin: Spherebin
+    '''
     subprocess.call("rm -f ../input/" + spherebin.sid + ".bin", shell=True)
     subprocess.call("rm -f ../output/" + spherebin.sid + ".*.bin", shell=True)
     subprocess.call("rm -f ../img_out/" + spherebin.sid + ".*", shell=True)
+
+def vector_norm(ndvector):
+    '''
+    Returns a 1D vector of normalized values. The input array should have
+    one row per particle, and three rows; one per Euclidean axis.
+
+    :returns: A value of the velocity magnutude per particle
+    :return type: numpy.array
+    '''
+
+    # Normalized velocities
+    v_norm = numpy.empty(ndvector.shape[0])
+    for i in range(ndvector.shape[0]):
+        v_norm[i] = numpy.sqrt(ndvector[i,:].dot(ndvector[i,:]))
+    return v_norm
 
 def V_sphere(r):
     ''' Returns the volume of a sphere with radius r
