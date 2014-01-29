@@ -4,6 +4,9 @@ find_package(PythonInterp REQUIRED)
 add_test(io_tests ${PYTHON_EXECUTABLE} 
     ${CMAKE_CURRENT_BINARY_DIR}/io_tests.py)
 
+add_test(contact_model_tests ${PYTHON_EXECUTABLE} 
+    ${CMAKE_CURRENT_BINARY_DIR}/contactmodel.py)
+
 add_test(io_tests_fluid ${PYTHON_EXECUTABLE} 
     ${CMAKE_CURRENT_BINARY_DIR}/io_tests_fluid.py)
 
