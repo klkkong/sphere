@@ -839,7 +839,6 @@ __host__ void DEM::startTime()
                 dev_distmod,
                 dev_delta_t);
 
-
         // Synchronization point
         cudaThreadSynchronize();
         //cudaPrintfDisplay(stdout, true);
@@ -1061,10 +1060,16 @@ __host__ void DEM::startTime()
                 transferNSepsilonFromGlobalDeviceMemory();
                 printNSarray(stdout, ns.epsilon, "epsilon");*/
                 
-                setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                /*setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_epsilon);
                 cudaThreadSynchronize();
                 checkForCudaErrors("Post setNSghostNodesFloat(dev_ns_epsilon)",
+                        iter);*/
+                setNSghostNodesEpsilon<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_epsilon,
+                        ns.bc_bot, ns.bc_top);
+                cudaThreadSynchronize();
+                checkForCudaErrors("Post setNSghostNodesEpsilon(1)",
                         iter);
                 /*std::cout << "\n###### EPSILON AFTER setNSghostNodes ######"
                     << std::endl;
@@ -1128,7 +1133,7 @@ __host__ void DEM::startTime()
                         dev_ns_epsilon,
                         ns.bc_bot, ns.bc_top);
                 cudaThreadSynchronize();
-                checkForCudaErrors("Post setNSghostNodesFloat(dev_ns_epsilon)",
+                checkForCudaErrors("Post setNSghostNodesEpsilon(2)",
                         iter);
 
                 // Perform a single Jacobi iteration

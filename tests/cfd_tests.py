@@ -200,8 +200,9 @@ for it in range(1,py.status()): # gradient should be smooth in all output files
 
 # Top: Dirichlet, bot: Neumann
 # This test passes with BETA=0.0 and tolerance=1.0e-9
-orig.fluid=False
-orig.time_total[0] = 1.0
+orig.fluid=True
+orig.time_total[0] = 1.0e-2
+orig.time_file_dt = orig.time_total/20
 orig.p_f[:,:,-1] = 1.0
 orig.g[2] = -10.0
 orig.nu[0] = 8.9e-4     # water
