@@ -10,10 +10,11 @@ print("### CFD tests ###")
 
 # Iteration and conservation of mass test
 # No gravity, no pressure gradients => no flow
-orig = sphere.Spherebin(np = 1e4, nd = 3, nw = 0, sid = "cfdtest", fluid = True)
-orig.generateRadii(radius_mean = 0.05, histogram=False)
+orig = sphere.Spherebin(np = 0, nd = 3, nw = 0, sid = "cfdtest", fluid = True)
+cleanup(orig)
 orig.defaultParams(mu_s = 0.4, mu_d = 0.4, nu = 8.9e-4)
-orig.initRandomGridPos(gridnum = numpy.array([40, 40, 1000]), periodic = 1, contactmodel = 1)
+orig.addParticle([0.5,0.5,0.5], 0.05)
+orig.defineWorldBoundaries([5.0,5.0,5.0])
 orig.initFluid(nu = 0.0)
 orig.initTemporal(total = 0.002, file_dt = 0.001)
 orig.time_file_dt = orig.time_dt*0.99
@@ -51,7 +52,7 @@ else:
 # Convergence rate (2/2)
 # This test passes with BETA=0.0 and tolerance=1.0e-9
 it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
-if (it[0,1] < 700 and it[1,1] < 250 and (it[2:,1] < 20).all()):
+if ((it[0:6,1] < 1000).all() and (it[6:,1] < 20).all()):
     print("Convergence rate (2/2):\t" + passed())
 else:
     print("Convergence rate (2/2):\t" + failed())
@@ -153,6 +154,7 @@ else:
 
 
 # Slow pressure modulation test
+'''
 orig.time_total[0] = 1.0e-1
 orig.time_file_dt[0] = 0.101*orig.time_total[0]
 orig.nu[0] = 0.0 # dont let diffusion add transient effects
@@ -172,6 +174,7 @@ for it in range(1,py.status()): # gradient should be smooth in all output files
             ideal_grad_p_z - py.p_f[0,0,:],\
             'Slow pressure modulation (' + 
             str(it+1) + '/' + str(py.status()) + '):', tolerance=1.0e-1)
+'''
 
 # Fast pressure modulation test
 orig.time_total[0] = 1.0e-2
@@ -194,5 +197,29 @@ for it in range(1,py.status()): # gradient should be smooth in all output files
             'Fast pressure modulation (' + 
             str(it+1) + '/' + str(py.status()) + '):', tolerance=1.0e-1)
 
+
+# Top: Dirichlet, bot: Neumann
+# This test passes with BETA=0.0 and tolerance=1.0e-9
+orig.fluid=False
+orig.time_total[0] = 1.0
+orig.p_f[:,:,-1] = 1.0
+orig.g[2] = -10.0
+orig.nu[0] = 8.9e-4     # water
+orig.bc_bot[0] = 1
+orig.writebin(verbose=False)
+orig.run(dry=True)
+orig.run(verbose=True)
+py.readlast(verbose = False)
+#ideal_grad_p_z = numpy.linspace(orig.p_f[0,0,0], orig.p_f[0,0,-1], orig.num[2])
+py.writeVTKall()
+#compareNumpyArraysClose(numpy.zeros((1,orig.num[2])),\
+        #ideal_grad_p_z - py.p_f[0,0,:],\
+        #"Pressure gradient:\t", tolerance=1.0e-2)
+
+# Fluid flow direction, opposite of gradient (i.e. towards -z)
+#if ((py.v_f[:,:,:,2] < 0.0).all() and (py.v_f[:,:,:,0:1] < 1.0e-7).all()):
+    #print("Flow field:\t\t" + passed())
+#else:
+    #print("Flow field:\t\t" + failed())
 
 #cleanup(orig)
