@@ -1431,7 +1431,7 @@ class Spherebin:
         :param L: The upper boundary of the domain [m]
         :type L: numpy.array
         :param origo: The lower boundary of the domain [m]. Negative values
-        won't work. Default = [0.0, 0.0, 0.0].
+            won't work. Default = [0.0, 0.0, 0.0].
         :type origo: numpy.array
         '''
 
