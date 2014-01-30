@@ -21,6 +21,7 @@ orig.defineWorldBoundaries(L=[10,10,10])
 orig.gamma_wn[0] = 0.0  # Disable wall viscosity
 orig.gamma_wt[0] = 0.0  # Disable wall viscosity
 orig.initTemporal(total = 1.0, file_dt = 0.01)
+#orig.time_dt = orig.time_dt*0.1
 orig.writebin(verbose=False)
 moment_before = orig.totalMomentum()
 orig.run(verbose=False)
@@ -29,6 +30,8 @@ orig.readlast(verbose=False)
 moment_after = orig.totalMomentum()
 print(moment_before)
 print(moment_after)
+print("time step: " + str(orig.time_dt[0]))
+print(str((moment_after[0]-moment_before[0])/moment_before[0]*100.0) + " %")
 pytestutils.compareFloats(moment_before, moment_after, "Normal wall collision:")
 
 ''' This test isn't useful unless there is a tangential force component

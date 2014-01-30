@@ -413,6 +413,57 @@ __global__ void setNSghostNodes(T* dev_scalarfield)
     }
 }
 
+// Update a field in the ghost nodes from their parent cell values. The edge
+// (diagonal) cells are not written since they are not read.
+__global__ void setNSghostNodesEpsilon(
+        Float* dev_ns_epsilon,
+        int bc_bot,
+        int bc_top)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    // check that we are not outside the fluid grid
+    if (x < nx && y < ny && z < nz) {
+
+        const Float val = dev_ns_epsilon[idx(x,y,z)];
+
+        // x
+        if (x == 0)
+            dev_ns_epsilon[idx(nx,y,z)] = val;
+        if (x == nx-1)
+            dev_ns_epsilon[idx(-1,y,z)] = val;
+
+        // y
+        if (y == 0)
+            dev_ns_epsilon[idx(x,ny,z)] = val;
+        if (y == ny-1)
+            dev_ns_epsilon[idx(x,-1,z)] = val;
+
+        // z
+        if (z == 0 && bc_bot == 0)
+            dev_ns_epsilon[idx(x,y,-1)] = val;     // Dirichlet
+        if (z == 1 && bc_bot == 1)
+            dev_ns_epsilon[idx(x,y,-1)] = val;     // Neumann
+        if (z == 0 && bc_bot == 2)
+            dev_ns_epsilon[idx(x,y,nz)] = val;     // Periodic -z
+
+        if (z == nz-1 && bc_top == 0)
+            dev_ns_epsilon[idx(x,y,nz)] = val;     // Dirichlet
+        if (z == nz-2 && bc_top == 1)
+            dev_ns_epsilon[idx(x,y,nz)] = val;     // Neumann
+        if (z == nz-1 && bc_top == 2)
+            dev_ns_epsilon[idx(x,y,-1)] = val;     // Periodic +z
+    }
+}
+
 // Update the tensor field for the ghost nodes from their parent cell values.
 // The edge (diagonal) cells are not written since they are not read. Launch
 // this kernel for all cells in the grid.
