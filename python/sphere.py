@@ -3109,7 +3109,7 @@ class Spherebin:
 
         See also: :func:`setFluidPressureModulation()`
         '''
-        setFluidPressureModulation(A = 0.0, f = 0.0)
+        self.setFluidPressureModulation(A = 0.0, f = 0.0)
 
     def plotPrescribedFluidPressures(self, format='png'):
         ''' Plot the prescribed fluid pressures through time that may be

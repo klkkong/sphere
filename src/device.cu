@@ -679,7 +679,6 @@ __host__ void DEM::startTime()
     double t_integrateWalls = 0.0;
 
     double t_findPorositiesDev = 0.0;
-    double t_findvvOuterProdNS = 0.0;
     double t_findNSstressTensor = 0.0;
     double t_findNSdivphiviv = 0.0;
     double t_findNSdivphitau = 0.0;
@@ -1437,7 +1436,7 @@ __host__ void DEM::startTime()
         double t_sum = t_calcParticleCellID + t_thrustsort + t_reorderArrays +
             t_topology + t_interact + t_bondsLinear + t_latticeBoltzmannD3Q19 +
             t_integrate + t_summation + t_integrateWalls + t_findPorositiesDev +
-            t_findvvOuterProdNS + t_findNSstressTensor + t_findvvOuterProdNS +
+            t_findNSstressTensor +
             t_findNSdivphiviv + t_findNSdivphitau + t_findPredNSvelocities +
             t_setNSepsilon + t_setNSdirichlet + t_setNSghostNodesDev +
             t_findNSforcing + t_jacobiIterationNS + t_updateNSvelocityPressure;
@@ -1470,8 +1469,6 @@ __host__ void DEM::startTime()
         if (navierstokes == 1) {
             cout << "  - findPorositiesDev:\t\t" << t_findPorositiesDev/1000.0
             << " s" << "\t(" << 100.0*t_findPorositiesDev/t_sum << " %)\n"
-            << "  - findvvOuterProdNS:\t\t" << t_findvvOuterProdNS/1000.0
-            << " s" << "\t(" << 100.0*t_findvvOuterProdNS/t_sum << " %)\n"
             << "  - findNSstressTensor:\t\t" << t_findNSstressTensor/1000.0
             << " s" << "\t(" << 100.0*t_findNSstressTensor/t_sum << " %)\n"
             << "  - findNSdivphiviv:\t\t" << t_findNSdivphiviv/1000.0
