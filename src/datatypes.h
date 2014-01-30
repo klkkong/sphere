@@ -111,7 +111,6 @@ struct NavierStokes {
     int     nx, ny, nz;  // Number of cells in each dim
     Float   dx, dy, dz;  // Cell length in each dim
     Float*  p;           // Cell hydraulic pressures
-    Float3* dp;          // Cell fluid velocity
     Float3* v;           // Cell fluid velocity
     Float3* v_p;         // Predicted fluid velocity
     Float*  phi;         // Cell porosity

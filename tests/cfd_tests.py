@@ -23,6 +23,7 @@ orig.g[2] = 0.0
 orig.writebin(verbose=False)
 orig.run(verbose=False)
 py = Spherebin(sid = orig.sid, fluid = True)
+
 ones = numpy.ones((orig.num))
 py.readlast(verbose = False)
 compareNumpyArrays(ones, py.p_f, "Conservation of pressure:")
@@ -153,8 +154,9 @@ else:
     print("Diffusion-advection (2/2):" + failed())
 
 
+
 # Slow pressure modulation test
-'''
+
 orig.time_total[0] = 1.0e-1
 orig.time_file_dt[0] = 0.101*orig.time_total[0]
 orig.nu[0] = 0.0 # dont let diffusion add transient effects
@@ -174,7 +176,7 @@ for it in range(1,py.status()): # gradient should be smooth in all output files
             ideal_grad_p_z - py.p_f[0,0,:],\
             'Slow pressure modulation (' + 
             str(it+1) + '/' + str(py.status()) + '):', tolerance=1.0e-1)
-'''
+
 
 # Fast pressure modulation test
 orig.time_total[0] = 1.0e-2
@@ -197,23 +199,21 @@ for it in range(1,py.status()+1): # gradient should be smooth in all output file
             'Fast pressure modulation (' + 
             str(it) + '/' + str(py.status()) + '):', tolerance=1.0e-1)
 
-
 # Top: Dirichlet, bot: Neumann
 # This test passes with BETA=0.0 and tolerance=1.0e-9
-orig.fluid=True
 orig.disableFluidPressureModulation()
 orig.time_total[0] = 1.0e-2
 orig.time_file_dt = orig.time_total/20
 orig.p_f[:,:,-1] = 1.0
 orig.g[2] = -10.0
 orig.nu[0] = 8.9e-4     # water
-orig.bc_bot[0] = 1
+orig.bc_bot[0] = 1      # No-flow BC at bottom
 orig.writebin(verbose=False)
 orig.run(dry=True)
 orig.run(verbose=True)
+orig.writeVTKall()
 py.readlast(verbose = False)
 #ideal_grad_p_z = numpy.linspace(orig.p_f[0,0,0], orig.p_f[0,0,-1], orig.num[2])
-py.writeVTKall()
 #compareNumpyArraysClose(numpy.zeros((1,orig.num[2])),\
         #ideal_grad_p_z - py.p_f[0,0,:],\
         #"Pressure gradient:\t", tolerance=1.0e-2)

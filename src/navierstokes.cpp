@@ -24,8 +24,6 @@ void DEM::initNSmem()
     unsigned int ncells = NScells();
 
     ns.p     = new Float[ncells];  // hydraulic pressure
-    //ns.p_new = new Float[ncells];  // hydraulic pressure
-    ns.dp    = new Float3[ncells]; // hydraulic pressure gradient
     ns.v     = new Float3[ncells]; // hydraulic velocity
     ns.v_p   = new Float3[ncells]; // predicted hydraulic velocity
     ns.phi   = new Float[ncells];  // porosity
@@ -45,8 +43,6 @@ unsigned int DEM::NScells()
 void DEM::freeNSmem()
 {
     delete[] ns.p;
-    //delete[] ns.p_new;
-    delete[] ns.dp;
     delete[] ns.v;
     delete[] ns.v_p;
     delete[] ns.phi;

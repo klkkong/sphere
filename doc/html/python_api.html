@@ -323,14 +323,21 @@ edges act as static walls.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>L</strong> (<em>numpy.array</em>) &#8211; The upper boundary of the domain [m]</li>
-<li><strong>origo</strong> &#8211; The lower boundary of the domain [m]. Negative values</li>
+<li><strong>origo</strong> (<em>numpy.array</em>) &#8211; The lower boundary of the domain [m]. Negative values
+won&#8217;t work. Default = [0.0, 0.0, 0.0].</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>won&#8217;t work. Default = [0.0, 0.0, 0.0].
-:type origo: numpy.array</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.Spherebin.disableFluidPressureModulation">
+<tt class="descname">disableFluidPressureModulation</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.Spherebin.disableFluidPressureModulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters for the sine wave modulating the fluid pressures
+at the top boundary to zero.</p>
+<p>See also: <a class="reference internal" href="#sphere.Spherebin.setFluidPressureModulation" title="sphere.Spherebin.setFluidPressureModulation"><tt class="xref py py-func docutils literal"><span class="pre">setFluidPressureModulation()</span></tt></a></p>
 </dd></dl>
 
 <dl class="method">
@@ -683,6 +690,7 @@ at the top boundary. Note that a cos-wave is obtained with phi=pi/2.</p>
 </tr>
 </tbody>
 </table>
+<p>See also: <a class="reference internal" href="#sphere.Spherebin.disableFluidPressureModulation" title="sphere.Spherebin.disableFluidPressureModulation"><tt class="xref py py-func docutils literal"><span class="pre">disableFluidPressureModulation()</span></tt></a></p>
 </dd></dl>
 
 <dl class="method">
@@ -717,7 +725,8 @@ experiment</p>
 <dl class="method">
 <dt id="sphere.Spherebin.status">
 <tt class="descname">status</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.Spherebin.status" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the current simulation status</p>
+<dd><p>Returns the current simulation status by using the simulation id
+(<tt class="docutils literal"><span class="pre">sid</span></tt>) as an identifier.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -750,6 +759,22 @@ gnuplot&gt; plot &#8216;&lt;sid&gt;-ts-x1x3.txt&#8217; with circles palette fs  
 <dt id="sphere.Spherebin.torqueScript">
 <tt class="descname">torqueScript</tt><big>(</big><em>email='adc&#64;geo.au.dk'</em>, <em>email_alerts='ae'</em>, <em>walltime='24:00:00'</em>, <em>queue='qfermi'</em>, <em>cudapath='/com/cuda/4.0.17/cuda'</em>, <em>spheredir='/home/adc/code/sphere'</em>, <em>workdir='/scratch'</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.torqueScript" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create job script for the Torque queue manager for the binary</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.Spherebin.totalMomentum">
+<tt class="descname">totalMomentum</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.Spherebin.totalMomentum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the sum of particle momentums.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The sum of particle momentums (m*v) [N*s]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -949,7 +974,16 @@ file name will be in the format <tt class="docutils literal"><span class="pre">&
 <dl class="function">
 <dt id="sphere.cleanup">
 <tt class="descclassname">sphere.</tt><tt class="descname">cleanup</tt><big>(</big><em>spherebin</em><big>)</big><a class="headerlink" href="#sphere.cleanup" title="Permalink to this definition">¶</a></dt>
-<dd><p>Remove input/output files and images from simulation</p>
+<dd><p>Removes the input/output files and images belonging to the object simulation
+ID from the <tt class="docutils literal"><span class="pre">input/</span></tt>, <tt class="docutils literal"><span class="pre">output/</span></tt> and <tt class="docutils literal"><span class="pre">img_out/</span></tt> folders.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spherebin</strong> (<em>Spherebin</em>) &#8211; A Spherebin object</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -996,6 +1030,23 @@ Returns the filename of the script</p>
 <dt id="sphere.torqueScriptSerial3">
 <tt class="descclassname">sphere.</tt><tt class="descname">torqueScriptSerial3</tt><big>(</big><em>obj1</em>, <em>obj2</em>, <em>obj3</em>, <em>email='adc&#64;geo.au.dk'</em>, <em>email_alerts='ae'</em>, <em>walltime='24:00:00'</em>, <em>queue='qfermi'</em>, <em>cudapath='/com/cuda/4.0.17/cuda'</em>, <em>spheredir='/home/adc/code/sphere'</em>, <em>workdir='/scratch'</em><big>)</big><a class="headerlink" href="#sphere.torqueScriptSerial3" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create job script for the Torque queue manager for three binaries</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="sphere.vector_norm">
+<tt class="descclassname">sphere.</tt><tt class="descname">vector_norm</tt><big>(</big><em>ndvector</em><big>)</big><a class="headerlink" href="#sphere.vector_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a 1D vector of normalized values. The input array should have
+one row per particle, and three rows; one per Euclidean axis.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A value of the velocity magnutude per particle</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">

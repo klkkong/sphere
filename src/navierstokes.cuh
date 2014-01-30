@@ -31,7 +31,6 @@ void DEM::initNSmemDev(void)
     unsigned int memSizeF  = sizeof(Float)*NScells();
 
     cudaMalloc((void**)&dev_ns_p, memSizeF);     // hydraulic pressure
-    cudaMalloc((void**)&dev_ns_dp, memSizeF*3);  // hydraulic pressure gradient
     cudaMalloc((void**)&dev_ns_v, memSizeF*3);   // cell hydraulic velocity
     cudaMalloc((void**)&dev_ns_v_p, memSizeF*3); // predicted cell velocity
     cudaMalloc((void**)&dev_ns_phi, memSizeF);   // cell porosity
@@ -54,7 +53,6 @@ void DEM::initNSmemDev(void)
 void DEM::freeNSmemDev()
 {
     cudaFree(dev_ns_p);
-    cudaFree(dev_ns_dp);
     cudaFree(dev_ns_v);
     cudaFree(dev_ns_v_p);
     cudaFree(dev_ns_phi);
@@ -87,7 +85,6 @@ void DEM::transferNStoGlobalDeviceMemory(int statusmsg)
 
     cudaMemcpy(dev_ns_p, ns.p, memSizeF, cudaMemcpyHostToDevice);
     checkForCudaErrors("transferNStoGlobalDeviceMemory after first cudaMemcpy");
-    cudaMemcpy(dev_ns_dp, ns.dp, memSizeF*3, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_ns_v, ns.v, memSizeF*3, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_ns_v_p, ns.v_p, memSizeF*3, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_ns_phi, ns.phi, memSizeF, cudaMemcpyHostToDevice);
@@ -108,7 +105,6 @@ void DEM::transferNSfromGlobalDeviceMemory(int statusmsg)
     unsigned int memSizeF  = sizeof(Float)*NScells();
 
     cudaMemcpy(ns.p, dev_ns_p, memSizeF, cudaMemcpyDeviceToHost);
-    cudaMemcpy(ns.dp, dev_ns_dp, memSizeF*3, cudaMemcpyDeviceToHost);
     cudaMemcpy(ns.v, dev_ns_v, memSizeF*3, cudaMemcpyDeviceToHost);
     cudaMemcpy(ns.v_p, dev_ns_v_p, memSizeF*3, cudaMemcpyDeviceToHost);
     cudaMemcpy(ns.phi, dev_ns_phi, memSizeF, cudaMemcpyDeviceToHost);
@@ -247,14 +243,13 @@ __global__ void setNSepsilonTop(
 }
 __device__ void copyNSvalsDev(
         unsigned int read, unsigned int write,
-        Float* dev_ns_p, Float3* dev_ns_dp,
+        Float* dev_ns_p,
         Float3* dev_ns_v, Float3* dev_ns_v_p,
         Float* dev_ns_phi, Float* dev_ns_dphi,
         Float* dev_ns_epsilon)
 {
     // Coalesced read
     const Float  p       = dev_ns_p[read];
-    const Float3 dp      = dev_ns_dp[read];
     const Float3 v       = dev_ns_v[read];
     const Float3 v_p     = dev_ns_v_p[read];
     const Float  phi     = dev_ns_phi[read];
@@ -264,7 +259,6 @@ __device__ void copyNSvalsDev(
     // Coalesced write
     __syncthreads();
     dev_ns_p[write]       = p;
-    dev_ns_dp[write]      = dp;
     dev_ns_v[write]       = v;
     dev_ns_v_p[write]     = v_p;
     dev_ns_phi[write]     = phi;
@@ -277,7 +271,7 @@ __device__ void copyNSvalsDev(
 // are not written since they are not read. Launch this kernel for all cells in
 // the grid
 __global__ void setNSghostNodesDev(
-        Float* dev_ns_p, Float3* dev_ns_dp,
+        Float* dev_ns_p,
         Float3* dev_ns_v, Float3* dev_ns_v_p,
         Float* dev_ns_phi, Float* dev_ns_dphi,
         Float* dev_ns_epsilon)
@@ -304,7 +298,7 @@ __global__ void setNSghostNodesDev(
         if (x == 0) {
             writeidx = idx(nx,y,z);
             copyNSvalsDev(cellidx, writeidx,
-                    dev_ns_p, dev_ns_dp,
+                    dev_ns_p,
                     dev_ns_v, dev_ns_v_p,
                     dev_ns_phi, dev_ns_dphi,
                     dev_ns_epsilon);
@@ -312,7 +306,7 @@ __global__ void setNSghostNodesDev(
         if (x == nx-1) {
             writeidx = idx(-1,y,z);
             copyNSvalsDev(cellidx, writeidx,
-                    dev_ns_p, dev_ns_dp,
+                    dev_ns_p,
                     dev_ns_v, dev_ns_v_p,
                     dev_ns_phi, dev_ns_dphi,
                     dev_ns_epsilon);
@@ -321,7 +315,7 @@ __global__ void setNSghostNodesDev(
         if (y == 0) {
             writeidx = idx(x,ny,z);
             copyNSvalsDev(cellidx, writeidx,
-                    dev_ns_p, dev_ns_dp,
+                    dev_ns_p,
                     dev_ns_v, dev_ns_v_p,
                     dev_ns_phi, dev_ns_dphi,
                     dev_ns_epsilon);
@@ -329,7 +323,7 @@ __global__ void setNSghostNodesDev(
         if (y == ny-1) {
             writeidx = idx(x,-1,z);
             copyNSvalsDev(cellidx, writeidx,
-                    dev_ns_p, dev_ns_dp,
+                    dev_ns_p,
                     dev_ns_v, dev_ns_v_p,
                     dev_ns_phi, dev_ns_dphi,
                     dev_ns_epsilon);
@@ -339,7 +333,7 @@ __global__ void setNSghostNodesDev(
         if (z == 0) {
             writeidx = idx(x,y,-1);
             copyNSvalsDev(cellidx, writeidx,
-                    dev_ns_p, dev_ns_dp,
+                    dev_ns_p,
                     dev_ns_v, dev_ns_v_p,
                     dev_ns_phi, dev_ns_dphi,
                     dev_ns_epsilon);
@@ -347,7 +341,7 @@ __global__ void setNSghostNodesDev(
         if (z == nz-1) {
             writeidx = idx(x,y,nz);
             copyNSvalsDev(cellidx, writeidx,
-                    dev_ns_p, dev_ns_dp,
+                    dev_ns_p,
                     dev_ns_v, dev_ns_v_p,
                     dev_ns_phi, dev_ns_dphi,
                     dev_ns_epsilon);
@@ -357,7 +351,7 @@ __global__ void setNSghostNodesDev(
         /*if (z == 0) {
             writeidx = idx(x,y,nz);
             copyNSvalsDev(cellidx, writeidx,
-                    dev_ns_p, dev_ns_dp,
+                    dev_ns_p,
                     dev_ns_v, dev_ns_v_p,
                     dev_ns_phi, dev_ns_dphi,
                     dev_ns_epsilon);
@@ -365,7 +359,7 @@ __global__ void setNSghostNodesDev(
         if (z == nz-1) {
             writeidx = idx(x,y,-1);
             copyNSvalsDev(cellidx, writeidx,
-                    dev_ns_p, dev_ns_dp,
+                    dev_ns_p,
                     dev_ns_v, dev_ns_v_p,
                     dev_ns_phi, dev_ns_dphi,
                     dev_ns_epsilon);
@@ -415,8 +409,9 @@ __global__ void setNSghostNodes(T* dev_scalarfield)
 
 // Update a field in the ghost nodes from their parent cell values. The edge
 // (diagonal) cells are not written since they are not read.
-__global__ void setNSghostNodesEpsilon(
-        Float* dev_ns_epsilon,
+template<typename T>
+__global__ void setNSghostNodes(
+        T* dev_scalarfield,
         int bc_bot,
         int bc_top)
 {
@@ -433,34 +428,34 @@ __global__ void setNSghostNodesEpsilon(
     // check that we are not outside the fluid grid
     if (x < nx && y < ny && z < nz) {
 
-        const Float val = dev_ns_epsilon[idx(x,y,z)];
+        const T val = dev_scalarfield[idx(x,y,z)];
 
         // x
         if (x == 0)
-            dev_ns_epsilon[idx(nx,y,z)] = val;
+            dev_scalarfield[idx(nx,y,z)] = val;
         if (x == nx-1)
-            dev_ns_epsilon[idx(-1,y,z)] = val;
+            dev_scalarfield[idx(-1,y,z)] = val;
 
         // y
         if (y == 0)
-            dev_ns_epsilon[idx(x,ny,z)] = val;
+            dev_scalarfield[idx(x,ny,z)] = val;
         if (y == ny-1)
-            dev_ns_epsilon[idx(x,-1,z)] = val;
+            dev_scalarfield[idx(x,-1,z)] = val;
 
         // z
         if (z == 0 && bc_bot == 0)
-            dev_ns_epsilon[idx(x,y,-1)] = val;     // Dirichlet
+            dev_scalarfield[idx(x,y,-1)] = val;     // Dirichlet
         if (z == 1 && bc_bot == 1)
-            dev_ns_epsilon[idx(x,y,-1)] = val;     // Neumann
+            dev_scalarfield[idx(x,y,-1)] = val;     // Neumann
         if (z == 0 && bc_bot == 2)
-            dev_ns_epsilon[idx(x,y,nz)] = val;     // Periodic -z
+            dev_scalarfield[idx(x,y,nz)] = val;     // Periodic -z
 
         if (z == nz-1 && bc_top == 0)
-            dev_ns_epsilon[idx(x,y,nz)] = val;     // Dirichlet
+            dev_scalarfield[idx(x,y,nz)] = val;     // Dirichlet
         if (z == nz-2 && bc_top == 1)
-            dev_ns_epsilon[idx(x,y,nz)] = val;     // Neumann
+            dev_scalarfield[idx(x,y,nz)] = val;     // Neumann
         if (z == nz-1 && bc_top == 2)
-            dev_ns_epsilon[idx(x,y,-1)] = val;     // Periodic +z
+            dev_scalarfield[idx(x,y,-1)] = val;     // Periodic +z
     }
 }
 

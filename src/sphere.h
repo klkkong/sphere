@@ -164,7 +164,6 @@ class DEM {
 
         // Navier Stokes values, device
         Float*  dev_ns_p;            // Cell hydraulic pressure
-        Float3* dev_ns_dp;           // Cell hydraulic pressure gradient
         Float3* dev_ns_v;            // Cell fluid velocity
         Float3* dev_ns_v_p;          // Predicted cell fluid velocity
         Float*  dev_ns_phi;          // Cell porosity

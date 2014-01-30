@@ -437,12 +437,11 @@ version of ``sphere``. This means that the fluid properties at the paired,
 parallel lateral (:math:`x` and :math:`y`) boundaries are identical. A flow
 leaving through one side reappears on the opposite side.
 
-The top and bottom boundary conditions of the fluid grid can be either: 1) 
-prescribed pressure (Dirichlet), or 2) prescribed velocity (Neumann). The
-(horizontal) velocities parallel to the boundaries may either be fixed to zero
-(no slip), or free to attain other values (free slip). The Dirichlet boundary
-condition is enforced by keeping the value of :math:`\epsilon` constant at the
-boundaries, e.g.:
+The top and bottom boundary conditions of the fluid grid can be either:
+prescribed pressure (Dirichlet), or prescribed velocity (Neumann). The
+(horizontal) velocities parallel to the boundaries are free to attain other
+values (free slip). The Dirichlet boundary condition is enforced by keeping the
+value of :math:`\epsilon` constant at the boundaries, e.g.:
 
 .. math::
    \epsilon^{n+1}_{i_x,i_y,i_z = 1 \vee n_z}
@@ -456,13 +455,6 @@ e.g.:
 .. math::
    \nabla_z \epsilon^{n+1}_{i_x,i_y,i_z = 1 \vee n_z} = 0
 
-The no-slip boundary condition is enforced by setting the gradient of
-:math:`\epsilon` parallel to the boundary to zero, e.g.:
-
-.. math::
-   \nabla_x \epsilon^{n+1}_{i_x,i_y,i_z = 1 \vee n_z} = 0
-
-   \nabla_y \epsilon^{n+1}_{i_x,i_y,i_z = 1 \vee n_z} = 0
 
 Numerical implementation
 ------------------------

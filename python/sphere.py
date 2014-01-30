@@ -295,9 +295,9 @@ class Spherebin:
         # 0: Dirichlet, 1: Neumann
         self.bc_bot = numpy.zeros(1, dtype=numpy.int32)
         self.bc_top = numpy.zeros(1, dtype=numpy.int32)
-        # Free slip boundaries? 0: No, 1: yes
-        self.free_slip_bot = numpy.zeros(1, dtype=numpy.int32)
-        self.free_slip_top = numpy.zeros(1, dtype=numpy.int32)
+        # Free slip boundaries? 1: yes
+        self.free_slip_bot = numpy.ones(1, dtype=numpy.int32)
+        self.free_slip_top = numpy.ones(1, dtype=numpy.int32)
 
     def __cmp__(self, other):
         '''

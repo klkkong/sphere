@@ -922,14 +922,28 @@ __host__ void DEM::startTime()
             // Set the values of the ghost nodes in the grid
             if (PROFILING == 1)
                 startTimer(&kernel_tic);
-            setNSghostNodesDev<<<dimGridFluid, dimBlockFluid>>>(
+            /*setNSghostNodesDev<<<dimGridFluid, dimBlockFluid>>>(
                     dev_ns_p,
-                    dev_ns_dp,
                     dev_ns_v,
                     dev_ns_v_p,
                     dev_ns_phi,
                     dev_ns_dphi,
-                    dev_ns_epsilon);
+                    dev_ns_epsilon);*/
+            setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                    dev_ns_p, ns.bc_bot, ns.bc_top);
+
+            setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
+                    dev_ns_v, ns.bc_bot, ns.bc_top);
+
+            setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
+                    dev_ns_v_p, ns.bc_bot, ns.bc_top);
+
+            setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                    dev_ns_phi, ns.bc_bot, ns.bc_top);
+
+            setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                    dev_ns_dphi, ns.bc_bot, ns.bc_top);
+
             cudaThreadSynchronize();
             if (PROFILING == 1)
                 stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
@@ -939,6 +953,7 @@ __host__ void DEM::startTime()
                 << std::endl;
             transferNSepsilonFromGlobalDeviceMemory();
             printNSarray(stdout, ns.epsilon, "epsilon");*/
+
 
             // Find the fluid stress tensor, needed for predicting the fluid
             // velocities
@@ -1064,7 +1079,7 @@ __host__ void DEM::startTime()
                 cudaThreadSynchronize();
                 checkForCudaErrors("Post setNSghostNodesFloat(dev_ns_epsilon)",
                         iter);*/
-                setNSghostNodesEpsilon<<<dimGridFluid, dimBlockFluid>>>(
+                setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_epsilon,
                         ns.bc_bot, ns.bc_top);
                 cudaThreadSynchronize();
@@ -1128,7 +1143,7 @@ __host__ void DEM::startTime()
                 cudaThreadSynchronize();
                 checkForCudaErrors("Post setNSghostNodesForcing", iter);*/
 
-                setNSghostNodesEpsilon<<<dimGridFluid, dimBlockFluid>>>(
+                setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_epsilon,
                         ns.bc_bot, ns.bc_top);
                 cudaThreadSynchronize();
@@ -1345,6 +1360,11 @@ __host__ void DEM::startTime()
             time.step_count += 1;
             sprintf(file,"output/%s.output%05d.bin", sid.c_str(),
                     time.step_count); writebin(file);
+
+            /*std::cout << "\n###### OUTPUT FILE " << time.step_count << " ######"
+                << std::endl;
+            transferNSepsilonFromGlobalDeviceMemory();
+            printNSarray(stdout, ns.epsilon, "epsilon");*/
 
             // Write fluid arrays
             /*if (navierstokes == 1) {
