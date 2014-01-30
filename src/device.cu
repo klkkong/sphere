@@ -969,7 +969,10 @@ __host__ void DEM::startTime()
             checkForCudaErrors("Post findNSstressTensor", iter);
 
             // Set stress tensor values in the ghost nodes
-            setNSghostNodes_tau<<<dimGridFluid, dimBlockFluid>>>(dev_ns_tau); 
+            setNSghostNodes_tau<<<dimGridFluid, dimBlockFluid>>>(
+                    dev_ns_tau,
+                    ns.bc_bot,
+                    ns.bc_top); 
             cudaThreadSynchronize();
             checkForCudaErrors("Post setNSghostNodes_tau", iter);
 
@@ -1013,6 +1016,8 @@ __host__ void DEM::startTime()
                     dev_ns_div_phi_vi_v,
                     dev_ns_div_phi_tau,
                     ns.rho,
+                    ns.bc_bot,
+                    ns.bc_top,
                     dev_ns_v_p);
             cudaThreadSynchronize();
             if (PROFILING == 1)

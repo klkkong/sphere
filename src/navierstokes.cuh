@@ -462,7 +462,10 @@ __global__ void setNSghostNodes(
 // Update the tensor field for the ghost nodes from their parent cell values.
 // The edge (diagonal) cells are not written since they are not read. Launch
 // this kernel for all cells in the grid.
-__global__ void setNSghostNodes_tau(Float* dev_ns_tau)
+__global__ void setNSghostNodes_tau(
+        Float* dev_ns_tau,
+        int bc_bot,
+        int bc_top)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -489,6 +492,7 @@ __global__ void setNSghostNodes_tau(Float* dev_ns_tau)
         const Float tau_yz = dev_ns_tau[cellidx6+4];
         const Float tau_zz = dev_ns_tau[cellidx6+5];
 
+        // x
         if (x == 0) {
             cellidx6 = idx(nx,y,z)*6;
             dev_ns_tau[cellidx6]   = tau_xx;
@@ -508,6 +512,7 @@ __global__ void setNSghostNodes_tau(Float* dev_ns_tau)
             dev_ns_tau[cellidx6+5] = tau_zz;
         }
 
+        // y
         if (y == 0) {
             cellidx6 = idx(x,ny,z)*6;
             dev_ns_tau[cellidx6]   = tau_xx;
@@ -527,7 +532,26 @@ __global__ void setNSghostNodes_tau(Float* dev_ns_tau)
             dev_ns_tau[cellidx6+5] = tau_zz;
         }
 
-        if (z == 0) {
+        // z
+        if (z == 0 && bc_bot == 0) {  // Dirichlet
+            cellidx6 = idx(x,y,-1)*6;
+            dev_ns_tau[cellidx6]   = tau_xx;
+            dev_ns_tau[cellidx6+1] = tau_xy;
+            dev_ns_tau[cellidx6+2] = tau_xz;
+            dev_ns_tau[cellidx6+3] = tau_yy;
+            dev_ns_tau[cellidx6+4] = tau_yz;
+            dev_ns_tau[cellidx6+5] = tau_zz;
+        }
+        if (z == 1 && bc_bot == 1) {  // Neumann
+            cellidx6 = idx(x,y,-1)*6;
+            dev_ns_tau[cellidx6]   = tau_xx;
+            dev_ns_tau[cellidx6+1] = tau_xy;
+            dev_ns_tau[cellidx6+2] = tau_xz;
+            dev_ns_tau[cellidx6+3] = tau_yy;
+            dev_ns_tau[cellidx6+4] = tau_yz;
+            dev_ns_tau[cellidx6+5] = tau_zz;
+        }
+        if (z == 0 && bc_bot == 2) {  // Periodic
             cellidx6 = idx(x,y,nz)*6;
             dev_ns_tau[cellidx6]   = tau_xx;
             dev_ns_tau[cellidx6+1] = tau_xy;
@@ -536,7 +560,26 @@ __global__ void setNSghostNodes_tau(Float* dev_ns_tau)
             dev_ns_tau[cellidx6+4] = tau_yz;
             dev_ns_tau[cellidx6+5] = tau_zz;
         }
-        if (z == nz-1) {
+
+        if (z == nz-1 && bc_top == 0) {  // Dirichlet
+            cellidx6 = idx(x,y,nz)*6;
+            dev_ns_tau[cellidx6]   = tau_xx;
+            dev_ns_tau[cellidx6+1] = tau_xy;
+            dev_ns_tau[cellidx6+2] = tau_xz;
+            dev_ns_tau[cellidx6+3] = tau_yy;
+            dev_ns_tau[cellidx6+4] = tau_yz;
+            dev_ns_tau[cellidx6+5] = tau_zz;
+        }
+        if (z == nz-2 && bc_top == 1) {  // Neumann
+            cellidx6 = idx(x,y,nz)*6;
+            dev_ns_tau[cellidx6]   = tau_xx;
+            dev_ns_tau[cellidx6+1] = tau_xy;
+            dev_ns_tau[cellidx6+2] = tau_xz;
+            dev_ns_tau[cellidx6+3] = tau_yy;
+            dev_ns_tau[cellidx6+4] = tau_yz;
+            dev_ns_tau[cellidx6+5] = tau_zz;
+        }
+        if (z == nz-1 && bc_top == 2) {  // Periodic
             cellidx6 = idx(x,y,-1)*6;
             dev_ns_tau[cellidx6]   = tau_xx;
             dev_ns_tau[cellidx6+1] = tau_xy;
@@ -551,6 +594,7 @@ __global__ void setNSghostNodes_tau(Float* dev_ns_tau)
 // Update a the forcing values in the ghost nodes from their parent cell values.
 // The edge (diagonal) cells are not written since they are not read. Launch
 // this kernel for all cells in the grid.
+/*
 __global__ void setNSghostNodesForcing(
         Float*  dev_ns_f1,
         Float3* dev_ns_f2,
@@ -637,6 +681,7 @@ __global__ void setNSghostNodesForcing(
         }
     }
 }
+*/
 
 // Find the porosity in each cell on the base of a sphere, centered at the cell
 // center. 
@@ -1331,7 +1376,9 @@ __global__ void findPredNSvelocities(
         Float*  dev_ns_dphi,            // in
         Float3* dev_ns_div_phi_vi_v,    // in
         Float3* dev_ns_div_phi_tau,     // in
-        Float   rho,
+        Float   rho,                    // in
+        int     bc_bot,                 // in
+        int     bc_top,                 // in
         Float3* dev_ns_v_p)             // out
 {
     // 3D thread index
@@ -1384,15 +1431,32 @@ __global__ void findPredNSvelocities(
             grad_p = gradient(dev_ns_p, x, y, z, dx, dy, dz);
 
         // Calculate the predicted velocity
-        const Float3 v_p = v
+        Float3 v_p = v
             - BETA/rho*grad_p*devC_dt/phi
             + 1.0/rho*div_phi_tau*devC_dt/phi
             + devC_dt*f_g
             - v*dphi/phi
             - div_phi_vi_v*devC_dt/phi;
 
-        //printf("[%d,%d,%d]\tv_p = %f\t%f\t%f,\tgrad_p = %f\t%f\t%f\n",
-                //x, y, z, v_p.x, v_p.y, v_p.z, grad_p.x, grad_p.y, grad_p.z);
+        // Report velocity components to stdout for debugging
+        /*const Float3 dv_pres = -BETA/rho*grad_p*devC_dt/phi;
+        const Float3 dv_diff = 1.0/rho*div_phi_tau*devC_dt/phi;
+        const Float3 dv_f = devC_dt*f_g;
+        const Float3 dv_dphi = -1.0*v*dphi/phi;
+        const Float3 dv_adv = -1.0*div_phi_vi_v*devC_dt/phi;
+        printf("[%d,%d,%d]\tv_p = %f\t%f\t%f\tdv_pres = %f\t%f\t%f\t"
+                "dv_diff = %f\t%f\t%f\tdv_f = %f\t%f\t%f\tv_dphi = %f\t%f\t%f\t"
+                "dv_adv = %f\t%f\t%f\n",
+                x, y, z, v_p.x, v_p.y, v_p.z,
+                dv_pres.x, dv_pres.y, dv_pres.z,
+                dv_diff.x, dv_diff.y, dv_diff.z,
+                dv_f.x, dv_f.y, dv_f.z,
+                dv_dphi.x, dv_dphi.y, dv_dphi.z,
+                dv_adv.x, dv_adv.y, dv_adv.z);*/
+
+        // Fix horizontal velocity to zero at Neumann boundaries
+        if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
+            v_p.z = 0.0;
 
         // Save the predicted velocity
         __syncthreads();

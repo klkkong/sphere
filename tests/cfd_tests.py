@@ -13,14 +13,17 @@ print("### CFD tests ###")
 orig = sphere.Spherebin(np = 0, nd = 3, nw = 0, sid = "cfdtest", fluid = True)
 cleanup(orig)
 orig.defaultParams(mu_s = 0.4, mu_d = 0.4, nu = 8.9e-4)
-orig.addParticle([0.5,0.5,0.5], 0.05)
-orig.defineWorldBoundaries([5.0,5.0,5.0])
+#orig.addParticle([0.5,0.5,0.5], 0.05)
+#orig.defineWorldBoundaries([5.0,5.0,5.0])
+orig.addParticle([5,5,5], 5)
+orig.defineWorldBoundaries([500.0,500.0,500.0])
 orig.initFluid(nu = 0.0)
 orig.initTemporal(total = 0.002, file_dt = 0.001)
 orig.time_file_dt = orig.time_dt*0.99
 orig.time_total = orig.time_dt*10
 orig.g[2] = 0.0
 orig.writebin(verbose=False)
+orig.run(dry=True)
 orig.run(verbose=False)
 py = Spherebin(sid = orig.sid, fluid = True)
 
@@ -156,7 +159,7 @@ else:
 
 
 # Slow pressure modulation test
-
+'''
 orig.time_total[0] = 1.0e-1
 orig.time_file_dt[0] = 0.101*orig.time_total[0]
 orig.nu[0] = 0.0 # dont let diffusion add transient effects
@@ -176,7 +179,7 @@ for it in range(1,py.status()): # gradient should be smooth in all output files
             ideal_grad_p_z - py.p_f[0,0,:],\
             'Slow pressure modulation (' + 
             str(it+1) + '/' + str(py.status()) + '):', tolerance=1.0e-1)
-
+'''
 
 # Fast pressure modulation test
 orig.time_total[0] = 1.0e-2
@@ -209,8 +212,8 @@ orig.g[2] = -10.0
 orig.nu[0] = 8.9e-4     # water
 orig.bc_bot[0] = 1      # No-flow BC at bottom
 orig.writebin(verbose=False)
-orig.run(dry=True)
-orig.run(verbose=True)
+#orig.run(dry=True)
+orig.run(verbose=False)
 orig.writeVTKall()
 py.readlast(verbose = False)
 #ideal_grad_p_z = numpy.linspace(orig.p_f[0,0,0], orig.p_f[0,0,-1], orig.num[2])
