@@ -3095,10 +3095,21 @@ class Spherebin:
         :type f: float
         :param phi: Fluctuation phase shift (default=0.0)
         :type phi: float
+
+        See also: :func:`disableFluidPressureModulation()`
         '''
         self.p_mod_A[0] = A
         self.p_mod_f[0] = f
         self.p_mod_phi[0] = phi
+
+    def disableFluidPressureModulation(self):
+        '''
+        Set the parameters for the sine wave modulating the fluid pressures
+        at the top boundary to zero.
+
+        See also: :func:`setFluidPressureModulation()`
+        '''
+        setFluidPressureModulation(A = 0.0, f = 0.0)
 
     def plotPrescribedFluidPressures(self, format='png'):
         ''' Plot the prescribed fluid pressures through time that may be
