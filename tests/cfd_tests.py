@@ -12,7 +12,7 @@ print("### CFD tests ###")
 # No gravity, no pressure gradients => no flow
 orig = sphere.Spherebin(np = 0, nd = 3, nw = 0, sid = "cfdtest", fluid = True)
 cleanup(orig)
-orig.defaultParams(mu_s = 0.4, mu_d = 0.4, nu = 8.9e-4)
+orig.defaultParams()
 #orig.addParticle([0.5,0.5,0.5], 0.05)
 #orig.defineWorldBoundaries([5.0,5.0,5.0])
 orig.addParticle([5,5,5], 5)
@@ -23,7 +23,7 @@ orig.time_file_dt = orig.time_dt*0.99
 orig.time_total = orig.time_dt*10
 orig.g[2] = 0.0
 orig.writebin(verbose=False)
-orig.run(dry=True)
+#orig.run(dry=True)
 orig.run(verbose=False)
 py = Spherebin(sid = orig.sid, fluid = True)
 
@@ -203,7 +203,7 @@ for it in range(1,py.status()+1): # gradient should be smooth in all output file
             str(it) + '/' + str(py.status()) + '):', tolerance=1.0e-1)
 
 # Top: Dirichlet, bot: Neumann
-# This test passes with BETA=0.0 and tolerance=1.0e-9
+'''
 orig.disableFluidPressureModulation()
 orig.time_total[0] = 1.0e-2
 orig.time_file_dt = orig.time_total/20
@@ -226,5 +226,6 @@ py.readlast(verbose = False)
     #print("Flow field:\t\t" + passed())
 #else:
     #print("Flow field:\t\t" + failed())
+'''
 
 #cleanup(orig)

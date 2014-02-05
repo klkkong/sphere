@@ -1729,11 +1729,11 @@ __global__ void updateNSvelocityPressure(
         // Find new velocity
         Float3 v = v_p - devC_dt/rho*grad_epsilon;
 
-        printf("[%d,%d,%d]\tgrad_e = %f\t%f\t%f\n",
+        /*printf("[%d,%d,%d]\tgrad_e = %f\t%f\t%f\n",
                 x,y,z,
                 grad_epsilon.x,
                 grad_epsilon.y,
-                grad_epsilon.z);
+                grad_epsilon.z);*/
 
         /*if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1)) {
             v.z = 0.0;
