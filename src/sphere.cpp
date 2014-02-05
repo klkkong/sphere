@@ -99,6 +99,17 @@ DEM::~DEM(void)
         std::cout << "Done" << std::endl;
 }
 
+void checkIfNaN(Float4 vec, std::string description, unsigned int idx)
+{
+    if (vec.x != vec.x || vec.y != vec.y ||
+            vec.z != vec.z || vec.w != vec.w) {
+        std::cerr << "Error: Particle " << idx << " has a "
+            << description << " with one or more NaN values: "
+            << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w
+            << std::endl;
+    }
+}
+
 
 // Check numeric values of selected parameters
 void DEM::checkValues(void)
@@ -178,11 +189,16 @@ void DEM::checkValues(void)
 
 
     // Per-particle checks
-    Float4 x;
+    Float4 x, vel, acc, angpos, angvel, angacc;
     for (i = 0; i < np; ++i) {
 
-        // Read value into register
+        // Read values
         x = k.x[i];
+        vel = k.vel[i];
+        acc = k.acc[i];
+        angpos = k.angpos[i];
+        angvel = k.angvel[i];
+        angacc = k.angacc[i];
 
         // Check that radii are positive values
         if (x.w <= 0.0) {
@@ -191,11 +207,12 @@ void DEM::checkValues(void)
             exit(1);
         }
 
-        // Check for NaN values
-        if (x.x != x.x || x.y != x.y || x.z != x.z) {
-            cerr << "Error: Particle " << i << " has a position with NaN: "
-                << x.x << ", " << x.y << ", " << x.z << endl;
-        }
+        checkIfNaN(x, "position", i);
+        checkIfNaN(vel, "velocity", i);
+        checkIfNaN(acc, "acceleration", i);
+        checkIfNaN(angpos, "angular position", i);
+        checkIfNaN(angvel, "angular velocity", i);
+        checkIfNaN(angacc, "angular acceleration", i);
 
 
         // Check that all particles are inside of the grid
@@ -253,6 +270,7 @@ void DEM::checkValues(void)
         exit(1);
     }
 }
+
 
 // Report key parameter values to stdout
 void DEM::reportValues()
