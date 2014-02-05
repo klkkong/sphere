@@ -104,12 +104,13 @@ DEM::~DEM(void)
 void DEM::checkValues(void)
 {
     using std::cerr;
+    using std::endl;
 
     unsigned int i;
 
     // Check the number of dimensions
     if (nd != ND) {
-        cerr << "Error: nd = " << nd << ", ND = " << ND << '\n';
+        cerr << "Error: nd = " << nd << ", ND = " << ND << endl;
         exit(1);
     }
 
@@ -119,19 +120,19 @@ void DEM::checkValues(void)
         exit(1);
     } else if (NC < 8) {
         cerr << "Warning: NC has a low value (" << NC << "). "
-            << "Consider increasing it in 'constants.h'\n";
+            << "Consider increasing it in 'constants.h'" << endl;
     }
 
     // Check that we have a positive number of particles
     if (np < 1) {
-        cerr << "Error: np = " << np << '\n';
+        cerr << "Error: np = " << np << endl;
         exit(1);
     }
 
     // Check that the current time
     if (time.current > time.total || time.current < 0.0) {
         cerr << "Error: time.current = " << time.current
-            << " s, time.total = " << time.total << " s\n";
+            << " s, time.total = " << time.total << " s" << endl;
         exit(1);
     }
 
@@ -141,7 +142,7 @@ void DEM::checkValues(void)
             << "problems. \n"
             << "grid.origo[0] = " << grid.origo[0] << " m, "
             << "grid.origo[1] = " << grid.origo[1] << " m, "
-            << "grid.origo[2] = " << grid.origo[2] << " m.\n";
+            << "grid.origo[2] = " << grid.origo[2] << " m." << endl;
         exit(1);
     }
 
@@ -149,7 +150,7 @@ void DEM::checkValues(void)
     if (grid.L[0] <= 0.0 || grid.L[1] <= 0.0 || grid.L[2] <= 0.0) {
         cerr << "Error: grid.L[0] = " << grid.L[0] << " m, "
             << "grid.L[1] = " << grid.L[1] << " m, "
-            << "grid.L[2] = " << grid.L[2] << " m.\n";
+            << "grid.L[2] = " << grid.L[2] << " m." << endl;
         exit(1);
     }
 
@@ -157,20 +158,21 @@ void DEM::checkValues(void)
     if (grid.num[0] <= 0 || grid.num[1] <= 0 || grid.num[2] <= 0) {
         cerr << "Error: grid.num[0] = " << grid.num[0] << ", "
             << "grid.num[1] = " << grid.num[1] << ", "
-            << "grid.num[2] = " << grid.num[2] << ".\n";
+            << "grid.num[2] = " << grid.num[2] << "." << endl;
         exit(1);
     }
 
     // Check grid size again
     if (grid.periodic == 2 && grid.num[0] < 3) {
         cerr << "Error: When 1st dimension boundaries are periodic, "
-            << "there must be at least 3 cells in that dimension.";
+            << "there must be at least 3 cells in that dimension." << endl;
         exit(1);
     }
 
     if (grid.periodic == 1 && (grid.num[0] < 3 || grid.num[1] < 3)) {
         cerr << "Error: When 1st and 2nd dimension boundaries are periodic, "
-            << "there must be at least 3 cells in each of those dimensions.";
+            << "there must be at least 3 cells in each of those dimensions."
+            << endl;
         exit(1);
     }
 
@@ -185,9 +187,16 @@ void DEM::checkValues(void)
         // Check that radii are positive values
         if (x.w <= 0.0) {
             cerr << "Error: Particle " << i << " has a radius of "
-                << k.x[i].w << " m." << std::endl;
+                << k.x[i].w << " m." << endl;
             exit(1);
         }
+
+        // Check for NaN values
+        if (x.x != x.x || x.y != x.y || x.z != x.z) {
+            cerr << "Error: Particle " << i << " has a position with NaN: "
+                << x.x << ", " << x.y << ", " << x.z << endl;
+        }
+
 
         // Check that all particles are inside of the grid
         if (x.x < grid.origo[0] ||
@@ -210,7 +219,7 @@ void DEM::checkValues(void)
                 << grid.L[0] << ", "
                 << grid.L[1] << ", "
                 << grid.L[2] << "]."
-                << std::endl;
+                << endl;
             exit(1);
 
         }
@@ -226,7 +235,7 @@ void DEM::checkValues(void)
 
         if (walls.nx[0].w < z_max) {
             cerr << "Error: One or more particles have centres above "
-                << "the upper, dynamic wall";
+                << "the upper, dynamic wall" << endl;
             exit(1);
         }
     }
@@ -235,12 +244,12 @@ void DEM::checkValues(void)
 
     // Check constant, global parameters
     if (params.k_n <= 0.0) {
-        cerr << "Error: k_n = " << params.k_n << " N/m\n";
+        cerr << "Error: k_n = " << params.k_n << " N/m" << endl;
         exit(1);
     }
 
     if (params.rho <= 0.0) {
-        cerr << "Error: rho = " << params.rho << " kg/m3\n";
+        cerr << "Error: rho = " << params.rho << " kg/m3" << endl;
         exit(1);
     }
 }
@@ -252,8 +261,8 @@ void DEM::reportValues()
     using std::cerr;
     using std::endl;
 
-    cout << "  - Number of dimensions: nd = " << nd << "\n"
-        << "  - Number of particles:  np = " << np << "\n";
+    cout << "  - Number of dimensions: nd = " << nd << '\n'
+        << "  - Number of particles:  np = " << np << endl;
 
     // Check precision choice
     cout << "  - Compiled for ";
@@ -264,7 +273,8 @@ void DEM::reportValues()
         if (verbose == 1)
             cout << "double";
     } else {
-        cerr << "Error! Chosen precision not available. Check datatypes.h\n";
+        cerr << "Error! Chosen precision not available. Check datatypes.h" 
+            << endl;
         exit(1);
     }
     cout << " precision\n";

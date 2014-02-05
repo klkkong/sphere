@@ -16,7 +16,7 @@ import pytestutils
 orig = sphere.Spherebin(np=1, nw=0, sid='contactmodeltest')
 orig.radius[:] = 1.0
 orig.x[0,:] = [5.0, 5.0, 1.05]
-orig.vel[0,2] = -0.1
+#orig.vel[0,2] = -0.1
 orig.defineWorldBoundaries(L=[10,10,10])
 orig.gamma_wn[0] = 0.0  # Disable wall viscosity
 orig.gamma_wt[0] = 0.0  # Disable wall viscosity
@@ -55,7 +55,7 @@ pytestutils.compareFloats(moment_before, moment_after,\
         "45 deg. wall collision:")
 '''
 
-
+'''
 ## Visco-elastic collisions
 
 # Normal impact: Check for conservation of momentum (sum(v_i*m_i))
@@ -101,3 +101,4 @@ print(moment_after)
 
 
 #sphere.cleanup(orig)
+'''
