@@ -874,8 +874,8 @@ class Spherebin:
             fh.write(self.bonds_omega_n.astype(numpy.float64))
             fh.write(self.bonds_omega_t.astype(numpy.float64))
 
-            fh.write(self.nu.astype(numpy.float64))
             if (self.fluid == True):
+                fh.write(self.nu.astype(numpy.float64))
                 for z in range(self.num[2]):
                     for y in range(self.num[1]):
                         for x in range(self.num[0]):

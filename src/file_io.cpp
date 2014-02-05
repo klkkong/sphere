@@ -246,8 +246,6 @@ void DEM::readbin(const char *target)
         ifs.read(as_bytes(k.bonds_omega[i].z), sizeof(Float));
     }
 
-    // Read fluid parameters
-    ifs.read(as_bytes(params.nu), sizeof(params.nu));
     unsigned int x, y, z;
 
     if (verbose == 1)
@@ -256,6 +254,8 @@ void DEM::readbin(const char *target)
     if (navierstokes == 1) {    // Navier Stokes flow
 
         initNSmem();
+
+        ifs.read(as_bytes(params.nu), sizeof(params.nu));
 
         if (verbose == 1)
             cout << "  - Reading fluid values:\t\t\t  ";
@@ -447,9 +447,11 @@ void DEM::writebin(const char *target)
             ofs.write(as_bytes(k.bonds_omega[i].z), sizeof(Float));
         }
 
-        ofs.write(as_bytes(params.nu), sizeof(params.nu));
-        int x, y, z;
         if (navierstokes == 1) { // Navier Stokes flow
+
+            ofs.write(as_bytes(params.nu), sizeof(params.nu));
+
+            int x, y, z;
             for (z=0; z<ns.nz; z++) {
                 for (y=0; y<ns.ny; y++) {
                     for (x=0; x<ns.nx; x++) {
