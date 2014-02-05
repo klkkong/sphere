@@ -18,8 +18,9 @@ def compare(first, second, string):
     print(string + failed())
     return(1)
 
-def compareFloats(first, second, string, tolerance=1e-5):
-    if abs(first-second) < tolerance:
+def compareFloats(first, second, string, tolerance=1e-3):
+    #if abs(first-second) < tolerance:
+    if abs((first-second)/first) < tolerance:
         print(string + passed())
     else :
         print(string + failed())

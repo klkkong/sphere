@@ -164,6 +164,11 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         angvel_new.y = angvel.y + angacc.y*dt + 0.5*dangacc_dt.y*dt*dt;
         angvel_new.z = angvel.z + angacc.z*dt + 0.5*dangacc_dt.z*dt*dt;
 
+        // Add horizontal-displacement for this time step to the sum of
+        // horizontal displacements
+        xysum.x += vel.x*dt + 0.5*acc.x*dt*dt + 1.0/6.0*dacc_dt.x+dt*dt*dt;
+        xysum.y += vel.y*dt + 0.5*acc.y*dt*dt + 1.0/6.0*dacc_dt.y+dt*dt*dt;
+
 
         // Move particles outside the domain across periodic boundaries
         if (devC_grid.periodic == 1) {
@@ -183,23 +188,6 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
             if (x_new.x > L.x)
                 x_new.x -= L.x;
         }
-
-        // Add x-displacement for this time step to 
-        // sum of x-displacements
-        xysum.x += vel.x*dt + 0.5*acc.x*dt*dt;
-        xysum.y += vel.y*dt + 0.5*acc.y*dt*dt;
-
-        /*printf("particle %d: x = %f,%f,%f\t vel = %f,%f,%f\t acc = %f,%f,%f\t"
-                " force = %f,%f,%f\t x_new = %f,%f,%f\t vel_new = %f,%f,%f\t"
-                " m = %f\t g = %f,%f,%f\t r = %f\trho = %f\n",
-                orig_idx, x.x, x.y, x.z,
-                vel.x, vel.y, vel.z,
-                acc.x, acc.y, acc.z,
-                force.x, force.y, force.z,
-                x_new.x, x_new.y, x_new.z,
-                vel_new.x, vel_new.y, vel_new.z,
-                m, devC_params.g[0], devC_params.g[1], devC_params.g[2],
-                radius, devC_);*/
 
         // Hold threads for coalesced write
         __syncthreads();
