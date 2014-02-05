@@ -8,15 +8,16 @@ def passed():
     return "\tPassed"
 
 def failed():
-    raise Exception("Failed")
     return "\tFailed"
 
 def compare(first, second, string):
-  if (first == second):
-    print(string + passed())
-  else:
-    print(string + failed())
-    return(1)
+    returnvalue = (first == second)
+    if (returnvalue == True or returnvalue > 0):
+        print(string + passed())
+    else:
+        print(string + failed() + ' (' + str(returnvalue) + ')')
+        raise Exception("Failed")
+        return(returnvalue)
 
 def compareFloats(first, second, string, tolerance=1e-3):
     #if abs(first-second) < tolerance:
@@ -27,6 +28,7 @@ def compareFloats(first, second, string, tolerance=1e-3):
         print("First: " + str(first))
         print("Second: " + str(second))
         print("Difference: " + str(second-first))
+        raise Exception("Failed")
         return(1)
 
 def compareNumpyArrays(first, second, string):
@@ -34,6 +36,7 @@ def compareNumpyArrays(first, second, string):
         print(string + passed())
     else :
         print(string + failed())
+        raise Exception("Failed")
         return(1)
 
 def compareNumpyArraysClose(first, second, string, tolerance=1e-5):
@@ -41,6 +44,7 @@ def compareNumpyArraysClose(first, second, string, tolerance=1e-5):
         print(string + passed())
     else :
         print(string + failed())
+        raise Exception("Failed")
         return(1)
 
 

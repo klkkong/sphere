@@ -306,158 +306,234 @@ class Spherebin:
         are identical.
         '''
         if (self.version != other.version):
+            print(1)
             return 1
         elif (self.nd != other.nd):
+            print(2)
             return 2
         elif (self.np != other.np):
+            print(4)
             return 4
         elif (self.time_dt != other.time_dt):
+            print(5)
             return 5
         elif (self.time_current != other.time_current):
+            print(6)
             return 6
         elif (self.time_total != other.time_total):
+            print(7)
             return 7
         elif (self.time_file_dt != other.time_file_dt):
+            print(8)
             return 8
         elif (self.time_step_count != other.time_step_count):
+            print(9)
             return 9
         elif ((self.origo != other.origo).any()):
+            print(10)
             return 10
         elif ((self.L != other.L).any()):
+            print(11)
             return 11
         elif ((self.num != other.num).any()):
+            print(12)
             return 12
         elif (self.periodic != other.periodic):
+            print(13)
             return 13
         elif ((self.x != other.x).any()):
+            print(14)
             return 14
         elif ((self.radius != other.radius).any()):
+            print(15)
             return 15
         elif ((self.xysum != other.xysum).any()):
+            print(16)
             return 16
         elif ((self.vel != other.vel).any()):
+            print(17)
             return 17
         elif ((self.fixvel != other.fixvel).any()):
+            print(18)
             return 18
         elif ((self.force != other.force).any()):
+            print(19)
             return 19
         elif ((self.angpos != other.angpos).any()):
+            print(20)
             return 20
         elif ((self.angvel != other.angvel).any()):
+            print(21)
             return 21
         elif ((self.torque != other.torque).any()):
+            print(22)
             return 22
         elif ((self.es_dot != other.es_dot).any()):
+            print(23)
             return 23
         elif ((self.es != other.es).any()):
+            print(24)
             return 24
         elif ((self.ev_dot != other.ev_dot).any()):
+            print(25)
             return 25
         elif ((self.ev != other.ev).any()):
+            print(26)
             return 26
         elif ((self.p != other.p).any()):
+            print(27)
             return 27
         elif ((self.g != other.g).any()):
+            print(28)
             return 28
         elif (self.k_n != other.k_n):
+            print(29)
             return 29
         elif (self.k_t != other.k_t):
+            print(30)
             return 30
         elif (self.k_r != other.k_r):
+            print(31)
             return 31
         elif (self.gamma_n != other.gamma_n):
+            print(32)
             return 32
         elif (self.gamma_t != other.gamma_t):
+            print(33)
             return 33
         elif (self.gamma_r != other.gamma_r):
+            print(34)
             return 34
         elif (self.mu_s != other.mu_s):
+            print(35)
             return 35
         elif (self.mu_d != other.mu_d):
+            print(36)
             return 36
         elif (self.mu_r != other.mu_r):
+            print(37)
             return 37
         elif (self.rho != other.rho):
+            print(38)
             return 38
         elif (self.contactmodel != other.contactmodel):
+            print(39)
             return 39
         elif (self.kappa != other.kappa):
+            print(40)
             return 40
         elif (self.db != other.db):
+            print(41)
             return 41
         elif (self.V_b != other.V_b):
+            print(42)
             return 42
         elif (self.nw != other.nw):
+            print(43)
             return 43
         elif ((self.wmode != other.wmode).any()):
+            print(44)
             return 44
         elif ((self.w_n != other.w_n).any()):
+            print(45)
             return 45
         elif ((self.w_x != other.w_x).any()):
+            print(46)
             return 46
         elif ((self.w_m != other.w_m).any()):
+            print(47)
             return 47
         elif ((self.w_vel != other.w_vel).any()):
+            print(48)
             return 48
         elif ((self.w_force != other.w_force).any()):
+            print(49)
             return 49
         elif ((self.w_devs != other.w_devs).any()):
+            print(50)
             return 50
         elif (self.w_devs_A != other.w_devs_A):
+            print(51)
             return 51
         elif (self.w_devs_f != other.w_devs_f):
+            print(52)
             return 52
         elif (self.gamma_wn != other.gamma_wn):
+            print(53)
             return 53
         elif (self.gamma_wt != other.gamma_wt):
+            print(54)
             return 54
         elif (self.lambda_bar != other.lambda_bar):
+            print(55)
             return 55
         elif (self.nb0 != other.nb0):
+            print(56)
             return 56
         elif (self.sigma_b != other.sigma_b):
+            print(57)
             return 57
         elif (self.tau_b != other.tau_b):
+            print(58)
             return 58
         elif (self.bonds != other.bonds):
+            print(59)
             return 59
         elif (self.bonds_delta_n != other.bonds_delta_n):
+            print(60)
             return 60
         elif (self.bonds_delta_t != other.bonds_delta_t):
+            print(61)
             return 61
         elif (self.bonds_omega_n != other.bonds_omega_n):
+            print(62)
             return 62
         elif (self.bonds_omega_t != other.bonds_omega_t):
+            print(63)
             return 63
         elif (self.fluid != other.fluid):
+            print(64)
             return 64
 
         if (self.fluid == True):
             if (self.nu != other.nu):
+                print(65)
                 return 65
             elif ((self.v_f != other.v_f).any()):
+                print(66)
                 return 66
             elif ((self.p_f != other.p_f).any()):
+                print(67)
                 return 67
             elif ((self.phi != other.phi).any()):
+                print(68)
                 return 68
             elif ((self.dphi != other.dphi).any()):
+                print(69)
                 return 69
             elif (self.rho_f != other.rho_f):
+                print(70)
                 return 70
             elif (self.p_mod_A != other.p_mod_A):
+                print(71)
                 return 71
             elif (self.p_mod_f != other.p_mod_f):
+                print(72)
                 return 72
             elif (self.p_mod_phi != other.p_mod_phi):
+                print(73)
                 return 73
             elif (self.bc_bot != other.bc_bot):
+                print(74)
                 return 74
             elif (self.bc_top != other.bc_top):
+                print(75)
                 return 75
             elif (self.free_slip_bot != other.free_slip_bot):
+                print(76)
                 return 76
             elif (self.free_slip_top != other.free_slip_top):
+                print(77)
                 return 77
 
         # All equal

@@ -14,6 +14,9 @@ orig.time_total=2.0*orig.time_dt
 orig.time_file_dt = orig.time_dt
 orig.writebin(verbose=False)
 
+# Test the test
+compare(orig, orig, "Comparison:")
+
 # Test Python IO routines
 py = Spherebin()
 py.readbin("../input/" + orig.sid + ".bin", verbose=False)
