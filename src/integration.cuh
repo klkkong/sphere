@@ -166,8 +166,8 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
 
         // Add horizontal-displacement for this time step to the sum of
         // horizontal displacements
-        xysum.x += vel.x*dt + 0.5*acc.x*dt*dt + 1.0/6.0*dacc_dt.x+dt*dt*dt;
-        xysum.y += vel.y*dt + 0.5*acc.y*dt*dt + 1.0/6.0*dacc_dt.y+dt*dt*dt;
+        xysum.x += vel.x*dt + 0.5*acc.x*dt*dt + 1.0/6.0*dacc_dt.x*dt*dt*dt;
+        xysum.y += vel.y*dt + 0.5*acc.y*dt*dt + 1.0/6.0*dacc_dt.y*dt*dt*dt;
 
 
         // Move particles outside the domain across periodic boundaries
