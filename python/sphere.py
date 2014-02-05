@@ -304,6 +304,7 @@ class Spherebin:
         '''
         Called when to Spherebin objects are compared. Returns 0 if the values
         are identical.
+        TODO: Replace print(#) with print("field name")
         '''
         if (self.version != other.version):
             print(1)

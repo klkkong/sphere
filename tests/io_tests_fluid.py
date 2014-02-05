@@ -9,10 +9,9 @@ orig = Spherebin(np=100, nw=0, sid="test-initgrid-fluid", fluid=True)
 orig.generateRadii(histogram=False, radius_mean=1.0)
 orig.defaultParams()
 orig.initRandomGridPos(g=numpy.zeros(orig.nd))
-orig.initTemporal(current=0.0, total=0.0)
 orig.initFluid()
+orig.initTemporal(current=0.0, total=0.0)
 orig.g[2] = 0.0
-orig.p_f[:,:,-1] = 2.0
 orig.time_total=2.0*orig.time_dt
 orig.time_file_dt = orig.time_dt
 orig.writebin(verbose=False)
