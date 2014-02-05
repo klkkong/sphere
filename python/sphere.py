@@ -263,41 +263,42 @@ class Spherebin:
         # Simulate fluid? True: Yes, False: no
         self.fluid = fluid
 
-        # Fluid dynamic viscosity [N/(m/s)]
-        self.nu = numpy.zeros(1, dtype=numpy.float64)
+        if (self.fluid == True):
+            # Fluid dynamic viscosity [N/(m/s)]
+            self.nu = numpy.zeros(1, dtype=numpy.float64)
 
-        # Fluid velocities [m/s]
-        self.v_f = numpy.zeros(
-            (self.num[0], self.num[1], self.num[2], self.nd),
-            dtype=numpy.float64)
+            # Fluid velocities [m/s]
+            self.v_f = numpy.zeros(
+                (self.num[0], self.num[1], self.num[2], self.nd),
+                dtype=numpy.float64)
 
-        # Fluid pressures [Pa]
-        self.p_f = numpy.zeros((self.num[0], self.num[1], self.num[2]),
-                               dtype=numpy.float64)
+            # Fluid pressures [Pa]
+            self.p_f = numpy.zeros((self.num[0], self.num[1], self.num[2]),
+                                   dtype=numpy.float64)
 
-        # Fluid cell porosities [-]
-        self.phi = numpy.zeros((self.num[0], self.num[1], self.num[2]),
-                               dtype=numpy.float64)
+            # Fluid cell porosities [-]
+            self.phi = numpy.zeros((self.num[0], self.num[1], self.num[2]),
+                                   dtype=numpy.float64)
 
-        # Fluid cell porosity change [1/s]
-        self.dphi = numpy.zeros((self.num[0], self.num[1], self.num[2]),
-                               dtype=numpy.float64)
+            # Fluid cell porosity change [1/s]
+            self.dphi = numpy.zeros((self.num[0], self.num[1], self.num[2]),
+                                   dtype=numpy.float64)
 
-        # Fluid density [kg/(m^3)]
-        self.rho_f = numpy.ones(1, dtype=numpy.float64) * 1.0e3
+            # Fluid density [kg/(m^3)]
+            self.rho_f = numpy.ones(1, dtype=numpy.float64) * 1.0e3
 
-        # Pressure modulation at the top boundary
-        self.p_mod_A = numpy.zeros(1, dtype=numpy.float64)   # Amplitude [Pa]
-        self.p_mod_f = numpy.zeros(1, dtype=numpy.float64)   # Frequency [Hz]
-        self.p_mod_phi = numpy.zeros(1, dtype=numpy.float64) # Phase shift [rad]
+            # Pressure modulation at the top boundary
+            self.p_mod_A = numpy.zeros(1, dtype=numpy.float64)  # Amplitude [Pa]
+            self.p_mod_f = numpy.zeros(1, dtype=numpy.float64)  # Frequency [Hz]
+            self.p_mod_phi = numpy.zeros(1, dtype=numpy.float64) # Shift [rad]
 
-        # Boundary conditions at the top and bottom of the fluid grid
-        # 0: Dirichlet, 1: Neumann
-        self.bc_bot = numpy.zeros(1, dtype=numpy.int32)
-        self.bc_top = numpy.zeros(1, dtype=numpy.int32)
-        # Free slip boundaries? 1: yes
-        self.free_slip_bot = numpy.ones(1, dtype=numpy.int32)
-        self.free_slip_top = numpy.ones(1, dtype=numpy.int32)
+            # Boundary conditions at the top and bottom of the fluid grid
+            # 0: Dirichlet, 1: Neumann
+            self.bc_bot = numpy.zeros(1, dtype=numpy.int32)
+            self.bc_top = numpy.zeros(1, dtype=numpy.int32)
+            # Free slip boundaries? 1: yes
+            self.free_slip_bot = numpy.ones(1, dtype=numpy.int32)
+            self.free_slip_top = numpy.ones(1, dtype=numpy.int32)
 
     def __cmp__(self, other):
         '''
@@ -428,34 +429,39 @@ class Spherebin:
             return 62
         elif (self.bonds_omega_t != other.bonds_omega_t):
             return 63
-        elif (self.nu != other.nu):
+        elif (self.fluid != other.fluid):
             return 64
-        elif ((self.v_f != other.v_f).any()):
-            return 65
-        elif ((self.p_f != other.p_f).any()):
-            return 66
-        elif ((self.phi != other.phi).any()):
-            return 67
-        elif ((self.dphi != other.dphi).any()):
-            return 68
-        elif (self.rho_f != other.rho_f):
-            return 69
-        elif (self.p_mod_A != other.p_mod_A):
-            return 70
-        elif (self.p_mod_f != other.p_mod_f):
-            return 71
-        elif (self.p_mod_phi != other.p_mod_phi):
-            return 72
-        elif (self.bc_bot != other.bc_bot):
-            return 73
-        elif (self.bc_top != other.bc_top):
-            return 74
-        elif (self.free_slip_bot != other.free_slip_bot):
-            return 75
-        elif (self.free_slip_top != other.free_slip_top):
-            return 76
-        else:
-            return 0   # All equal
+
+        if (self.fluid == True):
+            if (self.nu != other.nu):
+                return 65
+            elif ((self.v_f != other.v_f).any()):
+                return 66
+            elif ((self.p_f != other.p_f).any()):
+                return 67
+            elif ((self.phi != other.phi).any()):
+                return 68
+            elif ((self.dphi != other.dphi).any()):
+                return 69
+            elif (self.rho_f != other.rho_f):
+                return 70
+            elif (self.p_mod_A != other.p_mod_A):
+                return 71
+            elif (self.p_mod_f != other.p_mod_f):
+                return 72
+            elif (self.p_mod_phi != other.p_mod_phi):
+                return 73
+            elif (self.bc_bot != other.bc_bot):
+                return 74
+            elif (self.bc_top != other.bc_top):
+                return 75
+            elif (self.free_slip_bot != other.free_slip_bot):
+                return 76
+            elif (self.free_slip_top != other.free_slip_top):
+                return 77
+
+        # All equal
+        return 0
 
     def addParticle(self,
             x,
@@ -1461,10 +1467,6 @@ class Spherebin:
         cellsize = 2 * r_max
         self.L = self.num * cellsize
 
-        # Init fluid arrays
-        self.initFluid(nu=0.0)
-
-
         # Particle positions randomly distributed without overlap
         for i in range(self.np):
             overlaps = True
@@ -1547,9 +1549,6 @@ class Spherebin:
             + "direction\nGrid: x={}, y={}, z={}".format(\
                     self.num[0], self.num[1], self.num[2]))
 
-        # Init fluid arrays
-        self.initFluid(nu=0.0)
-
         # Put upper wall at top boundary
         if (self.nw > 0):
             self.w_x[0] = self.L[0]
@@ -1589,9 +1588,6 @@ class Spherebin:
         if (self.num[0] < 4 or self.num[1] < 4 or self.num[2] < 4):
             raise Exception("Error: The grid must be at least 3 cells in each "
             + "direction, num = " + str(self.num))
-
-        # Init fluid arrays
-        self.initFluid(nu=0.0)
 
         self.contactmodel[0] = contactmodel
 
@@ -1659,9 +1655,6 @@ class Spherebin:
                     self.x[i,0] += 0.5*cellsize
                     self.x[i,1] += 0.5*cellsize
 
-        # Init fluid arrays
-        self.initFluid(nu=0.0)
-
         self.contactmodel[0] = contactmodel
 
         # Readjust grid to correct size
@@ -1724,9 +1717,6 @@ class Spherebin:
         self.num[1] = numpy.ceil(y_max/cellsize)
         self.num[2] = numpy.ceil(z_max/cellsize)
         self.L = self.num * cellsize
-
-        # Init fluid arrays
-        self.initFluid(nu=0.0)
 
     def createBondPair(self, i, j, spacing=-0.1):
         ''' Bond particles i and j. Particle j is moved adjacent to particle i,
@@ -2055,8 +2045,7 @@ class Spherebin:
             gamma_r = 0,
             gamma_wn = 1e4,
             gamma_wt = 1e4,
-            capillaryCohesion = 0,
-            nu = 0.0):
+            capillaryCohesion = 0):
         ''' Initialize particle parameters to default values.
             Radii must be set prior to calling this function.
         '''
@@ -2127,9 +2116,6 @@ class Spherebin:
 
         # Debonding distance
         self.db[0] = (1.0 + theta/2.0) * self.V_b**(1.0/3.0)
-
-        # Fluid dynamic viscosity
-        self.nu[0] = nu
 
 
     def bond(self, i, j):
