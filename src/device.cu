@@ -393,7 +393,7 @@ __host__ void DEM::freeGlobalDeviceMemory()
         freeNSmemDev();
     }
 
-    checkForCudaErrors("During cudaFree calls");
+    //checkForCudaErrors("During cudaFree calls");
 
     if (verbose == 1)
         std::cout << "Done" << std::endl;
@@ -553,7 +553,7 @@ __host__ void DEM::transferFromGlobalDeviceMemory()
         transferNSfromGlobalDeviceMemory(0);
     }
 
-    checkForCudaErrors("End of transferFromGlobalDeviceMemory");
+    //checkForCudaErrors("End of transferFromGlobalDeviceMemory");
 }
 
 
@@ -1353,6 +1353,7 @@ __host__ void DEM::startTime()
 
             //// Copy device data to host memory
             transferFromGlobalDeviceMemory();
+            checkForCudaErrors("After transferFromGlobalDeviceMemory()");
 
             // Pause the CPU thread until all CUDA calls previously issued are
             // completed
@@ -1521,6 +1522,7 @@ __host__ void DEM::startTime()
 
     // Free GPU device memory  
     freeGlobalDeviceMemory();
+    checkForCudaErrors("After freeGlobalDeviceMemory()");
 
     // Free contact info arrays
     delete[] k.contacts;

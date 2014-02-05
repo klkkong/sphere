@@ -108,11 +108,11 @@ class DEM {
 
 
         // GPU initialization, must be called before startTime()
-        void initializeGPU(void);
+        void initializeGPU();
 
         // Copy all constant data to constant device memory
-        void transferToConstantDeviceMemory(void);
-        void rt_transferToConstantDeviceMemory(void);
+        void transferToConstantDeviceMemory();
+        void rt_transferToConstantDeviceMemory();
 
         // Check for CUDA errors
         void checkForCudaErrors(const char* checkpoint_description);
@@ -120,7 +120,7 @@ class DEM {
         const unsigned int iteration);
 
         // Check values stored in constant device memory
-        void checkConstantMemory(void);
+        void checkConstantMemory();
 
         // Initialize camera values and transfer to constant device memory
         void cameraInit(const float3 eye,
@@ -129,22 +129,22 @@ class DEM {
                 const float focalLength);
 
         // Allocate global device memory to hold data
-        void allocateGlobalDeviceMemory(void);
-        void rt_allocateGlobalDeviceMemory(void);
+        void allocateGlobalDeviceMemory();
+        void rt_allocateGlobalDeviceMemory();
 
         // Free dynamically allocated global device memory
-        void freeGlobalDeviceMemory(void);
-        void rt_freeGlobalDeviceMemory(void);
+        void freeGlobalDeviceMemory();
+        void rt_freeGlobalDeviceMemory();
 
         // Copy non-constant data to global GPU memory
         void transferToGlobalDeviceMemory(int status = 1);
 
         // Copy non-constant data from global GPU memory to host RAM
-        void transferFromGlobalDeviceMemory(void);
-        void rt_transferFromGlobalDeviceMemory(void);
+        void transferFromGlobalDeviceMemory();
+        void rt_transferFromGlobalDeviceMemory();
 
         // Find and return the max. radius
-        Float r_max(void);
+        Float r_max();
 
         // Write porosities found in porosity() to text file
         void writePorosities(
@@ -251,14 +251,15 @@ class DEM {
         void writebin(const char *target);
 
         // Check numeric values of selected parameters
-        void checkValues(void);
+        void diagnostics();
+        void checkValues();
 
         // Report key parameter values to stdout
-        void reportValues(void);
+        void reportValues();
 
         // Iterate through time, using temporal limits
         // described in "time" struct.
-        void startTime(void);
+        void startTime();
 
         // Render particles using raytracing
         void render(
@@ -276,10 +277,10 @@ class DEM {
         void porosity(const int z_slices = 10);
 
         // find and return the min. position of any particle in each dimension
-        Float3 minPos(void);
+        Float3 minPos();
 
         // find and return the max. position of any particle in each dimension
-        Float3 maxPos(void);
+        Float3 maxPos();
 
         // Find particle-particle intersections, saves the indexes
         // and the overlap sizes
