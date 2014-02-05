@@ -23,27 +23,18 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         // Copy data to temporary arrays to avoid any potential read-after-write, 
         // write-after-read, or write-after-write hazards. 
         unsigned int orig_idx = dev_gridParticleIndex[idx];
-        Float4 force   = dev_force[orig_idx];
-        Float4 torque  = dev_torque[orig_idx];
-        Float4 angpos  = dev_angpos[orig_idx];
-        const Float4 acc0    = dev_acc[orig_idx];
-        const Float4 angacc0 = dev_angacc[orig_idx];
-        //Float4 vel0    = dev_vel0[orig_idx];
-        //Float4 angvel0 = dev_angvel0[orig_idx];
-        Float4 x       = dev_x_sorted[idx];
-        Float4 vel     = dev_vel_sorted[idx];
-        Float4 angvel  = dev_angvel_sorted[idx];
+        const Float4 force   = dev_force[orig_idx];
+        const Float4 torque  = dev_torque[orig_idx];
+        const Float4 angpos  = dev_angpos[orig_idx];
+        const Float4 x       = dev_x_sorted[idx];
+        const Float4 vel     = dev_vel_sorted[idx];
+        const Float4 angvel  = dev_angvel_sorted[idx];
         const Float  radius  = x.w;
+        Float2 xysum = dev_xysum[orig_idx];
 
-        Float2 xysum  = MAKE_FLOAT2(0.0f, 0.0f);
+        // New values
+        Float4 x_new, vel_new, angpos_new, angvel_new;
 
-        Float4 acc, angacc;
-        if (iter == 0) {
-            // in the first iterations, the accelerations havn't been set yet.
-            // Therefore, they are defined.
-            acc = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
-            angacc = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
-        }
 
         // Coherent read from constant memory to registers
         const Float dt = devC_dt;
@@ -55,169 +46,110 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
                 devC_grid.L[0],
                 devC_grid.L[1],
                 devC_grid.L[2]);
-        const Float rho = devC_params.rho;
 
         // Particle mass
-        Float m = 4.0/3.0 * PI * radius*radius*radius * rho;
+        Float m = 4.0/3.0 * PI * radius*radius*radius * devC_params.rho;
 
-        // Update acceleration of particle
+        // Find the acceleration by Newton's second law
+        Float4 acc = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
         acc.x = force.x/m + devC_params.g[0];
         acc.y = force.y/m + devC_params.g[1];
-        if (ND == 3)
-            acc.z = force.z/m + devC_params.g[2];
+        acc.z = force.z/m + devC_params.g[2];
 
-        // Update angular acceleration of particle 
+        // Find the angular acceleration by Newton's second law
         // (angacc = (total moment)/Intertia, intertia = 2/5*m*r^2)
-        if (ND == 3)
-            angacc.x = torque.x * 1.0 / (2.0/5.0 * m * radius*radius);
+        Float4 angacc = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
+        angacc.x = torque.x * 1.0 / (2.0/5.0 * m * radius*radius);
         angacc.y = torque.y * 1.0 / (2.0/5.0 * m * radius*radius);
-        if (ND == 3)
-            angacc.z = torque.z * 1.0 / (2.0/5.0 * m * radius*radius);
+        angacc.z = torque.z * 1.0 / (2.0/5.0 * m * radius*radius);
 
-        // Check if particle has a fixed horizontal velocity
+        // Modify the acceleration if the particle is marked as having a fixed
+        // velocity. In that case, zero the horizontal acceleration and disable
+        // gravity to counteract segregation. Particles may move in the
+        // z-dimension, to allow for dilation.
         if (vel.w > 0.0f) {
 
-            // Zero horizontal acceleration and disable
-            // gravity to counteract segregation.
-            // Particles may move in the z-dimension,
-            // to allow for dilation.
             acc.x = 0.0;
             acc.y = 0.0;
-            if (ND == 3)
-                acc.z -= devC_params.g[2];
+            acc.z -= devC_params.g[2];
 
             // Zero the angular acceleration
             angacc = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
         }
 
-        // Velocity Verlet algorithm using old and new accelerations
-        x.x += vel.x*dt + 0.5*acc0.x*dt*dt;
-        x.y += vel.y*dt + 0.5*acc0.y*dt*dt;
-        if (ND == 3)
-            x.z += vel.z*dt + 0.5*acc0.z*dt*dt;
 
-        if (ND == 3)
-            angpos.x += angvel.x*dt + 0.5*angacc0.x*dt*dt;
-        angpos.y += angvel.y*dt + 0.5*angacc0.y*dt*dt;
-        if (ND == 3)
-            angpos.z += angvel.z*dt + 0.5*angacc0.z*dt*dt;
+        // Forward Euler
+        // Truncation error O(dt^2) for positions and velocities
+        /*x_new.x = x.x + vel.x*dt;
+        x_new.y = x.y + vel.y*dt;
+        x_new.z = x.z + vel.z*dt;
 
-        vel.x += (acc0.x + acc.x)/2.0*dt;
-        vel.y += (acc0.y + acc.y)/2.0*dt;
-        if (ND == 3)
-            vel.z += (acc0.z + acc.z)/2.0*dt;
+        vel_new.x = vel.x + acc.x*dt;
+        vel_new.y = vel.y + acc.y*dt;
+        vel_new.z = vel.z + acc.z*dt;
 
-        if (ND == 3)
-            angvel.x += (angacc0.x + angacc.x)/2.0*dt;
-        angvel.y += (angacc0.y + angacc.y)/2.0*dt;
-        if (ND == 3)
-            angvel.z += (angacc0.z + angacc.z)/2.0*dt;
+        angpos_new.x = angpos.x + angvel.x*dt;
+        angpos_new.y = angpos.y + angvel.y*dt;
+        angpos_new.z = angpos.z + angvel.z*dt;
+
+        angvel_new.x = angvel.x + angacc.x*dt;
+        angvel_new.y = angvel.y + angacc.y*dt;
+        angvel_new.z = angvel.z + angacc.z*dt;*/
+
+        // Two-term Taylor expansion
+        // Truncation error O(dt^3) for positions, O(dt^2) for velocities
+        x_new.x = x.x + vel.x*dt + 0.5*acc.x*dt*dt;
+        x_new.y = x.y + vel.y*dt + 0.5*acc.y*dt*dt;
+        x_new.z = x.z + vel.z*dt + 0.5*acc.z*dt*dt;
+
+        vel_new.x = vel.x + acc.x*dt;
+        vel_new.y = vel.y + acc.y*dt;
+        vel_new.z = vel.z + acc.z*dt;
+
+        angpos_new.x = angpos.x + angvel.x*dt + 0.5*angacc.x*dt*dt;
+        angpos_new.y = angpos.y + angvel.y*dt + 0.5*angacc.y*dt*dt;
+        angpos_new.z = angpos.z + angvel.z*dt + 0.5*angacc.z*dt*dt;
+
+        angvel_new.x = angvel.x + angacc.x*dt;
+        angvel_new.y = angvel.y + angacc.y*dt;
+        angvel_new.z = angvel.z + angacc.z*dt;
+
 
         // Move particles outside the domain across periodic boundaries
         if (devC_grid.periodic == 1) {
-            if (x.x < origo.x)
-                x.x += L.x;
-            if (x.x > L.x)
-                x.x -= L.x;
+            if (x_new.x < origo.x)
+                x_new.x += L.x;
+            if (x_new.x > L.x)
+                x_new.x -= L.x;
             if (ND == 3) {
-                if (x.y < origo.y)
-                    x.y += L.y;
-                if (x.y > L.y)
-                    x.y -= L.y;
+                if (x_new.y < origo.y)
+                    x_new.y += L.y;
+                if (x_new.y > L.y)
+                    x_new.y -= L.y;
             }
         } else if (devC_grid.periodic == 2) {
-            if (x.x < origo.x)
-                x.x += L.x;
-            if (x.x > L.x)
-                x.x -= L.x;
+            if (x_new.x < origo.x)
+                x_new.x += L.x;
+            if (x_new.x > L.x)
+                x_new.x -= L.x;
         }
-
-        //// Half-step leapfrog Verlet integration scheme ////
-        // Update half-step linear velocities
-        /*vel0.x += acc.x * dt;
-        vel0.y += acc.y * dt;
-        vel0.z += acc.z * dt;
-
-        // Update half-step angular velocities
-        angvel0.x += angacc.x * dt;
-        angvel0.y += angacc.y * dt;
-        angvel0.z += angacc.z * dt;*/
-
-        // Update positions
-        //x.x += vel0.x * dt;
-        //x.y += vel0.y * dt;
-        //x.z += vel0.z * dt;
-
-        // Update angular positions
-        //angpos.x += angvel0.x * dt;
-        //angpos.y += angvel0.y * dt;
-        //angpos.z += angvel0.z * dt;
-
-        // Update full-step linear velocity
-        //vel.x = vel0.x + 0.5 * acc.x * dt;
-        //vel.y = vel0.y + 0.5 * acc.y * dt;
-        //vel.z = vel0.z + 0.5 * acc.z * dt;
-
-        // Update full-step angular velocity
-        //angvel.x = angvel0.x + 0.5 * angacc.x * dt;
-        //angvel.y = angvel0.y + 0.5 * angacc.y * dt;
-        //angvel.z = angvel0.z + 0.5 * angacc.z * dt;
-
-        /*
-        //// First-order Euler integration scheme ///
-        // Update angular position
-        angpos.x += angvel.x * dt;
-        angpos.y += angvel.y * dt;
-        angpos.z += angvel.z * dt;
-
-        // Update position
-        x.x += vel.x * dt;
-        x.y += vel.y * dt;
-        x.z += vel.z * dt;
-         */
-
-        /*
-        /// Second-order scheme based on Taylor expansion ///
-        // Update angular position
-        angpos.x += angvel.x * dt + angacc.x * dt*dt * 0.5;
-        angpos.y += angvel.y * dt + angacc.y * dt*dt * 0.5;
-        angpos.z += angvel.z * dt + angacc.z * dt*dt * 0.5;
-
-        // Update position
-        x.x += vel.x * dt + acc.x * dt*dt * 0.5;
-        x.y += vel.y * dt + acc.y * dt*dt * 0.5;
-        x.z += vel.z * dt + acc.z * dt*dt * 0.5;
-         */
-
-        /*
-        // Update angular velocity
-        angvel.x += angacc.x * dt;
-        angvel.y += angacc.y * dt;
-        angvel.z += angacc.z * dt;
-
-        // Update linear velocity
-        vel.x += acc.x * dt;
-        vel.y += acc.y * dt;
-        vel.z += acc.z * dt;
-         */
 
         // Add x-displacement for this time step to 
         // sum of x-displacements
-        //x.w += vel.x * dt + (acc.x * dt*dt)/2.0f;
-        xysum.x += vel.x*dt + 0.5*acc0.x*dt*dt;
-        xysum.y += vel.y*dt + 0.5*acc0.y*dt*dt;
+        xysum.x += vel.x*dt + 0.5*acc.x*dt*dt;
+        xysum.y += vel.y*dt + 0.5*acc.y*dt*dt;
 
         // Hold threads for coalesced write
         __syncthreads();
 
         // Store data in global memory at original, pre-sort positions
-        dev_xysum[orig_idx]  += xysum;
+        dev_xysum[orig_idx]   = xysum;
         dev_acc[orig_idx]     = acc;
         dev_angacc[orig_idx]  = angacc;
-        dev_angvel[orig_idx]  = angvel;
-        dev_vel[orig_idx]     = vel;
-        dev_angpos[orig_idx]  = angpos;
-        dev_x[orig_idx]       = x;
+        dev_angvel[orig_idx]  = angvel_new;
+        dev_vel[orig_idx]     = vel_new;
+        dev_angpos[orig_idx]  = angpos_new;
+        dev_x[orig_idx]       = x_new;
     } 
 } // End of integrate(...)
 

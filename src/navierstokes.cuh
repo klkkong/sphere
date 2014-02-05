@@ -1689,7 +1689,9 @@ __global__ void updateNSvelocityPressure(
         Float3* dev_ns_v,
         Float3* dev_ns_v_p,
         Float*  dev_ns_epsilon,
-        Float   rho)
+        Float   rho/*,
+        int     bc_bot,
+        int     bc_top*/)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -1728,8 +1730,13 @@ __global__ void updateNSvelocityPressure(
         // Find new velocity
         Float3 v = v_p - devC_dt/rho*grad_epsilon;
 
-        /*if (z == 0 || z == nz-1) {
-            p = p_old;
+        printf("[%d,%d,%d]\tgrad_e = %f\t%f\t%f\n",
+                x,y,z,
+                grad_epsilon.x,
+                grad_epsilon.y,
+                grad_epsilon.z);
+
+        /*if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1)) {
             v.z = 0.0;
         }*/
 
