@@ -8,6 +8,7 @@ print("### Input/output tests ###")
 orig = Spherebin(np=100, nw=1, sid="test-initgrid")
 orig.generateRadii(histogram=False)
 orig.defaultParams()
+orig.g[2] = 0.0
 orig.initRandomGridPos(g=numpy.zeros(orig.nd))
 orig.initTemporal(current=0.0, total=0.0)
 orig.time_total=2.0*orig.time_dt
