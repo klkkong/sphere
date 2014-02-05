@@ -334,7 +334,7 @@ __host__ void DEM::allocateGlobalDeviceMemory(void)
     cudaMalloc((void**)&dev_walls_nx, sizeof(Float4)*walls.nw);
     cudaMalloc((void**)&dev_walls_mvfd, sizeof(Float4)*walls.nw);
     cudaMalloc((void**)&dev_walls_force_pp, sizeof(Float)*walls.nw*np);
-    cudaMalloc((void**)&dev_walls_vel0, sizeof(Float)*walls.nw);
+    cudaMalloc((void**)&dev_walls_acc, sizeof(Float)*walls.nw);
     // dev_walls_force_partial allocated later
 
     checkForCudaErrors("End of allocateGlobalDeviceMemory");
@@ -386,7 +386,7 @@ __host__ void DEM::freeGlobalDeviceMemory()
     cudaFree(dev_walls_mvfd);
     cudaFree(dev_walls_force_partial);
     cudaFree(dev_walls_force_pp);
-    cudaFree(dev_walls_vel0);
+    cudaFree(dev_walls_acc);
 
     // Fluid arrays
     if (navierstokes == 1) {
@@ -467,10 +467,6 @@ __host__ void DEM::transferToGlobalDeviceMemory(int statusmsg)
             sizeof(Float4)*walls.nw, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_walls_mvfd,  walls.mvfd,
             sizeof(Float4)*walls.nw, cudaMemcpyHostToDevice);
-    for (int i = 0; i<walls.nw; ++i) {
-        cudaMemcpy( &dev_walls_vel0[i], &walls.mvfd[i].y,
-                sizeof(Float), cudaMemcpyHostToDevice);
-    }
 
     // Fluid arrays
     if (navierstokes == 1) {
@@ -1309,9 +1305,10 @@ __host__ void DEM::startTime()
                     dev_walls_mvfd,
                     dev_walls_wmode,
                     dev_walls_force_partial,
-                    dev_walls_vel0,
+                    dev_walls_acc,
                     blocksPerGrid,
-                    time.current);
+                    time.current,
+                    iter);
         }
 
         // Synchronization point

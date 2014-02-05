@@ -94,7 +94,7 @@ class DEM {
         Float4        *dev_walls_mvfd;      // mass, velo., force, dev. stress
         Float         *dev_walls_force_partial; // Pre-sum per wall
         Float         *dev_walls_force_pp;  // Force per particle per wall
-        Float         *dev_walls_vel0;      // Half-step velocity
+        Float         *dev_walls_acc;       // Wall acceleration
 
         // Bond arrays
         uint2         *dev_bonds;           // Particle bond pairs

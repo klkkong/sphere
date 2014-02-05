@@ -243,9 +243,10 @@ __global__ void integrateWalls(
         Float4* dev_walls_mvfd,
         int* dev_walls_wmode,
         Float* dev_walls_force_partial,
-        Float* dev_walls_vel0,
+        Float* dev_walls_acc,
         unsigned int blocksPerGrid,
-        Float t_current)
+        Float t_current,
+        unsigned int iter)
 {
     unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x; // Thread id
 
@@ -256,57 +257,55 @@ __global__ void integrateWalls(
         Float4 w_nx   = dev_walls_nx[idx];
         Float4 w_mvfd = dev_walls_mvfd[idx];
         int wmode = dev_walls_wmode[idx];  // Wall BC, 0: fixed, 1: devs, 2: vel
-        Float vel0 = dev_walls_vel0[idx];
-        Float acc;
 
-        if (wmode == 0) // Wall fixed: do nothing
-            return;
+        if (wmode != 0) { // wmode == 0: Wall fixed: do nothing
 
-        // Find the final sum of forces on wall
-        w_mvfd.z = 0.0;
-        for (int i=0; i<blocksPerGrid; ++i) {
-            w_mvfd.z += dev_walls_force_partial[i];
+            Float acc0;
+            if (iter == 0)
+                acc0 = 0.0;
+            else
+                acc0 = dev_walls_acc[idx];
+
+            // Find the final sum of forces on wall
+            w_mvfd.z = 0.0;
+            for (int i=0; i<blocksPerGrid; ++i) {
+                w_mvfd.z += dev_walls_force_partial[i];
+            }
+
+            const Float dt = devC_dt;
+
+            // Normal load = Deviatoric stress times wall surface area,
+            // directed downwards.
+            const Float sigma_0 = w_mvfd.w
+                + devC_params.devs_A*sin(2.0*PI*devC_params.devs_f * t_current);
+            const Float N = -sigma_0*devC_grid.L[0]*devC_grid.L[1];
+
+            // Calculate resulting acceleration of wall
+            // (Wall mass is stored in x component of position Float4)
+            Float acc = (w_mvfd.z + N)/w_mvfd.x;
+
+            // If Wall BC is controlled by velocity, it should not change
+            if (wmode == 2) { 
+                acc = 0.0;
+            }
+
+            // Three-term Taylor expansion for tempmoral integration.
+            // The truncation error is O(dt^4) for positions and O(dt^3) for
+            // velocities. The acceleration change approximated by backwards
+            // central difference:
+            const Float dacc_dt = (acc - acc0)/dt;
+
+            // Update position
+            w_nx.w += w_mvfd.y*dt + 0.5*acc*dt*dt + 1.0/6.0*dacc_dt*dt*dt*dt;
+
+            // Update velocity
+            w_mvfd.y += acc*dt + 0.5*dacc_dt*dt*dt;
+
+            // Store data in global memory
+            dev_walls_nx[idx]   = w_nx;
+            dev_walls_mvfd[idx] = w_mvfd;
+            dev_walls_acc[idx] = acc;
         }
-
-        Float dt = devC_dt;
-
-        // Normal load = Deviatoric stress times wall surface area,
-        // directed downwards.
-        Float sigma_0 = w_mvfd.w
-            + devC_params.devs_A*sin(2.0*PI*devC_params.devs_f * t_current);
-        Float N = -sigma_0*devC_grid.L[0]*devC_grid.L[1];
-
-        // Calculate resulting acceleration of wall
-        // (Wall mass is stored in x component of position Float4)
-        acc = (w_mvfd.z + N)/w_mvfd.x;
-
-        // If Wall BC is controlled by velocity, it should not change
-        if (wmode == 2) { 
-            acc = 0.0;
-        }
-
-        //// Half-step leapfrog Verlet integration scheme ////
-        
-        // Update half-step velocity
-        vel0 += acc * dt;
-
-        // Update position. Second-order scheme based on Taylor expansion 
-        //w_nx.w += w_mvfd.y * dt + (acc * dt*dt)/2.0;
-
-        // Update position
-        w_nx.w += vel0 * dt;
-
-        // Update position. First-order Euler integration scheme
-        //w_nx.w += w_mvfd.y * dt;
-
-        // Update linear velocity
-        //w_mvfd.y += acc * dt;
-        w_mvfd.y = vel0 + 0.5 * acc * dt;
-
-        // Store data in global memory
-        dev_walls_nx[idx]   = w_nx;
-        dev_walls_mvfd[idx] = w_mvfd;
-        dev_walls_vel0[idx] = vel0;
     }
 } // End of integrateWalls(...)
 
