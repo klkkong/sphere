@@ -13,7 +13,6 @@
 
 #include "sphere.h"
 #include "datatypes.h"
-#include "utility.cuh"
 #include "utility.h"
 #include "constants.cuh"
 #include "debug.h"

@@ -91,7 +91,7 @@ class DEM {
         // Wall arrays
         int           *dev_walls_wmode;
         Float4        *dev_walls_nx;        // normal, pos.
-        Float4        *dev_walls_mvfd;      // mass, velocity, force, dev. stress
+        Float4        *dev_walls_mvfd;      // mass, velo., force, dev. stress
         Float         *dev_walls_force_partial; // Pre-sum per wall
         Float         *dev_walls_force_pp;  // Force per particle per wall
         Float         *dev_walls_vel0;      // Half-step velocity
@@ -113,6 +113,11 @@ class DEM {
         // Copy all constant data to constant device memory
         void transferToConstantDeviceMemory(void);
         void rt_transferToConstantDeviceMemory(void);
+
+        // Check for CUDA errors
+        void checkForCudaErrors(const char* checkpoint_description);
+        void checkForCudaErrors(const char* checkpoint_description,
+        const unsigned int iteration);
 
         // Check values stored in constant device memory
         void checkConstantMemory(void);
