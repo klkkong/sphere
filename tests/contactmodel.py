@@ -14,9 +14,10 @@ import pytestutils
 
 # Normal impact: Check for conservation of momentum (sum(v_i*m_i))
 orig = sphere.Spherebin(np=1, nw=0, sid='contactmodeltest')
+sphere.cleanup(orig)
 orig.radius[:] = 1.0
 orig.x[0,:] = [5.0, 5.0, 1.05]
-#orig.vel[0,2] = -0.1
+orig.vel[0,2] = -0.1
 orig.defineWorldBoundaries(L=[10,10,10])
 orig.gamma_wn[0] = 0.0  # Disable wall viscosity
 orig.gamma_wt[0] = 0.0  # Disable wall viscosity
@@ -100,5 +101,5 @@ print(moment_after)
 
 
 
-#sphere.cleanup(orig)
 '''
+#sphere.cleanup(orig)

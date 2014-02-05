@@ -99,6 +99,16 @@ DEM::~DEM(void)
         std::cout << "Done" << std::endl;
 }
 
+void checkIfNaN(Float3 vec, std::string description, unsigned int idx)
+{
+    if (vec.x != vec.x || vec.y != vec.y || vec.z != vec.z) {
+        std::cerr << "Error: Particle " << idx << " has a "
+            << description << " with one or more NaN values: "
+            << vec.x << ", " << vec.y << ", " << vec.z << std::endl;
+        exit(1);
+    }
+}
+
 void checkIfNaN(Float4 vec, std::string description, unsigned int idx)
 {
     if (vec.x != vec.x || vec.y != vec.y ||
@@ -107,6 +117,7 @@ void checkIfNaN(Float4 vec, std::string description, unsigned int idx)
             << description << " with one or more NaN values: "
             << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w
             << std::endl;
+        exit(1);
     }
 }
 
@@ -192,13 +203,15 @@ void DEM::checkValues(void)
     Float4 x, vel, acc, angpos, angvel, angacc;
     for (i = 0; i < np; ++i) {
 
-        // Read values
+        // Read values. Accelerations can't be checked by default, since these
+        // aren't initialized when this function is run after reading the input
+        // file from disk
         x = k.x[i];
         vel = k.vel[i];
-        acc = k.acc[i];
+        //acc = k.acc[i];
         angpos = k.angpos[i];
         angvel = k.angvel[i];
-        angacc = k.angacc[i];
+        //angacc = k.angacc[i];
 
         // Check that radii are positive values
         if (x.w <= 0.0) {
@@ -209,11 +222,8 @@ void DEM::checkValues(void)
 
         checkIfNaN(x, "position", i);
         checkIfNaN(vel, "velocity", i);
-        checkIfNaN(acc, "acceleration", i);
         checkIfNaN(angpos, "angular position", i);
         checkIfNaN(angvel, "angular velocity", i);
-        checkIfNaN(angacc, "angular acceleration", i);
-
 
         // Check that all particles are inside of the grid
         if (x.x < grid.origo[0] ||

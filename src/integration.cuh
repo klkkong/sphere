@@ -29,8 +29,20 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         const Float4 x       = dev_x_sorted[idx];
         const Float4 vel     = dev_vel_sorted[idx];
         const Float4 angvel  = dev_angvel_sorted[idx];
-        const Float  radius  = x.w;
         Float2 xysum = dev_xysum[orig_idx];
+
+        // Get old accelerations for three-term Taylor expansion. These values
+        // don't exist in the first time step
+        Float4 acc0, angacc0;
+        if (iter == 0) {
+            acc0 = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
+            angacc0 = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
+        } else {
+            acc0    = dev_acc[orig_idx];
+            angacc0 = dev_acc[orig_idx];
+        }
+
+        const Float  radius  = x.w;
 
         // New values
         Float4 x_new, vel_new, angpos_new, angvel_new;
@@ -83,10 +95,12 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         /*x_new.x = x.x + vel.x*dt;
         x_new.y = x.y + vel.y*dt;
         x_new.z = x.z + vel.z*dt;
+        x_new.w = x.w; // transfer radius
 
         vel_new.x = vel.x + acc.x*dt;
         vel_new.y = vel.y + acc.y*dt;
         vel_new.z = vel.z + acc.z*dt;
+        vel_new.w = vel.w; // transfer fixvel
 
         angpos_new.x = angpos.x + angvel.x*dt;
         angpos_new.y = angpos.y + angvel.y*dt;
@@ -96,15 +110,17 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         angvel_new.y = angvel.y + angacc.y*dt;
         angvel_new.z = angvel.z + angacc.z*dt;*/
 
-        // Two-term Taylor expansion
+        // Two-term Taylor expansion (TY2)
         // Truncation error O(dt^3) for positions, O(dt^2) for velocities
-        x_new.x = x.x + vel.x*dt + 0.5*acc.x*dt*dt;
+        /*x_new.x = x.x + vel.x*dt + 0.5*acc.x*dt*dt;
         x_new.y = x.y + vel.y*dt + 0.5*acc.y*dt*dt;
         x_new.z = x.z + vel.z*dt + 0.5*acc.z*dt*dt;
+        x_new.w = x.w; // transfer radius
 
         vel_new.x = vel.x + acc.x*dt;
         vel_new.y = vel.y + acc.y*dt;
         vel_new.z = vel.z + acc.z*dt;
+        vel_new.w = vel.w; // transfer fixvel
 
         angpos_new.x = angpos.x + angvel.x*dt + 0.5*angacc.x*dt*dt;
         angpos_new.y = angpos.y + angvel.y*dt + 0.5*angacc.y*dt*dt;
@@ -112,7 +128,41 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
 
         angvel_new.x = angvel.x + angacc.x*dt;
         angvel_new.y = angvel.y + angacc.y*dt;
-        angvel_new.z = angvel.z + angacc.z*dt;
+        angvel_new.z = angvel.z + angacc.z*dt;*/
+
+        // Three-term Taylor expansion (TY3)
+        // Truncation error O(dt^4) for positions, O(dt^3) for velocities
+        // Approximate acceleration change by backwards difference:
+        const Float4 dacc_dt = MAKE_FLOAT4(
+                (acc.x - acc0.x)/dt,
+                (acc.y - acc0.y)/dt,
+                (acc.z - acc0.z)/dt, 0.0);
+
+        const Float4 dangacc_dt = MAKE_FLOAT4(
+                (angacc.x - angacc0.x)/dt,
+                (angacc.y - angacc0.y)/dt,
+                (angacc.z - angacc0.z)/dt, 0.0);
+
+        x_new.x = x.x + vel.x*dt + 0.5*acc.x*dt*dt + 1.0/6.0*dacc_dt.x*dt*dt*dt;
+        x_new.y = x.y + vel.y*dt + 0.5*acc.y*dt*dt + 1.0/6.0*dacc_dt.y*dt*dt*dt;
+        x_new.z = x.z + vel.z*dt + 0.5*acc.z*dt*dt + 1.0/6.0*dacc_dt.z*dt*dt*dt;
+        x_new.w = x.w; // transfer radius
+
+        vel_new.x = vel.x + acc.x*dt + 0.5*dacc_dt.x*dt*dt;
+        vel_new.y = vel.y + acc.y*dt + 0.5*dacc_dt.y*dt*dt;
+        vel_new.z = vel.z + acc.z*dt + 0.5*dacc_dt.z*dt*dt;
+        vel_new.w = vel.w; // transfer fixvel
+
+        angpos_new.x = angpos.x + angvel.x*dt + 0.5*angacc.x*dt*dt
+            + 1.0/6.0*dangacc_dt.x*dt*dt*dt;
+        angpos_new.y = angpos.y + angvel.y*dt + 0.5*angacc.y*dt*dt
+            + 1.0/6.0*dangacc_dt.y*dt*dt*dt;
+        angpos_new.z = angpos.z + angvel.z*dt + 0.5*angacc.z*dt*dt
+            + 1.0/6.0*dangacc_dt.z*dt*dt*dt;
+
+        angvel_new.x = angvel.x + angacc.x*dt + 0.5*dangacc_dt.x*dt*dt;
+        angvel_new.y = angvel.y + angacc.y*dt + 0.5*dangacc_dt.y*dt*dt;
+        angvel_new.z = angvel.z + angacc.z*dt + 0.5*dangacc_dt.z*dt*dt;
 
 
         // Move particles outside the domain across periodic boundaries
@@ -138,6 +188,18 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         // sum of x-displacements
         xysum.x += vel.x*dt + 0.5*acc.x*dt*dt;
         xysum.y += vel.y*dt + 0.5*acc.y*dt*dt;
+
+        /*printf("particle %d: x = %f,%f,%f\t vel = %f,%f,%f\t acc = %f,%f,%f\t"
+                " force = %f,%f,%f\t x_new = %f,%f,%f\t vel_new = %f,%f,%f\t"
+                " m = %f\t g = %f,%f,%f\t r = %f\trho = %f\n",
+                orig_idx, x.x, x.y, x.z,
+                vel.x, vel.y, vel.z,
+                acc.x, acc.y, acc.z,
+                force.x, force.y, force.z,
+                x_new.x, x_new.y, x_new.z,
+                vel_new.x, vel_new.y, vel_new.z,
+                m, devC_params.g[0], devC_params.g[1], devC_params.g[2],
+                radius, devC_);*/
 
         // Hold threads for coalesced write
         __syncthreads();
@@ -201,8 +263,8 @@ __global__ void integrateWalls(
 
     if (idx < devC_nw) { // Condition prevents block size error
 
-        // Copy data to temporary arrays to avoid any potential read-after-write, 
-        // write-after-read, or write-after-write hazards. 
+        // Copy data to temporary arrays to avoid any potential
+        // read-after-write, write-after-read, or write-after-write hazards. 
         Float4 w_nx   = dev_walls_nx[idx];
         Float4 w_mvfd = dev_walls_mvfd[idx];
         int wmode = dev_walls_wmode[idx];  // Wall BC, 0: fixed, 1: devs, 2: vel
@@ -222,7 +284,8 @@ __global__ void integrateWalls(
 
         // Normal load = Deviatoric stress times wall surface area,
         // directed downwards.
-        Float sigma_0 = w_mvfd.w + devC_params.devs_A * sin(2.0 * 3.141596654 * devC_params.devs_f * t_current);
+        Float sigma_0 = w_mvfd.w
+            + devC_params.devs_A*sin(2.0*PI*devC_params.devs_f * t_current);
         Float N = -sigma_0*devC_grid.L[0]*devC_grid.L[1];
 
         // Calculate resulting acceleration of wall
@@ -251,8 +314,6 @@ __global__ void integrateWalls(
         // Update linear velocity
         //w_mvfd.y += acc * dt;
         w_mvfd.y = vel0 + 0.5 * acc * dt;
-
-        //cuPrintf("\nwall %d, wmode = %d, force = %f, acc = %f\n", idx, wmode, w_mvfd.z, acc);
 
         // Store data in global memory
         dev_walls_nx[idx]   = w_nx;
