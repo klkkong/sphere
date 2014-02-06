@@ -49,7 +49,8 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
     //Float3 f_n = -devC_params.k_n * delta * n;
 
     // Normal force component: Elastic - viscous damping
-    Float3 f_n = (-devC_params.k_n * delta - devC_params.gamma_wn * vel_n) * n;
+    //Float3 f_n = (-devC_params.k_n * delta - devC_params.gamma_wn * vel_n) * n;
+    Float3 f_n = (-devC_params.k_n * delta + devC_params.gamma_wn * vel_n) * n;
 
     // Print data for contact model validation
     /*printf("f_n_elast = %f\tgamma_wn = %f\tf_n_visc = %f\n",
@@ -70,7 +71,7 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
     const Float f_n_length = length(f_n); // Save length for later use
 
     // Initialize vectors
-    Float3 f_t   = MAKE_FLOAT3(0.0f, 0.0f, 0.0f);
+    Float3 f_t = MAKE_FLOAT3(0.0f, 0.0f, 0.0f);
     //Float3 T_res = MAKE_FLOAT3(0.0f, 0.0f, 0.0f);
 
     // Check that the tangential velocity is high enough to avoid
@@ -99,7 +100,8 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
         // the particle slips and energy is dissipated
         if (f_t_visc_length < f_t_limit) {
             //f_t = -1.0f * f_t_visc * vel_t/vel_t_length;
-            f_t = f_t_visc;
+            //f_t = f_t_visc;
+            f_t = -1.0*f_t_visc;
 
         } else { // Dynamic friction, friction failure
             f_t = -f_t_limit * vel_t/vel_t_length;
