@@ -36,13 +36,12 @@ moment_after = orig.totalMomentum()
 pytestutils.compareFloats(moment_before, moment_after,\
         "Elastic normal wall collision:\t")
 
-''' This test isn't useful unless there is a tangential force component
 # Oblique impact: Check for conservation of momentum (sum(v_i*m_i))
 orig = sphere.Spherebin(np=1, nw=0, sid='contactmo')
 orig.radius[:] = 1.0
 orig.x[0,:] = [5.0, 5.0, 1.05]
-orig.vel[0,1] =  0.1
 orig.vel[0,2] = -0.1
+orig.vel[0,0] =  0.1
 orig.defineWorldBoundaries(L=[10,10,10])
 orig.gamma_wn[0] = 0.0  # Disable wall viscosity
 orig.gamma_wt[0] = 0.0  # Disable wall viscosity
@@ -54,12 +53,12 @@ orig.run(verbose=False)
 orig.readlast(verbose=False)
 moment_after = orig.totalMomentum()
 pytestutils.compareFloats(moment_before, moment_after,\
-        "45 deg. wall collision:")
-'''
+        "       45 deg. wall collision:\t")
 
 ## Visco-elastic collisions
 
-# Normal impact with normal viscous damping. Test that some momentum is lost
+# Normal impact with normal viscous damping. Test that the lost kinetic energy
+# is saved as dissipated viscous energy
 orig = sphere.Spherebin(np=1, nw=0, sid='contactmodeltest')
 orig.radius[:] = 1.0
 orig.x[0,:] = [5.0, 5.0, 1.05]
@@ -78,28 +77,25 @@ Ev_after = orig.energy('visc_n')
 pytestutils.compareFloats(Ekin_before, Ekin_after+Ev_after,\
         "Viscoelastic normal wall collision:", tolerance=0.03)
 
-'''
 # Oblique impact: Check for conservation of momentum (sum(v_i*m_i))
 orig = sphere.Spherebin(np=1, nw=0, sid='contactmodeltest')
 orig.radius[:] = 1.0
 orig.x[0,:] = [5.0, 5.0, 1.05]
-orig.vel[0,1] =  0.1
 orig.vel[0,2] = -0.1
+orig.vel[0,0] =  0.1
 orig.defineWorldBoundaries(L=[10,10,10])
 orig.gamma_wn[0] = 1.0e6
 orig.gamma_wt[0] = 1.0e6
 orig.initTemporal(total = 1.0, file_dt = 0.01)
 orig.writebin(verbose=False)
-moment_before = orig.totalMomentum()
+E_kin_before = orig.energy('kin')
 orig.run(verbose=False)
 #orig.writeVTKall()
 orig.readlast(verbose=False)
-moment_after = orig.totalMomentum()
-pytestutils.compareFloats(moment_before, moment_after,\
-        "45 deg. wall collision:")
-print(moment_before)
-print(moment_after)
-'''
+Ekin_after = orig.energy('kin')
+Ev_after = orig.energy('visc_n')
+pytestutils.compareFloats(Ekin_before, Ekin_after+Ev_after,\
+        "Viscoelastic normal wall collision:", tolerance=0.03)
 
 
 #sphere.cleanup(orig)
