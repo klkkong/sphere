@@ -34,7 +34,8 @@ def compareFloats(first, second, string, tolerance=1e-3):
         print(string + failed())
         print("First: " + str(first))
         print("Second: " + str(second))
-        print("Difference: " + str(second-first))
+        print("Abs. difference: " + str(second-first))
+        print("Rel. difference: " + str(abs((first-second)/first)))
         raise Exception("Failed")
         return(1)
 
