@@ -52,8 +52,12 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
             devC_params.gamma_wn,
             devC_params.gamma_wn*vel_n);*/
 
+    // Store the energy lost by viscous damping
+    *ev_dot += devC_params.gamma_wn * vel_n * vel_n;
+
     // Make sure the viscous damping doesn't exceed the elastic component,
-    // i.e. the damping factor doesn't exceed the critical damping, 2*sqrt(m*k_n)
+    // i.e. the damping factor doesn't exceed the critical damping:
+    // 2*sqrt(m*k_n)
     if (dot(f_n, n) < 0.0f)
         f_n = MAKE_FLOAT3(0.0f, 0.0f, 0.0f);
 
@@ -93,6 +97,7 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
 
             // Shear energy production rate [W]
             //*es_dot += -dot(vel_t, f_t);
+            *es_dot += length(length(f_t) * vel_t * devC_dt) / devC_dt;
         }
     }
 

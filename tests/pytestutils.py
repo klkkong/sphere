@@ -10,6 +10,13 @@ def passed():
 def failed():
     return "\tFailed"
 
+def test(statement, string):
+    if (statement == True):
+        print(string + passed())
+    else:
+        print(string + failed())
+        raise Exception("Failed")
+
 def compare(first, second, string):
     returnvalue = (first == second)
     if (returnvalue == True or returnvalue > 0):
