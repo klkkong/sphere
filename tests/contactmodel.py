@@ -75,11 +75,8 @@ orig.run(verbose=False)
 orig.readlast(verbose=False)
 Ekin_after = orig.energy('kin')
 Ev_after = orig.energy('visc_n')
-print(Ekin_before)
-print(Ekin_after)
-print(Ekin_after+Ev_after)
 pytestutils.compareFloats(Ekin_before, Ekin_after+Ev_after,\
-        "Viscoelastic normal wall collision:", tolerance=0.01)
+        "Viscoelastic normal wall collision:", tolerance=0.03)
 
 '''
 # Oblique impact: Check for conservation of momentum (sum(v_i*m_i))
