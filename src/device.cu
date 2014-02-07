@@ -48,7 +48,7 @@ const int write_res_log = 0;
 
 // Report epsilon values during Jacobi iterations to stdout
 // 0: False, 1: True
-const int report_epsilon = 0;
+const int report_epsilon = 1;
 
 // Report the number of iterations it took before convergence to logfile
 // 'output/<sid>-conv.dat'
@@ -1225,7 +1225,7 @@ __host__ void DEM::startTime()
                         "value of 'maxiter' or increase 'tolerance'."
                         << std::endl;
                 }
-                //break; // end after Jacobi first iteration
+                break; // end after Jacobi first iteration
             } // end Jacobi iteration loop
 
             if (write_res_log == 1)
@@ -1421,7 +1421,7 @@ __host__ void DEM::startTime()
         }
 
         // Uncomment break command to stop after the first iteration
-        //break;
+        break;
     }
 
     if (write_conv_log == 1)

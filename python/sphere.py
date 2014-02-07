@@ -158,7 +158,7 @@ class Spherebin:
         self.gamma_wn = numpy.ones(1, dtype=numpy.float64) * 1.0e3
 
         # The viscosity tangential to the walls [N/(m/s)]
-        self.gamma_wt = numpy.ones(1, dtype=numpy.float64) * 1.0e3
+        self.gamma_wt = numpy.zeros(1, dtype=numpy.float64)
 
         # The coeffient of static friction of the walls [-]
         self.mu_ws    = numpy.ones(1, dtype=numpy.float64)
@@ -1509,7 +1509,7 @@ class Spherebin:
                     + " small")
 
 
-    def initRandomPos(self, g = numpy.array([0.0, 0.0, -9.80665]),
+    def initRandomPos(self,
             gridnum = numpy.array([12, 12, 36]),
             periodic = 1,
             contactmodel = 2):
@@ -1520,9 +1520,6 @@ class Spherebin:
         non-periodic boundaries, the particles are restrained at the edges to
         make space for their radii within the bounding box.
 
-        :param g: The vector of gravitational acceleration (default = [0, 0,
-            -9.90665])
-        :type g: numpy.array
         :param gridnum: The number of sorting cells in each spatial direction
             (default = [12, 12, 36])
         :type gridnum: numpy.array
@@ -1533,7 +1530,6 @@ class Spherebin:
             (visco-frictional = 1, elasto-visco-frictional = 2, default = 2)
         :type contactmodel: int
         '''
-        self.g = g
         self.periodic[0] = periodic
 
         # Calculate cells in grid
@@ -1632,7 +1628,7 @@ class Spherebin:
 
 
     # Generate grid based on particle positions
-    def initGridAndWorldsize(self, g = numpy.array([0.0, 0.0, -9.80665]),
+    def initGridAndWorldsize(self,
             margin = 2.0,
             periodic = 1,
             contactmodel = 2):
@@ -1641,7 +1637,6 @@ class Spherebin:
             from the particle boundaries.
         '''
 
-        self.g = g
         self.periodic[0] = periodic
 
         # Cell configuration
@@ -1675,8 +1670,7 @@ class Spherebin:
 
     # Initialize particle positions to regular, grid-like, non-overlapping
     # configuration
-    def initGridPos(self, g = numpy.array([0.0, 0.0, -9.80665]),
-            gridnum = numpy.array([12, 12, 36]),
+    def initGridPos(self, gridnum = numpy.array([12, 12, 36]),
             periodic = 1,
             contactmodel = 2):
         ''' Initialize particle positions in loose, cubic configuration.
@@ -1684,7 +1678,6 @@ class Spherebin:
             xynum is the number of rows in both x- and y- directions.
         '''
 
-        self.g = g
         self.periodic[0] = periodic
 
         # Calculate cells in grid
@@ -1740,7 +1733,7 @@ class Spherebin:
             self.num[1] += 1
 
 
-    def initRandomGridPos(self, g = numpy.array([0.0, 0.0, -9.80665]),
+    def initRandomGridPos(self,
             gridnum = numpy.array([12, 12, 32]),
             periodic = 1,
             contactmodel = 2):
@@ -1748,8 +1741,6 @@ class Spherebin:
             Radii must be set beforehand.
             xynum is the number of rows in both x- and y- directions.
         '''
-
-        self.g = g
         self.periodic[0] = periodic
 
         # Calculate cells in grid
