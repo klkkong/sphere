@@ -49,6 +49,7 @@ const int write_res_log = 0;
 // Report epsilon values during Jacobi iterations to stdout
 // 0: False, 1: True
 const int report_epsilon = 1;
+const int report_even_more_epsilon = 1;
 
 // Report the number of iterations it took before convergence to logfile
 // 'output/<sid>-conv.dat'
@@ -907,11 +908,15 @@ __host__ void DEM::startTime()
                         dev_ns_epsilon_new,
                         new_pressure);
                 cudaThreadSynchronize();
-                checkForCudaErrors("Post setUpperPressureNS", iter); //*/
-                /*std::cout << "\n###### EPSILON AFTER setUpperPressureNS ######"
-                  << std::endl;
-                  transferNSepsilonFromGlobalDeviceMemory();
-                  printNSarray(stdout, ns.epsilon, "epsilon");*/
+                checkForCudaErrors("Post setUpperPressureNS", iter);
+
+                if (report_even_more_epsilon == 1) {
+                    std::cout
+                        << "\n###### EPSILON AFTER setUpperPressureNS ######"
+                        << std::endl;
+                    transferNSepsilonFromGlobalDeviceMemory();
+                    printNSarray(stdout, ns.epsilon, "epsilon");
+                }
             }
 
             // Set the values of the ghost nodes in the grid
@@ -1049,10 +1054,14 @@ __host__ void DEM::startTime()
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                             &t_setNSepsilon);
                 checkForCudaErrors("Post setNSepsilonInterior");
-                /*std::cout << "\n###### EPSILON AFTER setNSepsilon ######"
-                    << std::endl;
-                transferNSepsilonFromGlobalDeviceMemory();
-                printNSarray(stdout, ns.epsilon, "epsilon");*/
+
+                if (report_even_more_epsilon == 1) {
+                    std::cout
+                        << "\n###### EPSILON AFTER setNSepsilonInterior ######"
+                        << std::endl;
+                    transferNSepsilonFromGlobalDeviceMemory();
+                    printNSarray(stdout, ns.epsilon, "epsilon");
+                }
 
                 // Set the epsilon values at the lower boundary
                 pressure = ns.p[idx(0,0,0)];
@@ -1069,10 +1078,14 @@ __host__ void DEM::startTime()
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                             &t_setNSdirichlet);
                 checkForCudaErrors("Post setNSepsilonBottom");
-                /*std::cout << "\n###### EPSILON AFTER setNSdirichlet ######"
-                    << std::endl;
-                transferNSepsilonFromGlobalDeviceMemory();
-                printNSarray(stdout, ns.epsilon, "epsilon");*/
+
+                if (report_even_more_epsilon == 1) {
+                    std::cout
+                        << "\n###### EPSILON AFTER setNSepsilonBottom ######"
+                        << std::endl;
+                    transferNSepsilonFromGlobalDeviceMemory();
+                    printNSarray(stdout, ns.epsilon, "epsilon");
+                }
                 
                 /*setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_epsilon);
@@ -1085,10 +1098,14 @@ __host__ void DEM::startTime()
                 cudaThreadSynchronize();
                 checkForCudaErrors("Post setNSghostNodesEpsilon(1)",
                         iter);
-                /*std::cout << "\n###### EPSILON AFTER setNSghostNodes ######"
-                    << std::endl;
-                transferNSepsilonFromGlobalDeviceMemory();
-                printNSarray(stdout, ns.epsilon, "epsilon");*/
+
+                if (report_even_more_epsilon == 1) {
+                    std::cout <<
+                        "\n###### EPSILON AFTER setNSghostNodes(epsilon) ######"
+                        << std::endl;
+                    transferNSepsilonFromGlobalDeviceMemory();
+                    printNSarray(stdout, ns.epsilon, "epsilon");
+                }
             }
 
             // Solve the system of epsilon using a Jacobi iterative solver.
@@ -1111,9 +1128,6 @@ __host__ void DEM::startTime()
             }
 
             for (unsigned int nijac = 0; nijac<maxiter; ++nijac) {
-
-                //std::cout << "\n###### JACOBI ITERATION " << nijac << " ######"
-                    //<< std::endl;
 
                 // Only grad(epsilon) changes during the Jacobi iterations. The
                 // remaining terms of the forcing function are only calculated
