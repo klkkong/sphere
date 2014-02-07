@@ -65,13 +65,13 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
     // Make sure the viscous damping doesn't exceed the elastic component,
     // i.e. the damping factor doesn't exceed the critical damping:
     // 2*sqrt(m*k_n)
-    if (dot(f_n, n) < 0.0f)
-        f_n = MAKE_FLOAT3(0.0f, 0.0f, 0.0f);
+    if (dot(f_n, n) < 0.0)
+        f_n = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
     const Float f_n_length = length(f_n); // Save length for later use
 
     // Initialize vectors
-    Float3 f_t = MAKE_FLOAT3(0.0f, 0.0f, 0.0f);
+    Float3 f_t = MAKE_FLOAT3(0.0, 0.0, 0.0);
     //Float3 T_res = MAKE_FLOAT3(0.0f, 0.0f, 0.0f);
 
     // Check that the tangential velocity is high enough to avoid
@@ -80,7 +80,8 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
 
         // Tangential force by viscous model
         //Float f_t_visc = devC_params.gamma_wt * vel_t_length;
-        const Float3 f_t_visc = -devC_params.gamma_wt * vel_t;
+        //const Float3 f_t_visc = -devC_params.gamma_wt * vel_t;
+        const Float3 f_t_visc = devC_params.gamma_wt * vel_t;
         const Float f_t_visc_length = length(f_t_visc);
 
         // Print data for contact model validation
@@ -90,7 +91,7 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
 
         // Determine max. friction
         Float f_t_limit;
-        if (vel_t_length > 0.001f) { // Dynamic
+        if (vel_t_length > 0.0) { // Dynamic
             f_t_limit = devC_params.mu_wd * f_n_length;
         } else { // Static
             f_t_limit = devC_params.mu_ws * f_n_length;
@@ -98,19 +99,23 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
 
         // If the shear force component exceeds the friction,
         // the particle slips and energy is dissipated
+        /*
         if (f_t_visc_length < f_t_limit) {
             //f_t = -1.0f * f_t_visc * vel_t/vel_t_length;
-            //f_t = f_t_visc;
-            f_t = -1.0*f_t_visc;
+            f_t = f_t_visc;
 
         } else { // Dynamic friction, friction failure
-            f_t = -f_t_limit * vel_t/vel_t_length;
+            //f_t = -f_t_limit * vel_t/vel_t_length;
+            f_t = f_t_limit * vel_t/vel_t_length;
 
             // Shear energy production rate [W]
             //*es_dot += -dot(vel_t, f_t);
             *es_dot += length(length(f_t) * vel_t * devC_dt) / devC_dt;
-        }
+        }*/
+
+        f_t = -1.0*f_t_visc;
     }
+
 
     /*  if (angvel_length > 0.f) {
     // Apply rolling resistance (Zhou et al. 1999)
@@ -128,9 +133,17 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
     // Total torque from wall
     //*T += -radius_a * cross(n, f_t) + T_res;
     *T += cross(-(radius_a + delta*0.5) * n, f_t);
+    //*T += -1.0*cross(-(radius_a + delta*0.5) * n, f_t);
 
     // Pressure excerted onto particle from this contact
     *p += f_n_length / (4.0f * PI * radius_a*radius_a);
+
+    if (vel_t_length > 0.0 && devC_params.gamma_wt > 0.0) {
+        printf("f_n = %f\t%f\t%f\tf_t = %f\t%f\t%f\tT = %f\t%f\t%f\n",
+                f_n.x, f_n.y, f_n.z,
+                f_t.x, f_t.y, f_t.z,
+                T->x, T->y, T->z);
+    }
 
     // Return force excerted onto the wall
     //return -dot(*F, n);
