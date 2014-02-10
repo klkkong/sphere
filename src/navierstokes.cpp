@@ -90,7 +90,8 @@ unsigned int DEM::idx(
 }
 
 // 3D index to 1D index of cell-face velocity nodes. The cell-face velocities
-// are placed at x = [0;nx], y = [0;ny], z = [0;nz]
+// are placed at x = [0;nx], y = [0;ny], z = [0;nz].
+// The coordinate x,y,z corresponds to the lowest corner of cell(x,y,z).
 unsigned int DEM::vidx(
         const int x,
         const int y,

@@ -1015,6 +1015,35 @@ __device__ Float3 gradient(
             (zp - zn)/(2.0*dz));
 }
 
+// Find the gradients of the velocity at the center of the cell with index x,y,z
+// and cell size dx,dy,dz
+__device__ Float3 v_gradient(
+        const Float* dev_ns_v_x,
+        const Float* dev_ns_v_y,
+        const Float* dev_ns_v_z,
+        const unsigned int x,
+        const unsigned int y,
+        const unsigned int z,
+        const Float dx,
+        const Float dy,
+        const Float dz)
+{
+    // Read the six cell face velocities
+    __syncthreads();
+    const Float v_xn = dev_ns_v_x[vidx(x,y,z)];
+    const Float v_xp = dev_ns_v_x[vidx(x+1,y,z)];
+    const Float v_yn = dev_ns_v_y[vidx(x,y,z)];
+    const Float v_yp = dev_ns_v_y[vidx(x,y+1,z)];
+    const Float v_zn = dev_ns_v_z[vidx(x,y,z)];
+    const Float v_zp = dev_ns_v_y[vidx(x,y,z+1)];
+
+    // Calculate the velocity gradient
+    return MAKE_FLOAT3(
+            (v_xp - v_xn)/dx,
+            (v_yp - v_yn)/dy,
+            (v_zp - v_zn)/dz);
+}
+
 // Find the dv_i/di gradients in a cell in a homogeneous, cubic 3D vector field
 // using finite central differences
 __device__ Float3 gradient(
@@ -1058,12 +1087,12 @@ __device__ Float divergence(
 {
     // Read 6 neighbor cells
     __syncthreads();
-    const Float3 xp = dev_vectorfield[idx(x+1,y,z)];
     const Float3 xn = dev_vectorfield[idx(x-1,y,z)];
-    const Float3 yp = dev_vectorfield[idx(x,y+1,z)];
+    const Float3 xp = dev_vectorfield[idx(x+1,y,z)];
     const Float3 yn = dev_vectorfield[idx(x,y-1,z)];
-    const Float3 zp = dev_vectorfield[idx(x,y,z+1)];
+    const Float3 yp = dev_vectorfield[idx(x,y+1,z)];
     const Float3 zn = dev_vectorfield[idx(x,y,z-1)];
+    const Float3 zp = dev_vectorfield[idx(x,y,z+1)];
 
     // Calculate the central-difference gradients and divergence
     return
