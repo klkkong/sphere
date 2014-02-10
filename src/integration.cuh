@@ -4,10 +4,10 @@
 // integration.cuh
 // Functions responsible for temporal integration
 
-// Choose temporal integration scheme
+//// Choose temporal integration scheme. Uncomment only one!
 //#define EULER
-#define TY2
-//#define TY3
+//#define TY2
+#define TY3
 
 // Second order integration scheme based on Taylor expansion of particle kinematics. 
 // Kernel executed on device, and callable from host only.
@@ -47,7 +47,7 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         } else {
             __syncthreads();
             acc0    = dev_acc[orig_idx];
-            angacc0 = dev_acc[orig_idx];
+            angacc0 = dev_angacc[orig_idx];
         }
 #endif
 
@@ -198,7 +198,6 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         xysum.x += vel.x*dt + 0.5*acc.x*dt*dt + 1.0/6.0*dacc_dt.x*dt*dt*dt;
         xysum.y += vel.y*dt + 0.5*acc.y*dt*dt + 1.0/6.0*dacc_dt.y*dt*dt*dt;
 #endif
-
 
         // Move particles outside the domain across periodic boundaries
         if (devC_grid.periodic == 1) {

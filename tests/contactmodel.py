@@ -10,6 +10,7 @@ import pytestutils
 
 ### Wall-particle interaction ##################################################
 
+'''
 ## Linear elastic collisions
 
 # Normal impact: Check for conservation of momentum (sum(v_i*m_i))
@@ -78,6 +79,7 @@ Ekin_after = orig.energy('kin')
 Ev_after = orig.energy('visc_n')
 #pytestutils.compareFloats(Ekin_before, Ekin_after+Ev_after,\
         #"Viscoelastic normal wall collision:", tolerance=0.03)
+        '''
 
 # Oblique impact: Check for conservation of momentum (sum(v_i*m_i))
 orig = sphere.Spherebin(np=1, nw=0, sid='contactmodeltest')
