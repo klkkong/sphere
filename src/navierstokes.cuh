@@ -30,6 +30,16 @@
 // value of 1.0, but instabilities may be avoided with lower values.
 #define THETA 1.0
 
+// Arithmetic mean of two numbers
+__inline__ __device__ Float amean(Float a, Float b) {
+    return (a+b)*0.5;
+}
+
+// Harmonic mean of two numbers
+__inline__ __device__ Float hmean(Float a, Float b) {
+    return (2.0*a*b)/(a+b);
+}
+
 // Initialize memory
 void DEM::initNSmemDev(void)
 {
@@ -211,11 +221,11 @@ __global__ void findNSavgVel(
         const Float v_zn = dev_ns_v_z[vidx(x,y,z)];
         const Float v_zp = dev_ns_v_z[vidx(x,y,z+1)];
 
-        // Find average velocity
+        // Find average velocity using arithmetic means
         const Float3 v_bar = MAKE_FLOAT3(
-                (v_xn + v_xp)/2.0,
-                (v_yn + v_yp)/2.0,
-                (v_zn + v_zp)/2.0);
+                amean(v_xn, v_xp),
+                amean(v_yn, v_yp),
+                amean(v_zn, v_zp));
 
         // Save value
         __syncthreads();
@@ -263,19 +273,19 @@ __global__ void findNScellFaceVel(
         __syncthreads();
 
         // Values at the faces closest to the coordinate system origo
-        dev_ns_v_x[vidx(x,y,z)] = (v_xn + v.x)/2.0;
-        dev_ns_v_y[vidx(x,y,z)] = (v_yn + v.y)/2.0;
-        dev_ns_v_z[vidx(x,y,z)] = (v_zn + v.z)/2.0;
+        dev_ns_v_x[vidx(x,y,z)] = amean(v_xn, v.x);
+        dev_ns_v_y[vidx(x,y,z)] = amean(v_yn, v.y);
+        dev_ns_v_z[vidx(x,y,z)] = amean(v_zn, v.z);
 
         // Values at the cell faces furthest from the coordinate system origo.
         // These values should only be written at the corresponding boundaries
         // in order to avoid write conflicts.
         if (x == nx-1)
-            dev_ns_v_x[vidx(x+1,y,z)] = (v.x + v_xp)/2.0;
+            dev_ns_v_x[vidx(x+1,y,z)] = amean(v.x, v_xp);
         if (y == ny-1)
-            dev_ns_v_y[vidx(x,y+1,z)] = (v.y + v_yp)/2.0;
+            dev_ns_v_x[vidx(x+1,y,z)] = amean(v.y, v_yp);
         if (z == nz-1)
-            dev_ns_v_z[vidx(x,y,z+1)] = (v.z + v_zp)/2.0;
+            dev_ns_v_x[vidx(x+1,y,z)] = amean(v.z, v_zp);
     }
 }
 
@@ -1101,8 +1111,6 @@ __device__ Float divergence(
         (zp.z - zn.z)/(2.0*dz);
 }
 
-
-
 // Find the spatial gradient in e.g. pressures per cell
 // using first order central differences
 __global__ void findNSgradientsDev(
@@ -1136,16 +1144,6 @@ __global__ void findNSgradientsDev(
         __syncthreads();
         dev_vectorfield[cellidx] = grad;
     }
-}
-
-// Arithmetic mean of two numbers
-__inline__ __device__ Float ameanDev(Float a, Float b) {
-    return (a+b)*0.5;
-}
-
-// Harmonic mean of two numbers
-__inline__ __device__ Float hmeanDev(Float a, Float b) {
-    return (2.0*a*b)/(a+b);
 }
 
 // Find the outer product of v v
