@@ -23,6 +23,10 @@
 // and a very low tolerance criteria value (e.g. 1.0e-9)
 #define BETA 0.0
 
+// Relaxation parameter, used in solution of Poisson equation. The value should
+// be within the range ]0.0;1.0].
+#define THETA 0.1
+
 // Initialize memory
 void DEM::initNSmemDev(void)
 {
@@ -1648,8 +1652,8 @@ __global__ void jacobiIterationNS(
         const Float f = dev_ns_f[cellidx];
         //const Float f = 0.0;
 
-        // New value of epsilon in 3D update
-        //*
+        // New value of epsilon in 3D update, derived by rearranging the
+        // discrete Laplacian
         const Float dxdx = dx*dx;
         const Float dydy = dy*dy;
         const Float dzdz = dz*dz;
@@ -1658,7 +1662,7 @@ __global__ void jacobiIterationNS(
                     + dydy*dzdz*(e_xn + e_xp)
                     + dxdx*dzdz*(e_yn + e_yp)
                     + dxdx*dydy*(e_zn + e_zp))
-            /(2.0*(dxdx*dydy + dxdx*dzdz + dydy*dzdz)); // */
+            /(2.0*(dxdx*dydy + dxdx*dzdz + dydy*dzdz));
 
         // New value of epsilon in 1D update
         //const Float e_new = (e_zp + e_zn - dz*dz*f)/2.0;
@@ -1671,9 +1675,10 @@ __global__ void jacobiIterationNS(
         // denominator to avoid a divide by zero.
         const Float res_norm = (e_new - e)*(e_new - e)/(e_new*e_new + 1.0e-16);
 
-        // Write results
+        // Write results, apply relaxation parameter THETA to epsilon solution
         __syncthreads();
-        dev_ns_epsilon_new[cellidx] = e_new;
+        //dev_ns_epsilon_new[cellidx] = e_new;
+        dev_ns_epsilon_new[cellidx] = e*(1.0-THETA) + e_new*THETA;
         dev_ns_norm[cellidx] = res_norm;
     }
 }

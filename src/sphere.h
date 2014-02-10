@@ -170,7 +170,13 @@ class DEM {
         // Navier Stokes values, device
         Float*  dev_ns_p;            // Cell hydraulic pressure
         Float3* dev_ns_v;            // Cell fluid velocity
+        Float*  dev_ns_v_x;          // Cell fluid velocity in staggered grid
+        Float*  dev_ns_v_y;          // Cell fluid velocity in staggered grid
+        Float*  dev_ns_v_z;          // Cell fluid velocity in staggered grid
         Float3* dev_ns_v_p;          // Predicted cell fluid velocity
+        Float*  dev_ns_v_p_x;        // Predicted cell fluid velocity in st. gr.
+        Float*  dev_ns_v_p_y;        // Predicted cell fluid velocity in st. gr.
+        Float*  dev_ns_v_p_z;        // Predicted cell fluid velocity in st. gr.
         Float*  dev_ns_phi;          // Cell porosity
         Float*  dev_ns_dphi;         // Cell porosity change
         Float3* dev_ns_div_phi_v_v;  // Divegence used in velocity prediction
@@ -193,7 +199,8 @@ class DEM {
         void freeNSmem();
 
         // Returns the number of fluid cells
-        unsigned int NScells();
+        unsigned int NScells();         // Pressure and other centered nodes
+        unsigned int NScellsVelocity(); // Inter-cell nodes (velocity)
         
         // Returns the mean particle radius
         Float meanRadius();

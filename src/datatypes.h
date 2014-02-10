@@ -112,7 +112,13 @@ struct NavierStokes {
     Float   dx, dy, dz;  // Cell length in each dim
     Float*  p;           // Cell hydraulic pressures
     Float3* v;           // Cell fluid velocity
+    Float*  v_x;         // Fluid velocity in staggered grid
+    Float*  v_y;         // Fluid velocity in staggered grid
+    Float*  v_z;         // Fluid velocity in staggered grid
     Float3* v_p;         // Predicted fluid velocity
+    Float*  v_p_x;       // Predicted fluid velocity in staggered grid
+    Float*  v_p_y;       // Predicted fluid velocity in staggered grid
+    Float*  v_p_z;       // Predicted fluid velocity in staggered grid
     Float*  phi;         // Cell porosity
     Float*  dphi;        // Cell porosity change
     Float*  norm;        // Normalized residual of epsilon updates
