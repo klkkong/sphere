@@ -26,12 +26,9 @@ SB.x[1, :] = numpy.array([11.0, 5.0, 5.0])   # particle 2 (idx 1)
 # a positive x velocity for particle 1.
 SB.vel[0, 0] = 1.0
 
-# let's disable gravity in this simulation
-GRAVITY = numpy.array([0.0, 0.0, 0.0])
-
 # Set the world limits and the particle sorting grid. The particles need to stay
 # within the world limits for the entire simulation, otherwise it will stop!
-SB.initGridAndWorldsize(g = GRAVITY, margin = 5.0)
+SB.initGridAndWorldsize(margin = 5.0)
 
 # Define the temporal parameters, e.g. the total time (total) and the file
 # output interval (file_dt), both in seconds
