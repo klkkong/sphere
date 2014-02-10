@@ -4,6 +4,11 @@
 // integration.cuh
 // Functions responsible for temporal integration
 
+// Choose temporal integration scheme
+//#define EULER
+#define TY2
+//#define TY3
+
 // Second order integration scheme based on Taylor expansion of particle kinematics. 
 // Kernel executed on device, and callable from host only.
 __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
@@ -20,33 +25,36 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
 
     if (idx < devC_np) { // Condition prevents block size error
 
-        // Copy data to temporary arrays to avoid any potential read-after-write, 
-        // write-after-read, or write-after-write hazards. 
+        // Copy data to temporary arrays to avoid any potential
+        // read-after-write, write-after-read, or write-after-write hazards. 
+        __syncthreads();
         unsigned int orig_idx = dev_gridParticleIndex[idx];
-        const Float4 force   = dev_force[orig_idx];
-        const Float4 torque  = dev_torque[orig_idx];
-        const Float4 angpos  = dev_angpos[orig_idx];
-        const Float4 x       = dev_x_sorted[idx];
-        const Float4 vel     = dev_vel_sorted[idx];
-        const Float4 angvel  = dev_angvel_sorted[idx];
+        const Float4 force    = dev_force[orig_idx];
+        const Float4 torque   = dev_torque[orig_idx];
+        const Float4 angpos   = dev_angpos[orig_idx];
+        const Float4 x        = dev_x_sorted[idx];
+        const Float4 vel      = dev_vel_sorted[idx];
+        const Float4 angvel   = dev_angvel_sorted[idx];
         Float2 xysum = dev_xysum[orig_idx];
 
         // Get old accelerations for three-term Taylor expansion. These values
         // don't exist in the first time step
+#ifdef TY3
         Float4 acc0, angacc0;
         if (iter == 0) {
             acc0 = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
             angacc0 = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
         } else {
+            __syncthreads();
             acc0    = dev_acc[orig_idx];
             angacc0 = dev_acc[orig_idx];
         }
+#endif
 
-        const Float  radius  = x.w;
+        const Float radius = x.w;
 
         // New values
         Float4 x_new, vel_new, angpos_new, angvel_new;
-
 
         // Coherent read from constant memory to registers
         const Float dt = devC_dt;
@@ -90,9 +98,10 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         }
 
 
+#ifdef EULER
         // Forward Euler
         // Truncation error O(dt^2) for positions and velocities
-        /*x_new.x = x.x + vel.x*dt;
+        x_new.x = x.x + vel.x*dt;
         x_new.y = x.y + vel.y*dt;
         x_new.z = x.z + vel.z*dt;
         x_new.w = x.w; // transfer radius
@@ -105,14 +114,23 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         angpos_new.x = angpos.x + angvel.x*dt;
         angpos_new.y = angpos.y + angvel.y*dt;
         angpos_new.z = angpos.z + angvel.z*dt;
+        angpos_new.w = angpos.w;
 
         angvel_new.x = angvel.x + angacc.x*dt;
         angvel_new.y = angvel.y + angacc.y*dt;
-        angvel_new.z = angvel.z + angacc.z*dt;*/
+        angvel_new.z = angvel.z + angacc.z*dt;
+        angvel_new.w = angvel.w;
 
+        // Add horizontal-displacement for this time step to the sum of
+        // horizontal displacements
+        xysum.x += vel.x*dt;
+        xysum.y += vel.y*dt;
+#endif
+
+#ifdef TY2
         // Two-term Taylor expansion (TY2)
         // Truncation error O(dt^3) for positions, O(dt^2) for velocities
-        /*x_new.x = x.x + vel.x*dt + 0.5*acc.x*dt*dt;
+        x_new.x = x.x + vel.x*dt + 0.5*acc.x*dt*dt;
         x_new.y = x.y + vel.y*dt + 0.5*acc.y*dt*dt;
         x_new.z = x.z + vel.z*dt + 0.5*acc.z*dt*dt;
         x_new.w = x.w; // transfer radius
@@ -125,23 +143,32 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         angpos_new.x = angpos.x + angvel.x*dt + 0.5*angacc.x*dt*dt;
         angpos_new.y = angpos.y + angvel.y*dt + 0.5*angacc.y*dt*dt;
         angpos_new.z = angpos.z + angvel.z*dt + 0.5*angacc.z*dt*dt;
+        angpos_new.w = angpos.w;
 
         angvel_new.x = angvel.x + angacc.x*dt;
         angvel_new.y = angvel.y + angacc.y*dt;
-        angvel_new.z = angvel.z + angacc.z*dt;*/
+        angvel_new.z = angvel.z + angacc.z*dt;
+        angvel_new.w = angvel.w;
 
+        // Add horizontal-displacement for this time step to the sum of
+        // horizontal displacements
+        xysum.x += vel.x*dt + 0.5*acc.x*dt*dt;
+        xysum.y += vel.y*dt + 0.5*acc.y*dt*dt;
+#endif
+
+#ifdef TY3
         // Three-term Taylor expansion (TY3)
         // Truncation error O(dt^4) for positions, O(dt^3) for velocities
         // Approximate acceleration change by backwards difference:
-        const Float4 dacc_dt = MAKE_FLOAT4(
+        const Float3 dacc_dt = MAKE_FLOAT3(
                 (acc.x - acc0.x)/dt,
                 (acc.y - acc0.y)/dt,
-                (acc.z - acc0.z)/dt, 0.0);
+                (acc.z - acc0.z)/dt);
 
-        const Float4 dangacc_dt = MAKE_FLOAT4(
+        const Float3 dangacc_dt = MAKE_FLOAT3(
                 (angacc.x - angacc0.x)/dt,
                 (angacc.y - angacc0.y)/dt,
-                (angacc.z - angacc0.z)/dt, 0.0);
+                (angacc.z - angacc0.z)/dt);
 
         x_new.x = x.x + vel.x*dt + 0.5*acc.x*dt*dt + 1.0/6.0*dacc_dt.x*dt*dt*dt;
         x_new.y = x.y + vel.y*dt + 0.5*acc.y*dt*dt + 1.0/6.0*dacc_dt.y*dt*dt*dt;
@@ -159,15 +186,18 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
             + 1.0/6.0*dangacc_dt.y*dt*dt*dt;
         angpos_new.z = angpos.z + angvel.z*dt + 0.5*angacc.z*dt*dt
             + 1.0/6.0*dangacc_dt.z*dt*dt*dt;
+        angpos_new.w = angpos.w;
 
         angvel_new.x = angvel.x + angacc.x*dt + 0.5*dangacc_dt.x*dt*dt;
         angvel_new.y = angvel.y + angacc.y*dt + 0.5*dangacc_dt.y*dt*dt;
         angvel_new.z = angvel.z + angacc.z*dt + 0.5*dangacc_dt.z*dt*dt;
+        angvel_new.w = angvel.w;
 
         // Add horizontal-displacement for this time step to the sum of
         // horizontal displacements
         xysum.x += vel.x*dt + 0.5*acc.x*dt*dt + 1.0/6.0*dacc_dt.x*dt*dt*dt;
         xysum.y += vel.y*dt + 0.5*acc.y*dt*dt + 1.0/6.0*dacc_dt.y*dt*dt*dt;
+#endif
 
 
         // Move particles outside the domain across periodic boundaries
@@ -260,11 +290,13 @@ __global__ void integrateWalls(
 
         if (wmode != 0) { // wmode == 0: Wall fixed: do nothing
 
+#ifdef TY3
             Float acc0;
             if (iter == 0)
                 acc0 = 0.0;
             else
                 acc0 = dev_walls_acc[idx];
+#endif
 
             // Find the final sum of forces on wall
             w_mvfd.z = 0.0;
@@ -289,6 +321,29 @@ __global__ void integrateWalls(
                 acc = 0.0;
             }
 
+#ifdef EULER
+            // Forward Euler tempmoral integration.
+
+            // Update position
+            w_nx.w += w_mvfd.y*dt;
+
+            // Update velocity
+            w_mvfd.y += acc*dt;
+#endif
+
+#ifdef TY2
+            // Two-term Taylor expansion for tempmoral integration.
+            // The truncation error is O(dt^3) for positions and O(dt^2) for
+            // velocities.
+
+            // Update position
+            w_nx.w += w_mvfd.y*dt + 0.5*acc*dt*dt;
+
+            // Update velocity
+            w_mvfd.y += acc*dt;
+#endif
+
+#ifdef TY3
             // Three-term Taylor expansion for tempmoral integration.
             // The truncation error is O(dt^4) for positions and O(dt^3) for
             // velocities. The acceleration change approximated by backwards
@@ -300,6 +355,7 @@ __global__ void integrateWalls(
 
             // Update velocity
             w_mvfd.y += acc*dt + 0.5*dacc_dt*dt*dt;
+#endif
 
             // Store data in global memory
             dev_walls_nx[idx]   = w_nx;

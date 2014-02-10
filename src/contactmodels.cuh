@@ -99,21 +99,20 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
 
         // If the shear force component exceeds the friction,
         // the particle slips and energy is dissipated
-        /*
         if (f_t_visc_length < f_t_limit) {
             //f_t = -1.0f * f_t_visc * vel_t/vel_t_length;
-            f_t = f_t_visc;
+            f_t = -1.0*f_t_visc;
 
         } else { // Dynamic friction, friction failure
-            //f_t = -f_t_limit * vel_t/vel_t_length;
-            f_t = f_t_limit * vel_t/vel_t_length;
+            f_t = -f_t_limit * vel_t/vel_t_length;
+            //f_t = f_t_limit * vel_t/vel_t_length;
 
             // Shear energy production rate [W]
             //*es_dot += -dot(vel_t, f_t);
             *es_dot += length(length(f_t) * vel_t * devC_dt) / devC_dt;
-        }*/
+        }
 
-        f_t = -1.0*f_t_visc;
+        //f_t = -1.0*f_t_visc;
     }
 
 
