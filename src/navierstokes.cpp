@@ -45,11 +45,15 @@ unsigned int DEM::NScells()
     return (ns.nx+2)*(ns.ny+2)*(ns.nz+2); // with ghost nodes
 }
 
+// Returns the number of velocity nodes in a congruent padded grid. There are
+// velocity nodes between the boundary points and the pressure ghost nodes, but
+// not on the outer side of the ghost nodes
 unsigned int DEM::NScellsVelocity()
 {
     // Congruent padding for velocity grids. See "Cohen and Molemaker 'A fast
     // double precision CFD code using CUDA'" for details
-    return (ns.nx+3)*(ns.ny+3)*(ns.nz+3); // with ghost nodes
+    //return (ns.nx+3)*(ns.ny+3)*(ns.nz+3);
+    return (ns.nx+1)*(ns.ny+1)*(ns.nz+1);
 }
 
 // Free memory

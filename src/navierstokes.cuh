@@ -24,8 +24,11 @@
 #define BETA 0.0
 
 // Relaxation parameter, used in solution of Poisson equation. The value should
-// be within the range ]0.0;1.0].
-#define THETA 0.1
+// be within the range ]0.0;1.0]. At a value of 1.0, the new estimate of epsilon
+// values is used exclusively. At lower values, a linear interpolation between
+// new and old values is used. The solution typically converges faster with a
+// value of 1.0, but instabilities may be avoided with lower values.
+#define THETA 1.0
 
 // Initialize memory
 void DEM::initNSmemDev(void)
@@ -33,9 +36,18 @@ void DEM::initNSmemDev(void)
     // size of scalar field
     unsigned int memSizeF  = sizeof(Float)*NScells();
 
+    // size of velocity arrays in staggered grid discretization
+    unsigned int memSizeFvel = sizeof(Float)*NScellsVelocity();
+
     cudaMalloc((void**)&dev_ns_p, memSizeF);     // hydraulic pressure
     cudaMalloc((void**)&dev_ns_v, memSizeF*3);   // cell hydraulic velocity
+    cudaMalloc((void**)&dev_ns_v_x, memSizeFvel);// velocity in stag. grid
+    cudaMalloc((void**)&dev_ns_v_y, memSizeFvel);// velocity in stag. grid
+    cudaMalloc((void**)&dev_ns_v_z, memSizeFvel);// velocity in stag. grid
     cudaMalloc((void**)&dev_ns_v_p, memSizeF*3); // predicted cell velocity
+    cudaMalloc((void**)&dev_ns_v_p_x, memSizeFvel); // pred. vel. in stag. grid
+    cudaMalloc((void**)&dev_ns_v_p_y, memSizeFvel); // pred. vel. in stag. grid
+    cudaMalloc((void**)&dev_ns_v_p_z, memSizeFvel); // pred. vel. in stag. grid
     cudaMalloc((void**)&dev_ns_phi, memSizeF);   // cell porosity
     cudaMalloc((void**)&dev_ns_dphi, memSizeF);  // cell porosity change
     cudaMalloc((void**)&dev_ns_div_phi_v_v, memSizeF*3); // div(phi v v)
@@ -57,7 +69,13 @@ void DEM::freeNSmemDev()
 {
     cudaFree(dev_ns_p);
     cudaFree(dev_ns_v);
+    cudaFree(dev_ns_v_x);
+    cudaFree(dev_ns_v_y);
+    cudaFree(dev_ns_v_z);
     cudaFree(dev_ns_v_p);
+    cudaFree(dev_ns_v_p_x);
+    cudaFree(dev_ns_v_p_y);
+    cudaFree(dev_ns_v_p_z);
     cudaFree(dev_ns_phi);
     cudaFree(dev_ns_dphi);
     cudaFree(dev_ns_div_phi_v_v);
@@ -155,6 +173,112 @@ __inline__ __device__ unsigned int idx(
     return (x+1) + (devC_grid.num[0]+2)*(y+1) +
         (devC_grid.num[0]+2)*(devC_grid.num[1]+2)*(z+1);
 }
+// Get linear index from 3D grid position in staggered grid
+__inline__ __device__ unsigned int vidx(
+        const int x, const int y, const int z)
+{
+    // with ghost nodes
+    return (x+1) + (devC_grid.num[0]+3)*(y+1) +
+        (devC_grid.num[0]+3)*(devC_grid.num[1]+3)*(z+1);
+}
+
+// Find averaged cell velocities from cell-face velocities. This function works
+// for both normal and predicted velocities. Launch for every cell in the
+// dev_ns_v or dev_ns_v_p array. This function does not set the averaged
+// velocity values in the ghost node cells.
+__global__ void findNSavgVel(
+        Float3* dev_ns_v,    // out
+        Float*  dev_ns_v_x,  // in
+        Float*  dev_ns_v_y,  // in
+        Float*  dev_ns_v_z)  // in
+{
+
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // check that we are not outside the fluid grid
+    if (x<devC_grid.num[0] && y<devC_grid.num[1] && z<devC_grid.num[2]-1) {
+        const unsigned int cellidx = idx(x,y,z);
+
+        // Read cell-face velocities
+        __syncthreads();
+        const Float v_xn = dev_ns_v_x[vidx(x,y,z)];
+        const Float v_xp = dev_ns_v_x[vidx(x+1,y,z)];
+        const Float v_yn = dev_ns_v_y[vidx(x,y,z)];
+        const Float v_yp = dev_ns_v_y[vidx(x,y+1,z)];
+        const Float v_zn = dev_ns_v_z[vidx(x,y,z)];
+        const Float v_zp = dev_ns_v_z[vidx(x,y,z+1)];
+
+        // Find average velocity
+        const Float3 v_bar = MAKE_FLOAT3(
+                (v_xn + v_xp)/2.0,
+                (v_yn + v_yp)/2.0,
+                (v_zn + v_zp)/2.0);
+
+        // Save value
+        __syncthreads();
+        dev_ns_v[idx(x,y,z)] = v_bar;
+    }
+}
+
+// Find cell-face velocities from averaged velocities. This function works for
+// both normal and predicted velocities. Launch for every cell in the dev_ns_v
+// or dev_ns_v_p array. Make sure that the averaged velocity ghost nodes are set
+// beforehand.
+__global__ void findNScellFaceVel(
+        Float3* dev_ns_v,    // in
+        Float*  dev_ns_v_x,  // out
+        Float*  dev_ns_v_y,  // out
+        Float*  dev_ns_v_z)  // out
+{
+
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    // check that we are not outside the fluid grid
+    if (x < nx && y < ny && x < nz) {
+        const unsigned int cellidx = idx(x,y,z);
+
+        // Read the averaged velocity from this cell as well as the required
+        // components from the neighbor cells
+        __syncthreads();
+        const Float3 v = dev_ns_v[idx(x,y,z)];
+        const Float v_xn = dev_ns_v[idx(x-1,y,z)].x;
+        const Float v_xp = dev_ns_v[idx(x+1,y,z)].x;
+        const Float v_yn = dev_ns_v[idx(x,y-1,z)].y;
+        const Float v_yp = dev_ns_v[idx(x,y+1,z)].y;
+        const Float v_zn = dev_ns_v[idx(x,y,z-1)].z;
+        const Float v_zp = dev_ns_v[idx(x,y,z+1)].z;
+
+        // Find cell-face velocities and save them right away
+        __syncthreads();
+
+        // Values at the faces closest to the coordinate system origo
+        dev_ns_v_x[vidx(x,y,z)] = (v_xn + v.x)/2.0;
+        dev_ns_v_y[vidx(x,y,z)] = (v_yn + v.y)/2.0;
+        dev_ns_v_z[vidx(x,y,z)] = (v_zn + v.z)/2.0;
+
+        // Values at the cell faces furthest from the coordinate system origo.
+        // These values should only be written at the corresponding boundaries
+        // in order to avoid write conflicts.
+        if (x == nx-1)
+            dev_ns_v_x[vidx(x+1,y,z)] = (v.x + v_xp)/2.0;
+        if (y == ny-1)
+            dev_ns_v_y[vidx(x,y+1,z)] = (v.y + v_yp)/2.0;
+        if (z == nz-1)
+            dev_ns_v_z[vidx(x,y,z+1)] = (v.z + v_zp)/2.0;
+    }
+}
+
 
 // Set the initial guess of the values of epsilon.
 __global__ void setNSepsilonInterior(Float* dev_ns_epsilon, Float value)
