@@ -173,13 +173,13 @@ __inline__ __device__ unsigned int idx(
     return (x+1) + (devC_grid.num[0]+2)*(y+1) +
         (devC_grid.num[0]+2)*(devC_grid.num[1]+2)*(z+1);
 }
-// Get linear index from 3D grid position in staggered grid
+
+// Get linear index of velocity node from 3D grid position in staggered grid
 __inline__ __device__ unsigned int vidx(
         const int x, const int y, const int z)
 {
-    // with ghost nodes
-    return (x+1) + (devC_grid.num[0]+3)*(y+1) +
-        (devC_grid.num[0]+3)*(devC_grid.num[1]+3)*(z+1);
+    return x + (devC_grid.num[0]+1)*y
+        + (devC_grid.num[0]+1)*(devC_grid.num[1]+1)*z;
 }
 
 // Find averaged cell velocities from cell-face velocities. This function works

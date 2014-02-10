@@ -89,6 +89,16 @@ unsigned int DEM::idx(
     return (x+1) + (ns.nx+2)*(y+1) + (ns.nx+2)*(ns.ny+2)*(z+1);
 }
 
+// 3D index to 1D index of cell-face velocity nodes. The cell-face velocities
+// are placed at x = [0;nx], y = [0;ny], z = [0;nz]
+unsigned int DEM::vidx(
+        const int x,
+        const int y,
+        const int z)
+{
+    return x + (ns.nx+1)*y + (ns.nx+1)*(ns.ny+1)*z;
+}
+
 // Determine if the FTCS (forward time, central space) solution of the Navier
 // Stokes equations is unstable
 void DEM::checkNSstability()

@@ -206,7 +206,8 @@ class DEM {
         Float meanRadius();
 
         // Get linear (1D) index from 3D coordinate
-        unsigned int idx(const int x, const int y, const int z);
+        unsigned int idx(const int x, const int y, const int z); // pres. nodes
+        unsigned int vidx(const int x, const int y, const int z); // vel. nodes
 
         // Initialize Darcy values and arrays
         void initNS();
