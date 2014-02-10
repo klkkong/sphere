@@ -13,10 +13,10 @@ print("### CFD tests ###")
 orig = sphere.Spherebin(np = 0, nd = 3, nw = 0, sid = "cfdtest", fluid = True)
 cleanup(orig)
 orig.defaultParams()
-#orig.addParticle([0.5,0.5,0.5], 0.05)
-#orig.defineWorldBoundaries([5.0,5.0,5.0])
-orig.addParticle([5,5,5], 5)
-orig.defineWorldBoundaries([500.0,500.0,500.0])
+orig.addParticle([1.5,1.5,1.5], 0.5)
+orig.defineWorldBoundaries([5.0,5.0,5.0])
+#orig.addParticle([5,5,5], 5)
+#orig.defineWorldBoundaries([500.0,500.0,500.0])
 orig.initFluid(nu = 0.0)
 orig.initTemporal(total = 0.002, file_dt = 0.001)
 orig.time_file_dt = orig.time_dt*0.99
@@ -208,7 +208,7 @@ orig.disableFluidPressureModulation()
 orig.time_total[0] = 1.0e-2
 orig.time_file_dt = orig.time_total/20
 orig.p_f[:,:,-1] = 1.0
-orig.g[2] = -10.0
+orig.g[2] = -1.0
 orig.nu[0] = 8.9e-4     # water
 orig.bc_bot[0] = 1      # No-flow BC at bottom
 orig.writebin(verbose=False)

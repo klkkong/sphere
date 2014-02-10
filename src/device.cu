@@ -48,8 +48,8 @@ const int write_res_log = 0;
 
 // Report epsilon values during Jacobi iterations to stdout
 // 0: False, 1: True
-const int report_epsilon = 1;
-const int report_even_more_epsilon = 1;
+const int report_epsilon = 0;
+const int report_even_more_epsilon = 0;
 
 // Report the number of iterations it took before convergence to logfile
 // 'output/<sid>-conv.dat'
@@ -1164,6 +1164,14 @@ __host__ void DEM::startTime()
                 checkForCudaErrors("Post setNSghostNodesEpsilon(2)",
                         iter);
 
+                if (report_epsilon == 1) {
+                    std::cout << "\n###### JACOBI ITERATION "
+                        << nijac << " after setNSghostNodes(epsilon) ######"
+                        << std::endl;
+                    transferNSepsilonFromGlobalDeviceMemory();
+                    printNSarray(stdout, ns.epsilon, "epsilon");
+                }
+
                 // Perform a single Jacobi iteration
                 if (PROFILING == 1)
                     startTimer(&kernel_tic);
@@ -1193,14 +1201,11 @@ __host__ void DEM::startTime()
 
                 if (report_epsilon == 1) {
                     std::cout << "\n###### JACOBI ITERATION "
-                        << nijac << " ######" << std::endl;
+                        << nijac << " after jacobiIterationNS ######"
+                        << std::endl;
                     transferNSepsilonFromGlobalDeviceMemory();
                     printNSarray(stdout, ns.epsilon, "epsilon");
-                    //transferNSepsilonNewFromGlobalDeviceMemory();
-                    //printNSarray(stdout, ns.epsilon_new, "epsilon_new");
                 }
-
-
 
                 if (nijac % nijacnorm == 0) {
 
@@ -1224,7 +1229,7 @@ __host__ void DEM::startTime()
                     if (write_conv_log == 1 && iter % conv_log_interval == 0)
                         convlog << iter << '\t' << nijac << std::endl;
 
-                    break;  // solution has converged, exit jacobi iter. loop
+                    break;  // solution has converged, exit Jacobi iter. loop
                 }
 
                 if (nijac == maxiter-1) {
@@ -1239,7 +1244,7 @@ __host__ void DEM::startTime()
                         "value of 'maxiter' or increase 'tolerance'."
                         << std::endl;
                 }
-                break; // end after Jacobi first iteration
+                //break; // end after Jacobi first iteration
             } // end Jacobi iteration loop
 
             if (write_res_log == 1)
@@ -1253,9 +1258,9 @@ __host__ void DEM::startTime()
                     dev_ns_v,
                     dev_ns_v_p,
                     dev_ns_epsilon,
-                    ns.rho/*,
+                    ns.rho,
                     ns.bc_bot,
-                    ns.bc_top*/);
+                    ns.bc_top);
             cudaThreadSynchronize();
             if (PROFILING == 1)
                 stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
@@ -1435,7 +1440,7 @@ __host__ void DEM::startTime()
         }
 
         // Uncomment break command to stop after the first iteration
-        break;
+        //break;
     }
 
     if (write_conv_log == 1)

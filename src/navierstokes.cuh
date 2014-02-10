@@ -869,12 +869,12 @@ __device__ Float3 gradient(
     // Read 6 neighbor cells
     __syncthreads();
     //const Float p  = dev_scalarfield[idx(x,y,z)];
-    const Float xp = dev_scalarfield[idx(x+1,y,z)];
     const Float xn = dev_scalarfield[idx(x-1,y,z)];
-    const Float yp = dev_scalarfield[idx(x,y+1,z)];
+    const Float xp = dev_scalarfield[idx(x+1,y,z)];
     const Float yn = dev_scalarfield[idx(x,y-1,z)];
-    const Float zp = dev_scalarfield[idx(x,y,z+1)];
+    const Float yp = dev_scalarfield[idx(x,y+1,z)];
     const Float zn = dev_scalarfield[idx(x,y,z-1)];
+    const Float zp = dev_scalarfield[idx(x,y,z+1)];
 
     //__syncthreads();
     //if (p != 0.0)
@@ -900,12 +900,12 @@ __device__ Float3 gradient(
 {
     // Read 6 neighbor cells
     __syncthreads();
-    const Float xp = dev_vectorfield[idx(x+1,y,z)].x;
     const Float xn = dev_vectorfield[idx(x-1,y,z)].x;
-    const Float yp = dev_vectorfield[idx(x,y+1,z)].y;
+    const Float xp = dev_vectorfield[idx(x+1,y,z)].x;
     const Float yn = dev_vectorfield[idx(x,y-1,z)].y;
-    const Float zp = dev_vectorfield[idx(x,y,z+1)].z;
+    const Float yp = dev_vectorfield[idx(x,y+1,z)].y;
     const Float zn = dev_vectorfield[idx(x,y,z-1)].z;
+    const Float zp = dev_vectorfield[idx(x,y,z+1)].z;
 
     //__syncthreads();
     //if (p != 0.0)
@@ -1453,9 +1453,9 @@ __global__ void findPredNSvelocities(
                 dv_dphi.x, dv_dphi.y, dv_dphi.z,
                 dv_adv.x, dv_adv.y, dv_adv.z);*/
 
-        // Fix horizontal velocity to zero at Neumann boundaries
+        // Enforce no-flow BC if specified
         if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
-            v_p.z = 0.0;
+            v_p.z = v.z;
 
         // Save the predicted velocity
         __syncthreads();
@@ -1537,8 +1537,35 @@ __global__ void findNSforcing(
                 + dphi*rho/(devC_dt*devC_dt*phi);
             f2 = grad_phi/phi;
 
-            //printf("[%d,%d,%d] dphi = %f\n", x,y,z, dphi);
-            //printf("[%d,%d,%d] v_p = %f\tdiv_v_p = %f\n", x,y,z, v_p, div_v_p);
+            // Report values terms in the forcing function for debugging
+            /*
+            const Float f1t1 = div_v_p*rho/devC_dt;
+            const Float f1t2 = dot(grad_phi, v_p)*rho/(devC_dt*phi);
+            const Float f1t3 = dphi*rho/(devC_dt*devC_dt*phi);
+            printf("[%d,%d,%d] f1 = %f\t"
+                    "f1t1 = %f\tf1t2 = %f\tf1t3 = %f\tf2 = %f\n",
+                    x,y,z, f1, f1t1, f1t2, f1t3, f2);
+            printf("[%d,%d,%d] v_p = %f\tdiv_v_p = %f\tgrad_phi = %f,%f,%f\t"
+                    "phi = %f\tdphi = %f\n",
+                    x,y,z, v_p, div_v_p, grad_phi.x, grad_phi.y, grad_phi.z,
+                    phi, dphi);
+
+            const Float phi_xn = dev_ns_phi[idx(x-1,y,z)];
+            const Float phi_xp = dev_ns_phi[idx(x+1,y,z)];
+            const Float phi_yn = dev_ns_phi[idx(x,y-1,z)];
+            const Float phi_yp = dev_ns_phi[idx(x,y+1,z)];
+            const Float phi_zn = dev_ns_phi[idx(x,y,z-1)];
+            const Float phi_zp = dev_ns_phi[idx(x,y,z+1)];
+
+            printf("[%d,%d,%d] phi: "
+                    "xn = %f\t"
+                    "xp = %f\t"
+                    "yn = %f\t"
+                    "yp = %f\t"
+                    "zn = %f\t"
+                    "zp = %f\n",
+                    x,y,z, phi_xn, phi_xp, phi_yn, phi_yp, phi_zn, phi_zp);*/
+
 
             // Save values
             __syncthreads();
@@ -1636,6 +1663,10 @@ __global__ void jacobiIterationNS(
         // New value of epsilon in 1D update
         //const Float e_new = (e_zp + e_zn - dz*dz*f)/2.0;
 
+        // Print values for debugging
+        /*printf("[%d,%d,%d]\t e = %f\tf = %f\te_new = %f\n",
+                x,y,z, e, f, e_new);*/
+
         // Find the normalized residual value. A small value is added to the
         // denominator to avoid a divide by zero.
         const Float res_norm = (e_new - e)*(e_new - e)/(e_new*e_new + 1.0e-16);
@@ -1688,9 +1719,9 @@ __global__ void updateNSvelocityPressure(
         Float3* dev_ns_v,
         Float3* dev_ns_v_p,
         Float*  dev_ns_epsilon,
-        Float   rho/*,
+        Float   rho,
         int     bc_bot,
-        int     bc_top*/)
+        int     bc_top)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -1729,7 +1760,8 @@ __global__ void updateNSvelocityPressure(
         // Find new velocity
         Float3 v = v_p - devC_dt/rho*grad_epsilon;
 
-        if (z == 0) {
+        // Print values for debugging
+        /* if (z == 0) {
             Float e_up = dev_ns_epsilon[idx(x,y,z+1)];
             Float e_down = dev_ns_epsilon[idx(x,y,z-1)];
             printf("[%d,%d,%d]\tgrad_e = %f,%f,%f\te_up = %f\te_down = %f\n",
@@ -1739,11 +1771,10 @@ __global__ void updateNSvelocityPressure(
                     grad_epsilon.z,
                     e_up,
                     e_down);
-        }
-
-        /*if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1)) {
-            v.z = 0.0;
         }*/
+
+        //if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
+            //v.z = 0.0;
 
         // Write new values
         __syncthreads();
