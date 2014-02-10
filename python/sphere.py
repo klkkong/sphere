@@ -146,10 +146,10 @@ class Spherebin:
         self.gamma_r  = numpy.zeros(1, dtype=numpy.float64)
 
         # The coefficient of static friction on the contact [-]
-        self.mu_s     = numpy.ones(1, dtype=numpy.float64)
+        self.mu_s     = numpy.ones(1, dtype=numpy.float64) * 0.5
 
         # The coefficient of dynamic friction on the contact [-]
-        self.mu_d     = numpy.ones(1, dtype=numpy.float64)
+        self.mu_d     = numpy.ones(1, dtype=numpy.float64) * 0.5
 
         # The coefficient of rotational friction on the contact [-]
         self.mu_r     = numpy.zeros(1, dtype=numpy.float64)
@@ -161,10 +161,10 @@ class Spherebin:
         self.gamma_wt = numpy.zeros(1, dtype=numpy.float64)
 
         # The coeffient of static friction of the walls [-]
-        self.mu_ws    = numpy.ones(1, dtype=numpy.float64)
+        self.mu_ws    = numpy.ones(1, dtype=numpy.float64) * 0.5
 
         # The coeffient of dynamic friction of the walls [-]
-        self.mu_wd    = numpy.ones(1, dtype=numpy.float64)
+        self.mu_wd    = numpy.ones(1, dtype=numpy.float64) * 0.5
 
         # The particle density [kg/(m^3)]
         self.rho      = numpy.ones(1, dtype=numpy.float64) * 2600.0

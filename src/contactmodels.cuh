@@ -72,22 +72,14 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
 
     // Initialize vectors
     Float3 f_t = MAKE_FLOAT3(0.0, 0.0, 0.0);
-    //Float3 T_res = MAKE_FLOAT3(0.0f, 0.0f, 0.0f);
 
     // Check that the tangential velocity is high enough to avoid
     // divide by zero (producing a NaN)
     if (vel_t_length > 0.0 && devC_params.gamma_wt > 0.0) {
 
         // Tangential force by viscous model
-        //Float f_t_visc = devC_params.gamma_wt * vel_t_length;
-        //const Float3 f_t_visc = -devC_params.gamma_wt * vel_t;
         const Float3 f_t_visc = devC_params.gamma_wt * vel_t;
         const Float f_t_visc_length = length(f_t_visc);
-
-        // Print data for contact model validation
-        /*printf("gamma_wt = %f\tf_t_visc = %f\n\n",
-                devC_params.gamma_wt,
-                devC_params.gamma_wt*vel_t_length);*/
 
         // Determine max. friction
         Float f_t_limit;
@@ -100,21 +92,16 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
         // If the shear force component exceeds the friction,
         // the particle slips and energy is dissipated
         if (f_t_visc_length < f_t_limit) {
-            //f_t = -1.0f * f_t_visc * vel_t/vel_t_length;
             f_t = -1.0*f_t_visc;
 
         } else { // Dynamic friction, friction failure
             f_t = -f_t_limit * vel_t/vel_t_length;
-            //f_t = f_t_limit * vel_t/vel_t_length;
 
             // Shear energy production rate [W]
             //*es_dot += -dot(vel_t, f_t);
             *es_dot += length(length(f_t) * vel_t * devC_dt) / devC_dt;
         }
-
-        //f_t = -1.0*f_t_visc;
     }
-
 
     /*  if (angvel_length > 0.f) {
     // Apply rolling resistance (Zhou et al. 1999)
@@ -130,20 +117,10 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
     *F += f_n + f_t;
 
     // Total torque from wall
-    //*T += -radius_a * cross(n, f_t) + T_res;
-    *T += -(radius_a + delta*0.5) * cross(n, f_t);
-    //*T += cross(-(radius_a + delta*0.5) * n, f_t);
-    //*T += -1.0*cross(-(radius_a + delta*0.5) * n, f_t);
+    *T += cross(-(radius_a + delta*0.5)*n, f_t);
 
     // Pressure excerted onto particle from this contact
     *p += f_n_length / (4.0f * PI * radius_a*radius_a);
-
-    /*if (vel_t_length > 0.0 && devC_params.gamma_wt > 0.0) {
-        printf("f_n = %f\t%f\t%f\tf_t = %f\t%f\t%f\tT = %f\t%f\t%f\n",
-                f_n.x, f_n.y, f_n.z,
-                f_t.x, f_t.y, f_t.z,
-                T->x, T->y, T->z);
-    }*/
 
     // Return force excerted onto the wall
     //return -dot(*F, n);
@@ -288,6 +265,7 @@ __device__ void contactLinearViscous(Float3* F, Float3* T,
     // Add force components from this collision to total force for particle
     *F += f_n + f_t + f_c; 
     //*T += -(radius_a + delta_ab/2.0f) * cross(n_ab, f_t) + T_res;
+    *T += -(radius_a + delta_ab/2.0f) * cross(n_ab, f_t);
 
     // Pressure excerted onto the particle from this contact
     *p += f_n_length / (4.0f * PI * radius_a*radius_a);
