@@ -8,7 +8,7 @@ print("### Fluid input/output tests ###")
 orig = Spherebin(np=100, nw=0, sid="test-initgrid-fluid", fluid=True)
 orig.generateRadii(histogram=False, radius_mean=1.0)
 orig.defaultParams()
-orig.initRandomGridPos(g=numpy.zeros(orig.nd))
+orig.initRandomGridPos()
 orig.initFluid()
 orig.initTemporal(current=0.0, total=0.0)
 orig.g[2] = 0.0
