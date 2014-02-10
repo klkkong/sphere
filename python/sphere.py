@@ -2285,6 +2285,8 @@ class Spherebin:
                 return bondpot_fn + bondpot_ft + bondpot_tn + bondpot_tt
             else :
                 return 0.0
+        else:
+            raise Exception('Unknownw energy() method "' + method + '"')
 
     def voidRatio(self):
         'Returns the current void ratio'

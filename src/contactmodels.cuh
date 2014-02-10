@@ -131,18 +131,19 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
 
     // Total torque from wall
     //*T += -radius_a * cross(n, f_t) + T_res;
-    *T += cross(-(radius_a + delta*0.5) * n, f_t);
+    *T += -(radius_a + delta*0.5) * cross(n, f_t);
+    //*T += cross(-(radius_a + delta*0.5) * n, f_t);
     //*T += -1.0*cross(-(radius_a + delta*0.5) * n, f_t);
 
     // Pressure excerted onto particle from this contact
     *p += f_n_length / (4.0f * PI * radius_a*radius_a);
 
-    if (vel_t_length > 0.0 && devC_params.gamma_wt > 0.0) {
+    /*if (vel_t_length > 0.0 && devC_params.gamma_wt > 0.0) {
         printf("f_n = %f\t%f\t%f\tf_t = %f\t%f\t%f\tT = %f\t%f\t%f\n",
                 f_n.x, f_n.y, f_n.z,
                 f_t.x, f_t.y, f_t.z,
                 T->x, T->y, T->z);
-    }
+    }*/
 
     // Return force excerted onto the wall
     //return -dot(*F, n);
