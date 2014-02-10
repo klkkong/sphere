@@ -101,7 +101,10 @@ orig.readlast(verbose=False)
         #Ekin_after+Erot_after+Es_after,\
         #"            45 deg. wall collision:", tolerance=0.03)
 pytestutils.test(Ekin_before > Ekin_after,
-        "            45 deg. wall collision:")
+        "            45 deg. wall collision (1/2):")
+pytestutils.test((orig.angvel[0,0] == 0.0 and orig.angvel[0,1] > 0.0 \
+        and orig.angvel[0,2] == 0.0),
+        "            45 deg. wall collision (2/2):")
 
 
 
