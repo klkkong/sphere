@@ -887,6 +887,12 @@ __host__ void DEM::startTime()
             checkForCudaErrors("Post findPorositiesDev", iter);
 
 #ifdef CFDDEMCOUPLING
+            if (params.nu <= 0.0) {
+                std::cerr << "Error! The fluid needs a positive viscosity "
+                    "value in order to simulate particle-fluid interaction."
+                    << std::endl;
+                exit(1);
+            }
 
             // Find the average particle velocity and radius in each CFD cell
             findAvgParticleVelocityDiameter<<<dimGridFluid, dimBlockFluid>>>(
