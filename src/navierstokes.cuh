@@ -978,7 +978,8 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
             dphi = 0.0;
 
         // report values to stdout for debugging
-        printf("%d,%d,%d\tphi = %f\tdphi = %f\n", x,y,z, phi, dphi);
+        //printf("%d,%d,%d\tphi = %f dphi = %f v_avg = %f,%f,%f d_avg = %f\n",
+         //       x,y,z, phi, dphi, v_avg.x, v_avg.y, v_avg.z, d_avg);
 
         // Save porosity, porosity change, average velocity and average diameter
         __syncthreads();
@@ -1972,7 +1973,8 @@ __global__ void updateNSvelocityPressure(
     }
 }
 
-// Find the average particle diameter and velocity for each CFD cell
+// Find the average particle diameter and velocity for each CFD cell.
+// UNUSED: The values are estimated in the porosity estimation function instead
 __global__ void findAvgParticleVelocityDiameter(
         unsigned int* dev_cellStart, // in
         unsigned int* dev_cellEnd,   // in
@@ -2022,7 +2024,6 @@ __global__ void findAvgParticleVelocityDiameter(
                 n++;
                 v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
                 d_avg += d;
-                printf("particle %d is in cell %d,%d,%d\n", i, x,y,z);
             }
 
             v_avg /= n;
@@ -2099,22 +2100,25 @@ __global__ void findInteractionForce(
         const Float cd = dragCoefficient(re);
 
         Float3 fi = MAKE_FLOAT3(0.0, 0.0, 0.0);
-        if (phi <= 0.8)       // Ergun equation
-            fi = (150.0*devC_params.nu*not_phi*not_phi/(phi*d_avg*d_avg)
-                    + 1.75*not_phi*rho*v_rel_length/d_avg)*v_rel;
-        else if (phi < 0.999) // Wen and Yu equation
-            fi = (3.0/4.0*cd*not_phi*pow(phi, -2.65)*devC_params.nu*rho
-                    *v_rel_length/d_avg)*v_rel;
+        if (v_rel_length > 0.0) {
+            if (phi <= 0.8)       // Ergun equation
+                fi = (150.0*devC_params.nu*not_phi*not_phi/(phi*d_avg*d_avg)
+                        + 1.75*not_phi*rho*v_rel_length/d_avg)*v_rel;
+            else if (phi < 0.999) // Wen and Yu equation
+                fi = (3.0/4.0*cd*not_phi*pow(phi, -2.65)*devC_params.nu*rho
+                        *v_rel_length/d_avg)*v_rel;
+        }
 
-        __syncthreads();
-        printf("%d,%d,%d\tfi = %f,%f,%f"
+        /*printf("%d,%d,%d\tfi = %f,%f,%f"
                 "\tphi = %f\td_avg = %f"
                 "\tv_rel = %f,%f,%f\t"
                 "\tre = %f\tcd = %f\n",
                 x,y,z, fi.x, fi.y, fi.z,
                 phi, d_avg,
                 v_rel.x, v_rel.y, v_rel.z,
-                re, cd);
+                re, cd);*/
+
+        __syncthreads();
         dev_ns_fi[cellidx] = fi;
     }
 }
