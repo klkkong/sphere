@@ -2053,8 +2053,12 @@ __global__ void findInteractionForce(
         __syncthreads();
         const Float  phi    = dev_ns_phi[cellidx];
         const Float  d_avg  = dev_ns_d_avg[cellidx];
-        const Float3 vp_avg = dev_ns_vp_avg[cellidx];
         const Float3 vf_avg = dev_ns_v[cellidx];
+        Float vp_avg;
+        if (phi < 0.999)
+            vp_avg = dev_ns_vp_avg[cellidx];
+        else
+            vp_avg = vf_avg;
 
         const Float3 v_rel = vf_avg - vp_avg;
         const Float  v_rel_length = length(v_rel);
