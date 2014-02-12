@@ -23,17 +23,20 @@ orig.time_file_dt = orig.time_dt*0.99
 orig.time_total = orig.time_dt*10
 orig.g[2] = 0.0
 orig.writebin(verbose=False)
-#orig.run(dry=True)
-#orig.run(verbose=False)
+orig.run(dry=True)
+orig.run(verbose=False)
 py = Spherebin(sid = orig.sid, fluid = True)
 
-#ones = numpy.ones((orig.num))
-#py.readlast(verbose = False)
-#compareNumpyArrays(ones, py.p_f, "Conservation of pressure:")
+ones = numpy.ones((orig.num))
+py.readlast(verbose = False)
+py.writeVTKall()
+compareNumpyArrays(ones, py.p_f, "Conservation of pressure:")
 
 # Convergence rate (1/2)
-#it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
-#compare(it[:,1].sum(), 0.0, "Convergence rate (1/2):\t")
+it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
+compare(it[:,1].sum(), 0.0, "Convergence rate (1/2):\t")
+
+
 '''
 # Add pressure gradient
 # This test passes with BETA=0.0 and tolerance=1.0e-9
@@ -202,7 +205,7 @@ for it in range(1,py.status()+1): # gradient should be smooth in all output file
             'Fast pressure modulation (' + 
             str(it) + '/' + str(py.status()) + '):', tolerance=1.0e-1)
 '''
-
+'''
 # Top: Dirichlet, bot: Neumann
 orig.disableFluidPressureModulation()
 orig.time_total[0] = 1.0e-2
@@ -227,4 +230,5 @@ py.readlast(verbose = False)
 #else:
     #print("Flow field:\t\t" + failed())
 
+'''
 #cleanup(orig)
