@@ -870,15 +870,21 @@ __host__ void DEM::startTime()
         if (navierstokes == 1) {
 
             checkForCudaErrors("Before findPorositiesDev", iter);
-            // Find cell porosities, needed for predicting the fluid velocities
+            // Find cell porosities, average particle velocities, and average
+            // particle diameters. These are needed for predicting the fluid
+            // velocities
             if (PROFILING == 1)
                 startTimer(&kernel_tic);
-            findPorositiesSphericalDev<<<dimGridFluid, dimBlockFluid>>>(
+            findPorositiesVelocitiesDiametersSpherical
+                <<<dimGridFluid, dimBlockFluid>>>(
                     dev_cellStart,
                     dev_cellEnd,
                     dev_x_sorted,
+                    dev_vel_sorted,
                     dev_ns_phi,
                     dev_ns_dphi,
+                    dev_ns_vp_avg,
+                    dev_ns_d_avg,
                     iter);
             cudaThreadSynchronize();
             if (PROFILING == 1)
@@ -893,17 +899,6 @@ __host__ void DEM::startTime()
                     << std::endl;
                 exit(1);
             }
-
-            // Find the average particle velocity and radius in each CFD cell
-            findAvgParticleVelocityDiameter<<<dimGridFluid, dimBlockFluid>>>(
-                    dev_cellStart,
-                    dev_cellEnd,
-                    dev_vel_sorted,
-                    dev_x_sorted,
-                    dev_ns_vp_avg,
-                    dev_ns_d_avg);
-            cudaThreadSynchronize();
-            checkForCudaErrors("Post findAvgParticleVelocityDiameter", iter);
 
             // Determine the interaction force
             findInteractionForce<<<dimGridFluid, dimBlockFluid>>>(

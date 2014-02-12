@@ -828,12 +828,15 @@ __global__ void setNSghostNodesForcing(
 
 // Find the porosity in each cell on the base of a sphere, centered at the cell
 // center. 
-__global__ void findPorositiesSphericalDev(
+__global__ void findPorositiesVelocitiesDiametersSpherical(
         unsigned int* dev_cellStart,
         unsigned int* dev_cellEnd,
         Float4* dev_x_sorted,
-        Float* dev_ns_phi,
-        Float* dev_ns_dphi,
+        Float4* dev_vel_sorted,
+        Float*  dev_ns_phi,
+        Float*  dev_ns_dphi,
+        Float3* dev_ns_vp_avg,
+        Float*  dev_ns_d_avg,
         unsigned int iteration)
 {
     // 3D thread index
@@ -869,6 +872,11 @@ __global__ void findPorositiesSphericalDev(
 
         Float d, r;
         Float phi = 1.00;
+        Float4 v;
+        unsigned int n = 0;
+
+        Float3 v_avg = MAKE_FLOAT3(0.0, 0.0, 0.0);
+        Float  d_avg = 0.0;
 
         // Read old porosity
         __syncthreads();
@@ -882,6 +890,8 @@ __global__ void findPorositiesSphericalDev(
 
         // The distance modifier for particles across periodic boundaries
         Float3 dist, distmod;
+
+        unsigned int cellID, startIdx, endIdx, i;
 
         // Iterate over 27 neighbor cells
         for (int z_dim=-1; z_dim<2; ++z_dim) { // z-axis
@@ -897,26 +907,26 @@ __global__ void findPorositiesSphericalDev(
                     if (findDistMod(&targetCell, &distmod) != -1) {
 
                         // Calculate linear cell ID
-                        const unsigned int cellID =
-                            targetCell.x + targetCell.y * devC_grid.num[0]
+                        cellID = targetCell.x + targetCell.y * devC_grid.num[0]
                             + (devC_grid.num[0] * devC_grid.num[1])
                             * targetCell.z; 
 
                         // Lowest particle index in cell
-                        const unsigned int startIdx = dev_cellStart[cellID];
+                        startIdx = dev_cellStart[cellID];
 
                         // Make sure cell is not empty
                         if (startIdx != 0xffffffff) {
 
                             // Highest particle index in cell
-                            const unsigned int endIdx = dev_cellEnd[cellID];
+                            endIdx = dev_cellEnd[cellID];
 
                             // Iterate over cell particles
-                            for (unsigned int i = startIdx; i<endIdx; ++i) {
+                            for (i=startIdx; i<endIdx; ++i) {
 
                                 // Read particle position and radius
                                 __syncthreads();
                                 xr = dev_x_sorted[i];
+                                v  = dev_vel_sorted[i];
                                 r = xr.w;
 
                                 // Find center distance
@@ -935,11 +945,17 @@ __global__ void findPorositiesSphericalDev(
                                                 *(d*d + 2.0*d*r - 3.0*r*r
                                                     + 2.0*d*R + 6.0*r*R
                                                     - 3.0*R*R) );
+                                    v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
+                                    d_avg += 2.0*r;
+                                    n++;
                                 }
 
                                 // Particle fully contained in cell sphere
                                 if (d <= R - r) {
                                     void_volume -= 4.0/3.0*M_PI*r*r*r;
+                                    v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
+                                    d_avg += 2.0*r;
+                                    n++;
                                 }
                             }
                         }
@@ -948,21 +964,30 @@ __global__ void findPorositiesSphericalDev(
             }
         }
 
+        if (phi < 0.999) {
+            v_avg /= n;
+            d_avg /= n;
+        }
+
         // Make sure that the porosity is in the interval [0.0;1.0]
         phi = fmin(1.00, fmax(0.00, void_volume/cell_volume));
         //phi = void_volume/cell_volume;
 
         Float dphi = phi - phi_0;
-        if (iteration == 0) {
-            // Do not use the initial porosity estimates
+        if (iteration == 0)
             dphi = 0.0;
-        }
 
-        // Save porosity and porosity change
+        // report values to stdout for debugging
+        printf("%d,%d,%d\tphi = %f\tdphi = %f\n", x,y,z, phi, dphi);
+
+        // Save porosity, porosity change, average velocity and average diameter
         __syncthreads();
         //phi = 1.0; dphi = 0.0; // disable porosity effects
-        dev_ns_phi[idx(x,y,z)]  = phi;
-        dev_ns_dphi[idx(x,y,z)] = dphi;
+        const unsigned int cellidx = idx(x,y,z);
+        dev_ns_phi[cellidx]  = phi;
+        dev_ns_dphi[cellidx] = dphi;
+        dev_ns_vp_avg[cellidx] = v_avg;
+        dev_ns_d_avg[cellidx]  = d_avg;
     }
 }
 
@@ -1988,7 +2013,7 @@ __global__ void findAvgParticleVelocityDiameter(
             endIdx = dev_cellEnd[cellID];
 
             // Iterate over cell particles
-            for (i = startIdx; i<endIdx; ++i) {
+            for (i=startIdx; i<endIdx; ++i) {
 
                 // Read particle velocity
                 __syncthreads();
@@ -1997,6 +2022,7 @@ __global__ void findAvgParticleVelocityDiameter(
                 n++;
                 v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
                 d_avg += d;
+                printf("particle %d is in cell %d,%d,%d\n", i, x,y,z);
             }
 
             v_avg /= n;
@@ -2051,7 +2077,7 @@ __global__ void findInteractionForce(
         const unsigned int cellidx = idx(x,y,z);
 
         __syncthreads();
-        const Float  phi    = dev_ns_phi[cellidx];
+        const Float  phi = dev_ns_phi[cellidx];
         const Float3 vf_avg = dev_ns_v[cellidx];
 
         Float d_avg;
@@ -2060,7 +2086,7 @@ __global__ void findInteractionForce(
             __syncthreads();
             d_avg  = dev_ns_d_avg[cellidx];
             vp_avg = dev_ns_vp_avg[cellidx];
-        } else {
+        } else {  // cell is empty
             d_avg = 1.0; // some value different from 0
             vp_avg = vf_avg;
         }
@@ -2081,6 +2107,14 @@ __global__ void findInteractionForce(
                     *v_rel_length/d_avg)*v_rel;
 
         __syncthreads();
+        printf("%d,%d,%d\tfi = %f,%f,%f"
+                "\tphi = %f\td_avg = %f"
+                "\tv_rel = %f,%f,%f\t"
+                "\tre = %f\tcd = %f\n",
+                x,y,z, fi.x, fi.y, fi.z,
+                phi, d_avg,
+                v_rel.x, v_rel.y, v_rel.z,
+                re, cd);
         dev_ns_fi[cellidx] = fi;
     }
 }
