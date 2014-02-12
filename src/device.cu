@@ -25,7 +25,9 @@
 #include "raytracer.cuh"
 #include "navierstokes.cuh"
 
-
+// Define `CFDDEMCOUPLING` in order to enable the two-way coupling between the
+// fluid and particle phase.
+#define CFDDEMCOUPLING
 
 //// Parameters for the iterative Jacobi solver
 
@@ -884,6 +886,41 @@ __host__ void DEM::startTime()
                         &t_findPorositiesDev);
             checkForCudaErrors("Post findPorositiesDev", iter);
 
+#ifdef CFDDEMCOUPLING
+
+            // Find the average particle velocity and radius in each CFD cell
+            findAvgParticleVelocityDiameter<<<dimGridFluid, dimBlockFluid>>>(
+                    dev_cellStart,
+                    dev_cellEnd,
+                    dev_vel_sorted,
+                    dev_x_sorted,
+                    dev_ns_vp_avg,
+                    dev_ns_d_avg);
+            cudaThreadSynchronize();
+            checkForCudaErrors("Post findAvgParticleVelocityDiameter", iter);
+
+            // Determine the interaction force
+            findInteractionForce<<<dimGridFluid, dimBlockFluid>>>(
+                    dev_ns_phi,
+                    ns.rho,
+                    dev_ns_d_avg,
+                    dev_ns_vp_avg,
+                    dev_ns_v,
+                    dev_ns_fi);
+            cudaThreadSynchronize();
+            checkForCudaErrors("Post findInteractionForce", iter);
+
+            // Apply interaction force to the particles
+            applyParticleInteractionForce<<<dimGridFluid, dimBlockFluid>>>(
+                    dev_ns_fi,
+                    dev_gridParticleIndex,
+                    dev_cellStart,
+                    dev_cellEnd,
+                    dev_force);
+            cudaThreadSynchronize();
+            checkForCudaErrors("Post applyParticleInteractionForce", iter);
+#endif
+
             // Initial guess for the top epsilon values. These may be changed in
             // setUpperPressureNS
             Float pressure = ns.p[idx(0,0,ns.nz-1)];
@@ -1018,6 +1055,7 @@ __host__ void DEM::startTime()
                     ns.rho,
                     ns.bc_bot,
                     ns.bc_top,
+                    dev_ns_fi,
                     dev_ns_v_p);
             cudaThreadSynchronize();
             if (PROFILING == 1)
@@ -1086,12 +1124,12 @@ __host__ void DEM::startTime()
                     transferNSepsilonFromGlobalDeviceMemory();
                     printNSarray(stdout, ns.epsilon, "epsilon");
                 }
-                
+
                 /*setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_epsilon);
-                cudaThreadSynchronize();
-                checkForCudaErrors("Post setNSghostNodesFloat(dev_ns_epsilon)",
-                        iter);*/
+                  dev_ns_epsilon);
+                  cudaThreadSynchronize();
+                  checkForCudaErrors("Post setNSghostNodesFloat(dev_ns_epsilon)",
+                  iter);*/
                 setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_epsilon,
                         ns.bc_bot, ns.bc_top);
@@ -1150,12 +1188,12 @@ __host__ void DEM::startTime()
                             &t_findNSforcing);
                 checkForCudaErrors("Post findNSforcing", iter);
                 /*setNSghostNodesForcing<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_f1,
-                        dev_ns_f2,
-                        dev_ns_f,
-                        nijac);
-                cudaThreadSynchronize();
-                checkForCudaErrors("Post setNSghostNodesForcing", iter);*/
+                  dev_ns_f1,
+                  dev_ns_f2,
+                  dev_ns_f,
+                  nijac);
+                  cudaThreadSynchronize();
+                  checkForCudaErrors("Post setNSghostNodesForcing", iter);*/
 
                 setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_epsilon,
@@ -1188,8 +1226,8 @@ __host__ void DEM::startTime()
 
                 // Flip flop: swap new and current array pointers
                 /*Float* tmp         = dev_ns_epsilon;
-                dev_ns_epsilon     = dev_ns_epsilon_new;
-                dev_ns_epsilon_new = tmp;*/
+                  dev_ns_epsilon     = dev_ns_epsilon_new;
+                  dev_ns_epsilon_new = tmp;*/
 
                 // Copy new values to current values
                 copyValues<Float><<<dimGridFluid, dimBlockFluid>>>(
@@ -1269,9 +1307,9 @@ __host__ void DEM::startTime()
         }
 
         /*std::cout << "\n###### ITERATION "
-            << iter << " ######" << std::endl;
-        transferNSepsilonFromGlobalDeviceMemory();
-        printNSarray(stdout, ns.epsilon, "epsilon");*/
+          << iter << " ######" << std::endl;
+          transferNSepsilonFromGlobalDeviceMemory();
+          printNSarray(stdout, ns.epsilon, "epsilon");*/
         //transferNSepsilonNewFromGlobalDeviceMemory();
         //printNSarray(stdout, ns.epsilon_new, "epsilon_new");
 

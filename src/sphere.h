@@ -177,6 +177,9 @@ class DEM {
         Float*  dev_ns_v_p_x;        // Predicted cell fluid velocity in st. gr.
         Float*  dev_ns_v_p_y;        // Predicted cell fluid velocity in st. gr.
         Float*  dev_ns_v_p_z;        // Predicted cell fluid velocity in st. gr.
+        Float3* dev_ns_vp_avg;       // Average particle velocity in cell
+        Float*  dev_ns_d_avg;        // Average particle diameter in cell
+        Float3* dev_ns_fi;           // Particle-fluid interaction force
         Float*  dev_ns_phi;          // Cell porosity
         Float*  dev_ns_dphi;         // Cell porosity change
         Float3* dev_ns_div_phi_v_v;  // Divegence used in velocity prediction

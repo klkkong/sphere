@@ -23,11 +23,11 @@
 // and a very low tolerance criteria value (e.g. 1.0e-9)
 #define BETA 0.0
 
-// Relaxation parameter, used in solution of Poisson equation. The value should
-// be within the range ]0.0;1.0]. At a value of 1.0, the new estimate of epsilon
-// values is used exclusively. At lower values, a linear interpolation between
-// new and old values is used. The solution typically converges faster with a
-// value of 1.0, but instabilities may be avoided with lower values.
+// Under-relaxation parameter, used in solution of Poisson equation. The value
+// should be within the range ]0.0;1.0]. At a value of 1.0, the new estimate of
+// epsilon values is used exclusively. At lower values, a linear interpolation
+// between new and old values is used. The solution typically converges faster
+// with a value of 1.0, but instabilities may be avoided with lower values.
 #define THETA 1.0
 
 // Arithmetic mean of two numbers
@@ -58,6 +58,9 @@ void DEM::initNSmemDev(void)
     cudaMalloc((void**)&dev_ns_v_p_x, memSizeFvel); // pred. vel. in stag. grid
     cudaMalloc((void**)&dev_ns_v_p_y, memSizeFvel); // pred. vel. in stag. grid
     cudaMalloc((void**)&dev_ns_v_p_z, memSizeFvel); // pred. vel. in stag. grid
+    cudaMalloc((void**)&dev_ns_vp_avg, memSizeF*3); // avg. particle velocity
+    cudaMalloc((void**)&dev_ns_d_avg, memSizeF); // avg. particle diameter
+    cudaMalloc((void**)&dev_ns_fi, memSizeF*3);  // interaction force
     cudaMalloc((void**)&dev_ns_phi, memSizeF);   // cell porosity
     cudaMalloc((void**)&dev_ns_dphi, memSizeF);  // cell porosity change
     cudaMalloc((void**)&dev_ns_div_phi_v_v, memSizeF*3); // div(phi v v)
@@ -86,6 +89,9 @@ void DEM::freeNSmemDev()
     cudaFree(dev_ns_v_p_x);
     cudaFree(dev_ns_v_p_y);
     cudaFree(dev_ns_v_p_z);
+    cudaFree(dev_ns_vp_avg);
+    cudaFree(dev_ns_d_avg);
+    cudaFree(dev_ns_fi);
     cudaFree(dev_ns_phi);
     cudaFree(dev_ns_dphi);
     cudaFree(dev_ns_div_phi_v_v);
@@ -1533,6 +1539,7 @@ __global__ void findPredNSvelocities(
         Float   rho,                    // in
         int     bc_bot,                 // in
         int     bc_top,                 // in
+        Float3* dev_ns_fi,              // in
         Float3* dev_ns_v_p)             // out
 {
     // 3D thread index
@@ -1564,8 +1571,8 @@ __global__ void findPredNSvelocities(
         const Float3 div_phi_vi_v = dev_ns_div_phi_vi_v[cellidx];
         const Float3 div_phi_tau  = dev_ns_div_phi_tau[cellidx];
 
-        // Particle interaction force
-        //const Float3 f_i = MAKE_FLOAT3(0.0, 0.0, 0.0);
+        // Particle-fluid interaction force
+        const Float3 f_i = dev_ns_fi[cellidx];
 
         // Gravitational drag force on cell fluid mass
         //const Float3 g = MAKE_FLOAT3(0.0, 0.0, -10.0);
@@ -1588,7 +1595,7 @@ __global__ void findPredNSvelocities(
         Float3 v_p = v
             - BETA/rho*grad_p*devC_dt/phi
             + 1.0/rho*div_phi_tau*devC_dt/phi
-            + devC_dt*f_g
+            + devC_dt*(f_g - f_i)
             - v*dphi/phi
             - div_phi_vi_v*devC_dt/phi;
 
@@ -1939,6 +1946,183 @@ __global__ void updateNSvelocityPressure(
         dev_ns_v[cellidx] = v;
     }
 }
+
+// Find the average particle diameter and velocity for each CFD cell
+__global__ void findAvgParticleVelocityDiameter(
+        unsigned int* dev_cellStart, // in
+        unsigned int* dev_cellEnd,   // in
+        Float4* dev_vel_sorted,      // in
+        Float4* dev_x_sorted,        // in
+        Float3* dev_ns_vp_avg,       // out
+        Float*  dev_ns_d_avg)        // out
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // check that we are not outside the fluid grid
+    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
+
+        Float4 v;
+        Float d;
+        unsigned int startIdx, endIdx, i;
+        unsigned int n = 0;
+
+        // average particle velocity
+        Float3 v_avg = MAKE_FLOAT3(0.0, 0.0, 0.0);  
+
+        // average particle diameter
+        Float d_avg = 0.0;
+
+        const unsigned int cellID = x + y * devC_grid.num[0]
+            + (devC_grid.num[0] * devC_grid.num[1]) * z; 
+
+        // Lowest particle index in cell
+        startIdx = dev_cellStart[cellID];
+
+        // Make sure cell is not empty
+        if (startIdx != 0xffffffff) {
+
+            // Highest particle index in cell
+            endIdx = dev_cellEnd[cellID];
+
+            // Iterate over cell particles
+            for (i = startIdx; i<endIdx; ++i) {
+
+                // Read particle velocity
+                __syncthreads();
+                v = dev_vel_sorted[i];
+                d = 2.0*dev_x_sorted[i].w;
+                n++;
+                v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
+                d_avg += d;
+            }
+
+            v_avg /= n;
+            d_avg /= n;
+        }
+
+        // save average radius and velocity
+        const unsigned int cellidx = idx(x,y,z);
+        __syncthreads();
+        dev_ns_vp_avg[cellidx] = v_avg;
+        dev_ns_d_avg[cellidx]  = d_avg;
+    }
+}
+
+// Find the drag coefficient as dictated by the Reynold's number
+// Shamy and Zeghal (2005).
+__device__ Float dragCoefficient(Float re)
+{
+    Float cd;
+    if (re >= 1000.0)
+        cd = 0.44;
+    else
+        cd = 24.0/re*(1.0 + 0.15*pow(re, 0.687));
+    return cd;
+}
+
+// Determine the fluid-particle interaction drag force based on the Ergun (1952)
+// equation for dense packed cells (phi <= 0.8), and the Wen and Yu (1966)
+// equation for dilate suspensions (phi > 0.8). Procedure outlined in Shamy and
+// Zeghal (2005) and Goniva et al (2010).
+// Other interaction forces, such as the pressure gradient in the flow field
+// (pressure force), particle rotation (Magnus force), particle acceleration
+// (virtual mass force) or a fluid velocity gradient leading to shear (Saffman
+// force).
+__global__ void findInteractionForce(
+        Float*  dev_ns_phi,     // in
+        Float   rho,            // in
+        Float*  dev_ns_d_avg,   // in
+        Float3* dev_ns_vp_avg,  // in
+        Float3* dev_ns_v,       // in
+        Float3* dev_ns_fi)      // out
+{
+
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Check that we are not outside the fluid grid
+    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
+
+        const unsigned int cellidx = idx(x,y,z);
+
+        __syncthreads();
+        const Float  phi    = dev_ns_phi[cellidx];
+        const Float  d_avg  = dev_ns_d_avg[cellidx];
+        const Float3 vp_avg = dev_ns_vp_avg[cellidx];
+        const Float3 vf_avg = dev_ns_v[cellidx];
+
+        const Float3 v_rel = vf_avg - vp_avg;
+        const Float  v_rel_length = length(v_rel);
+
+        const Float not_phi = 1.0 - phi;
+        const Float re = (phi*rho*d_avg)/devC_params.nu * v_rel_length;
+        const Float cd = dragCoefficient(re);
+
+        Float3 fi = MAKE_FLOAT3(0.0, 0.0, 0.0);
+        if (phi <= 0.8)       // Ergun equation
+            fi = (150.0*devC_params.nu*not_phi*not_phi/(phi*d_avg*d_avg)
+                    + 1.75*not_phi*rho*v_rel_length/d_avg)*v_rel;
+        else if (phi < 0.999) // Wen and Yu equation
+            fi = (3.0/4.0*cd*not_phi*pow(phi, -2.65)*devC_params.nu*rho
+                    *v_rel_length/d_avg)*v_rel;
+
+        __syncthreads();
+        dev_ns_fi[cellidx] = fi;
+    }
+}
+
+// Apply the fluid-particle interaction force to all particles in each fluid
+// cell.
+__global__ void applyParticleInteractionForce(
+        Float3* dev_ns_fi,                      // in
+        unsigned int* dev_gridParticleIndex,    // in
+        unsigned int* dev_cellStart,            // in
+        unsigned int* dev_cellEnd,              // in
+        Float4* dev_force)                      // out
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Check that we are not outside the fluid grid
+    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
+
+        const unsigned int cellidx = idx(x,y,z);
+
+        __syncthreads();
+        const Float3 fi = dev_ns_fi[cellidx];
+
+        // apply to all particle in the cell
+        // Calculate linear cell ID
+        const unsigned int cellID = x + y * devC_grid.num[0]
+            + (devC_grid.num[0] * devC_grid.num[1]) * z; 
+
+        const unsigned int startidx = dev_cellStart[cellID];
+        unsigned int endidx, i, origidx;
+
+        if (startidx != 0xffffffff) {
+
+            __syncthreads();
+            endidx = dev_cellEnd[cellID];
+
+            for (i=startidx; i<endidx; ++i) {
+
+                __syncthreads();
+                origidx = dev_gridParticleIndex[i];
+
+                __syncthreads();
+                dev_force[origidx] += MAKE_FLOAT4(fi.x, fi.y, fi.z, 0.0);
+            }
+        }
+    }
+}
+ 
 
 // Print final heads and free memory
 void DEM::endNSdev()
