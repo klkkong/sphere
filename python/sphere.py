@@ -35,7 +35,7 @@ class Spherebin:
     :type fluid: bool
     '''
 
-    def __init__(self, np = 1, nd = 3, nw = 1, sid = 'unnamed', fluid = False):
+    def __init__(self, np = 0, nd = 3, nw = 0, sid = 'unnamed', fluid = False):
 
         # Sphere version number
         self.version = numpy.ones(1, dtype=numpy.float64)*VERSION
