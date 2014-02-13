@@ -279,8 +279,9 @@ particles in contact with the previously mentioned cell-centered sphere for
 porosity estimation contribute to the average particle velocity and diameter in
 the fluid cell.
 
-If the porosity is greater than 0.8, the drag force is found from the Wen and Yu
-(1966) equation, which considers the fluid flow situation:
+If the porosity is greater than 0.8, the cell-averaged drag force
+(:math:`\bar{\boldsymbol{f}}_d` is found from the Wen and Yu (1966) equation,
+which considers the fluid flow situation:
 
 .. math::
     \bar{\boldsymbol{f}}_d = \left(
@@ -294,7 +295,7 @@ The drag coefficient :math:`C_d` is evaluated depending on the magnitude of the
 Reynolds number :math:`Re`:
 
 .. math::
-    V^s_{i} =
+    C_d =
     \begin{cases}
     \frac{24}{Re} (1+0.15 (Re)^{0.687} & \textit{if } Re < 1,000 \\
     0.44 & \textit{if } Re \geq 1,000
@@ -306,6 +307,22 @@ where the Reynold's number is found by:
     Re = \frac{\phi\rho_f\bar{d}}{\nu}
     ||\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p||
 
+The interaction force is applied to the fluid with negative sign as a
+contribution to the body force :math:`\boldsymbol{f}`. The fluid interaction
+force applied particles in the fluid cell is:
+
+.. math::
+    \boldsymbol{f}_i = \frac{\bar{\boldsymbol{f}}_d V_p}{1-\phi}
+
+where :math:`V_p` denotes the particle volume. Optionally, the above
+interaction force could be expanded to include the force induced by the fluid
+pressure gradient:
+
+.. math::
+    \boldsymbol{f}_i = \left(
+    -\nabla p +
+    \frac{\bar{\boldsymbol{f}}_d}{1-\phi}
+    \right) V_p
 
 
 Fluid dynamics solution procedure by operator splitting

@@ -291,8 +291,9 @@ force is based on the Ergun (1952) equation:</p>
 particles in contact with the previously mentioned cell-centered sphere for
 porosity estimation contribute to the average particle velocity and diameter in
 the fluid cell.</p>
-<p>If the porosity is greater than 0.8, the drag force is found from the Wen and Yu
-(1966) equation, which considers the fluid flow situation:</p>
+<p>If the porosity is greater than 0.8, the cell-averaged drag force
+(<img class="math" src="_images/math/a6c493a071c2c31758bc2bc9adc2beb10d7acfd0.png" alt="\bar{\boldsymbol{f}}_d"/> is found from the Wen and Yu (1966) equation,
+which considers the fluid flow situation:</p>
 <div class="math">
 <p><img src="_images/math/ee1817a60aae189024fe864c85bf32c1e92a699a.png" alt="\bar{\boldsymbol{f}}_d = \left(
 \frac{3}{4}
@@ -303,7 +304,7 @@ the fluid cell.</p>
 </div><p>The drag coefficient <img class="math" src="_images/math/47bc1263e44f1b74fd90da02d9e7c26bf4b9edbe.png" alt="C_d"/> is evaluated depending on the magnitude of the
 Reynolds number <img class="math" src="_images/math/16ef95610462b9c2c03cba4c272fe84208bf3c61.png" alt="Re"/>:</p>
 <div class="math">
-<p><img src="_images/math/1dafb53fb664c1e6576fc49adc4ef6db8f31a789.png" alt="V^s_{i} =
+<p><img src="_images/math/49a90589ae1e8a839b1ae6afb3dd1d162b6a094c.png" alt="C_d =
 \begin{cases}
 \frac{24}{Re} (1+0.15 (Re)^{0.687} &amp; \textit{if } Re &lt; 1,000 \\
 0.44 &amp; \textit{if } Re \geq 1,000
@@ -312,6 +313,19 @@ Reynolds number <img class="math" src="_images/math/16ef95610462b9c2c03cba4c272f
 <div class="math">
 <p><img src="_images/math/6089fb1f882f20c5b7ccbf543244d38b88c99494.png" alt="Re = \frac{\phi\rho_f\bar{d}}{\nu}
 ||\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p||"/></p>
+</div><p>The interaction force is applied to the fluid with negative sign as a
+contribution to the body force <img class="math" src="_images/math/69b1fdf87f9a78aaef8057a34aea7a6c17dad726.png" alt="\boldsymbol{f}"/>. The fluid interaction
+force applied particles in the fluid cell is:</p>
+<div class="math">
+<p><img src="_images/math/ac40b59145892a5a3c0141c5f35023ad85972855.png" alt="\boldsymbol{f}_i = \frac{\bar{\boldsymbol{f}}_d V_p}{1-\phi}"/></p>
+</div><p>where <img class="math" src="_images/math/257ee6442468d7529f036a8a81e6050c3832fdbf.png" alt="V_p"/> denotes the particle volume. Optionally, the above
+interaction force could be expanded to include the force induced by the fluid
+pressure gradient:</p>
+<div class="math">
+<p><img src="_images/math/0fdafcde7733804669f8df4846e5bfdb36c7afa7.png" alt="\boldsymbol{f}_i = \left(
+-\nabla p +
+\frac{\bar{\boldsymbol{f}}_d}{1-\phi}
+\right) V_p"/></p>
 </div></div>
 <div class="section" id="fluid-dynamics-solution-procedure-by-operator-splitting">
 <h2>Fluid dynamics solution procedure by operator splitting<a class="headerlink" href="#fluid-dynamics-solution-procedure-by-operator-splitting" title="Permalink to this headline">¶</a></h2>

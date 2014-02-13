@@ -12,17 +12,17 @@ print("### Coupled CFD-DEM tests ###")
 # Iteration and conservation of mass test
 # No gravity, no pressure gradients => no flow
 orig = sphere.Spherebin(sid = "cfddemtest", fluid = True)
-#cleanup(orig)
+cleanup(orig)
 orig.defaultParams()
 orig.addParticle([0.5,0.5,0.5], 0.05)
 orig.defineWorldBoundaries([1.0,1.0,1.0])
 orig.initFluid(nu = 8.9e-4)
 #orig.initTemporal(total = 0.2, file_dt = 0.01)
-orig.initTemporal(total = 1.0, file_dt = 0.01)
+orig.initTemporal(total = 0.1, file_dt = 0.01)
 orig.g[2] = -10.0
 orig.writebin(verbose=False)
 orig.run(dry=True)
-#orig.run(verbose=True)
+orig.run(verbose=True)
 py = Spherebin(sid = orig.sid, fluid = True)
 
 ones = numpy.ones((orig.num))
