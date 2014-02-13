@@ -1597,8 +1597,13 @@ __global__ void findPredNSvelocities(
         const Float3 div_phi_vi_v = dev_ns_div_phi_vi_v[cellidx];
         const Float3 div_phi_tau  = dev_ns_div_phi_tau[cellidx];
 
-        // Particle-fluid interaction force
-        const Float3 f_i = dev_ns_fi[cellidx];
+        // The particle-fluid interaction force should only be incoorporated if
+        // there is a fluid viscosity
+        Float3 f_i;
+        if (devC_params.nu > 0.0)
+            f_i = dev_ns_fi[cellidx];
+        else
+            f_i = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
         // Gravitational drag force on cell fluid mass
         //const Float3 g = MAKE_FLOAT3(0.0, 0.0, -10.0);
@@ -1621,7 +1626,8 @@ __global__ void findPredNSvelocities(
         Float3 v_p = v
             - BETA/rho*grad_p*devC_dt/phi
             + 1.0/rho*div_phi_tau*devC_dt/phi
-            + devC_dt*(f_g - f_i)
+            //+ devC_dt*(f_g - f_i)
+            + devC_dt*(-1.0*f_i)
             - v*dphi/phi
             - div_phi_vi_v*devC_dt/phi;
 

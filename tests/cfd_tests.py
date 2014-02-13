@@ -19,13 +19,13 @@ orig.defineWorldBoundaries([1.0,1.0,1.0])
 #orig.defineWorldBoundaries([500.0,500.0,500.0])
 #orig.initFluid(nu = 0.0)
 orig.initFluid(nu = 8.9e-4)
-orig.initTemporal(total = 0.002, file_dt = 0.001)
-orig.time_file_dt = orig.time_dt*0.99
-orig.time_total = orig.time_dt*10
-orig.g[2] = 0.0
+orig.initTemporal(total = 0.2, file_dt = 0.01)
+orig.g[2] = -10.0
+#orig.time_file_dt = orig.time_dt*0.99
+#orig.time_total = orig.time_dt*10
 orig.writebin(verbose=False)
 orig.run(dry=True)
-orig.run(verbose=False)
+orig.run(verbose=True)
 py = Spherebin(sid = orig.sid, fluid = True)
 
 ones = numpy.ones((orig.num))
