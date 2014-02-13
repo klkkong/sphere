@@ -2133,9 +2133,11 @@ __global__ void findInteractionForce(
 // cell.
 __global__ void applyParticleInteractionForce(
         Float3* dev_ns_fi,                      // in
+        Float*  dev_ns_phi,                     // in
         unsigned int* dev_gridParticleIndex,    // in
         unsigned int* dev_cellStart,            // in
         unsigned int* dev_cellEnd,              // in
+        Float4* dev_x_sorted,                   // in
         Float4* dev_force)                      // out
 {
     // 3D thread index
@@ -2159,6 +2161,9 @@ __global__ void applyParticleInteractionForce(
         const unsigned int startidx = dev_cellStart[cellID];
         unsigned int endidx, i, origidx;
 
+        Float r, phi;
+        Float3 fd;
+
         if (startidx != 0xffffffff) {
 
             __syncthreads();
@@ -2168,9 +2173,15 @@ __global__ void applyParticleInteractionForce(
 
                 __syncthreads();
                 origidx = dev_gridParticleIndex[i];
+                r = dev_x_sorted[i].w; // radius
+                phi = dev_ns_phi[idx(x,y,z)];
+
+                // this term could include the pressure gradient
+                //fd = (-grad_p + fi/(1.0 - phi))*(4.0/3.0*M_PI*r*r*r);
+                fd = (fi/(1.0 - phi))*(4.0/3.0*M_PI*r*r*r);
 
                 __syncthreads();
-                dev_force[origidx] += MAKE_FLOAT4(fi.x, fi.y, fi.z, 0.0);
+                dev_force[origidx] += MAKE_FLOAT4(fd.x, fd.y, fd.z, 0.0);
             }
         }
     }

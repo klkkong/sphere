@@ -241,10 +241,80 @@ is trivial.</p>
 </div>
 <div class="section" id="porosity-estimation">
 <h2>Porosity estimation<a class="headerlink" href="#porosity-estimation" title="Permalink to this headline">¶</a></h2>
-<p>&#8212;</p>
+<p>The solid volume in each fluid cell is determined by the ratio of the
+a cell-centered spherical cell volume (<img class="math" src="_images/math/24edc419058015022fc9ef15fb0f5d8ec3109f73.png" alt="V_c"/>) and the sum of intersecting
+particle volumes (<img class="math" src="_images/math/3c93d2ecf99a3c5ee161c98a3ac0040e1b446e09.png" alt="V_s"/>). The spherical cell volume has a center at
+<img class="math" src="_images/math/74958bc18d017328dd0fac99816d2184296bfd3d.png" alt="\boldsymbol{x}_i"/>, and a radius of <img class="math" src="_images/math/1ef7ab23d6fc7d336379d457f66aa6ed57d72ec9.png" alt="R_i"/>, which is equal to half
+the fluid cell width. The nearby particles are characterized by position
+<img class="math" src="_images/math/d1e970327c74ae0d8249c6283d2e3134d042f6ff.png" alt="\boldsymbol{x}_j"/> and radius <img class="math" src="_images/math/2da5f268da80c66e332f2a8d4520f7d6685699b6.png" alt="r_j"/>. The center distance is defined
+as:</p>
+<div class="math">
+<p><img src="_images/math/7fe490dcbc6c9eb978f05b3334d2a5856dc66149.png" alt="d_{ij} = ||\boldsymbol{x}_i - \boldsymbol{x}_j||"/></p>
+</div><p>The common volume of the two intersecting spheres is zero if the volumes aren&#8217;t
+intersecting, lens shaped if they are intersecting, and spherical if the
+particle is fully contained by the spherical cell volume:</p>
+<div class="math">
+<p><img src="_images/math/6d9a9e0ef32ea9506bb55413b682112d0f3308a6.png" alt="V^s_{i} = \sum_j
+\begin{cases}
+    0 &amp; \textit{if } R_i + r_j \leq d_{ij} \\
+    \frac{1}{12d_{ij}} \left[ \pi (R_i + r_j - d_{ij})^2
+    (d_{ij}^2 + 2d_{ij}r_j - 3r_j^2 + 2d_{ij} R_i + 6r_j R_i - 3R_i^2)
+    \right] &amp; \textit{if } R_i - r_j &lt; d_{ij} &lt; R_i + r_j \\
+    \frac{4}{3} \pi r^3_j &amp; \textit{if } d_{ij} \leq R_i - r_j
+\end{cases}"/></p>
+</div><p>Using this method, the cell porosity values are continuous through time as
+particles enter and exit the cell volume. The rate of porosity change
+(<img class="math" src="_images/math/778fcaedc9db6a87be6c2b7feac7164e55090c5b.png" alt="\partial \phi/\partial t"/>) is estimated by the backwards Euler method
+by considering the previous and current porosity.</p>
 </div>
-<div class="section" id="solution-procedure-by-operator-splitting">
-<h2>Solution procedure by operator splitting<a class="headerlink" href="#solution-procedure-by-operator-splitting" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="particle-fluid-interaction">
+<h2>Particle-fluid interaction<a class="headerlink" href="#particle-fluid-interaction" title="Permalink to this headline">¶</a></h2>
+<p>The momentum exchange of the granular and fluid phases follows the procedure
+outlined by Shamy and Zhegal 2005. The fluid and particle interaction is based
+on the concept of drag, where the magnitude is based on semi-empirical
+relationships. The drag force scales linearly with the relative difference in
+velocity between the fluid and particle phase. On the base of Newton&#8217;s third
+law, the resulting drag force is applied with opposite signs to the particle and
+fluid.</p>
+<p>For fluid cells with porosities (<img class="math" src="_images/math/2c175f60eecef1de7560c3bdea495d69f26f719d.png" alt="\phi"/>) less or equal to 0.8, the drag
+force is based on the Ergun (1952) equation:</p>
+<div class="math">
+<p><img src="_images/math/c5446f5064ccacb0879e4de7125d4ba077989b35.png" alt="\bar{\boldsymbol{f}}_d = \left(
+150 \frac{\nu (1-\phi)^2}{\phi\bar{d}^2}
++ 1.75 \frac{(1-\phi)\rho_f
+  ||\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p||}{\bar{d}}
+\right)
+(\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p)"/></p>
+</div><p>here, <img class="math" src="_images/math/46a84b389d8f594cd16c800ba4267f3cac5e2f30.png" alt="\bar{d}"/> denotes the average particle diameter in the cell,
+<img class="math" src="_images/math/cbe3f817ae974accdf9d422c0df8f6c90721037c.png" alt="\boldsymbol{v}_f"/> is the fluid flow velocity, and
+<img class="math" src="_images/math/3b432b0e58dea7c6cc143bf67184fc19b8cd4336.png" alt="\bar{\boldsymbol{v}}_p"/> is the average particle velocity in the cell. All
+particles in contact with the previously mentioned cell-centered sphere for
+porosity estimation contribute to the average particle velocity and diameter in
+the fluid cell.</p>
+<p>If the porosity is greater than 0.8, the drag force is found from the Wen and Yu
+(1966) equation, which considers the fluid flow situation:</p>
+<div class="math">
+<p><img src="_images/math/ee1817a60aae189024fe864c85bf32c1e92a699a.png" alt="\bar{\boldsymbol{f}}_d = \left(
+\frac{3}{4}
+\frac{C_d (1-\phi) \phi^{-2.65} \nu \rho_f
+||\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p||}{\bar{d}}
+\right)
+(\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p)"/></p>
+</div><p>The drag coefficient <img class="math" src="_images/math/47bc1263e44f1b74fd90da02d9e7c26bf4b9edbe.png" alt="C_d"/> is evaluated depending on the magnitude of the
+Reynolds number <img class="math" src="_images/math/16ef95610462b9c2c03cba4c272fe84208bf3c61.png" alt="Re"/>:</p>
+<div class="math">
+<p><img src="_images/math/1dafb53fb664c1e6576fc49adc4ef6db8f31a789.png" alt="V^s_{i} =
+\begin{cases}
+\frac{24}{Re} (1+0.15 (Re)^{0.687} &amp; \textit{if } Re &lt; 1,000 \\
+0.44 &amp; \textit{if } Re \geq 1,000
+\end{cases}"/></p>
+</div><p>where the Reynold&#8217;s number is found by:</p>
+<div class="math">
+<p><img src="_images/math/6089fb1f882f20c5b7ccbf543244d38b88c99494.png" alt="Re = \frac{\phi\rho_f\bar{d}}{\nu}
+||\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p||"/></p>
+</div></div>
+<div class="section" id="fluid-dynamics-solution-procedure-by-operator-splitting">
+<h2>Fluid dynamics solution procedure by operator splitting<a class="headerlink" href="#fluid-dynamics-solution-procedure-by-operator-splitting" title="Permalink to this headline">¶</a></h2>
 <p>The partial differential terms in the previously described equations are found
 using finite central differences. Modifying the operator splitting methodology
 presented by Langtangen et al.  (2002), the predicted velocity
@@ -454,7 +524,8 @@ e.g.:</p>
 <li><a class="reference internal" href="#">Fluid simulation and particle-fluid interaction</a><ul>
 <li><a class="reference internal" href="#derivation-of-the-navier-stokes-equations-with-porosity">Derivation of the Navier Stokes equations with porosity</a></li>
 <li><a class="reference internal" href="#porosity-estimation">Porosity estimation</a></li>
-<li><a class="reference internal" href="#solution-procedure-by-operator-splitting">Solution procedure by operator splitting</a></li>
+<li><a class="reference internal" href="#particle-fluid-interaction">Particle-fluid interaction</a></li>
+<li><a class="reference internal" href="#fluid-dynamics-solution-procedure-by-operator-splitting">Fluid dynamics solution procedure by operator splitting</a></li>
 <li><a class="reference internal" href="#boundary-conditions">Boundary conditions</a></li>
 <li><a class="reference internal" href="#numerical-implementation">Numerical implementation</a></li>
 </ul>

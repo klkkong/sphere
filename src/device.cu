@@ -914,9 +914,11 @@ __host__ void DEM::startTime()
             // Apply interaction force to the particles
             applyParticleInteractionForce<<<dimGridFluid, dimBlockFluid>>>(
                     dev_ns_fi,
+                    dev_ns_phi,
                     dev_gridParticleIndex,
                     dev_cellStart,
                     dev_cellEnd,
+                    dev_x_sorted,
                     dev_force);
             cudaThreadSynchronize();
             checkForCudaErrors("Post applyParticleInteractionForce", iter);

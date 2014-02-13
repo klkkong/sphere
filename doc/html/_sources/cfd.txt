@@ -221,10 +221,95 @@ is trivial.
 
 Porosity estimation
 -------------------
----
+The solid volume in each fluid cell is determined by the ratio of the
+a cell-centered spherical cell volume (:math:`V_c`) and the sum of intersecting
+particle volumes (:math:`V_s`). The spherical cell volume has a center at
+:math:`\boldsymbol{x}_i`, and a radius of :math:`R_i`, which is equal to half
+the fluid cell width. The nearby particles are characterized by position
+:math:`\boldsymbol{x}_j` and radius :math:`r_j`. The center distance is defined
+as:
 
-Solution procedure by operator splitting
-----------------------------------------
+.. math::
+    d_{ij} = ||\boldsymbol{x}_i - \boldsymbol{x}_j||
+
+The common volume of the two intersecting spheres is zero if the volumes aren't
+intersecting, lens shaped if they are intersecting, and spherical if the
+particle is fully contained by the spherical cell volume:
+
+.. math::
+    V^s_{i} = \sum_j
+    \begin{cases}
+        0 & \textit{if } R_i + r_j \leq d_{ij} \\
+        \frac{1}{12d_{ij}} \left[ \pi (R_i + r_j - d_{ij})^2
+        (d_{ij}^2 + 2d_{ij}r_j - 3r_j^2 + 2d_{ij} R_i + 6r_j R_i - 3R_i^2)
+        \right] & \textit{if } R_i - r_j < d_{ij} < R_i + r_j \\
+        \frac{4}{3} \pi r^3_j & \textit{if } d_{ij} \leq R_i - r_j
+    \end{cases}
+
+Using this method, the cell porosity values are continuous through time as
+particles enter and exit the cell volume. The rate of porosity change
+(:math:`\partial \phi/\partial t`) is estimated by the backwards Euler method
+by considering the previous and current porosity.
+
+Particle-fluid interaction
+--------------------------
+The momentum exchange of the granular and fluid phases follows the procedure
+outlined by Shamy and Zhegal 2005. The fluid and particle interaction is based
+on the concept of drag, where the magnitude is based on semi-empirical
+relationships. The drag force scales linearly with the relative difference in
+velocity between the fluid and particle phase. On the base of Newton's third
+law, the resulting drag force is applied with opposite signs to the particle and
+fluid.
+
+For fluid cells with porosities (:math:`\phi`) less or equal to 0.8, the drag
+force is based on the Ergun (1952) equation:
+
+.. math::
+    \bar{\boldsymbol{f}}_d = \left(
+    150 \frac{\nu (1-\phi)^2}{\phi\bar{d}^2}
+    + 1.75 \frac{(1-\phi)\rho_f
+      ||\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p||}{\bar{d}}
+    \right)
+    (\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p)
+
+here, :math:`\bar{d}` denotes the average particle diameter in the cell,
+:math:`\boldsymbol{v}_f` is the fluid flow velocity, and
+:math:`\bar{\boldsymbol{v}}_p` is the average particle velocity in the cell. All
+particles in contact with the previously mentioned cell-centered sphere for
+porosity estimation contribute to the average particle velocity and diameter in
+the fluid cell.
+
+If the porosity is greater than 0.8, the drag force is found from the Wen and Yu
+(1966) equation, which considers the fluid flow situation:
+
+.. math::
+    \bar{\boldsymbol{f}}_d = \left(
+    \frac{3}{4}
+    \frac{C_d (1-\phi) \phi^{-2.65} \nu \rho_f
+    ||\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p||}{\bar{d}}
+    \right)
+    (\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p)
+
+The drag coefficient :math:`C_d` is evaluated depending on the magnitude of the
+Reynolds number :math:`Re`:
+
+.. math::
+    V^s_{i} =
+    \begin{cases}
+    \frac{24}{Re} (1+0.15 (Re)^{0.687} & \textit{if } Re < 1,000 \\
+    0.44 & \textit{if } Re \geq 1,000
+    \end{cases}
+
+where the Reynold's number is found by:
+
+.. math::
+    Re = \frac{\phi\rho_f\bar{d}}{\nu}
+    ||\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p||
+
+
+
+Fluid dynamics solution procedure by operator splitting
+-------------------------------------------------------
 The partial differential terms in the previously described equations are found
 using finite central differences. Modifying the operator splitting methodology
 presented by Langtangen et al.  (2002), the predicted velocity

@@ -124,10 +124,7 @@ a <tt class="docutils literal"><span class="pre">sphere</span></tt> simulation. 
 59
 60
 61
-62
-63
-64
-65</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
+62</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Example of two particles colliding.</span>
 <span class="sd">Place script in sphere/python/ folder, and invoke with `python collision.py`</span>
@@ -155,12 +152,9 @@ a <tt class="docutils literal"><span class="pre">sphere</span></tt> simulation. 
 <span class="c"># a positive x velocity for particle 1.</span>
 <span class="n">SB</span><span class="o">.</span><span class="n">vel</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
 
-<span class="c"># let&#39;s disable gravity in this simulation</span>
-<span class="n">GRAVITY</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
-
 <span class="c"># Set the world limits and the particle sorting grid. The particles need to stay</span>
 <span class="c"># within the world limits for the entire simulation, otherwise it will stop!</span>
-<span class="n">SB</span><span class="o">.</span><span class="n">initGridAndWorldsize</span><span class="p">(</span><span class="n">g</span> <span class="o">=</span> <span class="n">GRAVITY</span><span class="p">,</span> <span class="n">margin</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">)</span>
+<span class="n">SB</span><span class="o">.</span><span class="n">initGridAndWorldsize</span><span class="p">(</span><span class="n">margin</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">)</span>
 
 <span class="c"># Define the temporal parameters, e.g. the total time (total) and the file</span>
 <span class="c"># output interval (file_dt), both in seconds</span>
@@ -200,7 +194,7 @@ a <tt class="docutils literal"><span class="pre">sphere</span></tt> simulation. 
 <span id="the-sphere-module"></span><h2>The <tt class="docutils literal"><span class="pre">sphere</span></tt> module<a class="headerlink" href="#module-sphere" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="sphere.Spherebin">
-<em class="property">class </em><tt class="descclassname">sphere.</tt><tt class="descname">Spherebin</tt><big>(</big><em>np=1</em>, <em>nd=3</em>, <em>nw=1</em>, <em>sid='unnamed'</em>, <em>fluid=False</em><big>)</big><a class="headerlink" href="#sphere.Spherebin" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">sphere.</tt><tt class="descname">Spherebin</tt><big>(</big><em>sid='unnamed'</em>, <em>np=0</em>, <em>nd=3</em>, <em>nw=0</em>, <em>fluid=False</em><big>)</big><a class="headerlink" href="#sphere.Spherebin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class containing all <tt class="docutils literal"><span class="pre">sphere</span></tt> data.</p>
 <p>Contains functions for reading and writing binaries, as well as simulation
 setup and data analysis. Most arrays are initialized to default values.</p>
@@ -305,7 +299,7 @@ The value is relative to the sum of the two radii.</p>
 
 <dl class="method">
 <dt id="sphere.Spherebin.defaultParams">
-<tt class="descname">defaultParams</tt><big>(</big><em>mu_s=0.4</em>, <em>mu_d=0.4</em>, <em>mu_r=0.0</em>, <em>rho=2600</em>, <em>k_n=1160000000.0</em>, <em>k_t=1160000000.0</em>, <em>k_r=0</em>, <em>gamma_n=0</em>, <em>gamma_t=0</em>, <em>gamma_r=0</em>, <em>gamma_wn=10000.0</em>, <em>gamma_wt=10000.0</em>, <em>capillaryCohesion=0</em>, <em>nu=0.0</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.defaultParams" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">defaultParams</tt><big>(</big><em>mu_s=0.4</em>, <em>mu_d=0.4</em>, <em>mu_r=0.0</em>, <em>rho=2600</em>, <em>k_n=1160000000.0</em>, <em>k_t=1160000000.0</em>, <em>k_r=0</em>, <em>gamma_n=0</em>, <em>gamma_t=0</em>, <em>gamma_r=0</em>, <em>gamma_wn=10000.0</em>, <em>gamma_wt=10000.0</em>, <em>capillaryCohesion=0</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.defaultParams" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize particle parameters to default values.
 Radii must be set prior to calling this function.</p>
 </dd></dl>
@@ -436,7 +430,7 @@ from the particle boundaries.</p>
 
 <dl class="method">
 <dt id="sphere.Spherebin.initGridAndWorldsize">
-<tt class="descname">initGridAndWorldsize</tt><big>(</big><em>g=array([ 0.</em>, <em>0.</em>, <em>-9.80665])</em>, <em>margin=2.0</em>, <em>periodic=1</em>, <em>contactmodel=2</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.initGridAndWorldsize" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">initGridAndWorldsize</tt><big>(</big><em>margin=2.0</em>, <em>periodic=1</em>, <em>contactmodel=2</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.initGridAndWorldsize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize grid suitable for the particle positions set previously.
 The margin parameter adjusts the distance (in no. of max. radii)
 from the particle boundaries.</p>
@@ -444,7 +438,7 @@ from the particle boundaries.</p>
 
 <dl class="method">
 <dt id="sphere.Spherebin.initGridPos">
-<tt class="descname">initGridPos</tt><big>(</big><em>g=array([ 0.</em>, <em>0.</em>, <em>-9.80665])</em>, <em>gridnum=array([12</em>, <em>12</em>, <em>36])</em>, <em>periodic=1</em>, <em>contactmodel=2</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.initGridPos" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">initGridPos</tt><big>(</big><em>gridnum=array([12</em>, <em>12</em>, <em>36])</em>, <em>periodic=1</em>, <em>contactmodel=2</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.initGridPos" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize particle positions in loose, cubic configuration.
 Radii must be set beforehand.
 xynum is the number of rows in both x- and y- directions.</p>
@@ -452,7 +446,7 @@ xynum is the number of rows in both x- and y- directions.</p>
 
 <dl class="method">
 <dt id="sphere.Spherebin.initRandomGridPos">
-<tt class="descname">initRandomGridPos</tt><big>(</big><em>g=array([ 0.</em>, <em>0.</em>, <em>-9.80665])</em>, <em>gridnum=array([12</em>, <em>12</em>, <em>32])</em>, <em>periodic=1</em>, <em>contactmodel=2</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.initRandomGridPos" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">initRandomGridPos</tt><big>(</big><em>gridnum=array([12</em>, <em>12</em>, <em>32])</em>, <em>periodic=1</em>, <em>contactmodel=2</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.initRandomGridPos" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize particle positions in loose, cubic configuration.
 Radii must be set beforehand.
 xynum is the number of rows in both x- and y- directions.</p>
@@ -460,7 +454,7 @@ xynum is the number of rows in both x- and y- directions.</p>
 
 <dl class="method">
 <dt id="sphere.Spherebin.initRandomPos">
-<tt class="descname">initRandomPos</tt><big>(</big><em>g=array([ 0.</em>, <em>0.</em>, <em>-9.80665])</em>, <em>gridnum=array([12</em>, <em>12</em>, <em>36])</em>, <em>periodic=1</em>, <em>contactmodel=2</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.initRandomPos" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">initRandomPos</tt><big>(</big><em>gridnum=array([12</em>, <em>12</em>, <em>36])</em>, <em>periodic=1</em>, <em>contactmodel=2</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.initRandomPos" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize particle positions in loose, cubic configuration. Radii
 <em>must</em> be set beforehand. If the x and y boundaries are set as periodic,
 the particle centers will be placed all the way to the edge. On regular,
@@ -471,8 +465,6 @@ make space for their radii within the bounding box.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>g</strong> (<em>numpy.array</em>) &#8211; The vector of gravitational acceleration (default = [0, 0,
--9.90665])</li>
 <li><strong>gridnum</strong> (<em>numpy.array</em>) &#8211; The number of sorting cells in each spatial direction
 (default = [12, 12, 36])</li>
 <li><strong>periodic</strong> (<em>int</em>) &#8211; Set if the x and y boundaries are periodic (no = 0, yes 
