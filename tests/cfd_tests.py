@@ -17,20 +17,20 @@ orig.addParticle([0.5,0.5,0.5], 0.05)
 orig.defineWorldBoundaries([1.0,1.0,1.0])
 #orig.addParticle([5,5,5], 5)
 #orig.defineWorldBoundaries([500.0,500.0,500.0])
-#orig.initFluid(nu = 0.0)
-orig.initFluid(nu = 8.9e-4)
+orig.initFluid(nu = 0.0)
+#orig.initFluid(nu = 8.9e-4)
 orig.initTemporal(total = 0.2, file_dt = 0.01)
-orig.g[2] = -10.0
-#orig.time_file_dt = orig.time_dt*0.99
-#orig.time_total = orig.time_dt*10
+#orig.g[2] = -10.0
+orig.time_file_dt = orig.time_dt*0.99
+orig.time_total = orig.time_dt*10
 orig.writebin(verbose=False)
-orig.run(dry=True)
-orig.run(verbose=True)
+#orig.run(dry=True)
+orig.run(verbose=False)
 py = Spherebin(sid = orig.sid, fluid = True)
 
 ones = numpy.ones((orig.num))
 py.readlast(verbose = False)
-py.writeVTKall()
+#py.writeVTKall()
 compareNumpyArrays(ones, py.p_f, "Conservation of pressure:")
 
 # Convergence rate (1/2)
@@ -38,7 +38,6 @@ it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
 compare(it[:,1].sum(), 0.0, "Convergence rate (1/2):\t")
 
 
-'''
 # Add pressure gradient
 # This test passes with BETA=0.0 and tolerance=1.0e-9
 orig.p_f[:,:,-1] = 1.1
@@ -67,7 +66,6 @@ else:
 '''
 # Long test
 # This test passes with BETA=0.0 and tolerance=1.0e-9
-'''
 orig.p_f[:,:,-1] = 1.1
 orig.time_total[0] = 5.0
 orig.time_file_dt[0] = orig.time_total[0]/10.0
@@ -93,7 +91,6 @@ if (it[0,1] < 700 and it[1,1] < 250 and (it[2:,1] < 20).all()):
     print("Convergence rate (2/2):\t" + passed())
 else:
     print("Convergence rate (2/2):\t" + failed())
-'''
 '''
 # Add viscosity which will limit the fluid flow. Used to test the stress tensor
 # in the fluid velocity prediction
@@ -159,7 +156,7 @@ if ((numpy.sign(dvz_diff) == numpy.sign(-dvz_adv)).all()):
     print("Diffusion-advection (2/2):" + passed())
 else:
     print("Diffusion-advection (2/2):" + failed())
-'''
+
 
 
 # Slow pressure modulation test
@@ -184,7 +181,7 @@ for it in range(1,py.status()): # gradient should be smooth in all output files
             'Slow pressure modulation (' + 
             str(it+1) + '/' + str(py.status()) + '):', tolerance=1.0e-1)
 '''
-'''
+
 # Fast pressure modulation test
 orig.time_total[0] = 1.0e-2
 orig.time_file_dt[0] = 0.101*orig.time_total[0]
@@ -205,7 +202,7 @@ for it in range(1,py.status()+1): # gradient should be smooth in all output file
             ideal_grad_p_z - py.p_f[0,0,:],\
             'Fast pressure modulation (' + 
             str(it) + '/' + str(py.status()) + '):', tolerance=1.0e-1)
-'''
+
 '''
 # Top: Dirichlet, bot: Neumann
 orig.disableFluidPressureModulation()
