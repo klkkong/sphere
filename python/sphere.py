@@ -1395,6 +1395,7 @@ class Spherebin:
         and :func:`readsecond`.
         '''
         fn = "../output/{0}.output{1:0=5}.bin".format(self.sid, step)
+        self.readbin(fn, verbose)
 
     def readlast(self, verbose=True):
         '''

@@ -893,12 +893,12 @@ __host__ void DEM::startTime()
             checkForCudaErrors("Post findPorositiesDev", iter);
 
 #ifdef CFDDEMCOUPLING
-            if (params.nu <= 0.0) {
+            /*if (params.nu <= 0.0) {
                 std::cerr << "Error! The fluid needs a positive viscosity "
                     "value in order to simulate particle-fluid interaction."
                     << std::endl;
                 exit(1);
-            }
+            }*/
 
             // Determine the interaction force
             findInteractionForce<<<dimGridFluid, dimBlockFluid>>>(
