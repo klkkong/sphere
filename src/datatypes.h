@@ -95,7 +95,8 @@ struct Params {
     Float tau_b;          // Bond shear strength
     Float devs_A;         // Amplitude of modulations in normal stress
     Float devs_f;         // Frequency of modulations in normal stress
-    Float nu;             // Fluid dynamic viscosity
+    Float mu;             // Fluid dynamic viscosity
+    Float rho_f;          // Fluid density
 };
 
 // Structure containing wall parameters
@@ -124,7 +125,6 @@ struct NavierStokes {
     Float*  norm;        // Normalized residual of epsilon updates
     Float*  epsilon;     // Iterative solution parameter
     Float*  epsilon_new; // Updated value of iterative solution parameter
-    Float   rho;         // Fluid density
     Float   p_mod_A;     // Pressure modulation amplitude at top
     Float   p_mod_f;     // Pressure modulation frequency at top
     Float   p_mod_phi;   // Pressure modulation phase at top

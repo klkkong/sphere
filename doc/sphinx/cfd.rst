@@ -39,8 +39,8 @@ by:
 
 .. math::
     \boldsymbol{\tau} =
-    \nu \nabla \boldsymbol{v}
-    + \nu (\nabla \boldsymbol{v})^T
+    \mu_f \nabla \boldsymbol{v}
+    + \mu_f (\nabla \boldsymbol{v})^T
 
 By using the following vector identities:
 
@@ -57,7 +57,7 @@ following, assuming that spatial variations in the viscosity can be neglected:
 
 .. math::
     = -\nabla p
-    + \nu \nabla^2 \boldsymbol{v}
+    + \mu_f \nabla^2 \boldsymbol{v}
 
 Since we are dealing with fluid flow in a porous medium, additional terms are
 introduced to the equations for conservation of mass and momentum. In the
@@ -190,11 +190,11 @@ The deviatoric stress tensor is in this case symmetrical, i.e. :math:`\tau_{ij}
 
 In a linear viscous fluid, the stress and strain rate
 (:math:`\dot{\boldsymbol{\epsilon}}`) is linearly dependent, scaled by the
-viscosity parameter :math:`\nu`:
+viscosity parameter :math:`\mu_f`:
 
 .. math::
-    \tau_{ij} = 2 \nu \dot{\epsilon}_{ij}
-    = \nu \left(
+    \tau_{ij} = 2 \mu_f \dot{\epsilon}_{ij}
+    = \mu_f \left(
     \frac{\partial v_i}{\partial x_j} + \frac{\partial v_j}{\partial x_i}
     \right)
 
@@ -202,22 +202,22 @@ With this relationship, the deviatoric stress tensor components can be
 calculated as:
 
 .. math::
-    \tau_{xx} = 2 \nu \frac{\partial v_x}{\partial x} \qquad
-    \tau_{yy} = 2 \nu \frac{\partial v_y}{\partial y} \qquad
-    \tau_{zz} = 2 \nu \frac{\partial v_z}{\partial z}
+    \tau_{xx} = 2 \mu_f \frac{\partial v_x}{\partial x} \qquad
+    \tau_{yy} = 2 \mu_f \frac{\partial v_y}{\partial y} \qquad
+    \tau_{zz} = 2 \mu_f \frac{\partial v_z}{\partial z}
 
-    \tau_{xy} = \nu \left(
+    \tau_{xy} = \mu_f \left(
     \frac{\partial v_x}{\partial y} + \frac{\partial v_y}{\partial x} \right)
 
-    \tau_{xz} = \nu \left(
+    \tau_{xz} = \mu_f \left(
     \frac{\partial v_x}{\partial z} + \frac{\partial v_z}{\partial x} \right)
 
-    \tau_{yz} = \nu \left(
+    \tau_{yz} = \mu_f \left(
     \frac{\partial v_y}{\partial z} + \frac{\partial v_z}{\partial y} \right)
 
-The above formulation of the fluid rheology assumes identical bulk and shear
-viscosities. The derivation of the equations for the other spatial components
-is trivial.
+where :math:`\mu_f` is the dynamic viscosity. The above formulation of the
+fluid rheology assumes identical bulk and shear viscosities. The derivation of
+the equations for the other spatial components is trivial.
 
 Porosity estimation
 -------------------
@@ -248,7 +248,7 @@ particle is fully contained by the spherical cell volume:
 
 Using this method, the cell porosity values are continuous through time as
 particles enter and exit the cell volume. The rate of porosity change
-(:math:`\partial \phi/\partial t`) is estimated by the backwards Euler method
+(:math:`d\phi/dt`) is estimated by the backwards Euler method
 by considering the previous and current porosity.
 
 Particle-fluid interaction
@@ -266,7 +266,7 @@ force is based on the Ergun (1952) equation:
 
 .. math::
     \bar{\boldsymbol{f}}_d = \left(
-    150 \frac{\nu (1-\phi)^2}{\phi\bar{d}^2}
+    150 \frac{\mu_f (1-\phi)^2}{\phi\bar{d}^2}
     + 1.75 \frac{(1-\phi)\rho_f
       ||\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p||}{\bar{d}}
     \right)
@@ -286,7 +286,7 @@ which considers the fluid flow situation:
 .. math::
     \bar{\boldsymbol{f}}_d = \left(
     \frac{3}{4}
-    \frac{C_d (1-\phi) \phi^{-2.65} \nu \rho_f
+    \frac{C_d (1-\phi) \phi^{-2.65} \mu_f \rho_f
     ||\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p||}{\bar{d}}
     \right)
     (\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p)
@@ -304,7 +304,7 @@ Reynolds number :math:`Re`:
 where the Reynold's number is found by:
 
 .. math::
-    Re = \frac{\phi\rho_f\bar{d}}{\nu}
+    Re = \frac{\phi\rho_f\bar{d}}{\mu_f}
     ||\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p||
 
 The interaction force is applied to the fluid with negative sign as a

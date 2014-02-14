@@ -86,9 +86,9 @@ Newtonian fluids, the Cauchy stress is given by:</p>
 tensor, and <img class="math" src="_images/math/023a7668d083165ce2aa65b49e876b83c9cb97f9.png" alt="\boldsymbol{\tau}"/> is the deviatoric stress tensor, given
 by:</p>
 <div class="math">
-<p><img src="_images/math/0f1c7bcfd65708b716b8817c2e31029f9af2eedf.png" alt="\boldsymbol{\tau} =
-\nu \nabla \boldsymbol{v}
-+ \nu (\nabla \boldsymbol{v})^T"/></p>
+<p><img src="_images/math/25586671e456c2d987cd75cefd64d9cee69f50b9.png" alt="\boldsymbol{\tau} =
+\mu_f \nabla \boldsymbol{v}
++ \mu_f (\nabla \boldsymbol{v})^T"/></p>
 </div><p>By using the following vector identities:</p>
 <div class="math">
 <p><img src="_images/math/e4ca401f97df40e3568bc0624774cafa02d77cc1.png" alt="\nabla \cdot (p \boldsymbol{I}) = \nabla p
@@ -100,8 +100,8 @@ by:</p>
 </div><p>the deviatoric component of the Cauchy stress tensor simplifies to the
 following, assuming that spatial variations in the viscosity can be neglected:</p>
 <div class="math">
-<p><img src="_images/math/188c20d52c0d5acf0ddac670950204c93791be45.png" alt="= -\nabla p
-+ \nu \nabla^2 \boldsymbol{v}"/></p>
+<p><img src="_images/math/1053df745e2d73fc7ee27d39a01ad228c360072e.png" alt="= -\nabla p
++ \mu_f \nabla^2 \boldsymbol{v}"/></p>
 </div><p>Since we are dealing with fluid flow in a porous medium, additional terms are
 introduced to the equations for conservation of mass and momentum. In the
 following, the equations are derived for the first spatial component. The
@@ -214,30 +214,30 @@ found as:</p>
 \right)"/></p>
 </div><p>In a linear viscous fluid, the stress and strain rate
 (<img class="math" src="_images/math/7727554a4dfa1572695dec332d6f6ee255815c96.png" alt="\dot{\boldsymbol{\epsilon}}"/>) is linearly dependent, scaled by the
-viscosity parameter <img class="math" src="_images/math/d6a7ccf879c4a4fe694033606332cb83806db296.png" alt="\nu"/>:</p>
+viscosity parameter <img class="math" src="_images/math/6160e3f2050b4cd56b336ff552386a169aa51db8.png" alt="\mu_f"/>:</p>
 <div class="math">
-<p><img src="_images/math/f915ce7b55e81645409daf9d1458f32462dfcdf8.png" alt="\tau_{ij} = 2 \nu \dot{\epsilon}_{ij}
-= \nu \left(
+<p><img src="_images/math/5fb7b1a39363304fc1fb9172ecd46e2f39274384.png" alt="\tau_{ij} = 2 \mu_f \dot{\epsilon}_{ij}
+= \mu_f \left(
 \frac{\partial v_i}{\partial x_j} + \frac{\partial v_j}{\partial x_i}
 \right)"/></p>
 </div><p>With this relationship, the deviatoric stress tensor components can be
 calculated as:</p>
 <div class="math">
-<p><img src="_images/math/3536b174c0e21a837eb33434bbcdfc2ab566d161.png" alt="\tau_{xx} = 2 \nu \frac{\partial v_x}{\partial x} \qquad
-\tau_{yy} = 2 \nu \frac{\partial v_y}{\partial y} \qquad
-\tau_{zz} = 2 \nu \frac{\partial v_z}{\partial z}
+<p><img src="_images/math/f99450c7a8851772907f28ffd58be080f18894ae.png" alt="\tau_{xx} = 2 \mu_f \frac{\partial v_x}{\partial x} \qquad
+\tau_{yy} = 2 \mu_f \frac{\partial v_y}{\partial y} \qquad
+\tau_{zz} = 2 \mu_f \frac{\partial v_z}{\partial z}
 
-\tau_{xy} = \nu \left(
+\tau_{xy} = \mu_f \left(
 \frac{\partial v_x}{\partial y} + \frac{\partial v_y}{\partial x} \right)
 
-\tau_{xz} = \nu \left(
+\tau_{xz} = \mu_f \left(
 \frac{\partial v_x}{\partial z} + \frac{\partial v_z}{\partial x} \right)
 
-\tau_{yz} = \nu \left(
+\tau_{yz} = \mu_f \left(
 \frac{\partial v_y}{\partial z} + \frac{\partial v_z}{\partial y} \right)"/></p>
-</div><p>The above formulation of the fluid rheology assumes identical bulk and shear
-viscosities. The derivation of the equations for the other spatial components
-is trivial.</p>
+</div><p>where <img class="math" src="_images/math/6160e3f2050b4cd56b336ff552386a169aa51db8.png" alt="\mu_f"/> is the dynamic viscosity. The above formulation of the
+fluid rheology assumes identical bulk and shear viscosities. The derivation of
+the equations for the other spatial components is trivial.</p>
 </div>
 <div class="section" id="porosity-estimation">
 <h2>Porosity estimation<a class="headerlink" href="#porosity-estimation" title="Permalink to this headline">¶</a></h2>
@@ -264,7 +264,7 @@ particle is fully contained by the spherical cell volume:</p>
 \end{cases}"/></p>
 </div><p>Using this method, the cell porosity values are continuous through time as
 particles enter and exit the cell volume. The rate of porosity change
-(<img class="math" src="_images/math/778fcaedc9db6a87be6c2b7feac7164e55090c5b.png" alt="\partial \phi/\partial t"/>) is estimated by the backwards Euler method
+(<img class="math" src="_images/math/38a6d1fc56073806115322bcd179578f05c88c02.png" alt="d\phi/dt"/>) is estimated by the backwards Euler method
 by considering the previous and current porosity.</p>
 </div>
 <div class="section" id="particle-fluid-interaction">
@@ -279,8 +279,8 @@ the particle and fluid.</p>
 <p>For fluid cells with porosities (<img class="math" src="_images/math/2c175f60eecef1de7560c3bdea495d69f26f719d.png" alt="\phi"/>) less or equal to 0.8, the drag
 force is based on the Ergun (1952) equation:</p>
 <div class="math">
-<p><img src="_images/math/c5446f5064ccacb0879e4de7125d4ba077989b35.png" alt="\bar{\boldsymbol{f}}_d = \left(
-150 \frac{\nu (1-\phi)^2}{\phi\bar{d}^2}
+<p><img src="_images/math/baa542966f410097c2b4894388e41db6aa3cd996.png" alt="\bar{\boldsymbol{f}}_d = \left(
+150 \frac{\mu_f (1-\phi)^2}{\phi\bar{d}^2}
 + 1.75 \frac{(1-\phi)\rho_f
   ||\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p||}{\bar{d}}
 \right)
@@ -295,9 +295,9 @@ the fluid cell.</p>
 (<img class="math" src="_images/math/a6c493a071c2c31758bc2bc9adc2beb10d7acfd0.png" alt="\bar{\boldsymbol{f}}_d"/> is found from the Wen and Yu (1966) equation,
 which considers the fluid flow situation:</p>
 <div class="math">
-<p><img src="_images/math/ee1817a60aae189024fe864c85bf32c1e92a699a.png" alt="\bar{\boldsymbol{f}}_d = \left(
+<p><img src="_images/math/7181906596d0aaac14cbde44ec57dd7e5866c81b.png" alt="\bar{\boldsymbol{f}}_d = \left(
 \frac{3}{4}
-\frac{C_d (1-\phi) \phi^{-2.65} \nu \rho_f
+\frac{C_d (1-\phi) \phi^{-2.65} \mu_f \rho_f
 ||\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p||}{\bar{d}}
 \right)
 (\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p)"/></p>
@@ -311,7 +311,7 @@ Reynolds number <img class="math" src="_images/math/16ef95610462b9c2c03cba4c272f
 \end{cases}"/></p>
 </div><p>where the Reynold&#8217;s number is found by:</p>
 <div class="math">
-<p><img src="_images/math/6089fb1f882f20c5b7ccbf543244d38b88c99494.png" alt="Re = \frac{\phi\rho_f\bar{d}}{\nu}
+<p><img src="_images/math/8dbae01b96ab8dd591a50213f55caa3ac5958631.png" alt="Re = \frac{\phi\rho_f\bar{d}}{\mu_f}
 ||\boldsymbol{v}_f - \bar{\boldsymbol{v}}_p||"/></p>
 </div><p>The interaction force is applied to the fluid with negative sign as a
 contribution to the body force <img class="math" src="_images/math/69b1fdf87f9a78aaef8057a34aea7a6c17dad726.png" alt="\boldsymbol{f}"/>. The fluid interaction

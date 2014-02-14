@@ -1267,25 +1267,22 @@ __global__ void findNSstressTensor(
         const Float3 zp = dev_ns_v[idx(x,y,z+1)];
         const Float3 zn = dev_ns_v[idx(x,y,z-1)];
 
-        // Fluid viscosity
-        const Float nu = devC_params.nu;
-
         // The diagonal stress tensor components
-        const Float tau_xx = 2.0*nu*(xp.x - xn.x)/(2.0*dx);
-        const Float tau_yy = 2.0*nu*(yp.y - yn.y)/(2.0*dy);
-        const Float tau_zz = 2.0*nu*(zp.z - zn.z)/(2.0*dz);
+        const Float tau_xx = 2.0*devC_params.mu*(xp.x - xn.x)/(2.0*dx);
+        const Float tau_yy = 2.0*devC_params.mu*(yp.y - yn.y)/(2.0*dy);
+        const Float tau_zz = 2.0*devC_params.mu*(zp.z - zn.z)/(2.0*dz);
 
         // The off-diagonal stress tensor components
         const Float tau_xy =
-            nu*((yp.x - yn.x)/(2.0*dy) + (xp.y - xn.y)/(2.0*dx));
+            devC_params.mu*((yp.x - yn.x)/(2.0*dy) + (xp.y - xn.y)/(2.0*dx));
         const Float tau_xz =
-            nu*((zp.x - zn.x)/(2.0*dz) + (xp.z - xn.z)/(2.0*dx));
+            devC_params.mu*((zp.x - zn.x)/(2.0*dz) + (xp.z - xn.z)/(2.0*dx));
         const Float tau_yz =
-            nu*((zp.y - zn.y)/(2.0*dz) + (yp.z - yn.z)/(2.0*dy));
+            devC_params.mu*((zp.y - zn.y)/(2.0*dz) + (yp.z - yn.z)/(2.0*dy));
 
         /*
         if (x == 0 && y == 0 && z == 0)
-            printf("nu = %f\n", nu);
+            printf("mu = %f\n", mu);
         if (tau_xz > 1.0e-6)
             printf("%d,%d,%d\ttau_xx = %f\n", x,y,z, tau_xx);
         if (tau_yz > 1.0e-6)
@@ -1562,7 +1559,6 @@ __global__ void findPredNSvelocities(
         Float*  dev_ns_dphi,            // in
         Float3* dev_ns_div_phi_vi_v,    // in
         Float3* dev_ns_div_phi_tau,     // in
-        Float   rho,                    // in
         int     bc_bot,                 // in
         int     bc_top,                 // in
         Float3* dev_ns_fi,              // in
@@ -1600,17 +1596,17 @@ __global__ void findPredNSvelocities(
         // The particle-fluid interaction force should only be incoorporated if
         // there is a fluid viscosity
         Float3 f_i;
-        if (devC_params.nu > 0.0)
+        if (devC_params.mu > 0.0)
             f_i = dev_ns_fi[cellidx];
         else
             f_i = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
         // Gravitational drag force on cell fluid mass
         //const Float3 g = MAKE_FLOAT3(0.0, 0.0, -10.0);
-        //const Float3 f_g = rho*dx*dy*dz*phi*g;
+        //const Float3 f_g = devC_params.rho_f*dx*dy*dz*phi*g;
         const Float3 f_g
             = MAKE_FLOAT3(devC_params.g[0], devC_params.g[1], devC_params.g[2])
-            * rho * dx*dy*dz * phi;
+            * devC_params.rho_f * dx*dy*dz * phi;
         //const Float3 f_g = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
         // Find pressure gradient
@@ -1624,16 +1620,16 @@ __global__ void findPredNSvelocities(
 
         // Calculate the predicted velocity
         Float3 v_p = v
-            - BETA/rho*grad_p*devC_dt/phi
-            + 1.0/rho*div_phi_tau*devC_dt/phi
+            - BETA/devC_params.rho_f*grad_p*devC_dt/phi
+            + 1.0/devC_params.rho_f*div_phi_tau*devC_dt/phi
             //+ devC_dt*(f_g - f_i)
             + devC_dt*(-1.0*f_i)
             - v*dphi/phi
             - div_phi_vi_v*devC_dt/phi;
 
         // Report velocity components to stdout for debugging
-        /*const Float3 dv_pres = -BETA/rho*grad_p*devC_dt/phi;
-        const Float3 dv_diff = 1.0/rho*div_phi_tau*devC_dt/phi;
+        /*const Float3 dv_pres = -BETA/devC_params.rho_f*grad_p*devC_dt/phi;
+        const Float3 dv_diff = 1.0/devC_params.rho_f*div_phi_tau*devC_dt/phi;
         const Float3 dv_f = devC_dt*f_g;
         const Float3 dv_dphi = -1.0*v*dphi/phi;
         const Float3 dv_adv = -1.0*div_phi_vi_v*devC_dt/phi;
@@ -1680,7 +1676,6 @@ __global__ void findNSforcing(
         Float*  dev_ns_phi,
         Float*  dev_ns_dphi,
         Float3* dev_ns_v_p,
-        Float   rho,
         unsigned int nijac)
 {
     // 3D thread index
@@ -1726,16 +1721,16 @@ __global__ void findNSforcing(
 
             // Find forcing function coefficients
             //f1 = 0.0;
-            f1 = div_v_p*rho/devC_dt
-                + dot(grad_phi, v_p)*rho/(devC_dt*phi)
-                + dphi*rho/(devC_dt*devC_dt*phi);
+            f1 = div_v_p*devC_params.rho_f/devC_dt
+                + dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi)
+                + dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
             f2 = grad_phi/phi;
 
             // Report values terms in the forcing function for debugging
             /*
-            const Float f1t1 = div_v_p*rho/devC_dt;
-            const Float f1t2 = dot(grad_phi, v_p)*rho/(devC_dt*phi);
-            const Float f1t3 = dphi*rho/(devC_dt*devC_dt*phi);
+            const Float f1t1 = div_v_p*devC_params.rho_f/devC_dt;
+            const Float f1t2 = dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi);
+            const Float f1t3 = dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
             printf("[%d,%d,%d] f1 = %f\t"
                     "f1t1 = %f\tf1t2 = %f\tf1t3 = %f\tf2 = %f\n",
                     x,y,z, f1, f1t1, f1t2, f1t3, f2);
@@ -1914,7 +1909,6 @@ __global__ void updateNSvelocityPressure(
         Float3* dev_ns_v,
         Float3* dev_ns_v_p,
         Float*  dev_ns_epsilon,
-        Float   rho,
         int     bc_bot,
         int     bc_top)
 {
@@ -1953,7 +1947,7 @@ __global__ void updateNSvelocityPressure(
             = gradient(dev_ns_epsilon, x, y, z, dx, dy, dz);
 
         // Find new velocity
-        Float3 v = v_p - devC_dt/rho*grad_epsilon;
+        Float3 v = v_p - devC_dt/devC_params.rho_f*grad_epsilon;
 
         // Print values for debugging
         /* if (z == 0) {
@@ -2066,7 +2060,6 @@ __device__ Float dragCoefficient(Float re)
 // force).
 __global__ void findInteractionForce(
         Float*  dev_ns_phi,     // in
-        Float   rho,            // in
         Float*  dev_ns_d_avg,   // in
         Float3* dev_ns_vp_avg,  // in
         Float3* dev_ns_v,       // in
@@ -2102,16 +2095,17 @@ __global__ void findInteractionForce(
         const Float  v_rel_length = length(v_rel);
 
         const Float not_phi = 1.0 - phi;
-        const Float re = (phi*rho*d_avg)/devC_params.nu * v_rel_length;
+        const Float re = (phi*devC_params.rho_f*d_avg)/devC_params.mu * v_rel_length;
         const Float cd = dragCoefficient(re);
 
         Float3 fi = MAKE_FLOAT3(0.0, 0.0, 0.0);
         if (v_rel_length > 0.0) {
             if (phi <= 0.8)       // Ergun equation
-                fi = (150.0*devC_params.nu*not_phi*not_phi/(phi*d_avg*d_avg)
-                        + 1.75*not_phi*rho*v_rel_length/d_avg)*v_rel;
+                fi = (150.0*devC_params.mu*not_phi*not_phi/(phi*d_avg*d_avg)
+                        + 1.75*not_phi*devC_params.rho_f*v_rel_length/d_avg)*v_rel;
             else if (phi < 0.999) // Wen and Yu equation
-                fi = (3.0/4.0*cd*not_phi*pow(phi, -2.65)*devC_params.nu*rho
+                fi = (3.0/4.0*cd*not_phi*pow(phi,
+                            -2.65)*devC_params.mu*devC_params.rho_f
                         *v_rel_length/d_avg)*v_rel;
         }
 

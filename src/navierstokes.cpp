@@ -113,7 +113,7 @@ void DEM::checkNSstability()
     const Float dmin = fmin(dx, fmin(dy, dz));
 
     // Check the diffusion term using von Neumann stability analysis
-    if (params.nu*time.dt/(dmin*dmin) > 0.5) {
+    if (params.mu*time.dt/(dmin*dmin) > 0.5) {
         std::cerr << "Error: The time step is too large to ensure stability in "
             "the diffusive term of the fluid momentum equation.\n"
             "Decrease the viscosity, decrease the time step, and/or increase "

@@ -255,7 +255,7 @@ void DEM::readbin(const char *target)
 
         initNSmem();
 
-        ifs.read(as_bytes(params.nu), sizeof(params.nu));
+        ifs.read(as_bytes(params.mu), sizeof(params.mu));
 
         if (verbose == 1)
             cout << "  - Reading fluid values:\t\t\t  ";
@@ -274,7 +274,7 @@ void DEM::readbin(const char *target)
             }
         }
 
-        ifs.read(as_bytes(ns.rho), sizeof(Float));
+        ifs.read(as_bytes(params.rho_f), sizeof(Float));
         ifs.read(as_bytes(ns.p_mod_A), sizeof(Float));
         ifs.read(as_bytes(ns.p_mod_f), sizeof(Float));
         ifs.read(as_bytes(ns.p_mod_phi), sizeof(Float));
@@ -449,7 +449,7 @@ void DEM::writebin(const char *target)
 
         if (navierstokes == 1) { // Navier Stokes flow
 
-            ofs.write(as_bytes(params.nu), sizeof(params.nu));
+            ofs.write(as_bytes(params.mu), sizeof(params.mu));
 
             int x, y, z;
             for (z=0; z<ns.nz; z++) {
@@ -466,7 +466,7 @@ void DEM::writebin(const char *target)
                 }
             }
 
-            ofs.write(as_bytes(ns.rho), sizeof(Float));
+            ofs.write(as_bytes(params.rho_f), sizeof(Float));
             ofs.write(as_bytes(ns.p_mod_A), sizeof(Float));
             ofs.write(as_bytes(ns.p_mod_f), sizeof(Float));
             ofs.write(as_bytes(ns.p_mod_phi), sizeof(Float));

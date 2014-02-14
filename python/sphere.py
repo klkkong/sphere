@@ -264,8 +264,9 @@ class Spherebin:
         self.fluid = fluid
 
         if (self.fluid == True):
+
             # Fluid dynamic viscosity [N/(m/s)]
-            self.nu = numpy.zeros(1, dtype=numpy.float64)
+            self.mu = numpy.zeros(1, dtype=numpy.float64)
 
             # Fluid velocities [m/s]
             self.v_f = numpy.zeros(
@@ -497,7 +498,7 @@ class Spherebin:
             return 64
 
         if (self.fluid == True):
-            if (self.nu != other.nu):
+            if (self.mu != other.mu):
                 print(65)
                 return 65
             elif ((self.v_f != other.v_f).any()):
@@ -778,7 +779,7 @@ class Spherebin:
                 self.nb0 = numpy.zeros(1, dtype=numpy.uint32)
 
             if (self.fluid == True):
-                self.nu = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                self.mu = numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
                 self.v_f = numpy.empty(
                         (self.num[0], self.num[1], self.num[2], self.nd),
@@ -952,7 +953,7 @@ class Spherebin:
             fh.write(self.bonds_omega_t.astype(numpy.float64))
 
             if (self.fluid == True):
-                fh.write(self.nu.astype(numpy.float64))
+                fh.write(self.mu.astype(numpy.float64))
                 for z in range(self.num[2]):
                     for y in range(self.num[1]):
                         for x in range(self.num[0]):
@@ -2061,7 +2062,7 @@ class Spherebin:
                     self.L[2]/self.num[2]))
 
             # Diffusion term
-            if (self.nu[0]*self.time_dt[0]/(dx*dx) > 0.5):
+            if (self.mu[0]*self.time_dt[0]/(dx*dx) > 0.5):
                 raise Exception("Error: The time step is too large to ensure "
                         + "stability in the diffusive term of the fluid "
                         + "momentum equation.")
@@ -2089,9 +2090,9 @@ class Spherebin:
         self.time_file_dt[0] = file_dt
         self.time_step_count[0] = 0
 
-    def initFluid(self, nu = 8.9e-4):
+    def initFluid(self, mu = 8.9e-4):
         ''' Initialize the fluid arrays and the fluid viscosity '''
-        self.nu[0] = nu
+        self.mu[0] = mu
         self.p_f = numpy.ones((self.num[0], self.num[1], self.num[2]),
                 dtype=numpy.float64)
         self.v_f = numpy.zeros((self.num[0], self.num[1], self.num[2], self.nd),
@@ -3149,7 +3150,7 @@ class Spherebin:
         dvzvz_dz = (self.v_f[0,0,1:,2]**2 - self.v_f[0,0,:-1,2]**2)/(2.0*dz)
 
         # Diffusive contribution to velocity change
-        dvz_diff = 2.0*self.nu/rho*dvz_dz*self.time_dt
+        dvz_diff = 2.0*self.mu/rho*dvz_dz*self.time_dt
 
         # Advective contribution to velocity change
         dvz_adv = dvzvz_dz*self.time_dt
@@ -3189,7 +3190,7 @@ class Spherebin:
 
         plt.tight_layout()
         plt.savefig('../output/{}-diff_adv-t={:.2e}s-nu={:.2e}Pa-s.png'.format(\
-                self.sid, self.time_current[0], self.nu[0]))
+                self.sid, self.time_current[0], self.mu[0]))
         plt.clf()
         plt.close(fig)
 

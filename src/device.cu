@@ -178,7 +178,8 @@ __global__ void checkConstantValues(int* dev_equal,
             dev_params->V_b != devC_params.V_b ||
             dev_params->lambda_bar != devC_params.lambda_bar ||
             dev_params->nb0 != devC_params.nb0 ||
-            dev_params->nu != devC_params.nu)
+            dev_params->mu != devC_params.mu ||
+            dev_params->rho_f != devC_params.rho_f)
         *dev_equal = 2; // Not ok
 
 }
@@ -903,7 +904,6 @@ __host__ void DEM::startTime()
             // Determine the interaction force
             findInteractionForce<<<dimGridFluid, dimBlockFluid>>>(
                     dev_ns_phi,
-                    ns.rho,
                     dev_ns_d_avg,
                     dev_ns_vp_avg,
                     dev_ns_v,
@@ -1055,7 +1055,6 @@ __host__ void DEM::startTime()
                     dev_ns_dphi,
                     dev_ns_div_phi_vi_v,
                     dev_ns_div_phi_tau,
-                    ns.rho,
                     ns.bc_bot,
                     ns.bc_top,
                     dev_ns_fi,
@@ -1183,7 +1182,6 @@ __host__ void DEM::startTime()
                         dev_ns_phi,
                         dev_ns_dphi,
                         dev_ns_v_p,
-                        ns.rho,
                         nijac);
                 cudaThreadSynchronize();
                 if (PROFILING == 1)
@@ -1299,7 +1297,6 @@ __host__ void DEM::startTime()
                     dev_ns_v,
                     dev_ns_v_p,
                     dev_ns_epsilon,
-                    ns.rho,
                     ns.bc_bot,
                     ns.bc_top);
             cudaThreadSynchronize();

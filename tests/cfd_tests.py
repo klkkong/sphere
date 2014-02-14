@@ -17,8 +17,8 @@ orig.addParticle([0.5,0.5,0.5], 0.05)
 orig.defineWorldBoundaries([1.0,1.0,1.0])
 #orig.addParticle([5,5,5], 5)
 #orig.defineWorldBoundaries([500.0,500.0,500.0])
-orig.initFluid(nu = 0.0)
-#orig.initFluid(nu = 8.9e-4)
+orig.initFluid(mu = 0.0)
+#orig.initFluid(mu = 8.9e-4)
 orig.initTemporal(total = 0.2, file_dt = 0.01)
 #orig.g[2] = -10.0
 orig.time_file_dt = orig.time_dt*0.99
@@ -97,10 +97,10 @@ else:
 #print(numpy.mean(py.v_f[:,:,:,2]))
 orig.time_file_dt[0] = 1.0e-4
 orig.time_total[0] = 1.0e-3
-orig.initFluid(nu = 0.0)
-#orig.nu[0] = 4.0
-#orig.nu[0] = 0.0
-orig.nu[0] = 8.9e-4     # water
+orig.initFluid(mu = 0.0)
+#orig.mu[0] = 4.0
+#orig.mu[0] = 0.0
+orig.mu[0] = 8.9e-4     # water
 orig.p_f[:,:,-1] = 2.0
 #orig.time_total[0] = 0.01
 #orig.time_file_dt[0] = 0.001
@@ -122,7 +122,7 @@ dvz_dz = (py.v_f[0,0,1:,2] - py.v_f[0,0,:-1,2])/(2.0*dz)
 dvzvz_dz = (py.v_f[0,0,1:,2]**2 - py.v_f[0,0,:-1,2]**2)/(2.0*dz)
 
 # Diffusive contribution to velocity change
-dvz_diff = 2.0*py.nu/rho*dvz_dz*py.time_dt
+dvz_diff = 2.0*py.mu/rho*dvz_dz*py.time_dt
 
 # Advective contribution to velocity change
 dvz_adv = dvzvz_dz*py.time_dt
@@ -146,7 +146,7 @@ dvz_dz = (py.v_f[0,0,1:,2] - py.v_f[0,0,:-1,2])/(2.0*dz)
 dvzvz_dz = (py.v_f[0,0,1:,2]**2 - py.v_f[0,0,:-1,2]**2)/(2.0*dz)
 
 # Diffusive contribution to velocity change
-dvz_diff = 2.0*py.nu/rho*dvz_dz*py.time_dt
+dvz_diff = 2.0*py.mu/rho*dvz_dz*py.time_dt
 
 # Advective contribution to velocity change
 dvz_adv = dvzvz_dz*py.time_dt
@@ -163,7 +163,7 @@ else:
 '''
 orig.time_total[0] = 1.0e-1
 orig.time_file_dt[0] = 0.101*orig.time_total[0]
-orig.nu[0] = 0.0 # dont let diffusion add transient effects
+orig.mu[0] = 0.0 # dont let diffusion add transient effects
 orig.setFluidPressureModulation(A=1.0, f=1.0/orig.time_total[0])
 #orig.plotPrescribedFluidPressures()
 orig.writebin(verbose=False)
@@ -185,7 +185,7 @@ for it in range(1,py.status()): # gradient should be smooth in all output files
 # Fast pressure modulation test
 orig.time_total[0] = 1.0e-2
 orig.time_file_dt[0] = 0.101*orig.time_total[0]
-orig.nu[0] = 0.0 # dont let diffusion add transient effects
+orig.mu[0] = 0.0 # dont let diffusion add transient effects
 orig.setFluidPressureModulation(A=1.0, f=1.0/orig.time_total[0])
 orig.plotPrescribedFluidPressures()
 orig.writebin(verbose=False)
@@ -210,7 +210,7 @@ orig.time_total[0] = 1.0e-2
 orig.time_file_dt = orig.time_total/20
 orig.p_f[:,:,-1] = 1.0
 orig.g[2] = -1.0
-orig.nu[0] = 8.9e-4     # water
+orig.mu[0] = 8.9e-4     # water
 orig.bc_bot[0] = 1      # No-flow BC at bottom
 orig.writebin(verbose=False)
 #orig.run(dry=True)
