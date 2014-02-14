@@ -1515,7 +1515,7 @@ class Spherebin:
             periodic = 1,
             contactmodel = 2):
         '''
-        Initialize particle positions in loose, cubic configuration. Radii
+        Initialize particle positions in completely random configuration. Radii
         *must* be set beforehand. If the x and y boundaries are set as periodic,
         the particle centers will be placed all the way to the edge. On regular,
         non-periodic boundaries, the particles are restrained at the edges to
@@ -1745,7 +1745,7 @@ class Spherebin:
         self.periodic[0] = periodic
 
         # Calculate cells in grid
-        coarsegrid = numpy.floor(gridnum/2)
+        coarsegrid = numpy.floor(numpy.asarray(gridnum)/2)
 
         # World size
         r_max = numpy.amax(self.radius)

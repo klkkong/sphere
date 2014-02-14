@@ -7,7 +7,7 @@ import numpy
 import matplotlib.pyplot as plt
 
 print("### Coupled CFD-DEM tests ###")
-
+'''
 ## Stokes drag
 # Iteration and conservation of mass test
 # No gravity, no pressure gradients => no flow
@@ -34,12 +34,12 @@ py.writeVTKall()
 it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
 #test((it[:,1] < 2000).all(), "Convergence rate:\t\t")
 
-t = numpy.empty(py.status()+1)
-acc = numpy.empty(py.status()+1)
-vel = numpy.empty(py.status()+1)
-pos = numpy.empty(py.status()+1)
+t = numpy.empty(py.status())
+acc = numpy.empty(py.status())
+vel = numpy.empty(py.status())
+pos = numpy.empty(py.status())
 for i in range(py.status()):
-    py.readstep(i, verbose=False)
+    py.readstep(i+1, verbose=False)
     t[i] = py.time_current[0]
     acc[i] = py.force[0,2]/(V_sphere(py.radius[0])*py.rho[0])
     vel[i] = py.vel[0,2]
@@ -59,13 +59,13 @@ plt.savefig('./' + py.sid + '-stokes.' + format)
 plt.clf()
 plt.close(fig)
 #cleanup(orig)
-
-
 '''
+
+
 ## Sedimentation of many particles
 orig = sphere.Spherebin("sedimentation", np = 2000, fluid = True)
 orig.radius[:] = 0.05
-orig.initRandomPos(gridnum = [20, 20, 9000])
+orig.initRandomGridPos(gridnum = [20, 20, 9000])
 orig.initFluid()
 orig.initTemporal(total = 3.0, file_dt = 0.01)
 orig.g[2] = -9.81
@@ -73,4 +73,3 @@ orig.writebin()
 orig.run(dry=True)
 orig.run()
 orig.writeVTKall()
-'''

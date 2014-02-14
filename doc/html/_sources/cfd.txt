@@ -254,12 +254,12 @@ by considering the previous and current porosity.
 Particle-fluid interaction
 --------------------------
 The momentum exchange of the granular and fluid phases follows the procedure
-outlined by Shamy and Zhegal 2005. The fluid and particle interaction is based
-on the concept of drag, where the magnitude is based on semi-empirical
-relationships. The drag force scales linearly with the relative difference in
-velocity between the fluid and particle phase. On the base of Newton's third
-law, the resulting drag force is applied with opposite signs to the particle and
-fluid.
+outlined by Gidaspow 1992 and Shamy and Zhegal 2005. The fluid and particle
+interaction is based on the concept of drag, where the magnitude is based on
+semi-empirical relationships. The drag force scales linearly with the relative
+difference in velocity between the fluid and particle phase. On the base of
+Newton's third law, the resulting drag force is applied with opposite signs to
+the particle and fluid.
 
 For fluid cells with porosities (:math:`\phi`) less or equal to 0.8, the drag
 force is based on the Ergun (1952) equation:
