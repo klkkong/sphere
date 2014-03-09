@@ -1510,11 +1510,33 @@ class sim:
                     + " large particles, and " + str(self.np[0] - nlarge)
                     + " small")
 
+    def contactModel(self, contactmodel):
+        '''
+        Define which contact model to use for the tangential component of
+        particle-particle interactions. The elastic-viscous-frictional contact
+        model (2) is considered to be the most realistic contact model, while
+        the viscous-frictional contact model is significantly faster.
 
-    def initRandomPos(self,
-            gridnum = numpy.array([12, 12, 36]),
-            periodic = 1,
-            contactmodel = 2):
+        :param contactmodel: The type of tangential contact model to use
+            (visco-frictional = 1, elasto-visco-frictional = 2)
+        :type contactmodel: int
+        '''
+        self.contactmodel[0] = contactmodel
+
+    def periodicBoundariesXY(self):
+        '''
+        Set the x and y boundary conditions to be periodic.
+        '''
+        self.periodic[0] = 1
+
+    def periodicBoundariesX(self):
+        '''
+        Set the x boundary conditions to be periodic.
+        '''
+        self.periodic[0] = 2
+
+
+    def initRandomPos(self, gridnum = numpy.array([12, 12, 36])):
         '''
         Initialize particle positions in completely random configuration. Radii
         *must* be set beforehand. If the x and y boundaries are set as periodic,
@@ -1525,14 +1547,7 @@ class sim:
         :param gridnum: The number of sorting cells in each spatial direction
             (default = [12, 12, 36])
         :type gridnum: numpy.array
-        :param periodic: Set if the x and y boundaries are periodic (no = 0, yes 
-            = 1, default = 1)
-        :type periodic: int
-        :param contactmodel: The type of tangential contact model to use
-            (visco-frictional = 1, elasto-visco-frictional = 2, default = 2)
-        :type contactmodel: int
         '''
-        self.periodic[0] = periodic
 
         # Calculate cells in grid
         self.num = gridnum
@@ -1566,8 +1581,6 @@ class sim:
 
         # Print newline
         print()
-
-        self.contactmodel[0] = contactmodel
 
 
     def defineWorldBoundaries(self, L, origo=[0.0, 0.0, 0.0]):
@@ -1608,9 +1621,11 @@ class sim:
 
 
     def initGrid(self):
-        ''' Initialize grid suitable for the particle positions set previously.
-            The margin parameter adjusts the distance (in no. of max. radii)
-            from the particle boundaries.
+        '''
+        Initialize grid suitable for the particle positions set previously.
+        The margin parameter adjusts the distance (in no. of max. radii)
+        from the particle boundaries.
+        *Important*: The particle radii have to be set beforehand.
         '''
 
         # Cell configuration
@@ -1629,17 +1644,16 @@ class sim:
             self.w_x[0] = self.L[0]
 
 
-    # Generate grid based on particle positions
-    def initGridAndWorldsize(self,
-            margin = 2.0,
-            periodic = 1,
-            contactmodel = 2):
-        ''' Initialize grid suitable for the particle positions set previously.
-            The margin parameter adjusts the distance (in no. of max. radii)
-            from the particle boundaries.
+    def initGridAndWorldsize(self, margin = 2.0):
         '''
+        Initialize grid suitable for the particle positions set previously.
+        The margin parameter adjusts the distance (in no. of max. radii)
+        from the particle boundaries. If the upper wall is dynamic, it is placed
+        at the top boundary of the world.
 
-        self.periodic[0] = periodic
+        :param margin: Distance to world boundary in no. of max. particle radii
+        :type margin: float
+        '''
 
         # Cell configuration
         r_max = numpy.amax(self.radius)
@@ -1663,27 +1677,24 @@ class sim:
             raise Exception("Error: The grid must be at least 3 cells in each "
             + "direction, num = " + str(self.num))
 
-        self.contactmodel[0] = contactmodel
-
         # Put upper wall at top boundary
         if (self.nw > 0):
             self.w_x[0] = self.L[0]
 
 
-    # Initialize particle positions to regular, grid-like, non-overlapping
-    # configuration
-    def initGridPos(self, gridnum = numpy.array([12, 12, 36]),
-            periodic = 1,
-            contactmodel = 2):
-        ''' Initialize particle positions in loose, cubic configuration.
-            Radii must be set beforehand.
-            xynum is the number of rows in both x- and y- directions.
+    def initGridPos(self, gridnum = numpy.array([12, 12, 36])):
+        '''
+        Initialize particle positions in loose, cubic configuration.
+        ``gridnum`` is the number of cells in the x, y and z directions.
+        *Important*: The particle radii and the boundary conditions (periodic or
+        not) for the x and y boundaries have to be set beforehand.
+
+        :param gridnum: The number of particles in x, y and z directions
+        :type gridnum: numpy.array
         '''
 
-        self.periodic[0] = periodic
-
         # Calculate cells in grid
-        self.num = gridnum
+        self.num = numpy.asarray(gridnum)
 
         # World size
         r_max = numpy.amax(self.radius)
@@ -1727,23 +1738,24 @@ class sim:
                     self.x[i,0] += 0.5*cellsize
                     self.x[i,1] += 0.5*cellsize
 
-        self.contactmodel[0] = contactmodel
-
         # Readjust grid to correct size
         if (self.periodic[0] == 1):
             self.num[0] += 1
             self.num[1] += 1
 
 
-    def initRandomGridPos(self,
-            gridnum = numpy.array([12, 12, 32]),
-            periodic = 1,
-            contactmodel = 2):
-        ''' Initialize particle positions in loose, cubic configuration.
-            Radii must be set beforehand.
-            xynum is the number of rows in both x- and y- directions.
+    def initRandomGridPos(self, gridnum = numpy.array([12, 12, 32])):
         '''
-        self.periodic[0] = periodic
+        Initialize particle positions in loose, cubic configuration with some
+        variance. ``gridnum`` is the number of cells in the x, y and z
+        directions.  *Important*: The particle radii and the boundary conditions
+        (periodic or not) for the x and y boundaries have to be set beforehand.
+        The world size and grid height (in the z direction) is readjusted to fit
+        the particle positions.
+
+        :param gridnum: The number of particles in x, y and z directions
+        :type gridnum: numpy.array
+        '''
 
         # Calculate cells in grid
         coarsegrid = numpy.floor(numpy.asarray(gridnum)/2)
@@ -1776,12 +1788,11 @@ class sim:
                 self.x[i,d] = gridpos[d] * cellsize \
                         + ((cellsize-r) - r) * numpy.random.random_sample() + r
 
-        self.contactmodel[0] = contactmodel
-
         # Calculate new grid with cell size equal to max. particle diameter
         x_max = numpy.max(self.x[:,0] + self.radius)
         y_max = numpy.max(self.x[:,1] + self.radius)
         z_max = numpy.max(self.x[:,2] + self.radius)
+
         # Adjust size of world
         self.num[0] = numpy.ceil(x_max/cellsize)
         self.num[1] = numpy.ceil(y_max/cellsize)
@@ -1789,11 +1800,18 @@ class sim:
         self.L = self.num * cellsize
 
     def createBondPair(self, i, j, spacing=-0.1):
-        ''' Bond particles i and j. Particle j is moved adjacent to particle i,
+        '''
+        Bond particles i and j. Particle j is moved adjacent to particle i,
         and oriented randomly.
-        @param spacing (float) The inter-particle distance prescribed. Positive
+
+        :param i: Index of first particle in bond
+        :type i: int
+        :param j: Index of second particle in bond
+        :type j: int
+        :param spacing: The inter-particle distance prescribed. Positive
         values result in a inter-particle distance, negative equal an overlap.
         The value is relative to the sum of the two radii.
+        :type spacing: float
         '''
 
         x_i = self.x[i]
@@ -1838,14 +1856,18 @@ class sim:
             raise Exception("Error, something went wrong in createBondPair")
 
 
-    def random2bonds(self, ratio=0.3, spacing=-0.1):
-        ''' Bond an amount of particles in two-particle clusters @param ratio:
-        The amount of particles to bond, values in ]0.0;1.0] (float)
-        @param spacing: The distance relative to the sum of radii between bonded
-        particles, neg. values denote an overlap. Values in ]0.0,inf[ (float).
-        The particles should be initialized beforehand.
-        Note: The actual number of bonds is likely to be somewhat smaller than
-        specified, due to the random selection algorithm.
+    def randomBondPairs(self, ratio=0.3, spacing=-0.1):
+        '''
+        Bond an amount of particles in two-particle clusters. The particles
+        should be initialized beforehand.  Note: The actual number of bonds is
+        likely to be somewhat smaller than specified, due to the random
+        selection algorithm.
+
+        :param ratio: The amount of particles to bond, values in ]0.0;1.0]
+        :type ratio: float
+        :param spacing: The distance relative to the sum of radii between bonded
+        particles, neg. values denote an overlap. Values in ]0.0,inf[.
+        :type spacing: float
         '''
 
         bondparticles = numpy.unique(\
@@ -1860,7 +1882,10 @@ class sim:
             self.createBondPair(bondparticles[n,0], bondparticles[n,1], spacing)
 
     def zeroKinematics(self):
-        'Zero kinematics of particles'
+        '''
+        Zero all kinematic parameters of the particles. This function is useful
+        when output from one simulation is reused in another simulation.
+        '''
 
         self.vel = numpy.zeros(self.np*self.nd, dtype=numpy.float64)\
                 .reshape(self.np, self.nd)
@@ -1874,7 +1899,13 @@ class sim:
                 .reshape(self.np, 2)
 
     def adjustUpperWall(self, z_adjust = 1.1):
-        'Included for legacy purposes, calls adjustWall with idx=0'
+        '''
+        Included for legacy purposes, calls :func:`adjustWall()` with ``idx=0``.
+
+        :param z_adjust: Increase the world and grid size by this amount to
+        allow for wall movement.
+        :type z_adjust: float
+        '''
 
         # Initialize upper wall
         self.nw = numpy.ones(1)
@@ -1891,7 +1922,16 @@ class sim:
         self.adjustWall(idx=0, adjust = z_adjust)
 
     def adjustWall(self, idx, adjust = 1.1):
-        'Adjust grid and dynamic wall to max. particle position'
+        '''
+        Adjust grid and dynamic wall to max. particle position
+
+        :param: idx: The wall to adjust. 0 = +z, upper wall (default), 1 = -x,
+        left wall, 2 = +x, right wall, 3 = -y, front wall, 4 = +y, back wall.
+        :type idx: int
+        :param z_adjust: Increase the world and grid size by this amount to
+        allow for wall movement.
+        :type z_adjust: float
+        '''
 
         if (idx == 0):
             dim = 2
@@ -1919,11 +1959,18 @@ class sim:
                 *(cellsize/2.0)**3])
 
 
-    def consolidate(self, deviatoric_stress = 10e3,
-            periodic = 1):
-        ''' Setup consolidation experiment. Specify the upper wall
-            deviatoric stress in Pascal, default value is 10 kPa.
+    def consolidate(self, normal_stress = 10e3):
         '''
+        Setup consolidation experiment. Specify the upper wall normal stress in
+        Pascal, default value is 10 kPa.
+        
+        :param normal_stress: The normal stress to apply from the upper wall
+        :type normal_stress: float
+        '''
+
+        if (normal_stress <= 0.0):
+            raise Exception('consolidate() error: The normal stress should be '
+            'a positive value, but is ' + str(normal_stress) + ' Pa')
 
         # Zero the kinematics of all particles
         self.zeroKinematics()
@@ -1933,12 +1980,16 @@ class sim:
 
         # Set the top wall BC to a value of deviatoric stress
         self.wmode = numpy.array([1])
-        self.w_devs = numpy.ones(1) * deviatoric_stress
+        self.w_devs = numpy.ones(1) * normal_stress
 
-    def uniaxialStrainRate(self, wvel = -0.001,
-            periodic = 1):
-        ''' Setup consolidation experiment. Specify the upper wall
-            velocity in m/s, default value is -0.001 m/s (i.e. downwards).
+    def uniaxialStrainRate(self, wvel = -0.001):
+        '''
+        Setup consolidation experiment. Specify the upper wall velocity in m/s,
+        default value is -0.001 m/s (i.e. downwards).
+
+        :param wvel: Upper wall velocity. Negative values mean that the wall
+        moves downwards.
+        :type wvel: float
         '''
 
         # zero kinematics
@@ -1949,10 +2000,17 @@ class sim:
         self.wmode = numpy.array([2]) # strain rate BC
         self.w_vel = numpy.array([wvel])
 
-    def triaxial(self, wvel = -0.001, deviatoric_stress = 10.0e3):
-        ''' Setup triaxial experiment. The upper wall is moved at a fixed
-            velocity in m/s, default values is -0.001 m/s (i.e. downwards).
-            The side walls are exerting a deviatoric stress
+    def triaxial(self, wvel = -0.001, normal_stress = 10.0e3):
+        '''
+        Setup triaxial experiment. The upper wall is moved at a fixed velocity
+        in m/s, default values is -0.001 m/s (i.e. downwards). The side walls
+        are exerting a defined normal stress.
+
+        :param wvel: Upper wall velocity. Negative values mean that the wall
+        moves downwards.
+        :type wvel: float
+        :param normal_stress: The normal stress to apply from the upper wall.
+        :type normal_stress: float
         '''
 
         # zero kinematics
@@ -1962,7 +2020,7 @@ class sim:
         self.nw[0] = 5  # five dynamic walls
         self.wmode  = numpy.array([2,1,1,1,1]) # BCs (vel, stress, stress, ...)
         self.w_vel  = numpy.array([1,0,0,0,0]) * wvel
-        self.w_devs = numpy.array([0,1,1,1,1]) * deviatoric_stress
+        self.w_devs = numpy.array([0,1,1,1,1]) * normal_stress
         self.w_n = numpy.array(([0,0,-1], [-1,0,0], [1,0,0], [0,-1,0], [0,1,0]),
                 dtype=numpy.float64)
         self.w_x = numpy.zeros(5)
@@ -1972,13 +2030,15 @@ class sim:
             self.adjustWall(idx=i)
 
 
-    def shear(self,
-            shear_strain_rate = 1,
-            periodic = 1):
-        ''' Setup shear experiment. Specify the upper wall
-            deviatoric stress in Pascal, default value is 10 kPa.
-            The shear strain rate is the shear length divided by the
-            initial height per second.
+    def shear(self, shear_strain_rate = 1.0):
+        '''
+        Setup shear experiment. The shear strain rate is the shear velocity
+        divided by the initial height per second. The shear movement is along
+        the positive x axis. The function zeroes the tangential wall viscosity
+        (gamma_wt) and the wall friction coefficients (mu_ws, mu_wn).
+
+        :param shear_strain_rate: The shear strain rate to use.
+        :type shear_strain_rate: float
         '''
 
         # Find lowest and heighest point
@@ -1995,14 +2055,9 @@ class sim:
         # zero kinematics
         self.zeroKinematics()
 
-        # set the thickness of the horizons of fixed particles
-        #fixheight = 2*cellsize
-        #fixheight = cellsize
-
         # Fix horizontal velocity to 0.0 of lowermost particles
         d_max_below = numpy.max(self.radius[numpy.nonzero(self.x[:,2] <
             (z_max-z_min)*0.3)])*2.0
-        #I = numpy.nonzero(self.x[:,2] < (z_min + fixheight))
         I = numpy.nonzero(self.x[:,2] < (z_min + d_max_below))
         self.fixvel[I] = 1
         self.angvel[I,0] = 0.0
@@ -2014,7 +2069,6 @@ class sim:
         # Fix horizontal velocity to specific value of uppermost particles
         d_max_top = numpy.max(self.radius[numpy.nonzero(self.x[:,2] >
             (z_max-z_min)*0.7)])*2.0
-        #I = numpy.nonzero(self.x[:,2] > (z_max - fixheight))
         I = numpy.nonzero(self.x[:,2] > (z_max - d_max_top))
         self.fixvel[I] = 1
         self.angvel[I,0] = 0.0
@@ -2023,9 +2077,7 @@ class sim:
         self.vel[I,0] = (z_max-z_min)*shear_strain_rate
         self.vel[I,1] = 0.0 # y-dim
 
-
-        # Set wall viscosities to zero
-        self.gamma_wn[0] = 0.0
+        # Set wall tangential viscosity to zero
         self.gamma_wt[0] = 0.0
 
         # Set wall friction coefficients to zero
@@ -2036,9 +2088,21 @@ class sim:
             current = 0.0,
             file_dt = 0.05,
             step_count = 0):
-        ''' Set temporal parameters for the simulation.
-            Particle radii, physical parameters, and the optional fluid grid
-            need to be set prior to these.
+        '''
+        Set temporal parameters for the simulation. *Important*: Particle radii,
+        physical parameters, and the optional fluid grid need to be set prior to
+        these. The automatically selected value of the computational time step
+        for the DEM is checked for stability in the CFD solution if fluid
+        simulation is included.
+
+        :param total: The time at which to end the simulation [s]
+        :type total: float
+        :param current: The current time [s] (default = 0.0 s)
+        :type total: float
+        :param file_dt: The interval between output files [s] (default = 0.05 s)
+        :type total: float
+        :step_count: The number of the first output file (default = 0)
+        :type step_count: int
         '''
 
         r_min = numpy.amin(self.radius)
@@ -2091,7 +2155,14 @@ class sim:
         self.time_step_count[0] = 0
 
     def initFluid(self, mu = 8.9e-4):
-        ''' Initialize the fluid arrays and the fluid viscosity '''
+        '''
+        Initialize the fluid arrays and the fluid viscosity. The default value
+        of ``mu`` equals the dynamic viscosity of water at 25 degrees Celcius.
+        The value for water at 0 degrees Celcius is 17.87e-4 kg/(m*s).
+        
+        :param mu: The fluid dynamic viscosity [kg/(m*s)]
+        :type mu: float
+        '''
         self.mu[0] = mu
         self.p_f = numpy.ones((self.num[0], self.num[1], self.num[2]),
                 dtype=numpy.float64)
@@ -2110,14 +2181,42 @@ class sim:
             k_n = 1.16e9,
             k_t = 1.16e9,
             k_r = 0,
-            gamma_n = 0,
-            gamma_t = 0,
-            gamma_r = 0,
-            gamma_wn = 1e4,
-            gamma_wt = 1e4,
+            gamma_n = 0.0,
+            gamma_t = 0.0,
+            gamma_r = 0.0,
+            gamma_wn = 1.0e4,
+            gamma_wt = 1.0e4,
             capillaryCohesion = 0):
-        ''' Initialize particle parameters to default values.
-            Radii must be set prior to calling this function.
+        '''
+        Initialize particle parameters to default values.
+
+        :param mu_s: The coefficient of static friction between particles [-]
+        :type mu_s: float
+        :param mu_d: The coefficient of dynamic friction between particles [-]
+        :type mu_d: float
+        :param rho: The density of the particle material [kg/(m^3)]
+        :type rho: float
+        :param k_n: The normal stiffness of the particles [N/m]
+        :type k_n: float
+        :param k_t: The tangential stiffness of the particles [N/m]
+        :type k_t: float
+        :param k_r: The rolling stiffness of the particles [N/rad] *Parameter
+            not used*
+        :type k_r: float
+        :param gamma_n: Particle-particle contact normal viscosity [Ns/m]
+        :type gamma_n: float
+        :param gamma_t: Particle-particle contact tangential viscosity [Ns/m]
+        :type gamma_t: float
+        :param gamma_r: Particle-particle contact rolling viscosity *Parameter 
+            not used*
+        :type gamma_r: float
+        :param gamma_wn: Wall-particle contact normal viscosity [Ns/m]
+        :type gamma_wn: float
+        :param gamma_wt: Wall-particle contact tangential viscosity [Ns/m]
+        :type gamma_wt: float
+        :param capillaryCohesion: Enable particle-particle capillary cohesion
+            interaction model (0 = no (default), 1 = yes)
+        :type capillaryCohesion: int
         '''
 
         # Particle material density, kg/m^3
@@ -2189,7 +2288,14 @@ class sim:
 
 
     def bond(self, i, j):
-        ''' Create a bond between particles i and j '''
+        '''
+        Create a bond between particles with index i and j
+
+        :param i: Index of first particle in bond
+        :type i: int
+        :param j: Index of second particle in bond
+        :type j: int
+        '''
 
         self.lambda_bar[0] = 1.0 # Radius multiplier to parallel-bond radii
 
