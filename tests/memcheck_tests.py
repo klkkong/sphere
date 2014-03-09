@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 from pytestutils import *
+import sphere
 
 #### Input/output tests ####
 print("### Memory tests ###")
 
 # Generate data in python
-orig = Spherebin(np = 100, nw = 1, sid = "test-initgrid")
+orig = sphere.sim(np = 100, nw = 1, sid = "test-initgrid")
 orig.generateRadii(histogram = False)
 orig.defaultParams()
 orig.initRandomGridPos()

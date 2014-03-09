@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 from pytestutils import *
+import sphere
 
 #### Input/output tests ####
 print("### Input/output tests ###")
 
 # Generate data in python
-orig = Spherebin(np=100, nw=1, sid="test-initgrid")
+orig = sphere.sim(np=100, nw=1, sid="test-initgrid")
 orig.generateRadii(histogram=False)
 orig.defaultParams()
 orig.g[2] = 0.0
@@ -19,19 +20,19 @@ orig.writebin(verbose=False)
 compare(orig, orig, "Comparison:")
 
 # Test Python IO routines
-py = Spherebin()
+py = sphere.sim()
 py.readbin("../input/" + orig.sid + ".bin", verbose=False)
 compare(orig, py, "Python IO:")
 
 # Test C++ IO routines
 #orig.run(verbose=False, hideinputfile=True)
 orig.run(verbose=True, hideinputfile=True)
-cpp = Spherebin()
+cpp = sphere.sim()
 cpp.readbin("../output/" + orig.sid + ".output00000.bin", verbose=False)
 compare(orig, cpp, "C++ IO:   ")
 
 # Test CUDA IO routines
-cuda = Spherebin()
+cuda = sphere.sim()
 cuda.readbin("../output/" + orig.sid + ".output00001.bin", verbose=False)
 cuda.time_current = orig.time_current
 cuda.time_step_count = orig.time_step_count

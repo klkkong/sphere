@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 from pytestutils import *
+import sphere
 
 #### Porosity tests ####
 print("### porosity tests ###")
 
 # Generate data in python
-orig = Spherebin(np = 100, nw = 1, sid = "test-initgrid")
+orig = sphere.sim(np = 100, nw = 1, sid = "test-initgrid")
 orig.generateRadii(histogram = False)
 orig.defaultParams()
 orig.initRandomGridPos()
@@ -14,7 +15,7 @@ orig.time_total = 2.0*orig.time_dt;
 orig.time_file_dt = orig.time_dt;
 orig.writebin(verbose=False)
 
-def testPorosities(spherebin):
+def testPorosities(sim):
 
     # Number of vertical slices
     slicevals = [1, 2, 4]
@@ -22,16 +23,16 @@ def testPorosities(spherebin):
     for slices in slicevals:
 
         # Find correct value of bulk porosity
-        n_bulk = spherebin.bulkPorosity()
+        n_bulk = sim.bulkPorosity()
         #print("Bulk: " + str(n_bulk))
 
-        porosity = spherebin.porosity(slices = slices)[0]
+        porosity = sim.porosity(slices = slices)[0]
         #print("Avg: " + str(numpy.average(porosity)))
         #print(porosity)
 
         # Check if average of porosity function values matches the bulk porosity
         compareFloats(n_bulk, numpy.average(porosity), \
-                spherebin.sid + ": Porosity average to bulk porosity ("\
+                sim.sid + ": Porosity average to bulk porosity ("\
                 + str(i) + "/" + str(len(slicevals)) + "):")
         i += 1
 
@@ -41,7 +42,7 @@ testPorosities(orig)
 # Simple cubic packing of uniform spheres
 # The theoretical porosity is (4/3*pi*r^3)/(2r)^3 = 0.476
 sidelen = 10
-cubic = Spherebin(np = sidelen**3, sid='cubic')
+cubic = sphere.sim(np = sidelen**3, sid='cubic')
 radius = 1.0
 cubic.generateRadii(psd='uni', radius_mean=radius, radius_variance=0.0, histogram=False)
 for ix in range(sidelen):

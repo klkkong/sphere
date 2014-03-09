@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from pytestutils import *
-from sphere import *
+import sphere
 
 def printKinematics(sb):
     print('bonds_delta_n'); print(sb.bonds_delta_n)
@@ -36,7 +36,7 @@ for d in distances:
     radii = 0.5
     print("## Inter-particle distance: " + str(d/radii) + " radii")
 
-    sb = Spherebin(np=2, sid='bondtest')
+    sb = sphere.sim(np=2, sid='bondtest')
     cleanup(sb)
 
     # setup particles, bond, and simulation

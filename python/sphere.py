@@ -14,7 +14,7 @@ numpy.seterr(all='warn', over='raise')
 # `../src/constants.h`.
 VERSION=1.0
 
-class Spherebin:
+class sim:
     '''
     Class containing all ``sphere`` data.
 
@@ -303,7 +303,7 @@ class Spherebin:
 
     def __cmp__(self, other):
         '''
-        Called when to Spherebin objects are compared. Returns 0 if the values
+        Called when to sim objects are compared. Returns 0 if the values
         are identical.
         TODO: Replace print(#) with print("field name")
         '''
@@ -1030,7 +1030,7 @@ class Spherebin:
         '''
 
         lastfile = status(self.sid)
-        sb = Spherebin(fluid = self.fluid)
+        sb = sim(fluid = self.fluid)
         for i in range(lastfile+1):
             fn = "../output/{0}.output{1:0=5}.bin".format(self.sid, i)
             sb.sid = self.sid + ".{:0=5}".format(i)
@@ -3346,7 +3346,7 @@ def thinsectionVideo(project,
 
     # Render thin section images (png)
     lastfile = status(project)
-    sb = Spherebin(fluid = self.fluid)
+    sb = sim(fluid = self.fluid)
     for i in range(lastfile+1):
         fn = "../output/{0}.output{1:0=5}.bin".format(project, i)
         sb.sid = project + ".output{:0=5}".format(i)
@@ -3394,7 +3394,7 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
         Esum = numpy.zeros(lastfile+1)
 
         # Read energy values from project binaries
-        sb = Spherebin(fluid = self.fluid)
+        sb = sim(fluid = self.fluid)
         for i in range(lastfile+1):
             fn = "../output/{0}.output{1:0=5}.bin".format(project, i)
             sb.readbin(fn, verbose = False)
@@ -3492,7 +3492,7 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
     elif method == 'walls':
 
         # Read energy values from project binaries
-        sb = Spherebin(fluid = self.fluid)
+        sb = sim(fluid = self.fluid)
         for i in range(lastfile+1):
             fn = "../output/{0}.output{1:0=5}.bin".format(project, i)
             sb.readbin(fn, verbose = False)
@@ -3564,7 +3564,7 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
     elif method == 'triaxial':
 
         # Read energy values from project binaries
-        sb = Spherebin(fluid = self.fluid)
+        sb = sim(fluid = self.fluid)
         for i in range(lastfile+1):
             fn = "../output/{0}.output{1:0=5}.bin".format(project, i)
             sb.readbin(fn, verbose = False)
@@ -3618,7 +3618,7 @@ def visualize(project, method = 'energy', savefig = True, outformat = 'png'):
 
     elif method == 'shear':
 
-        sb = Spherebin(fluid = self.fluid)
+        sb = sim(fluid = self.fluid)
         # Read stress values from project binaries
         for i in range(lastfile+1):
             fn = "../output/{0}.output{1:0=5}.bin".format(project, i)
@@ -3848,17 +3848,17 @@ def status(project):
         if fh is not None:
             fh.close()
 
-def cleanup(spherebin):
+def cleanup(sim):
     '''
     Removes the input/output files and images belonging to the object simulation
     ID from the ``input/``, ``output/`` and ``img_out/`` folders.
 
-    :param spherebin: A Spherebin object
-    :type spherebin: Spherebin
+    :param spherebin: A sim object
+    :type spherebin: sim
     '''
-    subprocess.call("rm -f ../input/" + spherebin.sid + ".bin", shell=True)
-    subprocess.call("rm -f ../output/" + spherebin.sid + ".*.bin", shell=True)
-    subprocess.call("rm -f ../img_out/" + spherebin.sid + ".*", shell=True)
+    subprocess.call("rm -f ../input/" + sim.sid + ".bin", shell=True)
+    subprocess.call("rm -f ../output/" + sim.sid + ".*.bin", shell=True)
+    subprocess.call("rm -f ../img_out/" + sim.sid + ".*", shell=True)
 
 def vector_norm(ndvector):
     '''

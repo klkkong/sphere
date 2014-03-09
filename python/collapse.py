@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Import sphere functionality
-from sphere import *
+import sphere
 
 ### EXPERIMENT SETUP ###
 initialization = True
@@ -18,7 +18,7 @@ sim_id = "collapse"
 ### INITIALIZATION ###
 
 # New class
-init = Spherebin(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
+init = sphere.sim(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
 
 # Save radii
 init.generateRadii(radius_mean = 0.1)
@@ -49,7 +49,7 @@ if (initialization == True):
 ### COLLAPSE ###
 
 # New class
-coll = Spherebin(np = init.np, nw = init.nw, sid = sim_id)
+coll = sphere.sim(np = init.np, nw = init.nw, sid = sim_id)
 
 # Read last output file of initialization step
 lastf = status(sim_id + "-init")

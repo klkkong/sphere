@@ -14,7 +14,7 @@ import numpy
 ### SIMULATION SETUP
 
 # Create a sphere object with two preallocated particles and a simulation ID
-SB = sphere.Spherebin(np = 2, sid = 'collision')
+SB = sphere.sim(np = 2, sid = 'collision')
 
 SB.radius[:] = 0.3 # set radii to 0.3 m
 
@@ -57,6 +57,6 @@ sphere.visualize(SB.sid, method = 'energy')
 SB.render()
 
 # Alternative visualization using ParaView. See the documentation of
-# ``Spherebin.writeVTKall()`` for more information about displaying the
+# ``sim.writeVTKall()`` for more information about displaying the
 # particles in ParaView.
 SB.writeVTKall()

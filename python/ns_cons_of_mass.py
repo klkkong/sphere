@@ -17,7 +17,7 @@ np = 1e4
 sim_id = "ns"
 
 # New class
-init = sphere.Spherebin(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
+init = sphere.sim(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
 
 
 # Save radii
@@ -73,7 +73,7 @@ init.writeVTKall()
 
 project = init.sid
 lastfile = status(init.sid)
-sb = sphere.Spherebin()
+sb = sphere.sim()
 time = numpy.zeros(lastfile+1)
 sum_op_f = numpy.zeros(lastfile+1)
 for i in range(lastfile+1):

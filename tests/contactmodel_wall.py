@@ -13,7 +13,7 @@ import pytestutils
 ## Linear elastic collisions
 
 # Normal impact: Check for conservation of momentum (sum(v_i*m_i))
-orig = sphere.Spherebin(np=1, nw=0, sid='contactmodeltest')
+orig = sphere.sim(np=1, nw=0, sid='contactmodeltest')
 sphere.cleanup(orig)
 orig.radius[:] = 1.0
 orig.x[0,:] = [5.0, 5.0, 1.05]
@@ -39,7 +39,7 @@ pytestutils.compareFloats(moment_before, moment_after,\
         "Elastic normal wall collision (2/2):")
 
 # Oblique impact: Check for conservation of momentum (sum(v_i*m_i))
-orig = sphere.Spherebin(np=1, nw=0, sid='contactmo')
+orig = sphere.sim(np=1, sid='contactmodeltest')
 orig.radius[:] = 1.0
 orig.x[0,:] = [5.0, 5.0, 1.05]
 orig.vel[0,2] = -0.1
@@ -61,7 +61,7 @@ pytestutils.compareFloats(moment_before, moment_after,\
 
 # Normal impact with normal viscous damping. Test that the lost kinetic energy
 # is saved as dissipated viscous energy
-orig = sphere.Spherebin(np=1, nw=0, sid='contactmodeltest')
+orig = sphere.sim(np=1, sid='contactmodeltest')
 orig.radius[:] = 1.0
 orig.x[0,:] = [5.0, 5.0, 1.05]
 orig.vel[0,2] = -0.1
@@ -80,7 +80,7 @@ pytestutils.compareFloats(Ekin_before, Ekin_after+Ev_after,\
         "Viscoelastic normal wall collision:", tolerance=0.03)
 
 # Oblique impact: Check for conservation of momentum (sum(v_i*m_i))
-orig = sphere.Spherebin(np=1, nw=0, sid='contactmodeltest')
+orig = sphere.sim(np=1, sid='contactmodeltest')
 orig.radius[:] = 1.0
 orig.x[0,:] = [5.0, 5.0, 1.05]
 orig.vel[0,2] = -0.1

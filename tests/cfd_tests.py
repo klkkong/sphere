@@ -10,7 +10,7 @@ print("### CFD tests ###")
 
 # Iteration and conservation of mass test
 # No gravity, no pressure gradients => no flow
-orig = sphere.Spherebin(np = 0, nd = 3, nw = 0, sid = "cfdtest", fluid = True)
+orig = sphere.sim(np = 0, nd = 3, nw = 0, sid = "cfdtest", fluid = True)
 cleanup(orig)
 orig.defaultParams()
 orig.addParticle([0.5,0.5,0.5], 0.05)
@@ -26,7 +26,7 @@ orig.time_total = orig.time_dt*10
 orig.writebin(verbose=False)
 #orig.run(dry=True)
 orig.run(verbose=False)
-py = Spherebin(sid = orig.sid, fluid = True)
+py = sphere.sim(sid = orig.sid, fluid = True)
 
 ones = numpy.ones((orig.num))
 py.readlast(verbose = False)

@@ -26,6 +26,9 @@ files, and causes old files to be incompatible with either ``sphere`` or
 2014-01-25: The description of the installation procedure is moved to the
 general documentation.
 
+2014-03-09: The main sphere class (formerly ``spherebin``) has been renamed to
+``sim``.
+
 Documentation
 -------------
 See the separate documentation for general reference and installation
