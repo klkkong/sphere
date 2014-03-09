@@ -29,6 +29,9 @@ general documentation.
 2014-03-09: The main sphere class (formerly ``spherebin``) has been renamed to
 ``sim``.
 
+2014-03-09: The ``writebin`` member function of the ``sim`` class is now
+implicitly called when calling the ``run`` member function.
+
 Documentation
 -------------
 See the separate documentation for general reference and installation

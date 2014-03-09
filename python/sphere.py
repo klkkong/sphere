@@ -2357,7 +2357,9 @@ class sim:
 
     def run(self, verbose=True, hideinputfile=False, dry=False, valgrind=False,
             cudamemcheck=False):
-        'Execute ``sphere`` with target project'
+        'Start ``sphere`` calculations on the ``sim`` object'
+
+        self.writebin(verbose=False)
 
         quiet = ""
         stdout = ""
