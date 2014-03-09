@@ -507,9 +507,9 @@ class sim:
             elif ((self.p_f != other.p_f).any()):
                 print(67)
                 return 67
-            elif ((self.phi != other.phi).any()):
-                print(68)
-                return 68
+            #elif ((self.phi != other.phi).any()):
+                #print(68)
+                #return 68
             elif ((self.dphi != other.dphi).any()):
                 print(69)
                 return 69
