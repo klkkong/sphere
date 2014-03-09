@@ -194,14 +194,14 @@ py.plotConvergence()
 py.plotFluidDiffAdvPresZ()
 #py.writeVTKall()
 for it in range(1,py.status()+1): # gradient should be smooth in all output files
-    py.readstep(it)
+    py.readstep(it, verbose=False)
     py.plotFluidDiffAdvPresZ()
     ideal_grad_p_z =\
             numpy.linspace(py.p_f[0,0,0], py.p_f[0,0,-1], py.num[2])
     compareNumpyArraysClose(numpy.zeros((1,py.num[2])),\
             ideal_grad_p_z - py.p_f[0,0,:],\
             'Fast pressure modulation (' + 
-            str(it) + '/' + str(py.status()) + '):', tolerance=1.0e-1)
+            str(it) + '/' + str(py.status()) + '):', tolerance=5.0e-1)
 
 '''
 # Top: Dirichlet, bot: Neumann
