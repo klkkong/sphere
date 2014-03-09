@@ -57,7 +57,6 @@ for d in distances:
     sb.zeroKinematics()
     sb.initTemporal(total=0.2, file_dt=0.01)
     #sb.initTemporal(total=0.01, file_dt=0.0001)
-    sb.writebin(verbose=False)
     sb.run(verbose=False)
     #sb.run()
     sb.readlast(verbose=False)
@@ -76,7 +75,6 @@ for d in distances:
     sb.initTemporal(total=0.2, file_dt=0.01)
     sb.vel[1,0] = 1e-4
     Ekinrot0 = sb.energy("kin") + sb.energy("rot")
-    sb.writebin(verbose=False)
     sb.run(verbose=False)
     sb.readlast(verbose=False)
     compareFloats(Ekinrot0, sb.energy("kin") + sb.energy("rot") + sb.energy("bondpot"), "Energy cons.")
@@ -96,7 +94,6 @@ for d in distances:
     sb.initTemporal(total=0.2, file_dt=0.01)
     sb.vel[1,0] = -1e-4
     Ekinrot0 = sb.energy("kin") + sb.energy("rot")
-    sb.writebin(verbose=False)
     sb.run(verbose=False)
     sb.readlast(verbose=False)
     compareFloats(Ekinrot0, sb.energy("kin") + sb.energy("rot") + sb.energy("bondpot"), "Energy cons.")
@@ -116,7 +113,6 @@ for d in distances:
     sb.initTemporal(total=0.2, file_dt=0.01)
     sb.vel[1,2] = 1e-4
     Ekinrot0 = sb.energy("kin") + sb.energy("rot")
-    sb.writebin(verbose=False)
     sb.run(verbose=False)
     sb.readlast(verbose=False)
     compareFloats(Ekinrot0, sb.energy("kin") + sb.energy("rot") + sb.energy("bondpot"), "Energy cons.")
@@ -151,7 +147,6 @@ for d in distances:
     #sb.initTemporal(total=0.001, file_dt=0.00001)
     sb.angvel[1,0] = 1e-4
     Ekinrot0 = sb.energy("kin") + sb.energy("rot")
-    sb.writebin(verbose=False)
     sb.run(verbose=False)
     sb.readlast(verbose=False)
     compareFloats(Ekinrot0, sb.energy("kin") + sb.energy("rot") + sb.energy("bondpot"), "Energy cons.")
@@ -176,7 +171,6 @@ for d in distances:
     sb.angvel[0,1] = -1e-4
     sb.angvel[1,1] = 1e-4
     Ekinrot0 = sb.energy("kin") + sb.energy("rot")
-    sb.writebin(verbose=False)
     sb.run(verbose=False)
     sb.readlast(verbose=False)
     compareFloats(Ekinrot0, sb.energy("kin") + sb.energy("rot") + sb.energy("bondpot"), "Energy cons.")

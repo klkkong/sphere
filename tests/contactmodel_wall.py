@@ -23,7 +23,6 @@ orig.gamma_wn[0] = 0.0  # Disable wall viscosity
 orig.gamma_wt[0] = 0.0  # Disable wall viscosity
 orig.initTemporal(total = 1.0, file_dt = 0.01)
 #orig.time_dt = orig.time_dt*0.1
-orig.writebin(verbose=False)
 moment_before = orig.totalMomentum()
 orig.run(verbose=False)
 #orig.writeVTKall()
@@ -48,7 +47,6 @@ orig.defineWorldBoundaries(L=[10,10,10])
 orig.gamma_wn[0] = 0.0  # Disable wall viscosity
 orig.gamma_wt[0] = 0.0  # Disable wall viscosity
 orig.initTemporal(total = 1.0, file_dt = 0.01)
-orig.writebin(verbose=False)
 moment_before = orig.totalMomentum()
 orig.run(verbose=False)
 #orig.writeVTKall()
@@ -69,7 +67,6 @@ orig.defineWorldBoundaries(L=[10,10,10])
 orig.gamma_wn[0] = 1.0e6
 orig.gamma_wt[0] = 0.0
 orig.initTemporal(total = 1.0, file_dt = 0.01)
-orig.writebin(verbose=False)
 Ekin_before = orig.energy('kin')
 orig.run(verbose=False)
 #orig.writeVTKall()
@@ -89,7 +86,6 @@ orig.defineWorldBoundaries(L=[10,10,10])
 orig.gamma_wn[0] = 1.0e6
 orig.gamma_wt[0] = 1.0e6
 orig.initTemporal(total = 1.0, file_dt = 0.01)
-orig.writebin(verbose=False)
 E_kin_before = orig.energy('kin')
 orig.run(verbose=False)
 #orig.writeVTKall()
@@ -108,4 +104,4 @@ pytestutils.test((orig.angvel[0,0] == 0.0 and orig.angvel[0,1] > 0.0 \
 
 
 
-#sphere.cleanup(orig)
+sphere.cleanup(orig)

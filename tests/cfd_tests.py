@@ -23,7 +23,6 @@ orig.initTemporal(total = 0.2, file_dt = 0.01)
 #orig.g[2] = -10.0
 orig.time_file_dt = orig.time_dt*0.99
 orig.time_total = orig.time_dt*10
-orig.writebin(verbose=False)
 #orig.run(dry=True)
 orig.run(verbose=False)
 py = sphere.sim(sid = orig.sid, fluid = True)
@@ -41,7 +40,6 @@ compare(it[:,1].sum(), 0.0, "Convergence rate (1/2):\t")
 # Add pressure gradient
 # This test passes with BETA=0.0 and tolerance=1.0e-9
 orig.p_f[:,:,-1] = 1.1
-orig.writebin(verbose=False)
 orig.run(verbose=False)
 py.readlast(verbose = False)
 ideal_grad_p_z = numpy.linspace(orig.p_f[0,0,0], orig.p_f[0,0,-1], orig.num[2])
@@ -69,7 +67,6 @@ else:
 orig.p_f[:,:,-1] = 1.1
 orig.time_total[0] = 5.0
 orig.time_file_dt[0] = orig.time_total[0]/10.0
-orig.writebin(verbose=False)
 orig.run(verbose=True)
 py.readlast(verbose = False)
 ideal_grad_p_z = numpy.linspace(orig.p_f[0,0,0], orig.p_f[0,0,-1], orig.num[2])
@@ -104,7 +101,6 @@ orig.mu[0] = 8.9e-4     # water
 orig.p_f[:,:,-1] = 2.0
 #orig.time_total[0] = 0.01
 #orig.time_file_dt[0] = 0.001
-orig.writebin(verbose=False)
 orig.run(verbose=False)
 #orig.writeVTKall()
 
@@ -166,7 +162,6 @@ orig.time_file_dt[0] = 0.101*orig.time_total[0]
 orig.mu[0] = 0.0 # dont let diffusion add transient effects
 orig.setFluidPressureModulation(A=1.0, f=1.0/orig.time_total[0])
 #orig.plotPrescribedFluidPressures()
-orig.writebin(verbose=False)
 orig.run(verbose=False)
 #py.readlast()
 #py.plotConvergence()
@@ -188,7 +183,6 @@ orig.time_file_dt[0] = 0.101*orig.time_total[0]
 orig.mu[0] = 0.0 # dont let diffusion add transient effects
 orig.setFluidPressureModulation(A=1.0, f=1.0/orig.time_total[0])
 orig.plotPrescribedFluidPressures()
-orig.writebin(verbose=False)
 orig.run(verbose=False)
 py.plotConvergence()
 py.plotFluidDiffAdvPresZ()
@@ -212,7 +206,6 @@ orig.p_f[:,:,-1] = 1.0
 orig.g[2] = -1.0
 orig.mu[0] = 8.9e-4     # water
 orig.bc_bot[0] = 1      # No-flow BC at bottom
-orig.writebin(verbose=False)
 #orig.run(dry=True)
 orig.run(verbose=False)
 orig.writeVTKall()

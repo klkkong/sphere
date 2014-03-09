@@ -47,8 +47,6 @@ init.radius[I] = init.radius[I] * 0.5
 init.initTemporal(total = 10.0)
 
 if (initialization == True):
-  # Write input file for sphere
-  init.writebin()
 
   # Run sphere
   init.run(dry=True)
@@ -88,8 +86,6 @@ for devs in devslist:
 
 
   if (consolidation == True):
-    # Write input file for sphere
-    cons.writebin()
 
     # Run sphere
     cons.run(dry=True) # show values, don't run
@@ -178,8 +174,6 @@ for devs in devslist:
   shear.initTemporal(total = 400.0)
 
   if (shearing == True):
-    # Write input file for sphere
-    shear.writebin()
 
     # Run sphere
     shear.run(dry=True)

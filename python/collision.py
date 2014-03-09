@@ -34,9 +34,6 @@ SB.initGridAndWorldsize(margin = 5.0)
 # output interval (file_dt), both in seconds
 SB.initTemporal(total = 2.0, file_dt = 0.1)
 
-# Save the simulation as a input file for sphere
-SB.writebin()
-
 # Using a 'dry' run, the sphere main program will display important parameters.
 # sphere will end after displaying these values.
 SB.run(dry = True)

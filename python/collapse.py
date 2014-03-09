@@ -35,8 +35,6 @@ init.initRandomGridPos(gridnum = numpy.array([hcells, hcells, 1e9]), periodic = 
 init.initTemporal(total = 10.0)
 
 if (initialization == True):
-    # Write input file for sphere
-    init.writebin()
 
     # Run sphere
     init.run(dry = True)
@@ -68,8 +66,6 @@ coll.adjustUpperWall()
 coll.initTemporal(total = 5.0, file_dt = 0.10)
 
 if (collapse == True):
-    # Write input file for sphere
-    coll.writebin()
 
     # Run sphere
     coll.run(dry = True)

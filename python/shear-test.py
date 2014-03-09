@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Import sphere functionality
-import sphere
+from sphere import *
 
 ### EXPERIMENT SETUP ###
 initialization = True
@@ -23,7 +23,7 @@ devslist = [80e3, 10e3, 20e3, 40e3, 60e3, 120e3]
 ### INITIALIZATION ###
 
 # New class
-init = sphere.sim(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
+init = Spherebin(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
 
 # Save radii
 init.generateRadii(radius_mean = 0.02)
@@ -39,8 +39,6 @@ init.initRandomGridPos(gridnum = numpy.array([hcells, hcells, 1e9]), periodic = 
 init.initTemporal(total = 5.0)
 
 if (initialization == True):
-    # Write input file for sphere
-    init.writebin()
 
     # Run sphere
     init.run(dry = True)
@@ -64,10 +62,10 @@ for devs in devslist:
     ### CONSOLIDATION ###
 
     # New class
-    cons = sphere.sim(np = init.np, nw = 1, sid = sim_id + "-cons-devs{}".format(devs))
+    cons = Spherebin(np = init.np, nw = 1, sid = sim_id + "-cons-devs{}".format(devs))
 
     # Read last output file of initialization step
-    lastf = sphere.status(sim_id + "-init")
+    lastf = status(sim_id + "-init")
     cons.readbin("../output/" + sim_id + "-init.output{:0=5}.bin".format(lastf), verbose=False)
 
     # Setup consolidation experiment
@@ -90,8 +88,6 @@ for devs in devslist:
     """
 
     if (consolidation == True):
-        # Write input file for sphere
-        cons.writebin()
 
         # Run sphere
         cons.run(dry = True) # show values, don't run
@@ -112,10 +108,10 @@ for devs in devslist:
     ### SHEARING ###
 
     # New class
-    shear = sphere.sim(np = cons.np, nw = cons.nw, sid = sim_id + "-shear-devs{}".format(devs))
+    shear = Spherebin(np = cons.np, nw = cons.nw, sid = sim_id + "-shear-devs{}".format(devs))
 
     # Read last output file of initialization step
-    lastf = sphere.status(sim_id + "-cons-devs{}".format(devs))
+    lastf = status(sim_id + "-cons-devs{}".format(devs))
     shear.readbin("../output/" + sim_id + "-cons-devs{}.output{:0=5}.bin".format(devs, lastf), verbose = False)
 
     # Setup shear experiment
@@ -125,8 +121,6 @@ for devs in devslist:
     shear.initTemporal(total = 20.0)
 
     if (shearing == True):
-        # Write input file for sphere
-        shear.writebin()
 
         # Run sphere
         shear.run(dry = True)

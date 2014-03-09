@@ -13,7 +13,6 @@ orig.initRandomGridPos()
 orig.initTemporal(current = 0.0, total = 0.0)
 orig.time_total = 2.0*orig.time_dt;
 orig.time_file_dt = orig.time_dt;
-orig.writebin(verbose=False)
 
 # Test C++ routines
 print("Valgrind: C++ routines")

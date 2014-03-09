@@ -54,9 +54,6 @@ init.time_file_dt[0] = 0.001
 #init.g[2] = -10.0
 init.g[2] = 0.0 # uncomment to disable gravity
 
-# Write input file for sphere
-init.writebin()
-
 # Run sphere
 init.run(dry=True)
 init.run(cfd=True)

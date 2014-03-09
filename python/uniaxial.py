@@ -33,8 +33,6 @@ init.initRandomGridPos(gridnum = numpy.array([12, 12, 1000]), periodic = 0, cont
 init.initTemporal(total = 5.0)
 
 if (initialization == True):
-  # Write input file for sphere
-  init.writebin()
 
   # Run sphere
   init.run()
@@ -71,8 +69,6 @@ cons.w_m[0] *= 0.001
 
 
 if (consolidation == True):
-  # Write input file for sphere
-  cons.writebin()
 
   # Run sphere
   cons.run(dry=True) # show values, don't run
