@@ -2333,12 +2333,29 @@ class sim:
         # Increment the number of bonds with one
         self.nb0 += 1
 
-    def currentDevs(self):
-        ''' Return current magnitude of the deviatoric normal stress '''
+    def currentNormalStress(self):
+        '''
+        Calculates the current magnitude of the top wall normal stress.
+
+        :returns: The current top wall normal stress in Pascal
+        :return type: float
+        '''
         return w_devs[0] + w_devs_A*numpy.sin(2.0*numpy.pi*self.time_current)
 
     def energy(self, method):
-        ''' Calculate the sum of the energy components of all particles.
+        '''
+        Calculates the sum of the energy components of all particles.
+
+        :param method: The type of energy to return. Possible values are 'pot'
+            for potential energy [J], 'kin' for kinetic energy [J], 'rot' for
+            rotational energy [J], 'shear' for energy lost by friction,
+            'shearrate' for the rate of frictional energy loss [W], 'visc_n' for
+            viscous losses normal to the contact [J], 'visc_n_rate' for the rate
+            of viscous losses normal to the contact [W], and finally 'bondpot'
+            for the potential energy stored in bonds [J]
+        :type method: str
+        :returns: The value of the selected energy type
+        :return type: float
         '''
 
         if method == 'pot':
@@ -2397,7 +2414,12 @@ class sim:
             raise Exception('Unknownw energy() method "' + method + '"')
 
     def voidRatio(self):
-        'Returns the current void ratio'
+        '''
+        Calculates the current void ratio
+        
+        :returns: The void ratio, in [0:1]
+        :return type: float
+        '''
 
         # Find the bulk volume
         V_t = (self.L[0] - self.origo[0]) \
@@ -2412,7 +2434,12 @@ class sim:
         return e
 
     def bulkPorosity(self):
-        ''' Calculate and return the bulk porosity '''
+        '''
+        Calculates the bulk porosity
+
+        :returns: The bulk porosity, in [0:1]
+        :return type: float
+        '''
 
         if (self.nw == 0):
             V_total = self.L[0] * self.L[1] * self.L[2]
@@ -2428,9 +2455,18 @@ class sim:
     def porosity(self,
             slices = 10,
             verbose = False):
-        ''' Calculate the porosity as a function of depth, by averaging values
-            in horizontal slabs.
-            Returns porosity values and depth
+        '''
+        Calculates the porosity as a function of depth, by averaging values in
+        horizontal slabs. Returns porosity values and their corresponding depth.
+        The values are calculated using the external ``porosity`` program.
+
+        :param slices: The number of vertical slabs to find porosities in.
+        :type slices: int
+        :param verbose: Show the file name of the temporary file written to
+        disk
+        :type verbose: bool
+        :returns: A 2d array of depths and their averaged porosities
+        :return type: numpy.array
         '''
 
         # Write data as binary
@@ -2463,7 +2499,25 @@ class sim:
 
     def run(self, verbose=True, hideinputfile=False, dry=False, valgrind=False,
             cudamemcheck=False):
-        'Start ``sphere`` calculations on the ``sim`` object'
+        '''
+        Start ``sphere`` calculations on the ``sim`` object
+
+        :param verbose: Show ``sphere`` output
+        :type verbose: bool
+        :param hideinputfile: Hide the file name of the ``sphere`` input file
+        :type hideinputfile: bool
+        :param dry: Perform a dry run. Important parameter values are shown by
+            the ``sphere`` program, and it exits afterwards.
+        :type dry: bool
+        :param valgrind: Run the program with ``valgrind`` in order to check
+            memory leaks in the host code. This causes a significant increase in
+            computational time.
+        :type valgrind: bool
+        :param cudamemcheck: Run the program with ``cudamemcheck`` in order to
+            check for device memory leaks and errors. This causes a significant
+            increase in computational time.
+        :type cudamemcheck: bool
+        '''
 
         self.writebin(verbose=False)
 
@@ -2501,8 +2555,40 @@ class sim:
             queue="qfermi",
             cudapath="/com/cuda/4.0.17/cuda",
             spheredir="/home/adc/code/sphere",
+            use_workdir=False,
             workdir="/scratch"):
-        'Create job script for the Torque queue manager for the binary'
+        '''
+        Creates a job script for the Torque queue manager for the simulation
+        object.
+
+        :param email: The e-mail address that Torque messages should be sent to
+        :type email: str
+        :param email_alerts: The type of Torque messages to send to the e-mail
+            address. The character 'b' causes a mail to be sent when the
+            execution begins. The character 'e' causes a mail to be sent when
+            the execution ends normally. The character 'a' causes a mail to be
+            sent if the execution ends abnormally. The characters can be written
+            in any order.
+        :type email_alerts: str
+        :param walltime: The maximal allowed time for the job, in the format
+            'HH:MM:SS'.
+        :type walltime: str
+        :param queue: The Torque queue to schedule the job for
+        :type queue: str
+        :param cudapath: The path of the CUDA library on the cluster compute
+            nodes
+        :type cudapath: str
+        :param spheredir: The path to the root directory of sphere on the
+            cluster
+        :type spheredir: str
+        :param use_workdir: Use a different working directory than the sphere
+            folder
+        :type use_workdir: bool
+        :param workdir: The working directory during the calculations, if
+            `use_workdir=True`
+        :type workdir: str
+        
+        '''
 
         filename = self.sid + ".sh"
         fh = None
@@ -2523,13 +2609,17 @@ class sim:
             fh.write('echo "`whoami`@`hostname`"\n')
             fh.write('echo "Start at `date`"\n')
             fh.write('ORIGDIR=' + spheredir + '\n')
-            fh.write('WORKDIR=' + workdir + "/$PBS_JOBID\n")
-            fh.write('cp -r $ORIGDIR/* $WORKDIR\n')
-            fh.write('cd $WORKDIR\n')
+            if (use_workdir == True):
+                fh.write('WORKDIR=' + workdir + "/$PBS_JOBID\n")
+                fh.write('cp -r $ORIGDIR/* $WORKDIR\n')
+                fh.write('cd $WORKDIR\n')
+            else:
+                fh.write('cd ' + spheredir + '\n')
             fh.write('cmake . && make\n')
             fh.write('./sphere input/' + self.sid + '.bin > /dev/null &\n')
             fh.write('wait\n')
-            fh.write('cp $WORKDIR/output/* $ORIGDIR/output/\n')
+            if (use_workdir == True):
+                fh.write('cp $WORKDIR/output/* $ORIGDIR/output/\n')
             fh.write('echo "End at `date`"\n')
 
         finally :
@@ -2542,8 +2632,26 @@ class sim:
             lower_cutoff = 0.0,
             graphicsformat = "png",
             verbose=True):
-        ''' Render all output files that belong to the simulation, determined by
-        sid.'''
+        '''
+        Using the built-in ray tracer, render all output files that belong to
+        the simulation, determined by the simulation id (``sid``).
+        
+        :param method: The color visualization method to use for the particles.
+            Possible values are: 'normal': color all particles with the same
+            color, 'pres': color by pressure, 'vel': color by translational
+            velocity, 'angvel': color by rotational velocity, 'xdisp': color by
+            total displacement along the x-axis, 'angpos': color by angular
+            position.
+        :type method: str
+        :param lower_cutoff: Do not render particles with a value below this
+            value, of the field selected by ``method``
+        :type lower_cutoff: float
+        :param graphicsformat: Convert the PPM images generated by the ray
+            tracer to this image format using Imagemagick
+        :type graphicsformat: str
+        :param verbose: Show verbose information during ray tracing
+        :type verbose: bool
+        '''
 
         print("Rendering {} images with the raytracer".format(self.sid))
 
@@ -2564,7 +2672,7 @@ class sim:
                     + " --render $F; done", shell=True)
 
         # Convert images to compressed format
-        convert()
+        convert(graphicsformat=graphicsformat)
 
     def video(self,
         out_folder = "./",
