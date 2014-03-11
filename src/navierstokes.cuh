@@ -1615,12 +1615,15 @@ __global__ void findPredNSvelocities(
         // The pressure gradient is not needed in Chorin's projection method
         // (BETA=0), so only has to be looked up in pressure-dependant
         // projection methods
-        if (BETA > 0.0)
+        Floa3 pressure_term = 0.0;
+        if (BETA > 0.0) {
             grad_p = gradient(dev_ns_p, x, y, z, dx, dy, dz);
+            pressure_term = -BETA/devC_params.rho_f*grad_p*devC_dt/phi;
+        }
 
         // Calculate the predicted velocity
         Float3 v_p = v
-            - BETA/devC_params.rho_f*grad_p*devC_dt/phi
+            + pressure_term
             + 1.0/devC_params.rho_f*div_phi_tau*devC_dt/phi
             //+ devC_dt*(f_g - f_i)
             + devC_dt*(-1.0*f_i)
