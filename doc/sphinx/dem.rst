@@ -44,59 +44,78 @@ Contact search
 Homogeneous cubic grid.
 
 .. math::
-   \delta_n^{ij} = |\boldsymbol{x}^i - \boldsymbol{x}^j| - (r^i + r^j)
+   \delta_n^{ij} = ||\boldsymbol{x}^i - \boldsymbol{x}^j|| - (r^i + r^j)
 
 where :math:`r` is the particle radius, and :math:`\boldsymbol{x}` denotes the
 positional vector of a particle, and :math:`i` and :math:`j` denote the indexes
-of two particles.
+of two particles. Negative values of :math:`\delta_n` denote that the particles
+are overlapping.
 
 
 Contact interaction
 -------------------
 Now that the inter-particle contacts have been identified and characterized by
 their overlap, the resulting forces from the interaction can be resolved. The
-normal vector to the contact interface is found by:
+interaction is decomposed into normal and tangential components, relative to the
+contact interface orientation. The normal vector to the contact interface is
+found by:
 
 .. math::
    \boldsymbol{n}^{ij} = 
    \frac{\boldsymbol{x}^i - \boldsymbol{x}^j}
-   {|\boldsymbol{x}^i - \boldsymbol{x}^j|}
+   {||\boldsymbol{x}^i - \boldsymbol{x}^j||}
 
 The contact velocity :math:`\dot{\boldsymbol{\delta}}` is found by:
 
 .. math::
    \dot{\boldsymbol{\delta}}^{ij} =
    (\boldsymbol{x}^i - \boldsymbol{x}^j)
-   + r^i (\boldsymbol{n}^{ij} \times \boldsymbol{\omega}^{i})
-   + r^j (\boldsymbol{n}^{ij} \times \boldsymbol{\omega}^{j})
+   + (r^i + \frac{\delta_n^{ij}}{2})
+     (\boldsymbol{n}^{ij} \times \boldsymbol{\omega}^{i})
+   + (r^j + \frac{\delta_n^{ij}}{2})
+     (\boldsymbol{n}^{ij} \times \boldsymbol{\omega}^{j})
+
+The contact velocity is decomposed into normal and tangential components,
+relative to the contact interface. The normal component is:
+
+.. math::
+   \dot{\delta}^{ij}_n =
+   -(\dot{\boldsymbol{\delta}}^{ij} \cdot \boldsymbol{n}^{ij})
+
+and the tangential velocity component is found as:
+
+.. math::
+   \dot{\boldsymbol{\delta}}^{ij}_t =
+   \dot{\boldsymbol{\delta}}^{ij}
+   - \boldsymbol{n}^{ij}
+     (\boldsymbol{n}^{ij} \cdot \dot{\boldsymbol{\delta}}^{ij})
 
 where :math:`\boldsymbol{\omega}` is the rotational velocity vector of a
 particle. The total tangential displacement on the contact plane is found
 incrementally:
 
 .. math::
-   \boldsymbol{\delta}_t^{ij} =
+   \boldsymbol{\delta}_{t,\text{uncorrected}}^{ij} =
    \int_0^{t_c} 
    \dot{\boldsymbol{\delta}}^{ij}_t \Delta t
 
 where :math:`t_c` is the duration of the contact and :math:`\Delta t` is the
-computational time step length.
-
-The tangential contact interface displacement is set to zero when a contact pair
-no longer overlaps. At each time step, the value of
-:math:`\boldsymbol{\delta}_t` is corrected for rotation of the contact
+computational time step length. The tangential contact interface displacement is
+set to zero when a contact pair no longer overlaps. At each time step, the value
+of :math:`\boldsymbol{\delta}_t` is corrected for rotation of the contact
 interface:
 
 .. math::
-   \boldsymbol{\delta}_t^{ij} = \boldsymbol{\delta}_{t,\text{uncorr}}^{ij}
+   \boldsymbol{\delta}_t^{ij} = \boldsymbol{\delta}_{t,\text{uncorrected}}^{ij}
    - (\boldsymbol{n}
-     (\boldsymbol{n} \cdot \boldsymbol{\delta}_{t,\text{uncorr}}^{ij})
+     (\boldsymbol{n} \cdot \boldsymbol{\delta}_{t,\text{uncorrected}}^{ij})
 
-
-
-``sphere`` features only one contact model in the normal direction to the
-contact; the linear-elastic-viscous (*Hookean* with viscous damping, or
-*Kelvin-Voigt*) contact model:
+With all the geometrical and kinetic components determined, the resulting forces
+of the particle interaction can be determined using a contact model. ``sphere``
+features only one contact model in the normal direction to the contact; the
+linear-elastic-viscous (*Hookean* with viscous damping, or *Kelvin-Voigt*)
+contact model. The resulting force in the normal direction of the contact
+interface on particle :math:`i` is:
 
 .. math::
    \boldsymbol{f}_n^{ij} = \left(
@@ -106,8 +125,70 @@ contact; the linear-elastic-viscous (*Hookean* with viscous damping, or
 The parameter :math:`k_n` is the defined `spring coefficient
 <https://en.wikipedia.org/wiki/Hooke's_law>`_ in the normal direction of the
 contact interface, and :math:`\gamma_n` is the defined contact interface
-viscosity, also in the normal direction.
+viscosity, also in the normal direction. The loss of energy in this interaction
+due to the viscous component is for particle :math:`i` calculated as:
 
+.. math::
+    \dot{e}^i_v = \gamma_n (\dot{\delta}^{ij}_n)^2
+
+The tangential force is determined by either a viscous-frictional contact model,
+or a elastic-viscous-frictional contact model. The former contact model is very
+computationally efficient, but somewhat inaccurate relative to the mechanics of
+real materials.  The latter contact model is therefore the default, even though
+it results in longer computational times. The tangential force in the
+visco-frictional contact model:
+
+.. math::
+   \boldsymbol{f}_t^{ij} = -\gamma_t \dot{\boldsymbol{\delta}_t}^{ij}
+
+:math:`\gamma_n` is the defined contact interface viscosity in the tangential
+direction. The tangential displacement along the contact interface
+(:math:`\boldsymbol{\delta}_t`) is not calculated and stored for this contact
+model. The tangential force in the more realistic elastic-viscous-frictional
+contact model:
+
+.. math::
+   \boldsymbol{f}_t^{ij} =
+   -k_t \boldsymbol{\delta}_t^{ij} -\gamma_t \dot{\boldsymbol{\delta}_t}^{ij}
+
+The parameter :math:`k_n` is the defined spring coefficient in the tangential
+direction of the contact interface. Note that the tangential force is only
+found if the tangential displacement (:math:`\delta_t`) or the tangential
+velocity (:math:`\dot{\delta}_t`) is non-zero, in order to avoid division by
+zero. Otherwise it is defined as being :math:`[0,0,0]`.
+
+For both types of contact model, the tangential force is limited by the Coulomb
+criterion of static and dynamic friction:
+
+.. math::
+   ||\boldsymbol{f}^{ij}_t|| \leq
+   \begin{cases}
+   \mu_s ||\boldsymbol{f}^{ij}_n|| &
+       \text{if} \quad ||\boldsymbol{f}_t^{ij}|| = 0 \\
+   \mu_d ||\boldsymbol{f}^{ij}_n|| &
+       \text{if} \quad ||\boldsymbol{f}_t^{ij}|| > 0
+   \end{cases}
+
+If the elastic-viscous-frictional contact model is used and the Coulomb limit is
+reached, the tangential displacement along the contact interface is limited to
+this value:
+
+.. math::
+   \boldsymbol{\delta}_t^{ij} =
+   \frac{1}{k_t} \left(
+   \mu_d ||\boldsymbol{f}_n^{ij}||
+   \frac{\boldsymbol{f}^{ij}_t}{||\boldsymbol{f}^{ij}_t||}
+   + \gamma_t \dot{\boldsymbol{\delta}}_t^{ij} \right)
+
+If the tangential force reaches the Coulomb limit, the energy lost due to
+frictional dissipation is calculated as:
+
+.. math::
+   \dot{e}^i_s = \frac{||\boldsymbol{f}^{ij}_t
+   \dot{\boldsymbol{\delta}}_t^{ij} \Delta t||}{\Delta t}
+
+The loss of energy by viscous dissipation in the tangential direction is not
+found.
 
 
 Temporal integration
