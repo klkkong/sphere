@@ -1903,18 +1903,18 @@ __global__ void smoothing(T* dev_arr)
         if (GAMMA > 0.0) {
 
             __syncthreads();
-            Float e_xn = dev_arr[idx(x-1,y,z)];
-            Float e    = dev_arr[cellidx];
-            Float e_xp = dev_arr[idx(x+1,y,z)];
-            Float e_yn = dev_arr[idx(x,y-1,z)];
-            Float e_yp = dev_arr[idx(x,y+1,z)];
-            Float e_zn = dev_arr[idx(x,y,z-1)];
-            Float e_zp = dev_arr[idx(x,y,z+1)];
+            T e_xn = dev_arr[idx(x-1,y,z)];
+            T e    = dev_arr[cellidx];
+            T e_xp = dev_arr[idx(x+1,y,z)];
+            T e_yn = dev_arr[idx(x,y-1,z)];
+            T e_yp = dev_arr[idx(x,y+1,z)];
+            T e_zn = dev_arr[idx(x,y,z-1)];
+            T e_zp = dev_arr[idx(x,y,z+1)];
 
-            Float e_avg_neigbors = 1.0/6.0 *
+            T e_avg_neigbors = 1.0/6.0 *
                 (e_xn + e_xp + e_yn + e_yp + e_zn + e_zp);
 
-            Float e_new = (1.0 - GAMMA)*e + GAMMA*e_avg_neigbors;
+            T e_new = (1.0 - GAMMA)*e + GAMMA*e_avg_neigbors;
 
             __syncthreads();
             dev_arr[cellidx] = e_new;
