@@ -30,6 +30,12 @@
 // with a value of 1.0, but instabilities may be avoided with lower values.
 #define THETA 1.0
 
+// Smoothing parameter. The epsilon (pressure) values are smoothed by including
+// the average epsilon value of the six closest (face) neighbor cells. This
+// parameter should be in the range [0.0;1.0[. The higher the value, the more
+// averaging is introduced. A value of 0.0 disables all averaging.
+#define GAMMA 0.0
+
 // Arithmetic mean of two numbers
 __inline__ __device__ Float amean(Float a, Float b) {
     return (a+b)*0.5;
@@ -1868,6 +1874,51 @@ __global__ void jacobiIterationNS(
         //dev_ns_epsilon_new[cellidx] = e_new;
         dev_ns_epsilon_new[cellidx] = e*(1.0-THETA) + e_new*THETA;
         dev_ns_norm[cellidx] = res_norm;
+    }
+}
+
+// Spatial smoothing, used for the epsilon values. See adjustable parameter
+// GAMMA at the top of this file. If there are several blocks, there will be
+// problems at the block boundaries, since the update will mix non-smoothed and
+// smoothed values.
+template<typename T>
+__global__ void smoothing(T* dev_arr)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    // 1D thread index
+    const unsigned int cellidx = idx(x,y,z);
+
+    // Check that we are not outside the fluid grid
+    if (x < nx && y < ny && z < nz) {
+
+        if (GAMMA > 0.0) {
+
+            __syncthreads();
+            Float e_xn = dev_arr[idx(x-1,y,z)];
+            Float e    = dev_arr[cellidx];
+            Float e_xp = dev_arr[idx(x+1,y,z)];
+            Float e_yn = dev_arr[idx(x,y-1,z)];
+            Float e_yp = dev_arr[idx(x,y+1,z)];
+            Float e_zn = dev_arr[idx(x,y,z-1)];
+            Float e_zp = dev_arr[idx(x,y,z+1)];
+
+            Float e_avg_neigbors = 1.0/6.0 *
+                (e_xn + e_xp + e_yn + e_yp + e_zn + e_zp);
+
+            Float e_new = (1.0 - GAMMA)*e + GAMMA*e_avg_neigbors;
+
+            __syncthreads();
+            dev_arr[cellidx] = e_new;
+        }
     }
 }
 

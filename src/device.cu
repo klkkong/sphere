@@ -1238,6 +1238,11 @@ __host__ void DEM::startTime()
                 checkForCudaErrors("Post copyValues (epsilon_new->epsilon)",
                         iter);
 
+                smoothing<Float><<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_epsilon);
+                cudaThreadSynchronize();
+                checkForCudaErrors("Post smoothing(epsilon)", iter);
+
                 if (report_epsilon == 1) {
                     std::cout << "\n###### JACOBI ITERATION "
                         << nijac << " after jacobiIterationNS ######"
