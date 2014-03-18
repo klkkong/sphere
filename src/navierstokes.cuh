@@ -35,6 +35,7 @@
 // parameter should be in the range [0.0;1.0[. The higher the value, the more
 // averaging is introduced. A value of 0.0 disables all averaging.
 #define GAMMA 0.0
+//#define GAMMA 0.1
 
 // Arithmetic mean of two numbers
 __inline__ __device__ Float amean(Float a, Float b) {
@@ -1338,19 +1339,19 @@ __global__ void findNSdivphiviv(
 
         // Read porosity and velocity in the 6 neighbor cells
         __syncthreads();
-        const Float  phi_xp = dev_ns_phi[idx(x+1,y,z)];
         const Float  phi_xn = dev_ns_phi[idx(x-1,y,z)];
-        const Float  phi_yp = dev_ns_phi[idx(x,y+1,z)];
+        const Float  phi_xp = dev_ns_phi[idx(x+1,y,z)];
         const Float  phi_yn = dev_ns_phi[idx(x,y-1,z)];
-        const Float  phi_zp = dev_ns_phi[idx(x,y,z+1)];
+        const Float  phi_yp = dev_ns_phi[idx(x,y+1,z)];
         const Float  phi_zn = dev_ns_phi[idx(x,y,z-1)];
+        const Float  phi_zp = dev_ns_phi[idx(x,y,z+1)];
 
-        const Float3 v_xp = dev_ns_v[idx(x+1,y,z)];
         const Float3 v_xn = dev_ns_v[idx(x-1,y,z)];
-        const Float3 v_yp = dev_ns_v[idx(x,y+1,z)];
+        const Float3 v_xp = dev_ns_v[idx(x+1,y,z)];
         const Float3 v_yn = dev_ns_v[idx(x,y-1,z)];
-        const Float3 v_zp = dev_ns_v[idx(x,y,z+1)];
+        const Float3 v_yp = dev_ns_v[idx(x,y+1,z)];
         const Float3 v_zn = dev_ns_v[idx(x,y,z-1)];
+        const Float3 v_zp = dev_ns_v[idx(x,y,z+1)];
 
         // Calculate the divergence: div(phi*v_i*v)
         const Float3 div_phi_vi_v = MAKE_FLOAT3(
@@ -1402,12 +1403,12 @@ __global__ void findNSdivphitau(
 
         // Read the porosity in the 6 neighbor cells
         __syncthreads();
-        const Float phi_xp = dev_ns_phi[idx(x+1,y,z)];
         const Float phi_xn = dev_ns_phi[idx(x-1,y,z)];
-        const Float phi_yp = dev_ns_phi[idx(x,y+1,z)];
+        const Float phi_xp = dev_ns_phi[idx(x+1,y,z)];
         const Float phi_yn = dev_ns_phi[idx(x,y-1,z)];
-        const Float phi_zp = dev_ns_phi[idx(x,y,z+1)];
+        const Float phi_yp = dev_ns_phi[idx(x,y+1,z)];
         const Float phi_zn = dev_ns_phi[idx(x,y,z-1)];
+        const Float phi_zp = dev_ns_phi[idx(x,y,z+1)];
 
         // Read the stress tensor in the 6 neighbor cells
         const Float tau_xx_xp = dev_ns_tau[idx(x+1,y,z)*6];
@@ -1503,12 +1504,12 @@ __global__ void findNSdivphivv(
         // Read cell and 6 neighbor cells
         __syncthreads();
         //const Float  phi    = dev_ns_phi[cellidx];
-        const Float  phi_xp = dev_ns_phi[idx(x+1,y,z)];
         const Float  phi_xn = dev_ns_phi[idx(x-1,y,z)];
-        const Float  phi_yp = dev_ns_phi[idx(x,y+1,z)];
+        const Float  phi_xp = dev_ns_phi[idx(x+1,y,z)];
         const Float  phi_yn = dev_ns_phi[idx(x,y-1,z)];
-        const Float  phi_zp = dev_ns_phi[idx(x,y,z+1)];
+        const Float  phi_yp = dev_ns_phi[idx(x,y+1,z)];
         const Float  phi_zn = dev_ns_phi[idx(x,y,z-1)];
+        const Float  phi_zp = dev_ns_phi[idx(x,y,z+1)];
 
         // The tensor is symmetrical: value i,j = j,i.
         // Only the upper triangle is saved, with the cells given a linear index
@@ -1732,8 +1733,8 @@ __global__ void findNSforcing(
             //f1 = 0.0;
             f1 = div_v_p*devC_params.rho_f/devC_dt
                 + dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi)
-                + dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
-            f2 = grad_phi/phi;
+                + 0.0*dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
+            f2 = 0.0*grad_phi/phi;
 
             // Report values terms in the forcing function for debugging
             /*
@@ -1834,8 +1835,8 @@ __global__ void jacobiIterationNS(
 
         // Read the epsilon values from the cell and its 6 neighbors
         __syncthreads();
-        const Float e    = dev_ns_epsilon[cellidx];
         const Float e_xn = dev_ns_epsilon[idx(x-1,y,z)];
+        const Float e    = dev_ns_epsilon[cellidx];
         const Float e_xp = dev_ns_epsilon[idx(x+1,y,z)];
         const Float e_yn = dev_ns_epsilon[idx(x,y-1,z)];
         const Float e_yp = dev_ns_epsilon[idx(x,y+1,z)];
@@ -1900,25 +1901,27 @@ __global__ void smoothing(T* dev_arr)
     // Check that we are not outside the fluid grid
     if (x < nx && y < ny && z < nz) {
 
-        if (GAMMA > 0.0) {
+        //if (GAMMA > 0.0) {
 
             __syncthreads();
-            T e_xn = dev_arr[idx(x-1,y,z)];
-            T e    = dev_arr[cellidx];
-            T e_xp = dev_arr[idx(x+1,y,z)];
-            T e_yn = dev_arr[idx(x,y-1,z)];
-            T e_yp = dev_arr[idx(x,y+1,z)];
-            T e_zn = dev_arr[idx(x,y,z-1)];
-            T e_zp = dev_arr[idx(x,y,z+1)];
+            const T e_xn = dev_arr[idx(x-1,y,z)];
+            const T e    = dev_arr[cellidx];
+            const T e_xp = dev_arr[idx(x+1,y,z)];
+            const T e_yn = dev_arr[idx(x,y-1,z)];
+            const T e_yp = dev_arr[idx(x,y+1,z)];
+            const T e_zn = dev_arr[idx(x,y,z-1)];
+            const T e_zp = dev_arr[idx(x,y,z+1)];
 
-            T e_avg_neigbors = 1.0/6.0 *
+            const T e_avg_neigbors = 1.0/6.0 *
                 (e_xn + e_xp + e_yn + e_yp + e_zn + e_zp);
 
-            T e_new = (1.0 - GAMMA)*e + GAMMA*e_avg_neigbors;
+            const T e_new = (1.0 - GAMMA)*e + GAMMA*e_avg_neigbors;
+
+            //printf("%d,%d,%d\te = %f e_new = %f\n", x,y,z, e, e_new);
 
             __syncthreads();
             dev_arr[cellidx] = e_new;
-        }
+        //}
     }
 }
 

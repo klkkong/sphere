@@ -222,4 +222,4 @@ py.readlast(verbose = False)
     #print("Flow field:\t\t" + failed())
 
 '''
-#cleanup(orig)
+cleanup(orig)
