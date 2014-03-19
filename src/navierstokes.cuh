@@ -34,7 +34,7 @@
 // the average epsilon value of the six closest (face) neighbor cells. This
 // parameter should be in the range [0.0;1.0[. The higher the value, the more
 // averaging is introduced. A value of 0.0 disables all averaging.
-#define GAMMA 0.0
+#define GAMMA 0.5
 
 // Arithmetic mean of two numbers
 __inline__ __device__ Float amean(Float a, Float b) {
@@ -1730,10 +1730,6 @@ __global__ void findNSforcing(
 
             // Find forcing function coefficients
             //f1 = 0.0;
-            /*f1 = div_v_p*devC_params.rho_f/devC_dt
-                + dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi)
-                + 0.0*dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
-            f2 = 0.0*grad_phi/phi;*/
             f1 = div_v_p*devC_params.rho_f/devC_dt
                 + dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi)
                 + dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
@@ -1826,8 +1822,9 @@ __device__ Float smoothing(
         //printf("%d,%d,%d\te = %f e_smooth = %f\n", x,y,z, e, e_smooth);
 
         return e_smooth;
+    } else {
+        return e;
     }
-    return e;
 }
 
 // Perform a single Jacobi iteration
@@ -2223,6 +2220,13 @@ __global__ void applyParticleInteractionForce(
 
                 __syncthreads();
                 dev_force[origidx] += MAKE_FLOAT4(fd.x, fd.y, fd.z, 0.0);
+
+                // disable fluid->particle interaction
+                //dev_force[origidx] += MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
+
+                // report to stdout
+                //printf("%d,%d,%d\tapplying force (%f,%f,%f) to particle %d\n",
+                        //x,y,z, fd.x, fd.y, fd.z, origidx);
             }
         }
     }

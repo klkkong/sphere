@@ -38,7 +38,7 @@
 //const double tolerance = 1.0e-9;
 const double tolerance = 1.0e-8;
 
-// The maximal number of iterations to perform
+// The maximum number of iterations to perform
 const unsigned int maxiter = 1e4;
 
 // The number of iterations to perform between checking the norm. residual value
@@ -60,12 +60,11 @@ const int report_even_more_epsilon = 0;
 const int write_conv_log = 1;
 
 // The interval between iteration number reporting in 'output/<sid>-conv.log'
-//const int conv_log_interval = 10;
-const int conv_log_interval = 1;
+const int conv_log_interval = 10;
+//const int conv_log_interval = 1;
 
 // Wrapper function for initializing the CUDA components.
 // Called from main.cpp
-//extern "C"
 __host__ void DEM::initializeGPU(void)
 {
     using std::cout; // stdout
