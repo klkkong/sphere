@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -14,7 +16,7 @@
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
+        URL_ROOT:    '',
         VERSION:     '1.00-alpha',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -81,10 +83,10 @@ derivative.</p>
 <h2>Contact search<a class="headerlink" href="#contact-search" title="Permalink to this headline">¶</a></h2>
 <p>Homogeneous cubic grid.</p>
 <div class="math">
-<p><img src="_images/math/552e279b5cf6a34bb7787589bb4d4e67df465e7d.png" alt="\delta_n^{ij} = ||\boldsymbol{x}^i - \boldsymbol{x}^j|| - (r^i + r^j)"/></p>
-</div><p>where <img class="math" src="_images/math/2ede365ad144ab396916ec60458da03860803078.png" alt="r"/> is the particle radius, and <img class="math" src="_images/math/80ba696b882e52c7e4d833039710ff8b4005e777.png" alt="\boldsymbol{x}"/> denotes the
-positional vector of a particle, and <img class="math" src="_images/math/a581f053bbfa5115f42c13094857cdd12a37ec49.png" alt="i"/> and <img class="math" src="_images/math/d32c78b759903e3f4bd4fd2ce0b86358f7500c5d.png" alt="j"/> denote the indexes
-of two particles. Negative values of <img class="math" src="_images/math/2822d1531935f7a072ebaa08533f4c5695731465.png" alt="\delta_n"/> denote that the particles
+<p><img src="_images/math/b2cd17a83bb89dc6b4ff954979dba3b2fbc8e043.png" alt="\delta_n^{ij} = ||\boldsymbol{x}^i - \boldsymbol{x}^j|| - (r^i + r^j)"/></p>
+</div><p>where <img class="math" src="_images/math/b55ca7a0aa88ab7d58f4fc035317fdac39b17861.png" alt="r"/> is the particle radius, and <img class="math" src="_images/math/4f7d0530f1939c40a7c9e65b7ecee0e476ac4817.png" alt="\boldsymbol{x}"/> denotes the
+positional vector of a particle, and <img class="math" src="_images/math/34857b3ba74ce5cd8607f3ebd23e9015908ada71.png" alt="i"/> and <img class="math" src="_images/math/8122aa89ea6e80784c6513d22787ad86e36ad0cc.png" alt="j"/> denote the indexes
+of two particles. Negative values of <img class="math" src="_images/math/dd84cb843a3b1f44c09b5e49fb02ad7ff526920d.png" alt="\delta_n"/> denote that the particles
 are overlapping.</p>
 </div>
 <div class="section" id="contact-interaction">
@@ -95,12 +97,12 @@ interaction is decomposed into normal and tangential components, relative to the
 contact interface orientation. The normal vector to the contact interface is
 found by:</p>
 <div class="math">
-<p><img src="_images/math/cf699492db927585a503d73d1c8a8e93d3fd1567.png" alt="\boldsymbol{n}^{ij} =
+<p><img src="_images/math/8bf1a4afd4cdf42bf3f7b27c9d9c99377a5d1898.png" alt="\boldsymbol{n}^{ij} =
 \frac{\boldsymbol{x}^i - \boldsymbol{x}^j}
 {||\boldsymbol{x}^i - \boldsymbol{x}^j||}"/></p>
-</div><p>The contact velocity <img class="math" src="_images/math/522c9c96bc63142fa2b83abe960622dcafd75875.png" alt="\dot{\boldsymbol{\delta}}"/> is found by:</p>
+</div><p>The contact velocity <img class="math" src="_images/math/0dd32d7f3a000398f4982bdbe7cb1da880e33298.png" alt="\dot{\boldsymbol{\delta}}"/> is found by:</p>
 <div class="math">
-<p><img src="_images/math/571952df10295a1251ad68112796e94f3fc54598.png" alt="\dot{\boldsymbol{\delta}}^{ij} =
+<p><img src="_images/math/767762b2cd832672331c1421813b919298d7e3b8.png" alt="\dot{\boldsymbol{\delta}}^{ij} =
 (\boldsymbol{x}^i - \boldsymbol{x}^j)
 + (r^i + \frac{\delta_n^{ij}}{2})
   (\boldsymbol{n}^{ij} \times \boldsymbol{\omega}^{i})
@@ -109,28 +111,28 @@ found by:</p>
 </div><p>The contact velocity is decomposed into normal and tangential components,
 relative to the contact interface. The normal component is:</p>
 <div class="math">
-<p><img src="_images/math/dfa75235bbe9a4311f49a1644137fd212ea3f4bb.png" alt="\dot{\delta}^{ij}_n =
+<p><img src="_images/math/c5671cc4a4d93628081c7bf7c0fd2cc6ff6c1cd3.png" alt="\dot{\delta}^{ij}_n =
 -(\dot{\boldsymbol{\delta}}^{ij} \cdot \boldsymbol{n}^{ij})"/></p>
 </div><p>and the tangential velocity component is found as:</p>
 <div class="math">
-<p><img src="_images/math/6d9528f9b5d0a2feda7dca87d5d1e8523d7cc4b1.png" alt="\dot{\boldsymbol{\delta}}^{ij}_t =
+<p><img src="_images/math/249d76d0a5d3773b138ce498e5df46c870f402b5.png" alt="\dot{\boldsymbol{\delta}}^{ij}_t =
 \dot{\boldsymbol{\delta}}^{ij}
 - \boldsymbol{n}^{ij}
   (\boldsymbol{n}^{ij} \cdot \dot{\boldsymbol{\delta}}^{ij})"/></p>
-</div><p>where <img class="math" src="_images/math/b95363838d60e863c4cb530ba409fa56dd735728.png" alt="\boldsymbol{\omega}"/> is the rotational velocity vector of a
+</div><p>where <img class="math" src="_images/math/6922b3e4505e825344dc326ade5f0c4be45ddd2f.png" alt="\boldsymbol{\omega}"/> is the rotational velocity vector of a
 particle. The total tangential displacement on the contact plane is found
 incrementally:</p>
 <div class="math">
-<p><img src="_images/math/474638ec351b4bfa321564aa3ea75c6a6b16b24c.png" alt="\boldsymbol{\delta}_{t,\text{uncorrected}}^{ij} =
+<p><img src="_images/math/213a272621ce146fc9f90ce519bc3dc1ac3337e8.png" alt="\boldsymbol{\delta}_{t,\text{uncorrected}}^{ij} =
 \int_0^{t_c}
 \dot{\boldsymbol{\delta}}^{ij}_t \Delta t"/></p>
-</div><p>where <img class="math" src="_images/math/42ea00932c36940fb8965e6e7f4fb2de5d616ee7.png" alt="t_c"/> is the duration of the contact and <img class="math" src="_images/math/5b4271afe7fc7c0ee84172e0ad19b82caf450c00.png" alt="\Delta t"/> is the
+</div><p>where <img class="math" src="_images/math/dfc85915a4cda974f3bd5c3c52b7d2e59598a1eb.png" alt="t_c"/> is the duration of the contact and <img class="math" src="_images/math/a1ffc0a012620941fe660cedabff822ce7162eca.png" alt="\Delta t"/> is the
 computational time step length. The tangential contact interface displacement is
 set to zero when a contact pair no longer overlaps. At each time step, the value
-of <img class="math" src="_images/math/8cfa62046b3a57f37068f027941acea702d9bd8a.png" alt="\boldsymbol{\delta}_t"/> is corrected for rotation of the contact
+of <img class="math" src="_images/math/bf7f4ceb6fce455ca0347cd7b704321b92e04f8c.png" alt="\boldsymbol{\delta}_t"/> is corrected for rotation of the contact
 interface:</p>
 <div class="math">
-<p><img src="_images/math/e12eccdaacf4bf3867a4e39d2f0be9eb7720060c.png" alt="\boldsymbol{\delta}_t^{ij} = \boldsymbol{\delta}_{t,\text{uncorrected}}^{ij}
+<p><img src="_images/math/9c2a28916b33bc70a170729d2f237eabae96c0c0.png" alt="\boldsymbol{\delta}_t^{ij} = \boldsymbol{\delta}_{t,\text{uncorrected}}^{ij}
 - (\boldsymbol{n}
   (\boldsymbol{n} \cdot \boldsymbol{\delta}_{t,\text{uncorrected}}^{ij})"/></p>
 </div><p>With all the geometrical and kinetic components determined, the resulting forces
@@ -138,17 +140,17 @@ of the particle interaction can be determined using a contact model. <tt class="
 features only one contact model in the normal direction to the contact; the
 linear-elastic-viscous (<em>Hookean</em> with viscous damping, or <em>Kelvin-Voigt</em>)
 contact model. The resulting force in the normal direction of the contact
-interface on particle <img class="math" src="_images/math/a581f053bbfa5115f42c13094857cdd12a37ec49.png" alt="i"/> is:</p>
+interface on particle <img class="math" src="_images/math/34857b3ba74ce5cd8607f3ebd23e9015908ada71.png" alt="i"/> is:</p>
 <div class="math">
-<p><img src="_images/math/8a89933fcdf0cde2a59b18d267abc2ce124940d0.png" alt="\boldsymbol{f}_n^{ij} = \left(
+<p><img src="_images/math/30d5d726338d5b3ac9d9b0003c564594fd6176ce.png" alt="\boldsymbol{f}_n^{ij} = \left(
 -k_n \delta_n^{ij} -\gamma_n \dot{\delta_n}^{ij}
 \right) \boldsymbol{n}^{ij}"/></p>
-</div><p>The parameter <img class="math" src="_images/math/66a1d8738af515286414e18d76a6e7f86b989afc.png" alt="k_n"/> is the defined <a class="reference external" href="https://en.wikipedia.org/wiki/Hooke's_law">spring coefficient</a> in the normal direction of the
-contact interface, and <img class="math" src="_images/math/3640b174f15a44d33ad8f0622bc44dce8d8f1692.png" alt="\gamma_n"/> is the defined contact interface
+</div><p>The parameter <img class="math" src="_images/math/fd26dda3f4f507f3fdfaff4fe0b468bee54e7c09.png" alt="k_n"/> is the defined <a class="reference external" href="https://en.wikipedia.org/wiki/Hooke's_law">spring coefficient</a> in the normal direction of the
+contact interface, and <img class="math" src="_images/math/55f6b5380d462f954b65d7a2cd05e02ff8cc832e.png" alt="\gamma_n"/> is the defined contact interface
 viscosity, also in the normal direction. The loss of energy in this interaction
-due to the viscous component is for particle <img class="math" src="_images/math/a581f053bbfa5115f42c13094857cdd12a37ec49.png" alt="i"/> calculated as:</p>
+due to the viscous component is for particle <img class="math" src="_images/math/34857b3ba74ce5cd8607f3ebd23e9015908ada71.png" alt="i"/> calculated as:</p>
 <div class="math">
-<p><img src="_images/math/04e9e1fe54cb1328e049a45b0acb8c3ccb0ab888.png" alt="\dot{e}^i_v = \gamma_n (\dot{\delta}^{ij}_n)^2"/></p>
+<p><img src="_images/math/68e0c54203bc81b45ebe5dbf7d89fc61aa794c1e.png" alt="\dot{e}^i_v = \gamma_n (\dot{\delta}^{ij}_n)^2"/></p>
 </div><p>The tangential force is determined by either a viscous-frictional contact model,
 or a elastic-viscous-frictional contact model. The former contact model is very
 computationally efficient, but somewhat inaccurate relative to the mechanics of
@@ -156,24 +158,24 @@ real materials.  The latter contact model is therefore the default, even though
 it results in longer computational times. The tangential force in the
 visco-frictional contact model:</p>
 <div class="math">
-<p><img src="_images/math/587f41674d8c1e5f151655cc5567c7f12cfea34a.png" alt="\boldsymbol{f}_t^{ij} = -\gamma_t \dot{\boldsymbol{\delta}_t}^{ij}"/></p>
-</div><p><img class="math" src="_images/math/3640b174f15a44d33ad8f0622bc44dce8d8f1692.png" alt="\gamma_n"/> is the defined contact interface viscosity in the tangential
+<p><img src="_images/math/2e9b3638163af9fc450acac1aba9911e57a5c691.png" alt="\boldsymbol{f}_t^{ij} = -\gamma_t \dot{\boldsymbol{\delta}_t}^{ij}"/></p>
+</div><p><img class="math" src="_images/math/55f6b5380d462f954b65d7a2cd05e02ff8cc832e.png" alt="\gamma_n"/> is the defined contact interface viscosity in the tangential
 direction. The tangential displacement along the contact interface
-(<img class="math" src="_images/math/8cfa62046b3a57f37068f027941acea702d9bd8a.png" alt="\boldsymbol{\delta}_t"/>) is not calculated and stored for this contact
+(<img class="math" src="_images/math/bf7f4ceb6fce455ca0347cd7b704321b92e04f8c.png" alt="\boldsymbol{\delta}_t"/>) is not calculated and stored for this contact
 model. The tangential force in the more realistic elastic-viscous-frictional
 contact model:</p>
 <div class="math">
-<p><img src="_images/math/48431e4412db6b2ffa7904f013daf5c0d6c61949.png" alt="\boldsymbol{f}_t^{ij} =
+<p><img src="_images/math/18950ecc92ecc7397337b5f39323453647e6434a.png" alt="\boldsymbol{f}_t^{ij} =
 -k_t \boldsymbol{\delta}_t^{ij} -\gamma_t \dot{\boldsymbol{\delta}_t}^{ij}"/></p>
-</div><p>The parameter <img class="math" src="_images/math/66a1d8738af515286414e18d76a6e7f86b989afc.png" alt="k_n"/> is the defined spring coefficient in the tangential
+</div><p>The parameter <img class="math" src="_images/math/fd26dda3f4f507f3fdfaff4fe0b468bee54e7c09.png" alt="k_n"/> is the defined spring coefficient in the tangential
 direction of the contact interface. Note that the tangential force is only
-found if the tangential displacement (<img class="math" src="_images/math/d18b93994f644beb72edf4196d4efed3caf5b19c.png" alt="\delta_t"/>) or the tangential
-velocity (<img class="math" src="_images/math/6b038d0d06f6fa38bcb85df9e6f8bed4155ded47.png" alt="\dot{\delta}_t"/>) is non-zero, in order to avoid division by
-zero. Otherwise it is defined as being <img class="math" src="_images/math/b3cb421b6b325deff2bde26de2fa150f94c73246.png" alt="[0,0,0]"/>.</p>
+found if the tangential displacement (<img class="math" src="_images/math/2ab5affb59066624277032c5076d7227db701fd9.png" alt="\delta_t"/>) or the tangential
+velocity (<img class="math" src="_images/math/c51284f727b4cb7dac214d351742114146795074.png" alt="\dot{\delta}_t"/>) is non-zero, in order to avoid division by
+zero. Otherwise it is defined as being <img class="math" src="_images/math/d5ba56a402179916023ef587910f0beff5ea1608.png" alt="[0,0,0]"/>.</p>
 <p>For both types of contact model, the tangential force is limited by the Coulomb
 criterion of static and dynamic friction:</p>
 <div class="math">
-<p><img src="_images/math/17c2d34ded49c3a5cca11a4f1f20d5fe7117f964.png" alt="||\boldsymbol{f}^{ij}_t|| \leq
+<p><img src="_images/math/1d24d160d60604202abbae47aba869e96fb450aa.png" alt="||\boldsymbol{f}^{ij}_t|| \leq
 \begin{cases}
 \mu_s ||\boldsymbol{f}^{ij}_n|| &amp;
     \text{if} \quad ||\boldsymbol{f}_t^{ij}|| = 0 \\
@@ -184,7 +186,7 @@ criterion of static and dynamic friction:</p>
 reached, the tangential displacement along the contact interface is limited to
 this value:</p>
 <div class="math">
-<p><img src="_images/math/3426034f2cd72ab441922edec729ae5d5212f047.png" alt="\boldsymbol{\delta}_t^{ij} =
+<p><img src="_images/math/ac73c7c8c596c32306e6ea203ebd039dd3538f06.png" alt="\boldsymbol{\delta}_t^{ij} =
 \frac{1}{k_t} \left(
 \mu_d ||\boldsymbol{f}_n^{ij}||
 \frac{\boldsymbol{f}^{ij}_t}{||\boldsymbol{f}^{ij}_t||}
@@ -192,30 +194,30 @@ this value:</p>
 </div><p>If the tangential force reaches the Coulomb limit, the energy lost due to
 frictional dissipation is calculated as:</p>
 <div class="math">
-<p><img src="_images/math/edd52ffa94a411e3a7b271caf0a9d1ea6fda0f4c.png" alt="\dot{e}^i_s = \frac{||\boldsymbol{f}^{ij}_t
+<p><img src="_images/math/9d0d9139c35e749d7b4698592c91045d086d8b99.png" alt="\dot{e}^i_s = \frac{||\boldsymbol{f}^{ij}_t
 \dot{\boldsymbol{\delta}}_t^{ij} \Delta t||}{\Delta t}"/></p>
 </div><p>The loss of energy by viscous dissipation in the tangential direction is not
 found.</p>
 </div>
 <div class="section" id="temporal-integration">
 <h2>Temporal integration<a class="headerlink" href="#temporal-integration" title="Permalink to this headline">¶</a></h2>
-<p>In the DEM, the time is discretized into small steps (<img class="math" src="_images/math/5b4271afe7fc7c0ee84172e0ad19b82caf450c00.png" alt="\Delta t"/>). For each time
+<p>In the DEM, the time is discretized into small steps (<img class="math" src="_images/math/a1ffc0a012620941fe660cedabff822ce7162eca.png" alt="\Delta t"/>). For each time
 step, the entire network of contacts is resolved, and the resulting forces and
 torques for each particle are found. With these values at hand, the new
 linear and rotational accelerations can be found using
 <a class="reference external" href="https://en.wikipedia.org/wiki/Newton%27s_laws_of_motion">Newton&#8217;s second law</a>
-of the motion of solid bodies. If a particle with mass <img class="math" src="_images/math/c4bb40dd65eae6c11b325989b14e0b8d35e4e3ef.png" alt="m"/> at a point in time
-experiences a sum of forces denoted <img class="math" src="_images/math/8f28cef89dfa1989be5e263ac228a61a92736da9.png" alt="\boldsymbol{F}"/>, the resultant acceleration
-(<img class="math" src="_images/math/701df29c5482cdf1e577052c537c176f5a12caf5.png" alt="\boldsymbol{a}"/>) can be found by rearranging Newton&#8217;s second law:</p>
+of the motion of solid bodies. If a particle with mass <img class="math" src="_images/math/f5047d1e0cbb50ec208923a22cd517c55100fa7b.png" alt="m"/> at a point in time
+experiences a sum of forces denoted <img class="math" src="_images/math/5ed37435199e280338e0e6dc0c225e4230719b0a.png" alt="\boldsymbol{F}"/>, the resultant acceleration
+(<img class="math" src="_images/math/486938d1819df5972cb80ef2d101517b20412366.png" alt="\boldsymbol{a}"/>) can be found by rearranging Newton&#8217;s second law:</p>
 <div class="math">
-<p><img src="_images/math/3b6d032ddaf923f920fc753c9259dfc5cb626837.png" alt="\boldsymbol{F} = m \boldsymbol{a} \Rightarrow \boldsymbol{a} = \frac{\boldsymbol{F}}{m}"/></p>
+<p><img src="_images/math/c78863bcf0ada3d17f98c21c00ca8b115f6b61de.png" alt="\boldsymbol{F} = m \boldsymbol{a} \Rightarrow \boldsymbol{a} = \frac{\boldsymbol{F}}{m}"/></p>
 </div><p>The new velocity and position is found by integrating the above equation
 with regards to time. The simplest integration scheme in this regard is the
 <a class="reference external" href="https://en.wikipedia.org/wiki/Euler_method">Euler method</a>:</p>
 <div class="math">
-<p><img src="_images/math/d34109b1b68b9bfbd209053492066ff04075aa16.png" alt="\boldsymbol{v} = \boldsymbol{v}_{old} + \boldsymbol{a} \Delta t"/></p>
+<p><img src="_images/math/fca2f0caf945233a44e5c1c1479f13d636edbf42.png" alt="\boldsymbol{v} = \boldsymbol{v}_{old} + \boldsymbol{a} \Delta t"/></p>
 </div><div class="math">
-<p><img src="_images/math/852f6a447b7ccf231f8e43dbcce1ae99280f8020.png" alt="\boldsymbol{p} = \boldsymbol{p}_{old} + \boldsymbol{v} \Delta t"/></p>
+<p><img src="_images/math/93ddc61f81c056650ee9c02c3e62ed84e4a5327f.png" alt="\boldsymbol{p} = \boldsymbol{p}_{old} + \boldsymbol{v} \Delta t"/></p>
 </div></div>
 </div>
 
@@ -283,7 +285,7 @@ with regards to time. The simplest integration scheme in this regard is the
     </div>
     <div class="footer">
         &copy; Copyright 2014, Anders Damsgaard.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>
