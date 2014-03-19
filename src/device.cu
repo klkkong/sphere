@@ -35,7 +35,8 @@
 //const double tolerance = 1.0e-3;
 //const double tolerance = 1.0e-5;
 //const double tolerance = 1.0e-7;
-const double tolerance = 1.0e-9;
+//const double tolerance = 1.0e-9;
+const double tolerance = 1.0e-8;
 
 // The maximal number of iterations to perform
 const unsigned int maxiter = 1e4;
@@ -44,7 +45,7 @@ const unsigned int maxiter = 1e4;
 const unsigned int nijacnorm = 10;
 
 // Write max. residual during the latest solution loop to logfile
-// 'max_norm_res.dat'
+// 'max_res_norm.dat'
 // 0: False, 1: True
 const int write_res_log = 0;
 
@@ -1238,11 +1239,6 @@ __host__ void DEM::startTime()
                 checkForCudaErrors("Post copyValues (epsilon_new->epsilon)",
                         iter);
 
-                smoothing<Float><<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_epsilon);
-                cudaThreadSynchronize();
-                checkForCudaErrors("Post smoothing(epsilon)", iter);
-
                 if (report_epsilon == 1) {
                     std::cout << "\n###### JACOBI ITERATION "
                         << nijac << " after jacobiIterationNS ######"
@@ -1276,7 +1272,7 @@ __host__ void DEM::startTime()
                     break;  // solution has converged, exit Jacobi iter. loop
                 }
 
-                if (nijac == maxiter-1) {
+                if (nijac >= maxiter-1) {
 
                     if (write_conv_log == 1)
                         convlog << iter << '\t' << nijac << std::endl;
@@ -1285,7 +1281,8 @@ __host__ void DEM::startTime()
                         << iter*time.dt << " s: "
                         "Error, the epsilon solution in the fluid "
                         "calculations did not converge. Try increasing the "
-                        "value of 'maxiter' or increase 'tolerance'."
+                        "value of 'maxiter' (" << maxiter
+                        << ") or increase 'tolerance' (" << tolerance << ")."
                         << std::endl;
                 }
                 //break; // end after Jacobi first iteration

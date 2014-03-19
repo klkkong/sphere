@@ -35,7 +35,6 @@
 // parameter should be in the range [0.0;1.0[. The higher the value, the more
 // averaging is introduced. A value of 0.0 disables all averaging.
 #define GAMMA 0.0
-//#define GAMMA 0.1
 
 // Arithmetic mean of two numbers
 __inline__ __device__ Float amean(Float a, Float b) {
@@ -1731,10 +1730,14 @@ __global__ void findNSforcing(
 
             // Find forcing function coefficients
             //f1 = 0.0;
-            f1 = div_v_p*devC_params.rho_f/devC_dt
+            /*f1 = div_v_p*devC_params.rho_f/devC_dt
                 + dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi)
                 + 0.0*dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
-            f2 = 0.0*grad_phi/phi;
+            f2 = 0.0*grad_phi/phi;*/
+            f1 = div_v_p*devC_params.rho_f/devC_dt
+                + dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi)
+                + dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
+            f2 = grad_phi/phi;
 
             // Report values terms in the forcing function for debugging
             /*
@@ -1795,6 +1798,39 @@ __global__ void findNSforcing(
     }
 }
 
+// Spatial smoothing, used for the epsilon values. See adjustable parameter
+// GAMMA at the top of this file. If there are several blocks, there will be
+// problems at the block boundaries, since the update will mix non-smoothed and
+// smoothed values.
+__device__ Float smoothing(
+        Float* dev_arr,
+        Float e,
+        const unsigned int x,
+        const unsigned int y,
+        const unsigned int z)
+{
+    if (GAMMA > 0.0) {
+
+        __syncthreads();
+        const Float e_xn = dev_arr[idx(x-1,y,z)];
+        const Float e_xp = dev_arr[idx(x+1,y,z)];
+        const Float e_yn = dev_arr[idx(x,y-1,z)];
+        const Float e_yp = dev_arr[idx(x,y+1,z)];
+        const Float e_zn = dev_arr[idx(x,y,z-1)];
+        const Float e_zp = dev_arr[idx(x,y,z+1)];
+
+        const Float e_avg_neigbors = 1.0/6.0 *
+            (e_xn + e_xp + e_yn + e_yp + e_zn + e_zp);
+
+        const Float e_smooth = (1.0 - GAMMA)*e + GAMMA*e_avg_neigbors;
+
+        //printf("%d,%d,%d\te = %f e_smooth = %f\n", x,y,z, e, e_smooth);
+
+        return e_smooth;
+    }
+    return e;
+}
+
 // Perform a single Jacobi iteration
 __global__ void jacobiIterationNS(
         Float* dev_ns_epsilon,
@@ -1852,7 +1888,7 @@ __global__ void jacobiIterationNS(
         const Float dxdx = dx*dx;
         const Float dydy = dy*dy;
         const Float dzdz = dz*dz;
-        const Float e_new
+        Float e_new
             = (-dxdx*dydy*dzdz*f
                     + dydy*dzdz*(e_xn + e_xp)
                     + dxdx*dzdz*(e_yn + e_yp)
@@ -1866,6 +1902,8 @@ __global__ void jacobiIterationNS(
         /*printf("[%d,%d,%d]\t e = %f\tf = %f\te_new = %f\n",
                 x,y,z, e, f, e_new);*/
 
+        e_new = smoothing(dev_ns_epsilon_new, e_new, x, y, z);
+
         // Find the normalized residual value. A small value is added to the
         // denominator to avoid a divide by zero.
         const Float res_norm = (e_new - e)*(e_new - e)/(e_new*e_new + 1.0e-16);
@@ -1875,53 +1913,6 @@ __global__ void jacobiIterationNS(
         //dev_ns_epsilon_new[cellidx] = e_new;
         dev_ns_epsilon_new[cellidx] = e*(1.0-THETA) + e_new*THETA;
         dev_ns_norm[cellidx] = res_norm;
-    }
-}
-
-// Spatial smoothing, used for the epsilon values. See adjustable parameter
-// GAMMA at the top of this file. If there are several blocks, there will be
-// problems at the block boundaries, since the update will mix non-smoothed and
-// smoothed values.
-template<typename T>
-__global__ void smoothing(T* dev_arr)
-{
-    // 3D thread index
-    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
-    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
-    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
-
-    // Grid dimensions
-    const unsigned int nx = devC_grid.num[0];
-    const unsigned int ny = devC_grid.num[1];
-    const unsigned int nz = devC_grid.num[2];
-
-    // 1D thread index
-    const unsigned int cellidx = idx(x,y,z);
-
-    // Check that we are not outside the fluid grid
-    if (x < nx && y < ny && z < nz) {
-
-        //if (GAMMA > 0.0) {
-
-            __syncthreads();
-            const T e_xn = dev_arr[idx(x-1,y,z)];
-            const T e    = dev_arr[cellidx];
-            const T e_xp = dev_arr[idx(x+1,y,z)];
-            const T e_yn = dev_arr[idx(x,y-1,z)];
-            const T e_yp = dev_arr[idx(x,y+1,z)];
-            const T e_zn = dev_arr[idx(x,y,z-1)];
-            const T e_zp = dev_arr[idx(x,y,z+1)];
-
-            const T e_avg_neigbors = 1.0/6.0 *
-                (e_xn + e_xp + e_yn + e_yp + e_zn + e_zp);
-
-            const T e_new = (1.0 - GAMMA)*e + GAMMA*e_avg_neigbors;
-
-            //printf("%d,%d,%d\te = %f e_new = %f\n", x,y,z, e, e_new);
-
-            __syncthreads();
-            dev_arr[cellidx] = e_new;
-        //}
     }
 }
 
