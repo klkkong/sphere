@@ -1218,7 +1218,9 @@ __host__ void DEM::startTime()
                         dev_ns_epsilon,
                         dev_ns_epsilon_new,
                         dev_ns_norm,
-                        dev_ns_f);
+                        dev_ns_f,
+                        ns.bc_bot,
+                        ns.bc_top);
                 cudaThreadSynchronize();
                 if (PROFILING == 1)
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,

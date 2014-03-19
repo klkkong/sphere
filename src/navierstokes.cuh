@@ -34,6 +34,7 @@
 // the average epsilon value of the six closest (face) neighbor cells. This
 // parameter should be in the range [0.0;1.0[. The higher the value, the more
 // averaging is introduced. A value of 0.0 disables all averaging.
+//#define GAMMA 0.5
 #define GAMMA 0.5
 
 // Arithmetic mean of two numbers
@@ -1829,10 +1830,12 @@ __device__ Float smoothing(
 
 // Perform a single Jacobi iteration
 __global__ void jacobiIterationNS(
-        Float* dev_ns_epsilon,
+        const Float* dev_ns_epsilon,
         Float* dev_ns_epsilon_new,
         Float* dev_ns_norm,
-        Float* dev_ns_f)
+        const Float* dev_ns_f,
+        const int bc_bot,
+        const int bc_top)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -1858,12 +1861,23 @@ __global__ void jacobiIterationNS(
     // internal nodes only
     //if (x > 0 && x < nx-1 && y > 0 && y < ny-1 && z > 0 && z < nz-1) {
 
-    // Perform the epsilon updates for all non-ghost nodes except the Dirichlet
-    // boundaries at z=0 and z=nz-1
-    if (x < nx && y < ny && z > 0 && z < nz-1) {
+    // Lower boundary: Dirichlet. Upper boundary: Dirichlet
+    //if (x < nx && y < ny && z > 0 && z < nz-1) {
 
     // Lower boundary: Neumann. Upper boundary: Dirichlet
     //if (x < nx && y < ny && z < nz-1) {
+
+    // Perform the epsilon updates for all non-ghost nodes except the Dirichlet
+    // boundaries at z=0 and z=nz-1.
+    // Adjust z range if a boundary has the Dirichlet boundary condition.
+    int z_min = 0;
+    int z_max = nz-1;
+    if (bc_bot == 0)
+        z_min = 1;
+    if (bc_top == 0)
+        z_max = nz-2;
+
+    if (x < nx && y < ny && z >= z_min && z <= z_max) {
 
         // Read the epsilon values from the cell and its 6 neighbors
         __syncthreads();
