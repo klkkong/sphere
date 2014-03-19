@@ -3605,6 +3605,17 @@ class sim:
         plt.clf()
         plt.close(fig)
 
+    def acceleration(self, idx=-1):
+        '''
+        Returns the acceleration of one or more particles, selected by their
+        index.
+
+        :param idx: Index or index range of particles
+        :type idx: int, list or numpy.array
+        :returns: n-by-3 matrix of acceleration(s)
+        :return type: numpy.array
+        '''
+        return self.force[idx,:]/(V_sphere(self.radius[idx])*self.rho[0])
 
 
 def convert(graphics_format = 'png', folder = '../img_out'):
