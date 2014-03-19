@@ -1768,7 +1768,6 @@ __global__ void findNSforcing(
                     "zp = %f\n",
                     x,y,z, phi_xn, phi_xp, phi_yn, phi_yp, phi_zn, phi_zp);*/
 
-
             // Save values
             __syncthreads();
             dev_ns_f1[cellidx] = f1;
@@ -1800,11 +1799,11 @@ __global__ void findNSforcing(
 
 // Spatial smoothing, used for the epsilon values. See adjustable parameter
 // GAMMA at the top of this file. If there are several blocks, there will be
-// problems at the block boundaries, since the update will mix non-smoothed and
-// smoothed values.
+// small errors at the block boundaries, since the update will mix non-smoothed
+// and smoothed values.
 __device__ Float smoothing(
         Float* dev_arr,
-        Float e,
+        const Float e,
         const unsigned int x,
         const unsigned int y,
         const unsigned int z)
