@@ -12,29 +12,7 @@
 #include "utility.h"
 #include "constants.cuh"
 #include "debug.h"
-
-// Solver parameter, used in velocity prediction and pressure iteration
-// 1.0: Use old pressures for fluid velocity prediction (see Langtangen et al.
-// 2002)
-// 0.0: Do not use old pressures for fluid velocity prediction (Chorin's
-// original projection method, see Chorin (1968) and "Projection method (fluid
-// dynamics)" page on Wikipedia.
-// The best results precision and performance-wise are obtained by using BETA=0
-// and a very low tolerance criteria value (e.g. 1.0e-9)
-#define BETA 0.0
-
-// Under-relaxation parameter, used in solution of Poisson equation. The value
-// should be within the range ]0.0;1.0]. At a value of 1.0, the new estimate of
-// epsilon values is used exclusively. At lower values, a linear interpolation
-// between new and old values is used. The solution typically converges faster
-// with a value of 1.0, but instabilities may be avoided with lower values.
-#define THETA 1.0
-
-// Smoothing parameter. The epsilon (pressure) values are smoothed by including
-// the average epsilon value of the six closest (face) neighbor cells. This
-// parameter should be in the range [0.0;1.0[. The higher the value, the more
-// averaging is introduced. A value of 0.0 disables all averaging.
-#define GAMMA 0.0
+#include "navierstokes_solver_parameters.h"
 
 // Arithmetic mean of two numbers
 __inline__ __device__ Float amean(Float a, Float b) {
@@ -1735,7 +1713,9 @@ __global__ void findNSforcing(
             f1 = div_v_p*devC_params.rho_f/devC_dt
                 + dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi)
                 + dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
+                //+ 0.0*dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
             f2 = grad_phi/phi;
+            //f2 = 0.0*grad_phi/phi;
 
             // Report values terms in the forcing function for debugging
             /*
@@ -1845,8 +1825,8 @@ __global__ void smoothing(
 
             const T e_smooth = (1.0 - GAMMA)*e + GAMMA*e_avg_neigbors;
 
-            /*printf("%d,%d,%d\te = %f e_smooth = %f\n", x,y,z, e, e_smooth);
-              printf("%d,%d,%d\te_xn = %f, e_xp = %f, e_yn = %f, e_yp = %f,"
+            //printf("%d,%d,%d\te = %f e_smooth = %f\n", x,y,z, e, e_smooth);
+            /*printf("%d,%d,%d\te_xn = %f, e_xp = %f, e_yn = %f, e_yp = %f,"
               " e_zn = %f, e_zp = %f\n", x,y,z, e_xn, e_xp,
               e_yn, e_yp, e_zn, e_zp);*/
 
@@ -1893,7 +1873,7 @@ __device__ Float smoothing(
 __global__ void jacobiIterationNS(
         const Float* dev_ns_epsilon,
         Float* dev_ns_epsilon_new,
-        //Float* dev_ns_norm,
+        Float* dev_ns_norm,
         const Float* dev_ns_f,
         const int bc_bot,
         const int bc_top)
@@ -1952,7 +1932,6 @@ __global__ void jacobiIterationNS(
 
         // Read the value of the forcing function
         const Float f = dev_ns_f[cellidx];
-        //const Float f = 0.0;
 
         // New value of epsilon in 3D update, derived by rearranging the
         // discrete Laplacian
@@ -1973,10 +1952,12 @@ __global__ void jacobiIterationNS(
         /*printf("[%d,%d,%d]\t e = %f\tf = %f\te_new = %f\n",
                 x,y,z, e, f, e_new);*/
 
-        // Write results, apply relaxation parameter THETA to epsilon solution
+        const Float res_norm = (e_new - e)*(e_new - e)/(e_new*e_new + 1.0e-16);
+        const Float e_relax = e*(1.0-THETA) + e_new*THETA;
+
         __syncthreads();
-        //dev_ns_epsilon_new[cellidx] = e_new;
-        dev_ns_epsilon_new[cellidx] = e*(1.0-THETA) + e_new*THETA;
+        dev_ns_epsilon_new[cellidx] = e_relax;
+        dev_ns_norm[cellidx] = res_norm;
     }
 }
 

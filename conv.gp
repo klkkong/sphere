@@ -4,7 +4,7 @@ set terminal dumb
 #set terminal pngcairo
 #set out 'output/'.sid.'-conv.png'
 
-set title "Convergence evolution in CFD solver"
+set title "Convergence evolution in CFD solver (".sid.")"
 set xlabel "Time step"
 set ylabel "Jacobi iterations"
 

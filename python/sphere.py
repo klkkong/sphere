@@ -301,6 +301,27 @@ class sim:
             self.free_slip_bot = numpy.ones(1, dtype=numpy.int32)
             self.free_slip_top = numpy.ones(1, dtype=numpy.int32)
 
+
+            ## Solver parameters
+
+            # Smoothing parameter, should be in the range [0.0;1.0[.
+            # 0.0 = no smoothing.
+            self.gamma = numpy.array(0.0)
+
+            # Under-relaxation parameter, should be in the range ]0.0;1.0].
+            # 1.0 = no under-relaxation
+            self.theta = numpy.array(1.0)
+
+            # Velocity projection parameter, should be in the range [0.0;1.0]
+            self.beta = numpy.array(0.0)
+
+            # Tolerance criteria for the normalized max. residual
+            self.tolerance = numpy.array(1.0e-8)
+
+            # The maximum number of iterations to perform per time step
+            self.maxiter = numpy.array(1e4)
+
+
     def __cmp__(self, other):
         '''
         Called when to sim objects are compared. Returns 0 if the values
