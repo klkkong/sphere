@@ -73,6 +73,7 @@ void DEM::initNSmemDev(void)
     cudaMalloc((void**)&dev_ns_div_phi_v_v, memSizeF*3); // div(phi v v)
     cudaMalloc((void**)&dev_ns_epsilon, memSizeF); // pressure difference
     cudaMalloc((void**)&dev_ns_epsilon_new, memSizeF); // new pressure diff.
+    cudaMalloc((void**)&dev_ns_epsilon_old, memSizeF); // old pressure diff.
     cudaMalloc((void**)&dev_ns_norm, memSizeF);  // normalized residual
     cudaMalloc((void**)&dev_ns_f, memSizeF);     // forcing function value
     cudaMalloc((void**)&dev_ns_f1, memSizeF);    // constant addition in forcing
@@ -104,6 +105,7 @@ void DEM::freeNSmemDev()
     cudaFree(dev_ns_div_phi_v_v);
     cudaFree(dev_ns_epsilon);
     cudaFree(dev_ns_epsilon_new);
+    cudaFree(dev_ns_epsilon_old);
     cudaFree(dev_ns_norm);
     cudaFree(dev_ns_f);
     cudaFree(dev_ns_f1);
@@ -1798,6 +1800,63 @@ __global__ void findNSforcing(
 // GAMMA at the top of this file. If there are several blocks, there will be
 // small errors at the block boundaries, since the update will mix non-smoothed
 // and smoothed values.
+template<typename T>
+__global__ void smoothing(
+        T* dev_arr,
+        const unsigned int bc_bot,
+        const unsigned int bc_top)
+{
+    if (GAMMA > 0.0) {
+        // 3D thread index
+        const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+        const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+        const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+        // Grid dimensions
+        const unsigned int nx = devC_grid.num[0];
+        const unsigned int ny = devC_grid.num[1];
+        const unsigned int nz = devC_grid.num[2];
+
+        // 1D thread index
+        const unsigned int cellidx = idx(x,y,z);
+
+        // Perform the epsilon updates for all non-ghost nodes except the
+        // Dirichlet boundaries at z=0 and z=nz-1.
+        // Adjust z range if a boundary has the Dirichlet boundary condition.
+        int z_min = 0;
+        int z_max = nz-1;
+        if (bc_bot == 0)
+            z_min = 1;
+        if (bc_top == 0)
+            z_max = nz-2;
+
+        if (x < nx && y < ny && z >= z_min && z <= z_max) {
+
+            __syncthreads();
+            const T e_xn = dev_arr[idx(x-1,y,z)];
+            const T e    = dev_arr[cellidx];
+            const T e_xp = dev_arr[idx(x+1,y,z)];
+            const T e_yn = dev_arr[idx(x,y-1,z)];
+            const T e_yp = dev_arr[idx(x,y+1,z)];
+            const T e_zn = dev_arr[idx(x,y,z-1)];
+            const T e_zp = dev_arr[idx(x,y,z+1)];
+
+            const T e_avg_neigbors = 1.0/6.0 *
+                (e_xn + e_xp + e_yn + e_yp + e_zn + e_zp);
+
+            const T e_smooth = (1.0 - GAMMA)*e + GAMMA*e_avg_neigbors;
+
+            /*printf("%d,%d,%d\te = %f e_smooth = %f\n", x,y,z, e, e_smooth);
+              printf("%d,%d,%d\te_xn = %f, e_xp = %f, e_yn = %f, e_yp = %f,"
+              " e_zn = %f, e_zp = %f\n", x,y,z, e_xn, e_xp,
+              e_yn, e_yp, e_zn, e_zp);*/
+
+            __syncthreads();
+            dev_arr[cellidx] = e_smooth;
+        }
+    }
+}
+
 __device__ Float smoothing(
         Float* dev_arr,
         const Float e,
@@ -1820,7 +1879,10 @@ __device__ Float smoothing(
 
         const Float e_smooth = (1.0 - GAMMA)*e + GAMMA*e_avg_neigbors;
 
-        //printf("%d,%d,%d\te = %f e_smooth = %f\n", x,y,z, e, e_smooth);
+        /*printf("%d,%d,%d\te = %f e_smooth = %f\n", x,y,z, e, e_smooth);
+        printf("%d,%d,%d\te_xn = %f, e_xp = %f, e_yn = %f, e_yp = %f,"
+                " e_zn = %f, e_zp = %f\n", x,y,z, e_xn, e_xp,
+                e_yn, e_yp, e_zn, e_zp);*/
 
         return e_smooth;
     } else {
@@ -1832,7 +1894,7 @@ __device__ Float smoothing(
 __global__ void jacobiIterationNS(
         const Float* dev_ns_epsilon,
         Float* dev_ns_epsilon_new,
-        Float* dev_ns_norm,
+        //Float* dev_ns_norm,
         const Float* dev_ns_f,
         const int bc_bot,
         const int bc_top)
@@ -1912,17 +1974,10 @@ __global__ void jacobiIterationNS(
         /*printf("[%d,%d,%d]\t e = %f\tf = %f\te_new = %f\n",
                 x,y,z, e, f, e_new);*/
 
-        e_new = smoothing(dev_ns_epsilon_new, e_new, x, y, z);
-
-        // Find the normalized residual value. A small value is added to the
-        // denominator to avoid a divide by zero.
-        const Float res_norm = (e_new - e)*(e_new - e)/(e_new*e_new + 1.0e-16);
-
         // Write results, apply relaxation parameter THETA to epsilon solution
         __syncthreads();
         //dev_ns_epsilon_new[cellidx] = e_new;
         dev_ns_epsilon_new[cellidx] = e*(1.0-THETA) + e_new*THETA;
-        dev_ns_norm[cellidx] = res_norm;
     }
 }
 
@@ -1960,6 +2015,53 @@ __global__ void copyValues(
         dev_write[cellidx] = val;
     }
 }
+
+// Find and store the normalized residuals
+__global__ void findNormalizedResiduals(
+        Float* dev_ns_epsilon_old,
+        Float* dev_ns_epsilon,
+        Float* dev_ns_norm,
+        const unsigned int bc_bot,
+        const unsigned int bc_top)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    // 1D thread index
+    const unsigned int cellidx = idx(x,y,z);
+
+    // Perform the epsilon updates for all non-ghost nodes except the
+    // Dirichlet boundaries at z=0 and z=nz-1.
+    // Adjust z range if a boundary has the Dirichlet boundary condition.
+    int z_min = 0;
+    int z_max = nz-1;
+    if (bc_bot == 0)
+        z_min = 1;
+    if (bc_top == 0)
+        z_max = nz-2;
+
+    if (x < nx && y < ny && z >= z_min && z <= z_max) {
+
+        __syncthreads();
+        const Float e = dev_ns_epsilon_old[cellidx];
+        const Float e_new = dev_ns_epsilon[cellidx];
+
+        // Find the normalized residual value. A small value is added to the
+        // denominator to avoid a divide by zero.
+        const Float res_norm = (e_new - e)*(e_new - e)/(e_new*e_new + 1.0e-16);
+
+        __syncthreads();
+        dev_ns_norm[cellidx] = res_norm;
+    }
+}
+
 
 // Computes the new velocity and pressure using the corrector
 __global__ void updateNSvelocityPressure(

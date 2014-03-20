@@ -3618,7 +3618,8 @@ class sim:
         '''
         if idx == -1:
             idx = range(self.np)
-        return self.force[idx,:]/(V_sphere(self.radius[idx])*self.rho[0])
+        return self.force[idx,:]/(V_sphere(self.radius[idx])*self.rho[0]) + \
+                self.g
 
 def convert(graphics_format = 'png', folder = '../img_out'):
     '''

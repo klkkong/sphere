@@ -185,6 +185,7 @@ class DEM {
         Float3* dev_ns_div_phi_v_v;  // Divegence used in velocity prediction
         Float*  dev_ns_epsilon;      // Pressure difference
         Float*  dev_ns_epsilon_new;  // Pressure diff. after Jacobi iteration
+        Float*  dev_ns_epsilon_old;  // Pressure diff. before Jacobi iteration
         Float*  dev_ns_norm;         // Normalized residual of epsilon values
         Float*  dev_ns_f;            // Values of forcing function
         Float*  dev_ns_f1;           // Constant terms in forcing function

@@ -1211,13 +1211,21 @@ __host__ void DEM::startTime()
                     printNSarray(stdout, ns.epsilon, "epsilon");
                 }
 
+                // Store old values
+                copyValues<Float><<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_epsilon,
+                        dev_ns_epsilon_old);
+                cudaThreadSynchronize();
+                checkForCudaErrors("Post copyValues (epsilon->epsilon_old)",
+                        iter);
+
                 // Perform a single Jacobi iteration
                 if (PROFILING == 1)
                     startTimer(&kernel_tic);
                 jacobiIterationNS<<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_epsilon,
                         dev_ns_epsilon_new,
-                        dev_ns_norm,
+                        //dev_ns_norm,
                         dev_ns_f,
                         ns.bc_bot,
                         ns.bc_top);
@@ -1238,6 +1246,29 @@ __host__ void DEM::startTime()
                         dev_ns_epsilon);
                 cudaThreadSynchronize();
                 checkForCudaErrors("Post copyValues (epsilon_new->epsilon)",
+                        iter);
+
+                setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_epsilon,
+                        ns.bc_bot, ns.bc_top);
+                cudaThreadSynchronize();
+                checkForCudaErrors("Post setNSghostNodesEpsilon(3)",
+                        iter);
+
+                smoothing<Float><<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_epsilon,
+                        ns.bc_bot, ns.bc_top);
+                cudaThreadSynchronize();
+                checkForCudaErrors("Post smoothing",
+                        iter);
+
+                findNormalizedResiduals<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_epsilon_old,
+                        dev_ns_epsilon,
+                        dev_ns_norm,
+                        ns.bc_bot, ns.bc_top);
+                cudaThreadSynchronize();
+                checkForCudaErrors("Post findNormalizedResiduals",
                         iter);
 
                 if (report_epsilon == 1) {
