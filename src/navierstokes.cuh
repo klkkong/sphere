@@ -34,7 +34,7 @@
 // the average epsilon value of the six closest (face) neighbor cells. This
 // parameter should be in the range [0.0;1.0[. The higher the value, the more
 // averaging is introduced. A value of 0.0 disables all averaging.
-#define GAMMA 0.1
+#define GAMMA 0.0
 
 // Arithmetic mean of two numbers
 __inline__ __device__ Float amean(Float a, Float b) {
