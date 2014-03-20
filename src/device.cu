@@ -1174,7 +1174,7 @@ __host__ void DEM::startTime()
                     printNSarray(stdout, ns.epsilon, "epsilon");
                 }
 
-                smoothing<Float><<<dimGridFluid, dimBlockFluid>>>(
+                /*smoothing<Float><<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_epsilon,
                         ns.bc_bot, ns.bc_top);
                 cudaThreadSynchronize();
@@ -1194,6 +1194,7 @@ __host__ void DEM::startTime()
                 cudaThreadSynchronize();
                 checkForCudaErrors("Post setNSghostNodesEpsilon(3)",
                         iter);
+                        */
 
                 if (report_epsilon == 1) {
                     std::cout << "\n###### JACOBI ITERATION "
@@ -1278,6 +1279,12 @@ __host__ void DEM::startTime()
 
                     if (write_conv_log == 1 && iter % conv_log_interval == 0)
                         convlog << iter << '\t' << nijac << std::endl;
+
+                    smoothing<Float><<<dimGridFluid, dimBlockFluid>>>(
+                      dev_ns_epsilon,
+                      ns.bc_bot, ns.bc_top);
+                    cudaThreadSynchronize();
+                    checkForCudaErrors("Post smoothing", iter);
 
                     break;  // solution has converged, exit Jacobi iter. loop
                 }
