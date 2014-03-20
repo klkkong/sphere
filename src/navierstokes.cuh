@@ -1611,7 +1611,7 @@ __global__ void findPredNSvelocities(
         Float3 v_p = v
             + pressure_term
             + 1.0/devC_params.rho_f*div_phi_tau*devC_dt/phi
-            //+ devC_dt*(f_g - f_i)
+            + devC_dt*(f_g) // uncomment this line to disable gravity
             + devC_dt*(-1.0*f_i)
             - v*dphi/phi
             - div_phi_vi_v*devC_dt/phi;
