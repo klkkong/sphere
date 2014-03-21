@@ -1043,8 +1043,8 @@ class sim:
         the arrows.
 
         If several data files are generated for the same simulation (e.g. using
-        the :func:`writeVTKall()` function), it is able to step the visualization
-        through time by using the ParaView controls.
+        the :func:`writeVTKall()` function), it is able to step the
+        visualization through time by using the ParaView controls.
 
         :param verbose: Show diagnostic information (default = True)
         :type verbose: bool
@@ -1057,10 +1057,23 @@ class sim:
             sb.sid = self.sid + ".{:0=5}".format(i)
             sb.readbin(fn, verbose = False)
             if (self.np[0] > 0):
-                sb.writeVTK()
+                if (i == 0):
+                    sb.writeVTK(verbose=verbose)
+                elif (i == lastfile):
+                    if (verbose == True):
+                        print("to")
+                    sb.writeVTK(verbose=verbose)
+                else:
+                    sb.writeVTK(verbose=False)
             if (self.fluid == True):
-                sb.writeFluidVTK(verbose=verbose)
-
+                if (i == 0):
+                    sb.writeFluidVTK(verbose=verbose)
+                elif (i == lastfile):
+                    if (verbose == True):
+                        print("to")
+                    sb.writeFluidVTK(verbose=verbose)
+                else:
+                    sb.writeFluidVTK(verbose=False)
 
     def writeVTK(self, folder = '../output/', verbose = True):
         '''
