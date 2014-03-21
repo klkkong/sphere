@@ -1568,15 +1568,23 @@ class sim:
         :param gridnum: The number of sorting cells in each spatial direction
             (default = [12, 12, 36])
         :type gridnum: numpy.array
+        :param dx: The cell width in any direction. If the default value is used
+            (-1), the cell width is calculated to fit the largest particle.
+        :type dx: float
         '''
 
         # Calculate cells in grid
         self.num = gridnum
 
+        # Cell configuration
+        if (dx > 0.0):
+            cellsize = dx
+        else:
+            cellsize = 2.1 * numpy.amax(self.radius)
+
         # World size
-        r_max = numpy.amax(self.radius)
-        cellsize = 2 * r_max
         self.L = self.num * cellsize
+
 
         # Particle positions randomly distributed without overlap
         for i in range(self.np):
@@ -1604,7 +1612,7 @@ class sim:
         print()
 
 
-    def defineWorldBoundaries(self, L, origo=[0.0, 0.0, 0.0]):
+    def defineWorldBoundaries(self, L, origo=[0.0, 0.0, 0.0], dx=-1):
         '''
         Set the boundaries of the world. Particles will only be able to interact
         within this domain. With dynamic walls, allow space for expansions.
@@ -1616,10 +1624,16 @@ class sim:
         :param origo: The lower boundary of the domain [m]. Negative values
             won't work. Default = [0.0, 0.0, 0.0].
         :type origo: numpy.array
+        :param dx: The cell width in any direction. If the default value is used
+            (-1), the cell width is calculated to fit the largest particle.
+        :type dx: float
         '''
 
         # Cell configuration
-        cellsize_min = 2.1 * numpy.amax(self.radius)
+        if (dx > 0.0):
+            cellsize_min = dx
+        else:
+            cellsize_min = 2.1 * numpy.amax(self.radius)
 
         # Lower boundary of the sorting grid
         self.origo[:] = origo[:]
@@ -1641,16 +1655,23 @@ class sim:
             + "Please increase the world size.")
 
 
-    def initGrid(self):
+    def initGrid(self, dx=-1):
         '''
         Initialize grid suitable for the particle positions set previously.
         The margin parameter adjusts the distance (in no. of max. radii)
         from the particle boundaries.
-        *Important*: The particle radii have to be set beforehand.
+        *Important*: The particle radii have to be set beforehand if the cell
+        width isn't specified by `dx`.
+        :param dx: The cell width in any direction. If the default value is used
+            (-1), the cell width is calculated to fit the largest particle.
+        :type dx: float
         '''
 
         # Cell configuration
-        cellsize_min = 2.1 * numpy.amax(self.radius)
+        if (dx > 0.0):
+            cellsize_min = dx
+        else:
+            cellsize_min = 2.1 * numpy.amax(self.radius)
         self.num[0] = numpy.ceil((self.L[0]-self.origo[0])/cellsize_min)
         self.num[1] = numpy.ceil((self.L[1]-self.origo[1])/cellsize_min)
         self.num[2] = numpy.ceil((self.L[2]-self.origo[2])/cellsize_min)
@@ -2109,13 +2130,16 @@ class sim:
     def initTemporal(self, total,
             current = 0.0,
             file_dt = 0.05,
-            step_count = 0):
+            step_count = 0,
+            dt = -1):
         '''
         Set temporal parameters for the simulation. *Important*: Particle radii,
         physical parameters, and the optional fluid grid need to be set prior to
-        these. The automatically selected value of the computational time step
-        for the DEM is checked for stability in the CFD solution if fluid
-        simulation is included.
+        these if the computational time step (dt) isn't set explicitly. If the
+        parameter `dt` is the default value (-1), the function will estimate the
+        best time step length. The value of the computational time step for the
+        DEM is checked for stability in the CFD solution if fluid simulation is
+        included.
 
         :param total: The time at which to end the simulation [s]
         :type total: float
@@ -2125,17 +2149,24 @@ class sim:
         :type total: float
         :step_count: The number of the first output file (default = 0)
         :type step_count: int
+        :param dt: The computational time step length [s]
+        :type total: float
         '''
 
-        r_min = numpy.amin(self.radius)
 
         # Computational time step (O'Sullivan et al, 2003)
         #self.time_dt[0] = 0.17 * \
                 #math.sqrt((4.0/3.0 * math.pi * r_min**3 * self.rho[0]) \
                 #/ numpy.amax([self.k_n[:], self.k_t[:]]) )
         # Computational time step (Zhang and Campbell, 1992)
-        self.time_dt[0] = 0.075 * math.sqrt((V_sphere(r_min) * self.rho[0]) \
-                / numpy.amax([self.k_n[:], self.k_t[:]]) )
+        if dt > 0:
+            self.time_dt[0] = dt
+        else:
+            r_min = numpy.amin(self.radius)
+            self.time_dt[0] = 0.075 *\
+                    math.sqrt((V_sphere(r_min) * self.rho[0]) \
+                    / numpy.amax([self.k_n[:], self.k_t[:]]) )
+
 
         # Check numerical stability of the fluid phase, by criteria derived by
         # von Neumann stability analysis of the diffusion and advection terms

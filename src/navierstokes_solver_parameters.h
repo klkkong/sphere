@@ -47,8 +47,7 @@ const unsigned int nijacnorm = 10;
 // Write max. residual during the latest solution loop to logfile
 // 'max_res_norm.dat'
 // 0: False, 1: True
-//const int write_res_log = 0;
-const int write_res_log = 1;
+const int write_res_log = 0;
 
 // Report epsilon values during Jacobi iterations to stdout
 // 0: False, 1: True

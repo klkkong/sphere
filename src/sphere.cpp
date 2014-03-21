@@ -147,8 +147,8 @@ void DEM::checkValues(void)
 
     // Check that we have a positive number of particles
     if (np < 1) {
-        cerr << "Error: np = " << np << endl;
-        exit(1);
+        cerr << "Warning: No particles are being simulated (np = " << np
+            << ")" << endl;
     }
 
     // Check that the current time

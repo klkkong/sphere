@@ -684,150 +684,154 @@ __host__ void DEM::startTime()
         // Routine check for errors
         checkForCudaErrors("Start of main while loop");
 
+        if (np > 0) {
 
-        // For each particle: 
-        // Compute hash key (cell index) from position 
-        // in the fine, uniform and homogenous grid.
-        if (PROFILING == 1)
-            startTimer(&kernel_tic);
-        calcParticleCellID<<<dimGrid, dimBlock>>>(dev_gridParticleCellID, 
-                dev_gridParticleIndex, 
-                dev_x);
-
-        // Synchronization point
-        cudaThreadSynchronize();
-        if (PROFILING == 1)
-            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                    &t_calcParticleCellID);
-        checkForCudaErrors("Post calcParticleCellID");
-
-
-        // Sort particle (key, particle ID) pairs by hash key with Thrust radix
-        // sort
-        if (PROFILING == 1)
-            startTimer(&kernel_tic);
-        thrust::sort_by_key(thrust::device_ptr<uint>(dev_gridParticleCellID),
-                thrust::device_ptr<uint>(dev_gridParticleCellID + np),
-                thrust::device_ptr<uint>(dev_gridParticleIndex));
-        cudaThreadSynchronize(); // Needed? Does thrust synchronize implicitly?
-        if (PROFILING == 1)
-            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed, &t_thrustsort);
-        checkForCudaErrors("Post thrust::sort_by_key");
-
-
-        // Zero cell array values by setting cellStart to its highest possible
-        // value, specified with pointer value 0xffffffff, which for a 32 bit
-        // unsigned int
-        // is 4294967295.
-        cudaMemset(dev_cellStart, 0xffffffff, 
-                grid.num[0]*grid.num[1]*grid.num[2]*sizeof(unsigned int));
-        cudaThreadSynchronize();
-        checkForCudaErrors("Post cudaMemset");
-
-        // Use sorted order to reorder particle arrays (position, velocities,
-        // radii) to ensure coherent memory access. Save ordered configurations
-        // in new arrays (*_sorted).
-        if (PROFILING == 1)
-            startTimer(&kernel_tic);
-        reorderArrays<<<dimGrid, dimBlock, smemSize>>>(dev_cellStart, 
-                dev_cellEnd,
-                dev_gridParticleCellID, 
-                dev_gridParticleIndex,
-                dev_x, dev_vel, 
-                dev_angvel,
-                dev_x_sorted, 
-                dev_vel_sorted, 
-                dev_angvel_sorted);
-
-        // Synchronization point
-        cudaThreadSynchronize();
-        if (PROFILING == 1)
-            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                    &t_reorderArrays);
-        checkForCudaErrors("Post reorderArrays", iter);
-
-        // The contact search in topology() is only necessary for determining
-        // the accumulated shear distance needed in the linear elastic
-        // and nonlinear contact force model
-        if (params.contactmodel == 2 || params.contactmodel == 3) {
-            // For each particle: Search contacts in neighbor cells
+            // For each particle: 
+            // Compute hash key (cell index) from position 
+            // in the fine, uniform and homogenous grid.
             if (PROFILING == 1)
                 startTimer(&kernel_tic);
-            topology<<<dimGrid, dimBlock>>>(dev_cellStart, 
-                    dev_cellEnd,
-                    dev_gridParticleIndex,
-                    dev_x_sorted, 
-                    dev_contacts,
-                    dev_distmod);
-
+            calcParticleCellID<<<dimGrid, dimBlock>>>(dev_gridParticleCellID, 
+                    dev_gridParticleIndex, 
+                    dev_x);
 
             // Synchronization point
             cudaThreadSynchronize();
             if (PROFILING == 1)
                 stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                        &t_topology);
-            checkForCudaErrors("Post topology: One or more particles moved "
-                    "outside the grid.\nThis could possibly be caused by a "
-                    "numerical instability.\nIs the computational time step "
-                    "too large?", iter);
-        }
+                        &t_calcParticleCellID);
+            checkForCudaErrors("Post calcParticleCellID");
 
 
-        // For each particle: Process collisions and compute resulting forces.
-        //cudaPrintfInit();
-        if (PROFILING == 1)
-            startTimer(&kernel_tic);
-        interact<<<dimGrid, dimBlock>>>(dev_gridParticleIndex,
-                dev_cellStart,
-                dev_cellEnd,
-                dev_x,
-                dev_x_sorted,
-                dev_vel_sorted,
-                dev_angvel_sorted,
-                dev_vel,
-                dev_angvel,
-                dev_force, 
-                dev_torque, 
-                dev_es_dot,
-                dev_ev_dot, 
-                dev_es,
-                dev_ev,
-                dev_p,
-                dev_walls_nx,
-                dev_walls_mvfd,
-                dev_walls_force_pp,
-                dev_contacts,
-                dev_distmod,
-                dev_delta_t);
-
-        // Synchronization point
-        cudaThreadSynchronize();
-        //cudaPrintfDisplay(stdout, true);
-        if (PROFILING == 1)
-            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed, &t_interact);
-        checkForCudaErrors("Post interact - often caused if particles move "
-                "outside the grid", iter);
-
-        // Process particle pairs
-        if (params.nb0 > 0) {
+            // Sort particle (key, particle ID) pairs by hash key with Thrust
+            // radix sort
             if (PROFILING == 1)
                 startTimer(&kernel_tic);
-            bondsLinear<<<dimGridBonds, dimBlock>>>(
-                    dev_bonds,
-                    dev_bonds_delta,
-                    dev_bonds_omega,
+            thrust::sort_by_key(
+                    thrust::device_ptr<uint>(dev_gridParticleCellID),
+                    thrust::device_ptr<uint>(dev_gridParticleCellID + np),
+                    thrust::device_ptr<uint>(dev_gridParticleIndex));
+            cudaThreadSynchronize(); // Maybe Thrust synchronizes implicitly?
+            if (PROFILING == 1)
+                stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                        &t_thrustsort);
+            checkForCudaErrors("Post thrust::sort_by_key");
+
+
+            // Zero cell array values by setting cellStart to its highest
+            // possible value, specified with pointer value 0xffffffff, which
+            // for a 32 bit unsigned int is 4294967295.
+            cudaMemset(dev_cellStart, 0xffffffff, 
+                    grid.num[0]*grid.num[1]*grid.num[2]*sizeof(unsigned int));
+            cudaThreadSynchronize();
+            checkForCudaErrors("Post cudaMemset");
+
+            // Use sorted order to reorder particle arrays (position,
+            // velocities, radii) to ensure coherent memory access. Save ordered
+            // configurations in new arrays (*_sorted).
+            if (PROFILING == 1)
+                startTimer(&kernel_tic);
+            reorderArrays<<<dimGrid, dimBlock, smemSize>>>(dev_cellStart, 
+                    dev_cellEnd,
+                    dev_gridParticleCellID, 
+                    dev_gridParticleIndex,
+                    dev_x, dev_vel, 
+                    dev_angvel,
+                    dev_x_sorted, 
+                    dev_vel_sorted, 
+                    dev_angvel_sorted);
+
+            // Synchronization point
+            cudaThreadSynchronize();
+            if (PROFILING == 1)
+                stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                        &t_reorderArrays);
+            checkForCudaErrors("Post reorderArrays", iter);
+
+            // The contact search in topology() is only necessary for
+            // determining the accumulated shear distance needed in the linear
+            // elastic and nonlinear contact force model
+            if (params.contactmodel == 2 || params.contactmodel == 3) {
+                // For each particle: Search contacts in neighbor cells
+                if (PROFILING == 1)
+                    startTimer(&kernel_tic);
+                topology<<<dimGrid, dimBlock>>>(dev_cellStart, 
+                        dev_cellEnd,
+                        dev_gridParticleIndex,
+                        dev_x_sorted, 
+                        dev_contacts,
+                        dev_distmod);
+
+
+                // Synchronization point
+                cudaThreadSynchronize();
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_topology);
+                checkForCudaErrors("Post topology: One or more particles moved "
+                        "outside the grid.\nThis could possibly be caused by a "
+                        "numerical instability.\nIs the computational time step"
+                        " too large?", iter);
+            }
+
+
+            // For each particle process collisions and compute resulting forces
+            //cudaPrintfInit();
+            if (PROFILING == 1)
+                startTimer(&kernel_tic);
+            interact<<<dimGrid, dimBlock>>>(dev_gridParticleIndex,
+                    dev_cellStart,
+                    dev_cellEnd,
                     dev_x,
+                    dev_x_sorted,
+                    dev_vel_sorted,
+                    dev_angvel_sorted,
                     dev_vel,
                     dev_angvel,
-                    dev_force,
-                    dev_torque);
+                    dev_force, 
+                    dev_torque, 
+                    dev_es_dot,
+                    dev_ev_dot, 
+                    dev_es,
+                    dev_ev,
+                    dev_p,
+                    dev_walls_nx,
+                    dev_walls_mvfd,
+                    dev_walls_force_pp,
+                    dev_contacts,
+                    dev_distmod,
+                    dev_delta_t);
+
             // Synchronization point
             cudaThreadSynchronize();
             //cudaPrintfDisplay(stdout, true);
             if (PROFILING == 1)
                 stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                        &t_bondsLinear);
-            checkForCudaErrors("Post bondsLinear", iter);
+                        &t_interact);
+            checkForCudaErrors("Post interact - often caused if particles move "
+                    "outside the grid", iter);
+
+            // Process particle pairs
+            if (params.nb0 > 0) {
+                if (PROFILING == 1)
+                    startTimer(&kernel_tic);
+                bondsLinear<<<dimGridBonds, dimBlock>>>(
+                        dev_bonds,
+                        dev_bonds_delta,
+                        dev_bonds_omega,
+                        dev_x,
+                        dev_vel,
+                        dev_angvel,
+                        dev_force,
+                        dev_torque);
+                // Synchronization point
+                cudaThreadSynchronize();
+                //cudaPrintfDisplay(stdout, true);
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_bondsLinear);
+                checkForCudaErrors("Post bondsLinear", iter);
+            }
         }
 
         // Solve Navier Stokes flow through the grid
@@ -841,15 +845,16 @@ __host__ void DEM::startTime()
                 startTimer(&kernel_tic);
             findPorositiesVelocitiesDiametersSpherical
                 <<<dimGridFluid, dimBlockFluid>>>(
-                    dev_cellStart,
-                    dev_cellEnd,
-                    dev_x_sorted,
-                    dev_vel_sorted,
-                    dev_ns_phi,
-                    dev_ns_dphi,
-                    dev_ns_vp_avg,
-                    dev_ns_d_avg,
-                    iter);
+                        dev_cellStart,
+                        dev_cellEnd,
+                        dev_x_sorted,
+                        dev_vel_sorted,
+                        dev_ns_phi,
+                        dev_ns_dphi,
+                        dev_ns_vp_avg,
+                        dev_ns_d_avg,
+                        iter,
+                        np);
             cudaThreadSynchronize();
             if (PROFILING == 1)
                 stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
@@ -864,27 +869,29 @@ __host__ void DEM::startTime()
                 exit(1);
             }*/
 
-            // Determine the interaction force
-            findInteractionForce<<<dimGridFluid, dimBlockFluid>>>(
-                    dev_ns_phi,
-                    dev_ns_d_avg,
-                    dev_ns_vp_avg,
-                    dev_ns_v,
-                    dev_ns_fi);
-            cudaThreadSynchronize();
-            checkForCudaErrors("Post findInteractionForce", iter);
+            if (np > 0) {
+                // Determine the interaction force
+                findInteractionForce<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_phi,
+                        dev_ns_d_avg,
+                        dev_ns_vp_avg,
+                        dev_ns_v,
+                        dev_ns_fi);
+                cudaThreadSynchronize();
+                checkForCudaErrors("Post findInteractionForce", iter);
 
-            // Apply interaction force to the particles
-            applyParticleInteractionForce<<<dimGridFluid, dimBlockFluid>>>(
-                    dev_ns_fi,
-                    dev_ns_phi,
-                    dev_gridParticleIndex,
-                    dev_cellStart,
-                    dev_cellEnd,
-                    dev_x_sorted,
-                    dev_force);
-            cudaThreadSynchronize();
-            checkForCudaErrors("Post applyParticleInteractionForce", iter);
+                // Apply interaction force to the particles
+                applyParticleInteractionForce<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_fi,
+                        dev_ns_phi,
+                        dev_gridParticleIndex,
+                        dev_cellStart,
+                        dev_cellEnd,
+                        dev_x_sorted,
+                        dev_force);
+                cudaThreadSynchronize();
+                checkForCudaErrors("Post applyParticleInteractionForce", iter);
+            }
 #endif
 
             // Initial guess for the top epsilon values. These may be changed in
@@ -1198,7 +1205,8 @@ __host__ void DEM::startTime()
 
                 if (report_epsilon == 1) {
                     std::cout << "\n###### JACOBI ITERATION "
-                        << nijac << " after setNSghostNodesEpsilon(epsilon,3) ######"
+                        << nijac
+                        << " after setNSghostNodesEpsilon(epsilon,3) ######"
                         << std::endl;
                     transferNSepsilonFromGlobalDeviceMemory();
                     printNSarray(stdout, ns.epsilon, "epsilon");
@@ -1332,67 +1340,65 @@ __host__ void DEM::startTime()
         //transferNSepsilonNewFromGlobalDeviceMemory();
         //printNSarray(stdout, ns.epsilon_new, "epsilon_new");
 
-        // Update particle kinematics
-        if (PROFILING == 1)
-            startTimer(&kernel_tic);
-        integrate<<<dimGrid, dimBlock>>>(dev_x_sorted, 
-                dev_vel_sorted, 
-                dev_angvel_sorted,
-                dev_x, 
-                dev_vel, 
-                dev_angvel,
-                dev_force,
-                dev_torque, 
-                dev_angpos,
-                dev_acc,
-                dev_angacc,
-                dev_vel0,
-                dev_angvel0,
-                dev_xysum,
-                dev_gridParticleIndex,
-                iter);
-        cudaThreadSynchronize();
-        checkForCudaErrors("Post integrate");
-
-
-        cudaThreadSynchronize();
-        if (PROFILING == 1)
-            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed, &t_integrate);
-
-        // Summation of forces on wall
-        if (PROFILING == 1)
-            startTimer(&kernel_tic);
-        if (walls.nw > 0) {
-            summation<<<dimGrid, dimBlock>>>(dev_walls_force_pp,
-                    dev_walls_force_partial);
-        }
-        // Synchronization point
-        cudaThreadSynchronize();
-        if (PROFILING == 1)
-            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed, &t_summation);
-        checkForCudaErrors("Post wall force summation");
-
-        // Update wall kinematics
-        if (PROFILING == 1)
-            startTimer(&kernel_tic);
-        if (walls.nw > 0) {
-            integrateWalls<<< 1, walls.nw>>>(
-                    dev_walls_nx,
-                    dev_walls_mvfd,
-                    dev_walls_wmode,
-                    dev_walls_force_partial,
-                    dev_walls_acc,
-                    blocksPerGrid,
-                    time.current,
+        if (np > 0) {
+            // Update particle kinematics
+            if (PROFILING == 1)
+                startTimer(&kernel_tic);
+            integrate<<<dimGrid, dimBlock>>>(dev_x_sorted, 
+                    dev_vel_sorted, 
+                    dev_angvel_sorted,
+                    dev_x, 
+                    dev_vel, 
+                    dev_angvel,
+                    dev_force,
+                    dev_torque, 
+                    dev_angpos,
+                    dev_acc,
+                    dev_angacc,
+                    dev_vel0,
+                    dev_angvel0,
+                    dev_xysum,
+                    dev_gridParticleIndex,
                     iter);
-        }
+            cudaThreadSynchronize();
+            checkForCudaErrors("Post integrate");
+            if (PROFILING == 1)
+                stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                        &t_integrate);
 
-        // Synchronization point
-        cudaThreadSynchronize();
-        if (PROFILING == 1)
-            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                    &t_integrateWalls);
-        checkForCudaErrors("Post integrateWalls");
+            // Summation of forces on wall
+            if (PROFILING == 1)
+                startTimer(&kernel_tic);
+            if (walls.nw > 0) {
+                summation<<<dimGrid, dimBlock>>>(dev_walls_force_pp,
+                        dev_walls_force_partial);
+            }
+            cudaThreadSynchronize();
+            if (PROFILING == 1)
+                stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                        &t_summation);
+            checkForCudaErrors("Post wall force summation");
+
+            // Update wall kinematics
+            if (PROFILING == 1)
+                startTimer(&kernel_tic);
+            if (walls.nw > 0) {
+                integrateWalls<<< 1, walls.nw>>>(
+                        dev_walls_nx,
+                        dev_walls_mvfd,
+                        dev_walls_wmode,
+                        dev_walls_force_partial,
+                        dev_walls_acc,
+                        blocksPerGrid,
+                        time.current,
+                        iter);
+            }
+            cudaThreadSynchronize();
+            if (PROFILING == 1)
+                stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                        &t_integrateWalls);
+            checkForCudaErrors("Post integrateWalls");
+        }
 
         // Update timers and counters
         time.current  = iter*time.dt;

@@ -815,15 +815,16 @@ __global__ void setNSghostNodesForcing(
 // Find the porosity in each cell on the base of a sphere, centered at the cell
 // center. 
 __global__ void findPorositiesVelocitiesDiametersSpherical(
-        unsigned int* dev_cellStart,
-        unsigned int* dev_cellEnd,
-        Float4* dev_x_sorted,
-        Float4* dev_vel_sorted,
+        const unsigned int* dev_cellStart,
+        const unsigned int* dev_cellEnd,
+        const Float4* dev_x_sorted,
+        const Float4* dev_vel_sorted,
         Float*  dev_ns_phi,
         Float*  dev_ns_dphi,
         Float3* dev_ns_vp_avg,
         Float*  dev_ns_d_avg,
-        unsigned int iteration)
+        const unsigned int iteration,
+        const unsigned int np)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -850,131 +851,141 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
     // check that we are not outside the fluid grid
     if (x < nx && y < ny && z < nz) {
 
-        // Cell sphere center position
-        const Float3 X = MAKE_FLOAT3(
-                x*dx + 0.5*dx,
-                y*dy + 0.5*dy,
-                z*dz + 0.5*dz);
+        if (np > 0) {
 
-        Float d, r;
-        Float phi = 1.00;
-        Float4 v;
-        unsigned int n = 0;
+            // Cell sphere center position
+            const Float3 X = MAKE_FLOAT3(
+                    x*dx + 0.5*dx,
+                    y*dy + 0.5*dy,
+                    z*dz + 0.5*dz);
 
-        Float3 v_avg = MAKE_FLOAT3(0.0, 0.0, 0.0);
-        Float  d_avg = 0.0;
+            Float d, r;
+            Float phi = 1.00;
+            Float4 v;
+            unsigned int n = 0;
 
-        // Read old porosity
-        __syncthreads();
-        Float phi_0 = dev_ns_phi[idx(x,y,z)];
+            Float3 v_avg = MAKE_FLOAT3(0.0, 0.0, 0.0);
+            Float  d_avg = 0.0;
 
-        // The cell 3d index
-        const int3 gridPos = make_int3((int)x,(int)y,(int)z);
+            // Read old porosity
+            __syncthreads();
+            Float phi_0 = dev_ns_phi[idx(x,y,z)];
 
-        // The neighbor cell 3d index
-        int3 targetCell;
+            // The cell 3d index
+            const int3 gridPos = make_int3((int)x,(int)y,(int)z);
 
-        // The distance modifier for particles across periodic boundaries
-        Float3 dist, distmod;
+            // The neighbor cell 3d index
+            int3 targetCell;
 
-        unsigned int cellID, startIdx, endIdx, i;
+            // The distance modifier for particles across periodic boundaries
+            Float3 dist, distmod;
 
-        // Iterate over 27 neighbor cells
-        for (int z_dim=-1; z_dim<2; ++z_dim) { // z-axis
-            for (int y_dim=-1; y_dim<2; ++y_dim) { // y-axis
-                for (int x_dim=-1; x_dim<2; ++x_dim) { // x-axis
+            unsigned int cellID, startIdx, endIdx, i;
 
-                    // Index of neighbor cell this iteration is looking at
-                    targetCell = gridPos + make_int3(x_dim, y_dim, z_dim);
+            // Iterate over 27 neighbor cells
+            for (int z_dim=-1; z_dim<2; ++z_dim) { // z-axis
+                for (int y_dim=-1; y_dim<2; ++y_dim) { // y-axis
+                    for (int x_dim=-1; x_dim<2; ++x_dim) { // x-axis
 
-                    // Get distance modifier for interparticle
-                    // vector, if it crosses a periodic boundary
-                    distmod = MAKE_FLOAT3(0.0, 0.0, 0.0);
-                    if (findDistMod(&targetCell, &distmod) != -1) {
+                        // Index of neighbor cell this iteration is looking at
+                        targetCell = gridPos + make_int3(x_dim, y_dim, z_dim);
 
-                        // Calculate linear cell ID
-                        cellID = targetCell.x + targetCell.y * devC_grid.num[0]
-                            + (devC_grid.num[0] * devC_grid.num[1])
-                            * targetCell.z; 
+                        // Get distance modifier for interparticle
+                        // vector, if it crosses a periodic boundary
+                        distmod = MAKE_FLOAT3(0.0, 0.0, 0.0);
+                        if (findDistMod(&targetCell, &distmod) != -1) {
 
-                        // Lowest particle index in cell
-                        startIdx = dev_cellStart[cellID];
+                            // Calculate linear cell ID
+                            cellID = targetCell.x + targetCell.y * devC_grid.num[0]
+                                + (devC_grid.num[0] * devC_grid.num[1])
+                                * targetCell.z; 
 
-                        // Make sure cell is not empty
-                        if (startIdx != 0xffffffff) {
+                            // Lowest particle index in cell
+                            startIdx = dev_cellStart[cellID];
 
-                            // Highest particle index in cell
-                            endIdx = dev_cellEnd[cellID];
+                            // Make sure cell is not empty
+                            if (startIdx != 0xffffffff) {
 
-                            // Iterate over cell particles
-                            for (i=startIdx; i<endIdx; ++i) {
+                                // Highest particle index in cell
+                                endIdx = dev_cellEnd[cellID];
 
-                                // Read particle position and radius
-                                __syncthreads();
-                                xr = dev_x_sorted[i];
-                                v  = dev_vel_sorted[i];
-                                r = xr.w;
+                                // Iterate over cell particles
+                                for (i=startIdx; i<endIdx; ++i) {
 
-                                // Find center distance
-                                dist = MAKE_FLOAT3(
+                                    // Read particle position and radius
+                                    __syncthreads();
+                                    xr = dev_x_sorted[i];
+                                    v  = dev_vel_sorted[i];
+                                    r = xr.w;
+
+                                    // Find center distance
+                                    dist = MAKE_FLOAT3(
                                             X.x - xr.x, 
                                             X.y - xr.y,
                                             X.z - xr.z);
-                                dist += distmod;
-                                d = length(dist);
+                                    dist += distmod;
+                                    d = length(dist);
 
-                                // Lens shaped intersection
-                                if ((R - r) < d && d < (R + r)) {
-                                    void_volume -=
-                                        1.0/(12.0*d) * (
-                                                M_PI*(R + r - d)*(R + r - d)
-                                                *(d*d + 2.0*d*r - 3.0*r*r
-                                                    + 2.0*d*R + 6.0*r*R
-                                                    - 3.0*R*R) );
-                                    v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
-                                    d_avg += 2.0*r;
-                                    n++;
-                                }
+                                    // Lens shaped intersection
+                                    if ((R - r) < d && d < (R + r)) {
+                                        void_volume -=
+                                            1.0/(12.0*d) * (
+                                                    M_PI*(R + r - d)*(R + r - d)
+                                                    *(d*d + 2.0*d*r - 3.0*r*r
+                                                        + 2.0*d*R + 6.0*r*R
+                                                        - 3.0*R*R) );
+                                        v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
+                                        d_avg += 2.0*r;
+                                        n++;
+                                    }
 
-                                // Particle fully contained in cell sphere
-                                if (d <= R - r) {
-                                    void_volume -= 4.0/3.0*M_PI*r*r*r;
-                                    v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
-                                    d_avg += 2.0*r;
-                                    n++;
+                                    // Particle fully contained in cell sphere
+                                    if (d <= R - r) {
+                                        void_volume -= 4.0/3.0*M_PI*r*r*r;
+                                        v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
+                                        d_avg += 2.0*r;
+                                        n++;
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+
+            if (phi < 0.999) {
+                v_avg /= n;
+                d_avg /= n;
+            }
+
+            // Make sure that the porosity is in the interval [0.0;1.0]
+            phi = fmin(1.00, fmax(0.00, void_volume/cell_volume));
+            //phi = void_volume/cell_volume;
+
+            Float dphi = phi - phi_0;
+            if (iteration == 0)
+                dphi = 0.0;
+
+            // report values to stdout for debugging
+            //printf("%d,%d,%d\tphi = %f dphi = %f v_avg = %f,%f,%f d_avg = %f\n",
+            //       x,y,z, phi, dphi, v_avg.x, v_avg.y, v_avg.z, d_avg);
+
+            // Save porosity, porosity change, average velocity and average diameter
+            __syncthreads();
+            //phi = 1.0; dphi = 0.0; // disable porosity effects
+            const unsigned int cellidx = idx(x,y,z);
+            dev_ns_phi[cellidx]  = phi;
+            dev_ns_dphi[cellidx] = dphi;
+            dev_ns_vp_avg[cellidx] = v_avg;
+            dev_ns_d_avg[cellidx]  = d_avg;
+        } else {
+            __syncthreads();
+            const unsigned int cellidx = idx(x,y,z);
+            dev_ns_phi[cellidx]  = 1.0;
+            dev_ns_dphi[cellidx] = 0.0;
+            dev_ns_vp_avg[cellidx] = MAKE_FLOAT3(0.0, 0.0, 0.0);
+            dev_ns_d_avg[cellidx]  = 0.0;
         }
-
-        if (phi < 0.999) {
-            v_avg /= n;
-            d_avg /= n;
-        }
-
-        // Make sure that the porosity is in the interval [0.0;1.0]
-        phi = fmin(1.00, fmax(0.00, void_volume/cell_volume));
-        //phi = void_volume/cell_volume;
-
-        Float dphi = phi - phi_0;
-        if (iteration == 0)
-            dphi = 0.0;
-
-        // report values to stdout for debugging
-        //printf("%d,%d,%d\tphi = %f dphi = %f v_avg = %f,%f,%f d_avg = %f\n",
-         //       x,y,z, phi, dphi, v_avg.x, v_avg.y, v_avg.z, d_avg);
-
-        // Save porosity, porosity change, average velocity and average diameter
-        __syncthreads();
-        //phi = 1.0; dphi = 0.0; // disable porosity effects
-        const unsigned int cellidx = idx(x,y,z);
-        dev_ns_phi[cellidx]  = phi;
-        dev_ns_dphi[cellidx] = dphi;
-        dev_ns_vp_avg[cellidx] = v_avg;
-        dev_ns_d_avg[cellidx]  = d_avg;
     }
 }
 
@@ -1611,7 +1622,7 @@ __global__ void findPredNSvelocities(
         Float3 v_p = v
             + pressure_term
             + 1.0/devC_params.rho_f*div_phi_tau*devC_dt/phi
-            + devC_dt*(f_g) // uncomment this line to disable gravity
+            //+ devC_dt*(f_g) // uncomment this line to disable gravity
             + devC_dt*(-1.0*f_i)
             - v*dphi/phi
             - div_phi_vi_v*devC_dt/phi;
