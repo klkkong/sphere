@@ -1061,7 +1061,7 @@ class sim:
                     sb.writeVTK(verbose=verbose)
                 elif (i == lastfile):
                     if (verbose == True):
-                        print("to")
+                        print("\tto")
                     sb.writeVTK(verbose=verbose)
                 else:
                     sb.writeVTK(verbose=False)
@@ -1070,7 +1070,7 @@ class sim:
                     sb.writeFluidVTK(verbose=verbose)
                 elif (i == lastfile):
                     if (verbose == True):
-                        print("to")
+                        print("\tto")
                     sb.writeFluidVTK(verbose=verbose)
                 else:
                     sb.writeFluidVTK(verbose=False)
