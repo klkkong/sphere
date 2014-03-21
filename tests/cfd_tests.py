@@ -6,7 +6,7 @@ import sys
 import numpy
 import matplotlib.pyplot as plt
 
-print("### CFD tests ###")
+print("### CFD tests - Dirichlet BCs ###")
 
 # Iteration and conservation of mass test
 # No gravity, no pressure gradients => no flow

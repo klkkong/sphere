@@ -21,3 +21,6 @@ add_test(bond_tests ${PYTHON_EXECUTABLE}
 
 add_test(cfd_tests ${PYTHON_EXECUTABLE} 
     ${CMAKE_CURRENT_BINARY_DIR}/cfd_tests.py)
+
+add_test(cfd_tests_neumann ${PYTHON_EXECUTABLE} 
+    ${CMAKE_CURRENT_BINARY_DIR}/cfd_tests_neumann.py)
