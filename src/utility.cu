@@ -31,7 +31,7 @@ void DEM::checkForCudaErrors(const char* checkpoint_description)
             << checkpoint_description << "\nError string: "
             << cudaGetErrorString(err) << std::endl;
 
-        diagnostics();
+        //diagnostics();
         exit(EXIT_FAILURE);
     }
 }
@@ -45,7 +45,7 @@ void DEM::checkForCudaErrors(const char* checkpoint_description,
             << checkpoint_description << "\nduring iteration " << iteration
             << "\nError string: " << cudaGetErrorString(err) << std::endl;
 
-        diagnostics();
+        //diagnostics();
         exit(EXIT_FAILURE);
     }
 }
