@@ -29,6 +29,7 @@
 // parameter should be in the range [0.0;1.0[. The higher the value, the more
 // averaging is introduced. A value of 0.0 disables all averaging.
 #define GAMMA 0.5
+//#define GAMMA 0.0
 
 // Tolerance criteria for the normalized residual
 //const double tolerance = 1.0e-3;
@@ -51,8 +52,8 @@ const int write_res_log = 0;
 
 // Report epsilon values during Jacobi iterations to stdout
 // 0: False, 1: True
-const int report_epsilon = 0;
-const int report_even_more_epsilon = 0;
+const int report_epsilon = 1;
+const int report_even_more_epsilon = 1;
 
 // Report the number of iterations it took before convergence to logfile
 // 'output/<sid>-conv.dat'

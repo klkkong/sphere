@@ -1291,11 +1291,19 @@ __host__ void DEM::startTime()
                     if (write_conv_log == 1 && iter % conv_log_interval == 0)
                         convlog << iter << '\t' << nijac << std::endl;
 
-                    smoothing<Float><<<dimGridFluid, dimBlockFluid>>>(
+                    //smoothing<Float><<<dimGridFluid, dimBlockFluid>>>(
+                    smoothing<<<dimGridFluid, dimBlockFluid>>>(
                       dev_ns_epsilon,
                       ns.bc_bot, ns.bc_top);
                     cudaThreadSynchronize();
                     checkForCudaErrorsIter("Post smoothing", iter);
+                    if (report_epsilon == 1) {
+                        std::cout << "\n###### JACOBI ITERATION "
+                            << nijac << " after smoothing ######"
+                            << std::endl;
+                        transferNSepsilonFromGlobalDeviceMemory();
+                        printNSarray(stdout, ns.epsilon, "epsilon");
+                    }
 
                     break;  // solution has converged, exit Jacobi iter. loop
                 }

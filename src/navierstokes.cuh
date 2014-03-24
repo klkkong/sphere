@@ -1621,12 +1621,13 @@ __global__ void findPredNSvelocities(
 
         // Calculate the predicted velocity
         Float3 v_p = v
-            + pressure_term
-            + 1.0/devC_params.rho_f*div_phi_tau*devC_dt/phi
+            //+ pressure_term
+            //+ 1.0/devC_params.rho_f*div_phi_tau*devC_dt/phi
             + devC_dt*(f_g) // uncomment this line to disable gravity
-            - devC_dt*(f_i)
-            - v*dphi/phi
-            - div_phi_vi_v*devC_dt/phi;
+            //- devC_dt*(f_i)
+            //- v*dphi/phi
+            //- div_phi_vi_v*devC_dt/phi;
+            ;
 
         // Report velocity components to stdout for debugging
         /*const Float3 dv_pres = -BETA/devC_params.rho_f*grad_p*devC_dt/phi;
@@ -1644,9 +1645,10 @@ __global__ void findPredNSvelocities(
                 dv_dphi.x, dv_dphi.y, dv_dphi.z,
                 dv_adv.x, dv_adv.y, dv_adv.z);*/
 
-        // Enforce no-flow BC if specified
+        // Enforce Neumann BC if specified
         if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
             v_p.z = v.z;
+            //v_p.z = 0.0;
 
         // Save the predicted velocity
         __syncthreads();
@@ -1821,6 +1823,7 @@ __global__ void smoothing(
         if (bc_top == 0)
             z_max = nz-2;
 
+        //if (x > 0 && x < nx && y > 0 && y < ny && z > 0 && z < nz) {
         if (x < nx && y < ny && z >= z_min && z <= z_max) {
 
             __syncthreads();
@@ -1837,13 +1840,13 @@ __global__ void smoothing(
 
             const T e_smooth = (1.0 - GAMMA)*e + GAMMA*e_avg_neigbors;
 
+            __syncthreads();
+            dev_arr[cellidx] = e_smooth;
+
             //printf("%d,%d,%d\te = %f e_smooth = %f\n", x,y,z, e, e_smooth);
             /*printf("%d,%d,%d\te_xn = %f, e_xp = %f, e_yn = %f, e_yp = %f,"
               " e_zn = %f, e_zp = %f\n", x,y,z, e_xn, e_xp,
               e_yn, e_yp, e_zn, e_zp);*/
-
-            __syncthreads();
-            dev_arr[cellidx] = e_smooth;
         }
     }
 }
