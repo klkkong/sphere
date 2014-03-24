@@ -873,7 +873,6 @@ class sim:
         :param verbose: Show diagnostic information (default = True)
         :type verbose: bool
         '''
-
         fh = None
         try :
             targetbin = folder + "/" + self.sid + ".bin"
@@ -2614,6 +2613,13 @@ class sim:
 
         if (status != 0):
             print("Warning: the sphere run returned with status " + str(status))
+
+    def cleanup(self):
+        '''
+        Removes the input/output files and images belonging to the object
+        simulation ID from the ``input/``, ``output/`` and ``img_out/`` folders.
+        '''
+        cleanup(self)
 
     def torqueScript(self,
             email='adc@geo.au.dk',
@@ -4357,6 +4363,12 @@ def cleanup(sim):
     subprocess.call("rm -f ../input/" + sim.sid + ".bin", shell=True)
     subprocess.call("rm -f ../output/" + sim.sid + ".*.bin", shell=True)
     subprocess.call("rm -f ../img_out/" + sim.sid + ".*", shell=True)
+    subprocess.call("rm -f ../output/" + sim.sid + ".status.dat", shell=True)
+    subprocess.call("rm -f ../output/" + sim.sid + ".*.vtu", shell=True)
+    subprocess.call("rm -f ../output/fluid-" + sim.sid + ".*.vti", shell=True)
+    subprocess.call("rm -f ../output/" + sim.sid + "-conv.png", shell=True)
+    subprocess.call("rm -f ../output/" + sim.sid + "-conv.log", shell=True)
+
 
 def vector_norm(ndvector):
     '''

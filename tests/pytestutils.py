@@ -54,15 +54,3 @@ def compareNumpyArraysClose(first, second, string, tolerance=1e-5):
         print(string + failed())
         raise Exception("Failed")
         return(1)
-
-
-def cleanup(spherebin):
-    'Remove temporary files'
-    subprocess.call("rm -f ../input/" + spherebin.sid + ".bin", shell=True)
-    subprocess.call("rm -f ../output/" + spherebin.sid + ".status.dat", shell=True)
-    subprocess.call("rm -f ../output/" + spherebin.sid + ".*.bin", shell=True)
-    subprocess.call("rm -f ../output/" + spherebin.sid + ".*.vtu", shell=True)
-    subprocess.call("rm -f ../output/fluid-" + spherebin.sid + ".*.vti", shell=True)
-    subprocess.call("rm -f ../output/" + spherebin.sid + "-conv.png", shell=True)
-    subprocess.call("rm -f ../output/" + spherebin.sid + "-conv.log", shell=True)
-    print("")
