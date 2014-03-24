@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 print('### CFD tests - Dirichlet/Neumann BCs ###')
 
-print('''# Dirichlet bottom, Neumann top BC.
+print('''# Neumann bottom, Dirichlet top BC.
 # No gravity, no pressure gradients => no flow''')
 orig = sphere.sim("neumann", fluid = True)
 cleanup(orig)
@@ -42,7 +42,7 @@ else:
     print("Flow field:\t\t" + failed())
     raise Exception("Failed")
 
-print('''# Dirichlet bottom, Neumann top BC.
+print('''# Neumann bottom, Dirichlet top BC.
 # Gravity, pressure gradients => transient flow''')
 orig = sphere.sim("neumann", fluid = True)
 cleanup(orig)
@@ -72,6 +72,7 @@ if ((py.v_f[:,:,:,2] < 1.0e-3).all()):
     print("Flow field:\t\t" + passed())
 else:
     print("Flow field:\t\t" + failed())
+
 
 print('''# Two Neumann BC's.
 # No gravity, no pressure gradients => no flow''')
