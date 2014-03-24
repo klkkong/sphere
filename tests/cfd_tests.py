@@ -53,6 +53,7 @@ if ((py.v_f[:,:,:,2] < 0.0).all() and (py.v_f[:,:,:,0:1] < 1.0e-7).all()):
     print("Flow field:\t\t" + passed())
 else:
     print("Flow field:\t\t" + failed())
+    raise Exception("Failed")
 
 # Convergence rate (2/2)
 # This test passes with BETA=0.0 and tolerance=1.0e-9
@@ -128,6 +129,7 @@ if ((numpy.sign(dvz_diff) == numpy.sign(-dvz_adv)).all()):
     print("Diffusion-advection (1/2):" + passed())
 else:
     print("Diffusion-advection (1/2):" + failed())
+    raise Exception("Failed")
 
 
 py.readlast(verbose=False)
@@ -220,6 +222,7 @@ py.readlast(verbose = False)
     #print("Flow field:\t\t" + passed())
 #else:
     #print("Flow field:\t\t" + failed())
+    #raise Exception("Failed")
 
 '''
 cleanup(orig)
