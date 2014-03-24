@@ -1727,9 +1727,7 @@ __global__ void findNSforcing(
             f1 = div_v_p*devC_params.rho_f/devC_dt
                 + dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi)
                 + dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
-                //+ 0.0*dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
             f2 = grad_phi/phi;
-            //f2 = 0.0*grad_phi/phi;
 
             // Report values terms in the forcing function for debugging
             /*

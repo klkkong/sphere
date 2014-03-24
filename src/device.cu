@@ -925,6 +925,7 @@ __host__ void DEM::startTime()
 
                 if (report_even_more_epsilon == 1) {
                     std::cout
+                        << "\n@@@@@@ TIME STEP " << iter << " @@@@@@"
                         << "\n###### EPSILON AFTER setUpperPressureNS ######"
                         << std::endl;
                     transferNSepsilonFromGlobalDeviceMemory();
@@ -1135,6 +1136,7 @@ __host__ void DEM::startTime()
             // transfer normalized residuals from GPU to CPU
             if (report_epsilon == 1) {
                 std::cout << "\n###### BEFORE FIRST JACOBI ITERATION ######"
+                    << "\n@@@@@@ TIME STEP " << iter << " @@@@@@"
                     << std::endl;
                 transferNSepsilonFromGlobalDeviceMemory();
                 printNSarray(stdout, ns.epsilon, "epsilon");
@@ -1206,14 +1208,14 @@ __host__ void DEM::startTime()
                         iter);
                         */
 
-                if (report_epsilon == 1) {
+                /*if (report_epsilon == 1) {
                     std::cout << "\n###### JACOBI ITERATION "
                         << nijac
                         << " after setNSghostNodesEpsilon(epsilon,3) ######"
                         << std::endl;
                     transferNSepsilonFromGlobalDeviceMemory();
                     printNSarray(stdout, ns.epsilon, "epsilon");
-                }
+                }*/
 
                 // Store old values
                 /*copyValues<Float><<<dimGridFluid, dimBlockFluid>>>(
@@ -1291,6 +1293,12 @@ __host__ void DEM::startTime()
                     if (write_conv_log == 1 && iter % conv_log_interval == 0)
                         convlog << iter << '\t' << nijac << std::endl;
 
+                    setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_ns_epsilon,
+                            ns.bc_bot, ns.bc_top);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post setNSghostNodesEpsilon(4)",
+                            iter);
                     //smoothing<Float><<<dimGridFluid, dimBlockFluid>>>(
                     smoothing<<<dimGridFluid, dimBlockFluid>>>(
                       dev_ns_epsilon,
