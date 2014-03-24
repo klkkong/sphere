@@ -23,7 +23,8 @@ void DEM::diagnostics()
     // CPU memory freed upon object destruction
 }
 
-void DEM::checkForCudaErrors(const char* checkpoint_description)
+void DEM::checkForCudaErrors(const char* checkpoint_description,
+        const int run_diagnostics)
 {
     cudaError_t err = cudaGetLastError();
     if (err != cudaSuccess) {
@@ -31,13 +32,16 @@ void DEM::checkForCudaErrors(const char* checkpoint_description)
             << checkpoint_description << "\nError string: "
             << cudaGetErrorString(err) << std::endl;
 
-        //diagnostics();
+        if (run_diagnostics == 1)
+            diagnostics();
+
         exit(EXIT_FAILURE);
     }
 }
 
-void DEM::checkForCudaErrors(const char* checkpoint_description,
-        const unsigned int iteration)
+void DEM::checkForCudaErrorsIter(const char* checkpoint_description,
+        const unsigned int iteration,
+        const int run_diagnostics)
 {
     cudaError_t err = cudaGetLastError();
     if (err != cudaSuccess) {
@@ -45,7 +49,9 @@ void DEM::checkForCudaErrors(const char* checkpoint_description,
             << checkpoint_description << "\nduring iteration " << iteration
             << "\nError string: " << cudaGetErrorString(err) << std::endl;
 
-        //diagnostics();
+        if (run_diagnostics == 1)
+            diagnostics();
+
         exit(EXIT_FAILURE);
     }
 }

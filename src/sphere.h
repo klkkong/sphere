@@ -115,9 +115,11 @@ class DEM {
         void rt_transferToConstantDeviceMemory();
 
         // Check for CUDA errors
-        void checkForCudaErrors(const char* checkpoint_description);
         void checkForCudaErrors(const char* checkpoint_description,
-        const unsigned int iteration);
+                const int run_diagnostics = 1);
+        void checkForCudaErrorsIter(const char* checkpoint_description,
+                const unsigned int iteration,
+                const int run_diagnostics = 1);
 
         // Check values stored in constant device memory
         void checkConstantMemory();

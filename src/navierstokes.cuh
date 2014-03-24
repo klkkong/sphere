@@ -128,19 +128,14 @@ void DEM::transferNSfromGlobalDeviceMemory(int statusmsg)
     unsigned int memSizeF  = sizeof(Float)*NScells();
 
     cudaMemcpy(ns.p, dev_ns_p, memSizeF, cudaMemcpyDeviceToHost);
-    checkForCudaErrors("In transferNSfromGlobalDeviceMemory, dev_ns_p");
+    checkForCudaErrors("In transferNSfromGlobalDeviceMemory, dev_ns_p", 0);
     cudaMemcpy(ns.v, dev_ns_v, memSizeF*3, cudaMemcpyDeviceToHost);
-    checkForCudaErrors("In transferNSfromGlobalDeviceMemory, dev_ns_v");
     cudaMemcpy(ns.v_p, dev_ns_v_p, memSizeF*3, cudaMemcpyDeviceToHost);
-    checkForCudaErrors("In transferNSfromGlobalDeviceMemory, dev_ns_v_p");
     cudaMemcpy(ns.phi, dev_ns_phi, memSizeF, cudaMemcpyDeviceToHost);
-    checkForCudaErrors("In transferNSfromGlobalDeviceMemory, dev_ns_phi");
     cudaMemcpy(ns.dphi, dev_ns_dphi, memSizeF, cudaMemcpyDeviceToHost);
-    checkForCudaErrors("In transferNSfromGlobalDeviceMemory, dev_ns_dphi");
     cudaMemcpy(ns.norm, dev_ns_norm, memSizeF, cudaMemcpyDeviceToHost);
-    checkForCudaErrors("In transferNSfromGlobalDeviceMemory, dev_ns_norm");
 
-    //checkForCudaErrors("End of transferNSfromGlobalDeviceMemory");
+    checkForCudaErrors("End of transferNSfromGlobalDeviceMemory", 0);
     if (verbose == 1 && statusmsg == 1)
         std::cout << "Done" << std::endl;
 }
