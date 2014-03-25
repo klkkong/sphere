@@ -1797,88 +1797,52 @@ __global__ void smoothing(
         const unsigned int bc_bot,
         const unsigned int bc_top)
 {
-    if (GAMMA > 0.0) {
-        // 3D thread index
-        const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
-        const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
-        const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
 
-        // Grid dimensions
-        const unsigned int nx = devC_grid.num[0];
-        const unsigned int ny = devC_grid.num[1];
-        const unsigned int nz = devC_grid.num[2];
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
 
-        // 1D thread index
-        const unsigned int cellidx = idx(x,y,z);
+    // 1D thread index
+    const unsigned int cellidx = idx(x,y,z);
 
-        // Perform the epsilon updates for all non-ghost nodes except the
-        // Dirichlet boundaries at z=0 and z=nz-1.
-        // Adjust z range if a boundary has the Dirichlet boundary condition.
-        int z_min = 0;
-        int z_max = nz-1;
-        if (bc_bot == 0)
-            z_min = 1;
-        if (bc_top == 0)
-            z_max = nz-2;
+    // Perform the epsilon updates for all non-ghost nodes except the
+    // Dirichlet boundaries at z=0 and z=nz-1.
+    // Adjust z range if a boundary has the Dirichlet boundary condition.
+    int z_min = 0;
+    int z_max = nz-1;
+    if (bc_bot == 0)
+        z_min = 1;
+    if (bc_top == 0)
+        z_max = nz-2;
 
-        //if (x > 0 && x < nx && y > 0 && y < ny && z > 0 && z < nz) {
-        if (x < nx && y < ny && z >= z_min && z <= z_max) {
-
-            __syncthreads();
-            const T e_xn = dev_arr[idx(x-1,y,z)];
-            const T e    = dev_arr[cellidx];
-            const T e_xp = dev_arr[idx(x+1,y,z)];
-            const T e_yn = dev_arr[idx(x,y-1,z)];
-            const T e_yp = dev_arr[idx(x,y+1,z)];
-            const T e_zn = dev_arr[idx(x,y,z-1)];
-            const T e_zp = dev_arr[idx(x,y,z+1)];
-
-            const T e_avg_neigbors = 1.0/6.0 *
-                (e_xn + e_xp + e_yn + e_yp + e_zn + e_zp);
-
-            const T e_smooth = (1.0 - GAMMA)*e + GAMMA*e_avg_neigbors;
-
-            __syncthreads();
-            dev_arr[cellidx] = e_smooth;
-
-            //printf("%d,%d,%d\te = %f e_smooth = %f\n", x,y,z, e, e_smooth);
-            /*printf("%d,%d,%d\te_xn = %f, e_xp = %f, e_yn = %f, e_yp = %f,"
-              " e_zn = %f, e_zp = %f\n", x,y,z, e_xn, e_xp,
-              e_yn, e_yp, e_zn, e_zp);*/
-        }
-    }
-}
-
-__device__ Float smoothing(
-        Float* dev_arr,
-        const Float e,
-        const unsigned int x,
-        const unsigned int y,
-        const unsigned int z)
-{
-    if (GAMMA > 0.0) {
+    if (x < nx && y < ny && z >= z_min && z <= z_max) {
 
         __syncthreads();
-        const Float e_xn = dev_arr[idx(x-1,y,z)];
-        const Float e_xp = dev_arr[idx(x+1,y,z)];
-        const Float e_yn = dev_arr[idx(x,y-1,z)];
-        const Float e_yp = dev_arr[idx(x,y+1,z)];
-        const Float e_zn = dev_arr[idx(x,y,z-1)];
-        const Float e_zp = dev_arr[idx(x,y,z+1)];
+        const T e_xn = dev_arr[idx(x-1,y,z)];
+        const T e    = dev_arr[cellidx];
+        const T e_xp = dev_arr[idx(x+1,y,z)];
+        const T e_yn = dev_arr[idx(x,y-1,z)];
+        const T e_yp = dev_arr[idx(x,y+1,z)];
+        const T e_zn = dev_arr[idx(x,y,z-1)];
+        const T e_zp = dev_arr[idx(x,y,z+1)];
 
-        const Float e_avg_neigbors = 1.0/6.0 *
+        const T e_avg_neigbors = 1.0/6.0 *
             (e_xn + e_xp + e_yn + e_yp + e_zn + e_zp);
 
-        const Float e_smooth = (1.0 - GAMMA)*e + GAMMA*e_avg_neigbors;
+        const T e_smooth = (1.0 - GAMMA)*e + GAMMA*e_avg_neigbors;
 
-        /*printf("%d,%d,%d\te = %f e_smooth = %f\n", x,y,z, e, e_smooth);
-        printf("%d,%d,%d\te_xn = %f, e_xp = %f, e_yn = %f, e_yp = %f,"
-                " e_zn = %f, e_zp = %f\n", x,y,z, e_xn, e_xp,
-                e_yn, e_yp, e_zn, e_zp);*/
+        __syncthreads();
+        dev_arr[cellidx] = e_smooth;
 
-        return e_smooth;
-    } else {
-        return e;
+        //printf("%d,%d,%d\te = %f e_smooth = %f\n", x,y,z, e, e_smooth);
+        /*printf("%d,%d,%d\te_xn = %f, e_xp = %f, e_yn = %f, e_yp = %f,"
+          " e_zn = %f, e_zp = %f\n", x,y,z, e_xn, e_xp,
+          e_yn, e_yp, e_zn, e_zp);*/
     }
 }
 
