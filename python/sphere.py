@@ -2174,6 +2174,9 @@ class sim:
         # Computational time step (Zhang and Campbell, 1992)
         if dt > 0:
             self.time_dt[0] = dt
+            if (self.np[0] > 0):
+                print("Warning: Manually specifying the time step length when "
+                + "simulating particles may produce instabilities.")
         else:
             r_min = numpy.amin(self.radius)
             self.time_dt[0] = 0.075 *\
