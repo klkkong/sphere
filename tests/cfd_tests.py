@@ -95,13 +95,8 @@ else:
 #print(numpy.mean(py.v_f[:,:,:,2]))
 orig.time_file_dt[0] = 1.0e-4
 orig.time_total[0] = 1.0e-3
-orig.initFluid(mu = 0.0)
-#orig.mu[0] = 4.0
-#orig.mu[0] = 0.0
-orig.mu[0] = 8.9e-4     # water
+orig.initFluid(mu = 8.9-4) # water at 25 deg C
 orig.p_f[:,:,-1] = 2.0
-#orig.time_total[0] = 0.01
-#orig.time_file_dt[0] = 0.001
 orig.run(verbose=False)
 #orig.writeVTKall()
 
@@ -154,7 +149,6 @@ if ((numpy.sign(dvz_diff) == numpy.sign(-dvz_adv)).all()):
     print("Diffusion-advection (2/2):" + passed())
 else:
     print("Diffusion-advection (2/2):" + failed())
-
 
 
 # Slow pressure modulation test
