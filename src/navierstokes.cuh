@@ -1621,13 +1621,12 @@ __global__ void findPredNSvelocities(
 
         // Calculate the predicted velocity
         Float3 v_p = v
-            //+ pressure_term
-            //+ 1.0/devC_params.rho_f*div_phi_tau*devC_dt/phi
+            + pressure_term
+            + 1.0/devC_params.rho_f*div_phi_tau*devC_dt/phi
             + devC_dt*(f_g) // uncomment this line to disable gravity
-            //- devC_dt*(f_i)
-            //- v*dphi/phi
-            //- div_phi_vi_v*devC_dt/phi;
-            ;
+            - devC_dt*(f_i)
+            - v*dphi/phi
+            - div_phi_vi_v*devC_dt/phi;
 
         // Report velocity components to stdout for debugging
         /*const Float3 dv_pres = -BETA/devC_params.rho_f*grad_p*devC_dt/phi;

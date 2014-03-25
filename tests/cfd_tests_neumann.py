@@ -53,8 +53,8 @@ orig.defaultParams(mu_s = 0.4, mu_d = 0.4)
 orig.defineWorldBoundaries([0.4, 0.4, 0.4], dx = 0.1)
 orig.initFluid(mu = 8.9e-4)
 #orig.initTemporal(total = 1.0, file_dt = 0.05, dt = 1.0e-4)
-#orig.initTemporal(total = 0.5, file_dt = 0.05, dt = 1.0e-4)
-orig.initTemporal(total = 0.005, file_dt = 0.05, dt = 1.0e-4)
+orig.initTemporal(total = 0.5, file_dt = 0.05, dt = 1.0e-4)
+#orig.initTemporal(total = 0.005, file_dt = 0.05, dt = 1.0e-4)
 py = sphere.sim(sid = orig.sid, fluid = True)
 #orig.time_total[0] = 1.0e-2
 #orig.time_total = orig.time_dt*10
