@@ -106,8 +106,8 @@ __global__ void reorderArrays(unsigned int* dev_cellStart,
         // in the previous cell.
         if (idx == 0 || cellID != shared_data[tidx]) {
             dev_cellStart[cellID] = idx;
-//            if (idx > 0)
-//                dev_cellEnd[shared_data[tidx]] = idx;
+            if (idx > 0)
+                dev_cellEnd[shared_data[tidx]] = idx;
         }
 
         // Check wether the thread is the last one

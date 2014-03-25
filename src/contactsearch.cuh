@@ -399,7 +399,6 @@ __global__ void interact(unsigned int* dev_gridParticleIndex, // Input: Unsorted
         Float4 x_a      = dev_x_sorted[idx_a];
         Float  radius_a = x_a.w;
 
-
         // Fetch world dimensions in constant memory read
         Float3 origo = MAKE_FLOAT3(devC_grid.origo[0], 
                 devC_grid.origo[1], 
@@ -665,7 +664,6 @@ __global__ void interact(unsigned int* dev_gridParticleIndex, // Input: Unsorted
                         delta_w, w_4_mvfd.y);
             }
         }
-
 
         // Hold threads for coalesced write
         __syncthreads();
