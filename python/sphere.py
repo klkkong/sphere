@@ -3736,7 +3736,7 @@ class sim:
         :param theta: The smoothing parameter value
         :type theta: float
         '''
-        self.gamma[0] = gamma
+        self.gamma = numpy.asarray(gamma)
 
     def setTheta(self, theta):
         '''
@@ -3752,7 +3752,7 @@ class sim:
         :param theta: The under-relaxation parameter value
         :type theta: float
         '''
-        self.theta[0] = theta
+        self.theta = numpy.asarray(theta)
 
 
     def setBeta(self, beta):
@@ -3767,7 +3767,7 @@ class sim:
 
         The default and recommended value is 0.0.
         '''
-        self.beta[0] = beta
+        self.beta = numpy.asarray(beta)
 
     def setTolerance(self, tolerance):
         '''
@@ -3781,7 +3781,7 @@ class sim:
             residual
         :type tolerance: float
         '''
-        self.tolerance[0] = tolerance
+        self.tolerance = numpy.asarray(tolerance)
 
     def setMaxIterations(self, maxiter):
         '''
@@ -3797,7 +3797,7 @@ class sim:
             solver
         :type maxiter: int
         '''
-        self.maxiter[0] = maxiter
+        self.maxiter = numpy.asarray(maxiter)
 
 
 def convert(graphics_format = 'png', folder = '../img_out'):
