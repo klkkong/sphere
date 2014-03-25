@@ -1082,7 +1082,7 @@ class sim:
             fn = "../output/{0}.output{1:0=5}.bin".format(self.sid, i)
             sb.sid = self.sid + ".{:0=5}".format(i)
             sb.readbin(fn, verbose = False)
-            if (self.np[0] > 0):
+            if (sb.np[0] > 0):
                 if (i == 0):
                     sb.writeVTK(verbose=verbose)
                 elif (i == lastfile):
