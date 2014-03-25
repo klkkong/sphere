@@ -884,8 +884,8 @@ class sim:
 
     def writebin(self, folder = "../input/", verbose = True):
         '''
-        Writes a ``sphere`` binary file to the ``../input/`` folder by default. The
-        file name will be in the format ``<self.sid>.bin``.
+        Writes a ``sphere`` binary file to the ``../input/`` folder by default.
+        The file name will be in the format ``<self.sid>.bin``.
 
         See also :func:`readbin()`.
 
@@ -3722,6 +3722,83 @@ class sim:
             idx = range(self.np)
         return self.force[idx,:]/(V_sphere(self.radius[idx])*self.rho[0]) + \
                 self.g
+
+    def setGamma(self, gamma):
+        '''
+        Gamma is a fluid solver parameter, used for smoothing the pressure
+        values. The epsilon (pressure) values are smoothed by including the
+        average epsilon value of the six closest (face) neighbor cells. This
+        parameter should be in the range [0.0;1.0[. The higher the value, the
+        more averaging is introduced. A value of 0.0 disables all averaging.
+
+        The default and recommended value is 0.5.
+
+        :param theta: The smoothing parameter value
+        :type theta: float
+        '''
+        self.gamma[0] = gamma
+
+    def setTheta(self, theta):
+        '''
+        Theta is a fluid solver under-relaxation parameter, used in solution of
+        Poisson equation. The value should be within the range ]0.0;1.0]. At a
+        value of 1.0, the new estimate of epsilon values is used exclusively. At
+        lower values, a linear interpolation between new and old values is used.
+        The solution typically converges faster with a value of 1.0, but
+        instabilities may be avoided with lower values.
+
+        The default and recommended value is 1.0.
+
+        :param theta: The under-relaxation parameter value
+        :type theta: float
+        '''
+        self.theta[0] = theta
+
+
+    def setBeta(self, beta):
+        '''
+        Beta is a fluid solver parameter, used in velocity prediction and
+        pressure iteration 1.0: Use old pressures for fluid velocity prediction
+        (see Langtangen et al. 2002) 0.0: Do not use old pressures for fluid
+        velocity prediction (Chorin's original projection method, see Chorin
+        (1968) and "Projection method (fluid dynamics)" page on Wikipedia.  The
+        best results precision and performance-wise are obtained by using a beta
+        of 0 and a low tolerance criteria value.
+
+        The default and recommended value is 0.0.
+        '''
+        self.beta[0] = beta
+
+    def setTolerance(self, tolerance):
+        '''
+        A fluid solver parameter, the value of the tolerance parameter denotes
+        the required value of the maximum normalized residual for the fluid
+        solver.
+
+        The default and recommended value is 1.0e-8.
+
+        :param tolerance: The tolerance criteria for the maximal normalized
+            residual
+        :type tolerance: float
+        '''
+        self.tolerance[0] = tolerance
+
+    def setMaxIterations(self, maxiter):
+        '''
+        A fluid solver parameter, the value of the maxiter parameter denotes the
+        maximal allowed number of fluid solver iterations before ending the
+        fluid solver loop prematurely. The residual values are at that point not
+        fulfilling the tolerance criteria. The parameter is included to avoid
+        infinite hangs.
+
+        The default and recommended value is 1e4.
+
+        :param maxiter: The maximum number of Jacobi iterations in the fluid
+            solver
+        :type maxiter: int
+        '''
+        self.maxiter[0] = maxiter
+
 
 def convert(graphics_format = 'png', folder = '../img_out'):
     '''

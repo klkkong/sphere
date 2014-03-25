@@ -24,7 +24,6 @@
 #include "integration.cuh"
 #include "raytracer.cuh"
 #include "navierstokes.cuh"
-#include "navierstokes_solver_parameters.h"
 
 // Wrapper function for initializing the CUDA components.
 // Called from main.cpp
@@ -901,7 +900,7 @@ __host__ void DEM::startTime()
             // setUpperPressureNS
             Float pressure = ns.p[idx(0,0,ns.nz-1)];
             Float pressure_new = pressure; // Dirichlet
-            Float epsilon_value = pressure_new - BETA*pressure;
+            Float epsilon_value = pressure_new - ns.beta*pressure;
             setNSepsilonTop<<<dimGridFluid, dimBlockFluid>>>(
                     dev_ns_epsilon,
                     dev_ns_epsilon_new,
@@ -919,6 +918,7 @@ __host__ void DEM::startTime()
                         dev_ns_p,
                         dev_ns_epsilon,
                         dev_ns_epsilon_new,
+                        ns.beta,
                         new_pressure);
                 cudaThreadSynchronize();
                 checkForCudaErrorsIter("Post setUpperPressureNS", iter);
@@ -1031,6 +1031,7 @@ __host__ void DEM::startTime()
                     dev_ns_div_phi_tau,
                     ns.bc_bot,
                     ns.bc_top,
+                    ns.beta,
                     dev_ns_fi,
                     dev_ns_v_p);
             cudaThreadSynchronize();
@@ -1051,10 +1052,10 @@ __host__ void DEM::startTime()
             if (iter == 0) {
 
                 // Define the first estimate of the values of epsilon.
-                // The initial guess depends on the value of BETA.
+                // The initial guess depends on the value of ns.beta.
                 Float pressure = ns.p[idx(2,2,2)];
                 Float pressure_new = pressure; // Guess p_current = p_new
-                Float epsilon_value = pressure_new - BETA*pressure;
+                Float epsilon_value = pressure_new - ns.beta*pressure;
                 if (PROFILING == 1)
                     startTimer(&kernel_tic);
                 setNSepsilonInterior<<<dimGridFluid, dimBlockFluid>>>(
@@ -1080,7 +1081,7 @@ __host__ void DEM::startTime()
                 // Set the epsilon values at the lower boundary
                 pressure = ns.p[idx(0,0,0)];
                 pressure_new = pressure; // Guess p_current = p_new
-                epsilon_value = pressure_new - BETA*pressure;
+                epsilon_value = pressure_new - ns.beta*pressure;
                 if (PROFILING == 1)
                     startTimer(&kernel_tic);
                 setNSepsilonBottom<<<dimGridFluid, dimBlockFluid>>>(
@@ -1142,7 +1143,7 @@ __host__ void DEM::startTime()
                 printNSarray(stdout, ns.epsilon, "epsilon");
             }
 
-            for (unsigned int nijac = 0; nijac<maxiter; ++nijac) {
+            for (unsigned int nijac = 0; nijac<ns.maxiter; ++nijac) {
 
                 // Only grad(epsilon) changes during the Jacobi iterations. The
                 // remaining terms of the forcing function are only calculated
@@ -1234,7 +1235,8 @@ __host__ void DEM::startTime()
                         dev_ns_norm,
                         dev_ns_f,
                         ns.bc_bot,
-                        ns.bc_top);
+                        ns.bc_top,
+                        ns.theta);
                 cudaThreadSynchronize();
                 if (PROFILING == 1)
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
@@ -1288,13 +1290,13 @@ __host__ void DEM::startTime()
                         reslog << nijac << '\t' << max_norm_res << std::endl;
                 }
 
-                if (max_norm_res < tolerance) {
+                if (max_norm_res < ns.tolerance) {
 
                     if (write_conv_log == 1 && iter % conv_log_interval == 0)
                         convlog << iter << '\t' << nijac << std::endl;
 
                     // Apply smoothing if requested
-                    if (GAMMA > 0.0) {
+                    if (ns.gamma > 0.0) {
                         setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                                 dev_ns_epsilon,
                                 ns.bc_bot, ns.bc_top);
@@ -1304,6 +1306,7 @@ __host__ void DEM::startTime()
 
                         smoothing<<<dimGridFluid, dimBlockFluid>>>(
                                 dev_ns_epsilon,
+                                ns.gamma,
                                 ns.bc_bot, ns.bc_top);
                         cudaThreadSynchronize();
                         checkForCudaErrorsIter("Post smoothing", iter);
@@ -1327,7 +1330,7 @@ __host__ void DEM::startTime()
                     break;  // solution has converged, exit Jacobi iter. loop
                 }
 
-                if (nijac >= maxiter-1) {
+                if (nijac >= ns.maxiter-1) {
 
                     if (write_conv_log == 1)
                         convlog << iter << '\t' << nijac << std::endl;
@@ -1336,9 +1339,9 @@ __host__ void DEM::startTime()
                         << iter*time.dt << " s: "
                         "Error, the epsilon solution in the fluid "
                         "calculations did not converge. Try increasing the "
-                        "value of 'maxiter' (" << maxiter
-                        << ") or increase 'tolerance' (" << tolerance << ")."
-                        << std::endl;
+                        "value of 'ns.maxiter' (" << ns.maxiter
+                        << ") or increase 'ns.tolerance' ("
+                        << ns.tolerance << ")." << std::endl;
                 }
                 //break; // end after Jacobi first iteration
             } // end Jacobi iteration loop
@@ -1354,6 +1357,7 @@ __host__ void DEM::startTime()
                     dev_ns_v,
                     dev_ns_v_p,
                     dev_ns_epsilon,
+                    ns.beta,
                     ns.bc_bot,
                     ns.bc_top);
             cudaThreadSynchronize();

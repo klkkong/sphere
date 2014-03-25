@@ -12,7 +12,6 @@
 #include "utility.h"
 #include "constants.cuh"
 #include "debug.h"
-#include "navierstokes_solver_parameters.h"
 
 // Arithmetic mean of two numbers
 __inline__ __device__ Float amean(Float a, Float b) {
@@ -995,6 +994,7 @@ __global__ void setUpperPressureNS(
         Float* dev_ns_p,
         Float* dev_ns_epsilon,
         Float* dev_ns_epsilon_new,
+        Float  beta,
         const Float new_pressure)
 {
     // 3D thread index
@@ -1013,7 +1013,7 @@ __global__ void setUpperPressureNS(
         const Float pressure = dev_ns_p[cellidx];
 
         // Determine the new epsilon boundary condition
-        const Float epsilon = new_pressure - BETA*pressure;
+        const Float epsilon = new_pressure - beta*pressure;
 
         // Write the new pressure and epsilon values to the top boundary cells
         __syncthreads();
@@ -1559,6 +1559,7 @@ __global__ void findPredNSvelocities(
         Float3* dev_ns_div_phi_tau,     // in
         int     bc_bot,                 // in
         int     bc_top,                 // in
+        Float   beta,                   // in
         Float3* dev_ns_fi,              // in
         Float3* dev_ns_v_p)             // out
 {
@@ -1611,12 +1612,12 @@ __global__ void findPredNSvelocities(
         Float3 grad_p = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
         // The pressure gradient is not needed in Chorin's projection method
-        // (BETA=0), so only has to be looked up in pressure-dependant
+        // (ns.beta=0), so only has to be looked up in pressure-dependant
         // projection methods
         Float3 pressure_term = MAKE_FLOAT3(0.0, 0.0, 0.0);
-        if (BETA > 0.0) {
+        if (beta > 0.0) {
             grad_p = gradient(dev_ns_p, x, y, z, dx, dy, dz);
-            pressure_term = -BETA/devC_params.rho_f*grad_p*devC_dt/phi;
+            pressure_term = -beta/devC_params.rho_f*grad_p*devC_dt/phi;
         }
 
         // Calculate the predicted velocity
@@ -1629,7 +1630,7 @@ __global__ void findPredNSvelocities(
             - div_phi_vi_v*devC_dt/phi;
 
         // Report velocity components to stdout for debugging
-        /*const Float3 dv_pres = -BETA/devC_params.rho_f*grad_p*devC_dt/phi;
+        /*const Float3 dv_pres = -ns.beta/devC_params.rho_f*grad_p*devC_dt/phi;
         const Float3 dv_diff = 1.0/devC_params.rho_f*div_phi_tau*devC_dt/phi;
         const Float3 dv_f = devC_dt*f_g;
         const Float3 dv_dphi = -1.0*v*dphi/phi;
@@ -1786,13 +1787,13 @@ __global__ void findNSforcing(
     }
 }
 
-// Spatial smoothing, used for the epsilon values. See adjustable parameter
-// GAMMA at the top of this file. If there are several blocks, there will be
-// small errors at the block boundaries, since the update will mix non-smoothed
-// and smoothed values.
+// Spatial smoothing, used for the epsilon values. If there are several blocks,
+// there will be small errors at the block boundaries, since the update will mix
+// non-smoothed and smoothed values.
 template<typename T>
 __global__ void smoothing(
         T* dev_arr,
+        const Float gamma,
         const unsigned int bc_bot,
         const unsigned int bc_top)
 {
@@ -1833,7 +1834,7 @@ __global__ void smoothing(
         const T e_avg_neigbors = 1.0/6.0 *
             (e_xn + e_xp + e_yn + e_yp + e_zn + e_zp);
 
-        const T e_smooth = (1.0 - GAMMA)*e + GAMMA*e_avg_neigbors;
+        const T e_smooth = (1.0 - gamma)*e + gamma*e_avg_neigbors;
 
         __syncthreads();
         dev_arr[cellidx] = e_smooth;
@@ -1852,7 +1853,8 @@ __global__ void jacobiIterationNS(
         Float* dev_ns_norm,
         const Float* dev_ns_f,
         const int bc_bot,
-        const int bc_top)
+        const int bc_top,
+        const Float theta)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -1929,7 +1931,7 @@ __global__ void jacobiIterationNS(
                 x,y,z, e, f, e_new);*/
 
         const Float res_norm = (e_new - e)*(e_new - e)/(e_new*e_new + 1.0e-16);
-        const Float e_relax = e*(1.0-THETA) + e_new*THETA;
+        const Float e_relax = e*(1.0-theta) + e_new*theta;
 
         __syncthreads();
         dev_ns_epsilon_new[cellidx] = e_relax;
@@ -2025,6 +2027,7 @@ __global__ void updateNSvelocityPressure(
         Float3* dev_ns_v,
         Float3* dev_ns_v_p,
         Float*  dev_ns_epsilon,
+        Float   beta,
         int     bc_bot,
         int     bc_top)
 {
@@ -2056,7 +2059,7 @@ __global__ void updateNSvelocityPressure(
         const Float3 v_p     = dev_ns_v_p[cellidx];
 
         // New pressure
-        Float p = BETA*p_old + epsilon;
+        Float p = beta*p_old + epsilon;
 
         // Find corrector gradient
         const Float3 grad_epsilon
