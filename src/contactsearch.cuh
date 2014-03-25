@@ -399,7 +399,6 @@ __global__ void interact(unsigned int* dev_gridParticleIndex, // Input: Unsorted
         Float4 x_a      = dev_x_sorted[idx_a];
         Float  radius_a = x_a.w;
 
-
         // Fetch world dimensions in constant memory read
         Float3 origo = MAKE_FLOAT3(devC_grid.origo[0], 
                 devC_grid.origo[1], 
@@ -529,16 +528,17 @@ __global__ void interact(unsigned int* dev_gridParticleIndex, // Input: Unsorted
                         }
                     } else {
                         __syncthreads();
-                        // Remove this contact (there is no particle with index=np)
+                        // Remove this contact (there is no particle with
+                        // index=np)
                         dev_contacts[mempos] = devC_np;
                         // Zero sum of shear displacement in this position
-                        dev_delta_t[mempos] = MAKE_FLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+                        dev_delta_t[mempos] = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
                     }
 
                 } else { // if dev_contacts[mempos] == devC_np
                     __syncthreads();
                     // Zero sum of shear displacement in this position
-                    dev_delta_t[mempos] = MAKE_FLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+                    dev_delta_t[mempos] = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
                 } 
             } // Contact loop end
 
@@ -551,9 +551,12 @@ __global__ void interact(unsigned int* dev_gridParticleIndex, // Input: Unsorted
             int3 targetPos;
 
             // Calculate address in grid from position
-            gridPos.x = floor((x_a.x - devC_grid.origo[0]) / (devC_grid.L[0]/devC_grid.num[0]));
-            gridPos.y = floor((x_a.y - devC_grid.origo[1]) / (devC_grid.L[1]/devC_grid.num[1]));
-            gridPos.z = floor((x_a.z - devC_grid.origo[2]) / (devC_grid.L[2]/devC_grid.num[2]));
+            gridPos.x = floor((x_a.x - devC_grid.origo[0])
+                    / (devC_grid.L[0]/devC_grid.num[0]));
+            gridPos.y = floor((x_a.y - devC_grid.origo[1])
+                    / (devC_grid.L[1]/devC_grid.num[1]));
+            gridPos.z = floor((x_a.z - devC_grid.origo[2])
+                    / (devC_grid.L[2]/devC_grid.num[2]));
 
             // Find overlaps between particle no. idx and all particles
             // from its own cell + 26 neighbor cells.
@@ -661,7 +664,6 @@ __global__ void interact(unsigned int* dev_gridParticleIndex, // Input: Unsorted
                         delta_w, w_4_mvfd.y);
             }
         }
-
 
         // Hold threads for coalesced write
         __syncthreads();

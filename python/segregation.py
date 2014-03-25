@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Import sphere functionality
-from sphere import *
+import sphere
 
 ### EXPERIMENT SETUP ###
 initialization = True
@@ -24,13 +24,13 @@ devslist = [120e3]
 ### INITIALIZATION ###
 
 # New class
-init = Spherebin(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
+init = sphere.sim(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
 
 # Save radii
 init.generateRadii(radius_mean = 0.08)
 
 # Use default params
-init.defaultParams(gamma_n = 0.0, mu_s = 0.4, mu_d = 0.4)
+init.defaultParams(gamma_n = 100.0, mu_s = 0.4, mu_d = 0.4)
 
 # Initialize positions in random grid (also sets world size)
 hcells = np**(1.0/3.0)*0.6
@@ -47,8 +47,6 @@ init.radius[I] = init.radius[I] * 0.5
 init.initTemporal(total = 10.0)
 
 if (initialization == True):
-  # Write input file for sphere
-  init.writebin()
 
   # Run sphere
   init.run(dry=True)
@@ -67,10 +65,10 @@ if (initialization == True):
 
 for devs in devslist:
   # New class
-  cons = Spherebin(np = init.np, nw = 1, sid = sim_id + "-cons-devs{}".format(devs))
+  cons = sphere.sim(np = init.np, nw = 1, sid = sim_id + "-cons-devs{}".format(devs))
 
   # Read last output file of initialization step
-  lastf = status(sim_id + "-init")
+  lastf = sphere.status(sim_id + "-init")
   cons.readbin("../output/" + sim_id + "-init.output{:0=5}.bin".format(lastf), verbose=False)
 
   # Setup consolidation experiment
@@ -88,8 +86,6 @@ for devs in devslist:
 
 
   if (consolidation == True):
-    # Write input file for sphere
-    cons.writebin()
 
     # Run sphere
     cons.run(dry=True) # show values, don't run
@@ -108,10 +104,10 @@ for devs in devslist:
 ### SHEARING ###
 
   # New class
-  shear = Spherebin(np = cons.np, nw = cons.nw, sid = sim_id + "-shear-devs{}".format(devs))
+  shear = sphere.sim(np = cons.np, nw = cons.nw, sid = sim_id + "-shear-devs{}".format(devs))
 
   # Read last output file of initialization step
-  lastf = status(sim_id + "-cons-devs{}".format(devs))
+  lastf = sphere.status(sim_id + "-cons-devs{}".format(devs))
   shear.readbin("../output/" + sim_id + "-cons-devs{}.output{:0=5}.bin".format(devs, lastf), verbose = False)
 
   # Setup shear experiment
@@ -178,8 +174,6 @@ for devs in devslist:
   shear.initTemporal(total = 400.0)
 
   if (shearing == True):
-    # Write input file for sphere
-    shear.writebin()
 
     # Run sphere
     shear.run(dry=True)

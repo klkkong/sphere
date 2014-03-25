@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from pytestutils import *
-from sphere import *
+import sphere
 
 def printKinematics(sb):
     print('bonds_delta_n'); print(sb.bonds_delta_n)
@@ -27,7 +27,8 @@ s2_1 = numpy.ones((2,1))*smallval
 
 # Inter-particle distances to try (neg. for overlap)
 #distances = [0.2, 0.0, -0.2]
-distances = [0.2, 0.0]
+#distances = [0.2, 0.0]
+distances = []
 #distances = [0.2]
 
 for d in distances:
@@ -35,7 +36,7 @@ for d in distances:
     radii = 0.5
     print("## Inter-particle distance: " + str(d/radii) + " radii")
 
-    sb = Spherebin(np=2, sid='bondtest')
+    sb = sphere.sim(np=2, sid='bondtest')
     cleanup(sb)
 
     # setup particles, bond, and simulation
@@ -56,7 +57,6 @@ for d in distances:
     sb.zeroKinematics()
     sb.initTemporal(total=0.2, file_dt=0.01)
     #sb.initTemporal(total=0.01, file_dt=0.0001)
-    sb.writebin(verbose=False)
     sb.run(verbose=False)
     #sb.run()
     sb.readlast(verbose=False)
@@ -75,7 +75,6 @@ for d in distances:
     sb.initTemporal(total=0.2, file_dt=0.01)
     sb.vel[1,0] = 1e-4
     Ekinrot0 = sb.energy("kin") + sb.energy("rot")
-    sb.writebin(verbose=False)
     sb.run(verbose=False)
     sb.readlast(verbose=False)
     compareFloats(Ekinrot0, sb.energy("kin") + sb.energy("rot") + sb.energy("bondpot"), "Energy cons.")
@@ -95,7 +94,6 @@ for d in distances:
     sb.initTemporal(total=0.2, file_dt=0.01)
     sb.vel[1,0] = -1e-4
     Ekinrot0 = sb.energy("kin") + sb.energy("rot")
-    sb.writebin(verbose=False)
     sb.run(verbose=False)
     sb.readlast(verbose=False)
     compareFloats(Ekinrot0, sb.energy("kin") + sb.energy("rot") + sb.energy("bondpot"), "Energy cons.")
@@ -115,7 +113,6 @@ for d in distances:
     sb.initTemporal(total=0.2, file_dt=0.01)
     sb.vel[1,2] = 1e-4
     Ekinrot0 = sb.energy("kin") + sb.energy("rot")
-    sb.writebin(verbose=False)
     sb.run(verbose=False)
     sb.readlast(verbose=False)
     compareFloats(Ekinrot0, sb.energy("kin") + sb.energy("rot") + sb.energy("bondpot"), "Energy cons.")
@@ -150,7 +147,6 @@ for d in distances:
     #sb.initTemporal(total=0.001, file_dt=0.00001)
     sb.angvel[1,0] = 1e-4
     Ekinrot0 = sb.energy("kin") + sb.energy("rot")
-    sb.writebin(verbose=False)
     sb.run(verbose=False)
     sb.readlast(verbose=False)
     compareFloats(Ekinrot0, sb.energy("kin") + sb.energy("rot") + sb.energy("bondpot"), "Energy cons.")
@@ -175,7 +171,6 @@ for d in distances:
     sb.angvel[0,1] = -1e-4
     sb.angvel[1,1] = 1e-4
     Ekinrot0 = sb.energy("kin") + sb.energy("rot")
-    sb.writebin(verbose=False)
     sb.run(verbose=False)
     sb.readlast(verbose=False)
     compareFloats(Ekinrot0, sb.energy("kin") + sb.energy("rot") + sb.energy("bondpot"), "Energy cons.")
@@ -191,4 +186,3 @@ for d in distances:
     #visualize(sb.sid, "energy")
     #'''
 
-cleanup(sb)

@@ -1,16 +1,17 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/*  SPHERE source code by Anders Damsgaard Christensen, 2010-12,       */
+/*  SPHERE source code by Anders Damsgaard Christensen, 2010-15,       */
 /*  a 3D Discrete Element Method algorithm with CUDA GPU acceleration. */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-// Licence: GNU Public License (GPL) v. 3. See license.txt.
-// See doc/sphere-doc.pdf for full documentation.
-// Compile with GNU make by typing 'make' in the src/ directory.               
-// SPHERE is called from the command line with './sphere_<architecture> projectname' 
+// Licence: GNU Public License (GPL) v. 3. See LICENSE.txt.
+// See doc/pdf/sphere.pdf for full documentation.
+// Compile with GNU make by typing 'cmake . && make' in the root directory.
+// SPHERE is called from the command line with './sphere projectname' 
 
 
 // Including library files
 #include <iostream>
+#include <cstdio>
 #include <string>
 #include <cstdlib>
 
@@ -33,8 +34,8 @@ int main(const int argc, const char *argv[])
     int render = 0; // whether to render an image
     int method = 0; // visualization method
     int nfiles = 0; // number of input files
-    float max_val = 0.0f;       // max value of colorbar
-    float lower_cutoff = 0.0f;  // lower cutoff, particles below will not be rendered
+    float max_val = 0.0f;     // max value of colorbar
+    float lower_cutoff = 0.0f;// lower cutoff, particles below won't be rendered
 
     // Process input parameters
     int i;
@@ -45,38 +46,42 @@ int main(const int argc, const char *argv[])
         // Display help if requested
         if (argvi == "-h" || argvi == "--help") {
             std::cout << argv[0] << ": particle dynamics simulator\n"
-                << "Usage: " << argv[0] << " [OPTION[S]]... [FILE1 ...]\nOptions:\n"
-                << "-h, --help\t\tprint help\n"
-                << "-V, --version\t\tprint version information and exit\n"
-                << "-q, --quiet\t\tsuppress status messages to stdout\n"
-                << "-n, --dry\t\tshow key experiment parameters and quit\n"
-                << "-r, --render\t\trender input files instead of simulating temporal evolution\n"
-                << "-dc, --dont-check\tdon't check values before running\n" 
-                << "\nRaytracer (-r) specific options:\n"
-                << "-m <method> <maxval> [-l <lower cutoff val>], or\n"
-                << "--method <method> <maxval> [-l <lower cutoff val>]\n"
-                << "\tcolor visualization method, possible values:\n"
-                << "\tnormal, pres, vel, angvel, xdisp, angpos\n"
-                << "\t'normal' is the default mode\n"
-                << "\tif -l is appended, don't render particles with value below\n"
+                << "Usage: " << argv[0] << " [OPTION[S]]... [FILE1 ...]\n"
+                "Options:\n"
+                "-h, --help\t\tprint help\n"
+                "-V, --version\t\tprint version information and exit\n"
+                "-q, --quiet\t\tsuppress status messages to stdout\n"
+                "-n, --dry\t\tshow key experiment parameters and quit\n"
+                "-r, --render\t\trender input files instead of simulating "
+                "temporal evolution\n"
+                "-dc, --dont-check\tdon't check values before running\n" 
+                "\nRaytracer (-r) specific options:\n"
+                "-m <method> <maxval> [-l <lower cutoff val>], or\n"
+                "--method <method> <maxval> [-l <lower cutoff val>]\n"
+                "\tcolor visualization method, possible values:\n"
+                "\tnormal, pres, vel, angvel, xdisp, angpos\n"
+                "\t'normal' is the default mode\n"
+                "\tif -l is appended, don't render particles with value below\n"
                 << std::endl;
             return 0; // Exit with success
         }
 
         // Display version with fancy ASCII art
         else if (argvi == "-V" || argvi == "--version") {
-            std::cout << ".-------------------------------------.\n"
-                << "|              _    Compiled for " << ND << "D   |\n" 
-                << "|             | |                     |\n" 
-                << "|    ___ _ __ | |__   ___ _ __ ___    |\n"
-                << "|   / __| '_ \\| '_ \\ / _ \\ '__/ _ \\   |\n"
-                << "|   \\__ \\ |_) | | | |  __/ | |  __/   |\n"
-                << "|   |___/ .__/|_| |_|\\___|_|  \\___|   |\n"
-                << "|       | |                           |\n"
-                << "|       |_|           Version: " << VERS << "   |\n"           
-                << "`-------------------------------------´\n"
-                << " A discrete element method particle dynamics simulator.\n"
-                << " Written by Anders Damsgaard Christensen, license GPLv3+.\n";
+            printf(
+                ".-------------------------------------.\n"
+                "|              _                      |\n" 
+                "|             | |                     |\n" 
+                "|    ___ _ __ | |__   ___ _ __ ___    |\n"
+                "|   / __| '_ \\| '_ \\ / _ \\ '__/ _ \\   |\n"
+                "|   \\__ \\ |_) | | | |  __/ | |  __/   |\n"
+                "|   |___/ .__/|_| |_|\\___|_|  \\___|   |\n"
+                "|       | |                           |\n"
+                "|       |_|           Version: %.2f   |\n"           
+                "`-------------------------------------´\n"
+                " A discrete element method particle dynamics simulator.\n"
+                " Written by Anders Damsgaard, license GPLv3+.\n"
+                " https://cs.au.dk/~adc/\n", VERSION);
             return 0;
         }
 
@@ -139,11 +144,13 @@ int main(const int argc, const char *argv[])
             nfiles++;
 
             if (verbose == 1)
-                std::cout << argv[0] << ": processing input file: " << argvi << std::endl;
+                std::cout << argv[0] << ": processing input file: " << argvi <<
+                    std::endl;
 
             if (nfiles == 1) {
 
-                // Create DEM class, read data from input binary, check values, init cuda, transfer const mem
+                // Create DEM class, read data from input binary, check values,
+                // init cuda, transfer const mem
                 DEM dem(argvi, verbose, checkVals, dry, 1, 1);
                 // Render image if requested
                 if (render == 1)

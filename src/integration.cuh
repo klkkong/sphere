@@ -4,6 +4,11 @@
 // integration.cuh
 // Functions responsible for temporal integration
 
+//// Choose temporal integration scheme. Uncomment only one!
+//#define EULER
+//#define TY2
+#define TY3
+
 // Second order integration scheme based on Taylor expansion of particle kinematics. 
 // Kernel executed on device, and callable from host only.
 __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
@@ -13,176 +18,217 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         Float4* dev_acc, Float4* dev_angacc,
         Float4* dev_vel0, Float4* dev_angvel0,
         Float2* dev_xysum,
-        unsigned int* dev_gridParticleIndex) // Input: Sorted-Unsorted key
+        unsigned int* dev_gridParticleIndex, // Input: Sorted-Unsorted key
+        unsigned int iter)
 {
     unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x; // Thread id
 
     if (idx < devC_np) { // Condition prevents block size error
 
-        // Copy data to temporary arrays to avoid any potential read-after-write, 
-        // write-after-read, or write-after-write hazards. 
+        // Copy data to temporary arrays to avoid any potential
+        // read-after-write, write-after-read, or write-after-write hazards. 
+        __syncthreads();
         unsigned int orig_idx = dev_gridParticleIndex[idx];
-        Float4 force   = dev_force[orig_idx];
-        Float4 torque  = dev_torque[orig_idx];
-        Float4 angpos  = dev_angpos[orig_idx];
-        Float4 acc     = dev_acc[orig_idx];
-        Float4 angacc  = dev_angacc[orig_idx];
-        Float4 vel0    = dev_vel0[orig_idx];
-        Float4 angvel0 = dev_angvel0[orig_idx];
-        Float4 x       = dev_x_sorted[idx];
-        Float4 vel     = dev_vel_sorted[idx];
-        Float4 angvel  = dev_angvel_sorted[idx];
-        Float  radius  = x.w;
+        const Float4 force    = dev_force[orig_idx];
+        const Float4 torque   = dev_torque[orig_idx];
+        const Float4 angpos   = dev_angpos[orig_idx];
+        const Float4 x        = dev_x_sorted[idx];
+        const Float4 vel      = dev_vel_sorted[idx];
+        const Float4 angvel   = dev_angvel_sorted[idx];
+        Float2 xysum = dev_xysum[orig_idx];
 
-        Float2 xysum  = MAKE_FLOAT2(0.0f, 0.0f);
+        // Get old accelerations for three-term Taylor expansion. These values
+        // don't exist in the first time step
+#ifdef TY3
+        Float4 acc0, angacc0;
+        if (iter == 0) {
+            acc0 = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
+            angacc0 = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
+        } else {
+            __syncthreads();
+            acc0    = dev_acc[orig_idx];
+            angacc0 = dev_angacc[orig_idx];
+        }
+#endif
+
+        const Float radius = x.w;
+
+        // New values
+        Float4 x_new, vel_new, angpos_new, angvel_new;
 
         // Coherent read from constant memory to registers
-        Float  dt    = devC_dt;
-        Float3 origo = MAKE_FLOAT3(devC_grid.origo[0], devC_grid.origo[1], devC_grid.origo[2]); 
-        Float3 L     = MAKE_FLOAT3(devC_grid.L[0], devC_grid.L[1], devC_grid.L[2]);
-        Float  rho   = devC_params.rho;
+        const Float dt = devC_dt;
+        const Float3 origo = MAKE_FLOAT3(
+                devC_grid.origo[0],
+                devC_grid.origo[1],
+                devC_grid.origo[2]); 
+        const Float3 L = MAKE_FLOAT3(
+                devC_grid.L[0],
+                devC_grid.L[1],
+                devC_grid.L[2]);
 
         // Particle mass
-        Float m = 4.0/3.0 * PI * radius*radius*radius * rho;
+        Float m = 4.0/3.0 * PI * radius*radius*radius * devC_params.rho;
 
-        // Update linear acceleration of particle
-        acc.x = force.x / m;
-        acc.y = force.y / m;
-        acc.z = force.z / m;
+        // Find the acceleration by Newton's second law
+        Float4 acc = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
+        acc.x = force.x/m + devC_params.g[0];
+        acc.y = force.y/m + devC_params.g[1];
+        acc.z = force.z/m + devC_params.g[2];
 
-        // Update angular acceleration of particle 
+        // Find the angular acceleration by Newton's second law
         // (angacc = (total moment)/Intertia, intertia = 2/5*m*r^2)
+        Float4 angacc = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
         angacc.x = torque.x * 1.0 / (2.0/5.0 * m * radius*radius);
         angacc.y = torque.y * 1.0 / (2.0/5.0 * m * radius*radius);
         angacc.z = torque.z * 1.0 / (2.0/5.0 * m * radius*radius);
 
-        // Add gravity
-        acc.x += devC_params.g[0];
-        acc.y += devC_params.g[1];
-        acc.z += devC_params.g[2];
-
-        // Check if particle has a fixed horizontal velocity
+        // Modify the acceleration if the particle is marked as having a fixed
+        // velocity. In that case, zero the horizontal acceleration and disable
+        // gravity to counteract segregation. Particles may move in the
+        // z-dimension, to allow for dilation.
         if (vel.w > 0.0f) {
 
-            // Zero horizontal acceleration and disable
-            // gravity to counteract segregation.
-            // Particles may move in the z-dimension,
-            // to allow for dilation.
             acc.x = 0.0;
             acc.y = 0.0;
             acc.z -= devC_params.g[2];
 
             // Zero the angular acceleration
-            angacc = MAKE_FLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
-        } 
-
-
-        // Move particle across boundary if it is periodic
-        if (devC_grid.periodic == 1) {
-            if (x.x < origo.x)
-                x.x += L.x;
-            if (x.x > L.x)
-                x.x -= L.x;
-            if (x.y < origo.y)
-                x.y += L.y;
-            if (x.y > L.y)
-                x.y -= L.y;
-        } else if (devC_grid.periodic == 2) {
-            if (x.x < origo.x)
-                x.x += L.x;
-            if (x.x > L.x)
-                x.x -= L.x;
+            angacc = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
         }
 
 
-        //// Half-step leapfrog Verlet integration scheme ////
-        // Update half-step linear velocities
-        vel0.x += acc.x * dt;
-        vel0.y += acc.y * dt;
-        vel0.z += acc.z * dt;
+#ifdef EULER
+        // Forward Euler
+        // Truncation error O(dt^2) for positions and velocities
+        x_new.x = x.x + vel.x*dt;
+        x_new.y = x.y + vel.y*dt;
+        x_new.z = x.z + vel.z*dt;
+        x_new.w = x.w; // transfer radius
 
-        // Update half-step angular velocities
-        angvel0.x += angacc.x * dt;
-        angvel0.y += angacc.y * dt;
-        angvel0.z += angacc.z * dt;
+        vel_new.x = vel.x + acc.x*dt;
+        vel_new.y = vel.y + acc.y*dt;
+        vel_new.z = vel.z + acc.z*dt;
+        vel_new.w = vel.w; // transfer fixvel
 
-        // Update positions
-        x.x += vel0.x * dt;
-        x.y += vel0.y * dt;
-        x.z += vel0.z * dt;
+        angpos_new.x = angpos.x + angvel.x*dt;
+        angpos_new.y = angpos.y + angvel.y*dt;
+        angpos_new.z = angpos.z + angvel.z*dt;
+        angpos_new.w = angpos.w;
 
-        // Update angular positions
-        angpos.x += angvel0.x * dt;
-        angpos.y += angvel0.y * dt;
-        angpos.z += angvel0.z * dt;
+        angvel_new.x = angvel.x + angacc.x*dt;
+        angvel_new.y = angvel.y + angacc.y*dt;
+        angvel_new.z = angvel.z + angacc.z*dt;
+        angvel_new.w = angvel.w;
 
-        // Update full-step linear velocity
-        vel.x = vel0.x + 0.5 * acc.x * dt;
-        vel.y = vel0.y + 0.5 * acc.y * dt;
-        vel.z = vel0.z + 0.5 * acc.z * dt;
+        // Add horizontal-displacement for this time step to the sum of
+        // horizontal displacements
+        xysum.x += vel.x*dt;
+        xysum.y += vel.y*dt;
+#endif
 
-        // Update full-step angular velocity
-        angvel.x = angvel0.x + 0.5 * angacc.x * dt;
-        angvel.y = angvel0.y + 0.5 * angacc.y * dt;
-        angvel.z = angvel0.z + 0.5 * angacc.z * dt;
+#ifdef TY2
+        // Two-term Taylor expansion (TY2)
+        // Truncation error O(dt^3) for positions, O(dt^2) for velocities
+        x_new.x = x.x + vel.x*dt + 0.5*acc.x*dt*dt;
+        x_new.y = x.y + vel.y*dt + 0.5*acc.y*dt*dt;
+        x_new.z = x.z + vel.z*dt + 0.5*acc.z*dt*dt;
+        x_new.w = x.w; // transfer radius
 
-        /*
-        //// First-order Euler integration scheme ///
-        // Update angular position
-        angpos.x += angvel.x * dt;
-        angpos.y += angvel.y * dt;
-        angpos.z += angvel.z * dt;
+        vel_new.x = vel.x + acc.x*dt;
+        vel_new.y = vel.y + acc.y*dt;
+        vel_new.z = vel.z + acc.z*dt;
+        vel_new.w = vel.w; // transfer fixvel
 
-        // Update position
-        x.x += vel.x * dt;
-        x.y += vel.y * dt;
-        x.z += vel.z * dt;
-         */
+        angpos_new.x = angpos.x + angvel.x*dt + 0.5*angacc.x*dt*dt;
+        angpos_new.y = angpos.y + angvel.y*dt + 0.5*angacc.y*dt*dt;
+        angpos_new.z = angpos.z + angvel.z*dt + 0.5*angacc.z*dt*dt;
+        angpos_new.w = angpos.w;
 
-        /*
-        /// Second-order scheme based on Taylor expansion ///
-        // Update angular position
-        angpos.x += angvel.x * dt + angacc.x * dt*dt * 0.5;
-        angpos.y += angvel.y * dt + angacc.y * dt*dt * 0.5;
-        angpos.z += angvel.z * dt + angacc.z * dt*dt * 0.5;
+        angvel_new.x = angvel.x + angacc.x*dt;
+        angvel_new.y = angvel.y + angacc.y*dt;
+        angvel_new.z = angvel.z + angacc.z*dt;
+        angvel_new.w = angvel.w;
 
-        // Update position
-        x.x += vel.x * dt + acc.x * dt*dt * 0.5;
-        x.y += vel.y * dt + acc.y * dt*dt * 0.5;
-        x.z += vel.z * dt + acc.z * dt*dt * 0.5;
-         */
+        // Add horizontal-displacement for this time step to the sum of
+        // horizontal displacements
+        xysum.x += vel.x*dt + 0.5*acc.x*dt*dt;
+        xysum.y += vel.y*dt + 0.5*acc.y*dt*dt;
+#endif
 
-        /*
-        // Update angular velocity
-        angvel.x += angacc.x * dt;
-        angvel.y += angacc.y * dt;
-        angvel.z += angacc.z * dt;
+#ifdef TY3
+        // Three-term Taylor expansion (TY3)
+        // Truncation error O(dt^4) for positions, O(dt^3) for velocities
+        // Approximate acceleration change by backwards difference:
+        const Float3 dacc_dt = MAKE_FLOAT3(
+                (acc.x - acc0.x)/dt,
+                (acc.y - acc0.y)/dt,
+                (acc.z - acc0.z)/dt);
 
-        // Update linear velocity
-        vel.x += acc.x * dt;
-        vel.y += acc.y * dt;
-        vel.z += acc.z * dt;
-         */
+        const Float3 dangacc_dt = MAKE_FLOAT3(
+                (angacc.x - angacc0.x)/dt,
+                (angacc.y - angacc0.y)/dt,
+                (angacc.z - angacc0.z)/dt);
 
-        // Add x-displacement for this time step to 
-        // sum of x-displacements
-        //x.w += vel.x * dt + (acc.x * dt*dt)/2.0f;
-        xysum.x += vel.x * dt;
-        xysum.y += vel.y * dt;// + (acc.y * dt*dt * 0.5f;
+        x_new.x = x.x + vel.x*dt + 0.5*acc.x*dt*dt + 1.0/6.0*dacc_dt.x*dt*dt*dt;
+        x_new.y = x.y + vel.y*dt + 0.5*acc.y*dt*dt + 1.0/6.0*dacc_dt.y*dt*dt*dt;
+        x_new.z = x.z + vel.z*dt + 0.5*acc.z*dt*dt + 1.0/6.0*dacc_dt.z*dt*dt*dt;
+        x_new.w = x.w; // transfer radius
+
+        vel_new.x = vel.x + acc.x*dt + 0.5*dacc_dt.x*dt*dt;
+        vel_new.y = vel.y + acc.y*dt + 0.5*dacc_dt.y*dt*dt;
+        vel_new.z = vel.z + acc.z*dt + 0.5*dacc_dt.z*dt*dt;
+        vel_new.w = vel.w; // transfer fixvel
+
+        angpos_new.x = angpos.x + angvel.x*dt + 0.5*angacc.x*dt*dt
+            + 1.0/6.0*dangacc_dt.x*dt*dt*dt;
+        angpos_new.y = angpos.y + angvel.y*dt + 0.5*angacc.y*dt*dt
+            + 1.0/6.0*dangacc_dt.y*dt*dt*dt;
+        angpos_new.z = angpos.z + angvel.z*dt + 0.5*angacc.z*dt*dt
+            + 1.0/6.0*dangacc_dt.z*dt*dt*dt;
+        angpos_new.w = angpos.w;
+
+        angvel_new.x = angvel.x + angacc.x*dt + 0.5*dangacc_dt.x*dt*dt;
+        angvel_new.y = angvel.y + angacc.y*dt + 0.5*dangacc_dt.y*dt*dt;
+        angvel_new.z = angvel.z + angacc.z*dt + 0.5*dangacc_dt.z*dt*dt;
+        angvel_new.w = angvel.w;
+
+        // Add horizontal-displacement for this time step to the sum of
+        // horizontal displacements
+        xysum.x += vel.x*dt + 0.5*acc.x*dt*dt + 1.0/6.0*dacc_dt.x*dt*dt*dt;
+        xysum.y += vel.y*dt + 0.5*acc.y*dt*dt + 1.0/6.0*dacc_dt.y*dt*dt*dt;
+#endif
+
+        // Move particles outside the domain across periodic boundaries
+        if (devC_grid.periodic == 1) {
+            if (x_new.x < origo.x)
+                x_new.x += L.x;
+            if (x_new.x > L.x)
+                x_new.x -= L.x;
+            if (ND == 3) {
+                if (x_new.y < origo.y)
+                    x_new.y += L.y;
+                if (x_new.y > L.y)
+                    x_new.y -= L.y;
+            }
+        } else if (devC_grid.periodic == 2) {
+            if (x_new.x < origo.x)
+                x_new.x += L.x;
+            if (x_new.x > L.x)
+                x_new.x -= L.x;
+        }
 
         // Hold threads for coalesced write
         __syncthreads();
 
         // Store data in global memory at original, pre-sort positions
-        dev_xysum[orig_idx]  += xysum;
+        dev_xysum[orig_idx]   = xysum;
         dev_acc[orig_idx]     = acc;
         dev_angacc[orig_idx]  = angacc;
-        dev_angvel[orig_idx]  = angvel;
-        dev_angvel0[orig_idx] = angvel0;
-        dev_vel[orig_idx]     = vel;
-        dev_vel0[orig_idx]    = vel0;
-        dev_angpos[orig_idx]  = angpos;
-        dev_x[orig_idx]       = x;
+        dev_angvel[orig_idx]  = angvel_new;
+        dev_vel[orig_idx]     = vel_new;
+        dev_angpos[orig_idx]  = angpos_new;
+        dev_x[orig_idx]       = x_new;
     } 
 } // End of integrate(...)
 
@@ -226,71 +272,95 @@ __global__ void integrateWalls(
         Float4* dev_walls_mvfd,
         int* dev_walls_wmode,
         Float* dev_walls_force_partial,
-        Float* dev_walls_vel0,
+        Float* dev_walls_acc,
         unsigned int blocksPerGrid,
-        Float t_current)
+        Float t_current,
+        unsigned int iter)
 {
     unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x; // Thread id
 
     if (idx < devC_nw) { // Condition prevents block size error
 
-        // Copy data to temporary arrays to avoid any potential read-after-write, 
-        // write-after-read, or write-after-write hazards. 
+        // Copy data to temporary arrays to avoid any potential
+        // read-after-write, write-after-read, or write-after-write hazards. 
         Float4 w_nx   = dev_walls_nx[idx];
         Float4 w_mvfd = dev_walls_mvfd[idx];
         int wmode = dev_walls_wmode[idx];  // Wall BC, 0: fixed, 1: devs, 2: vel
-        Float vel0 = dev_walls_vel0[idx];
-        Float acc;
 
-        if (wmode == 0) // Wall fixed: do nothing
-            return;
+        if (wmode != 0) { // wmode == 0: Wall fixed: do nothing
 
-        // Find the final sum of forces on wall
-        w_mvfd.z = 0.0;
-        for (int i=0; i<blocksPerGrid; ++i) {
-            w_mvfd.z += dev_walls_force_partial[i];
+#ifdef TY3
+            Float acc0;
+            if (iter == 0)
+                acc0 = 0.0;
+            else
+                acc0 = dev_walls_acc[idx];
+#endif
+
+            // Find the final sum of forces on wall
+            w_mvfd.z = 0.0;
+            for (int i=0; i<blocksPerGrid; ++i) {
+                w_mvfd.z += dev_walls_force_partial[i];
+            }
+
+            const Float dt = devC_dt;
+
+            // Normal load = Deviatoric stress times wall surface area,
+            // directed downwards.
+            const Float sigma_0 = w_mvfd.w
+                + devC_params.devs_A*sin(2.0*PI*devC_params.devs_f * t_current);
+            const Float N = -sigma_0*devC_grid.L[0]*devC_grid.L[1];
+
+            // Calculate resulting acceleration of wall
+            // (Wall mass is stored in x component of position Float4)
+            Float acc = (w_mvfd.z + N)/w_mvfd.x;
+
+            // If Wall BC is controlled by velocity, it should not change
+            if (wmode == 2) { 
+                acc = 0.0;
+            }
+
+#ifdef EULER
+            // Forward Euler tempmoral integration.
+
+            // Update position
+            w_nx.w += w_mvfd.y*dt;
+
+            // Update velocity
+            w_mvfd.y += acc*dt;
+#endif
+
+#ifdef TY2
+            // Two-term Taylor expansion for tempmoral integration.
+            // The truncation error is O(dt^3) for positions and O(dt^2) for
+            // velocities.
+
+            // Update position
+            w_nx.w += w_mvfd.y*dt + 0.5*acc*dt*dt;
+
+            // Update velocity
+            w_mvfd.y += acc*dt;
+#endif
+
+#ifdef TY3
+            // Three-term Taylor expansion for tempmoral integration.
+            // The truncation error is O(dt^4) for positions and O(dt^3) for
+            // velocities. The acceleration change approximated by backwards
+            // central difference:
+            const Float dacc_dt = (acc - acc0)/dt;
+
+            // Update position
+            w_nx.w += w_mvfd.y*dt + 0.5*acc*dt*dt + 1.0/6.0*dacc_dt*dt*dt*dt;
+
+            // Update velocity
+            w_mvfd.y += acc*dt + 0.5*dacc_dt*dt*dt;
+#endif
+
+            // Store data in global memory
+            dev_walls_nx[idx]   = w_nx;
+            dev_walls_mvfd[idx] = w_mvfd;
+            dev_walls_acc[idx] = acc;
         }
-
-        Float dt = devC_dt;
-
-        // Normal load = Deviatoric stress times wall surface area,
-        // directed downwards.
-        Float sigma_0 = w_mvfd.w + devC_params.devs_A * sin(2.0 * 3.141596654 * devC_params.devs_f * t_current);
-        Float N = -sigma_0*devC_grid.L[0]*devC_grid.L[1];
-
-        // Calculate resulting acceleration of wall
-        // (Wall mass is stored in x component of position Float4)
-        acc = (w_mvfd.z + N)/w_mvfd.x;
-
-        // If Wall BC is controlled by velocity, it should not change
-        if (wmode == 2) { 
-            acc = 0.0;
-        }
-
-        //// Half-step leapfrog Verlet integration scheme ////
-        
-        // Update half-step velocity
-        vel0 += acc * dt;
-
-        // Update position. Second-order scheme based on Taylor expansion 
-        //w_nx.w += w_mvfd.y * dt + (acc * dt*dt)/2.0;
-
-        // Update position
-        w_nx.w += vel0 * dt;
-
-        // Update position. First-order Euler integration scheme
-        //w_nx.w += w_mvfd.y * dt;
-
-        // Update linear velocity
-        //w_mvfd.y += acc * dt;
-        w_mvfd.y = vel0 + 0.5 * acc * dt;
-
-        //cuPrintf("\nwall %d, wmode = %d, force = %f, acc = %f\n", idx, wmode, w_mvfd.z, acc);
-
-        // Store data in global memory
-        dev_walls_nx[idx]   = w_nx;
-        dev_walls_mvfd[idx] = w_mvfd;
-        dev_walls_vel0[idx] = vel0;
     }
 } // End of integrateWalls(...)
 

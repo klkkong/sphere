@@ -8,24 +8,35 @@ def passed():
     return "\tPassed"
 
 def failed():
-    raise Exception("Failed")
     return "\tFailed"
 
-def compare(first, second, string):
-  if (first == second):
-    print(string + passed())
-  else:
-    print(string + failed())
-    return(1)
+def test(statement, string):
+    if (statement == True):
+        print(string + passed())
+    else:
+        print(string + failed())
+        raise Exception("Failed")
 
-def compareFloats(first, second, string, criterion=1e-5):
-    if abs(first-second) < criterion:
+def compare(first, second, string):
+    returnvalue = (first == second)
+    if (returnvalue == True or returnvalue > 0):
+        print(string + passed())
+    else:
+        print(string + failed() + ' (' + str(returnvalue) + ')')
+        raise Exception("Failed")
+        return(returnvalue)
+
+def compareFloats(first, second, string, tolerance=1e-3):
+    #if abs(first-second) < tolerance:
+    if abs((first-second)/first) < tolerance:
         print(string + passed())
     else :
         print(string + failed())
         print("First: " + str(first))
         print("Second: " + str(second))
-        print("Difference: " + str(second-first))
+        print("Abs. difference: " + str(second-first))
+        print("Rel. difference: " + str(abs((first-second)/first)))
+        raise Exception("Failed")
         return(1)
 
 def compareNumpyArrays(first, second, string):
@@ -33,13 +44,13 @@ def compareNumpyArrays(first, second, string):
         print(string + passed())
     else :
         print(string + failed())
+        raise Exception("Failed")
         return(1)
 
-
-def cleanup(spherebin):
-    'Remove temporary files'
-    subprocess.call("rm -f ../input/" + spherebin.sid + ".bin", shell=True)
-    subprocess.call("rm -f ../output/" + spherebin.sid + ".*.bin", shell=True)
-    print("")
-
-
+def compareNumpyArraysClose(first, second, string, tolerance=1e-5):
+    if (numpy.allclose(first, second, atol=tolerance)):
+        print(string + passed())
+    else :
+        print(string + failed())
+        raise Exception("Failed")
+        return(1)

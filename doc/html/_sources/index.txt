@@ -3,36 +3,36 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to sphere's documentation!
-==================================
-This is the official documentation for the *sphere* discrete element modelling
-software. It presents the theory behind the discrete element method (DEM), the
-structure of the software source code, and the Python API for handling
-simulation setup and data analysis.
+The sphere documentation
+========================
+This is the official documentation for the ``sphere`` discrete element modelling
+software. This document aims at guiding the installation process, documenting
+the usage, and explaining the relevant theory.
 
-*sphere* is developed by Anders Damsgaard Christensen under supervision of David
-Lunbek Egholm and Jan A. Piotrowski, all of the department of Geoscience, Aarhus
-University, Denmark. This document is a work in progress, and is still in an
-early state. 
+``sphere`` is developed by Anders Damsgaard as part as his Ph.D. project, under
+supervision of David Lundbek Egholm and Jan A. Piotrowski, all of the Department
+of Geoscience, Aarhus University, Denmark. The author welcomes interested third
+party developers. This document is a work in progress.
 
-Contact: Anders Damsgaard Christensen, `<http://cs.au.dk/~adc>`_,
+Contact: Anders Damsgaard, `<http://cs.au.dk/~adc>`_,
 `<anders.damsgaard@geo.au.dk>`_
 
 
-Contents:
-
+Contents
+--------
 .. toctree::
    :maxdepth: 2
 
    introduction
    dem
+   cfd
    python_api
-   sphere_internals
+   .. sphere_internals
 
 
 
 Indices and tables
-==================
+------------------
 
 .. * :ref:`modindex`
 

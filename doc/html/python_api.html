@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Python API &mdash; sphere 0.35 documentation</title>
+    <title>Python API &mdash; sphere 1.00-alpha documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.35',
+        VERSION:     '1.00-alpha',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,9 +26,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="sphere 0.35 documentation" href="index.html" />
-    <link rel="next" title="sphere internals" href="sphere_internals.html" />
-    <link rel="prev" title="Discrete element method" href="dem.html" /> 
+    <link rel="top" title="sphere 1.00-alpha documentation" href="index.html" />
+    <link rel="prev" title="Fluid simulation and particle-fluid interaction" href="cfd.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,12 +40,9 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="sphere_internals.html" title="sphere internals"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="dem.html" title="Discrete element method"
+          <a href="cfd.html" title="Fluid simulation and particle-fluid interaction"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">sphere 0.35 documentation</a> &raquo;</li> 
+        <li><a href="index.html">sphere 1.00-alpha documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -55,351 +51,1837 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="module-sphere">
-<span id="python-api"></span><h1>Python API<a class="headerlink" href="#module-sphere" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="sphere.Spherebin">
-<em class="property">class </em><tt class="descclassname">sphere.</tt><tt class="descname">Spherebin</tt><big>(</big><em>np=1</em>, <em>nd=3</em>, <em>nw=1</em>, <em>sid='unnamed'</em><big>)</big><a class="headerlink" href="#sphere.Spherebin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class containing all data SPHERE data.</p>
-<p>Contains functions for reading and writing binaries, as well as simulation
-setup and data analysis.</p>
-<dl class="method">
-<dt id="sphere.Spherebin.adjustUpperWall">
-<tt class="descname">adjustUpperWall</tt><big>(</big><em>z_adjust=1.1</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.adjustUpperWall" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adjust grid and dynamic upper wall to max. particle height</p>
-</dd></dl>
+  <div class="section" id="python-api">
+<h1>Python API<a class="headerlink" href="#python-api" title="Permalink to this headline">¶</a></h1>
+<p>The Python module <tt class="docutils literal"><span class="pre">sphere</span></tt> is intended as the main interface to the <tt class="docutils literal"><span class="pre">sphere</span></tt>
+application. It is recommended to use this module for simulation setup,
+simulation execution, and analysis of the simulation output data.</p>
+<p>In order to use the API, the file <tt class="docutils literal"><span class="pre">sphere.py</span></tt> must be placed in the same
+directory as the Python files.</p>
+<div class="section" id="sample-usage">
+<h2>Sample usage<a class="headerlink" href="#sample-usage" title="Permalink to this headline">¶</a></h2>
+<p>Below is a simple, annotated example of how to setup, execute, and post-process
+a <tt class="docutils literal"><span class="pre">sphere</span></tt> simulation.  The example is also found in the <tt class="docutils literal"><span class="pre">python/</span></tt> folder as
+<tt class="docutils literal"><span class="pre">collision.py</span></tt>.</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Example of two particles colliding.</span>
+<span class="sd">Place script in sphere/python/ folder, and invoke with `python collision.py`</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
-<dl class="method">
-<dt id="sphere.Spherebin.bond">
-<tt class="descname">bond</tt><big>(</big><em>i</em>, <em>j</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.bond" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a bond between particles i and j</p>
-</dd></dl>
+<span class="c"># Import the sphere module for setting up, running, and analyzing the</span>
+<span class="c"># experiment. We also need the numpy module when setting arrays in the sphere</span>
+<span class="c"># object.</span>
+<span class="kn">import</span> <span class="nn">sphere</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
 
-<dl class="method">
-<dt id="sphere.Spherebin.bondsRose">
-<tt class="descname">bondsRose</tt><big>(</big><em>imgformat='pdf'</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.bondsRose" title="Permalink to this definition">¶</a></dt>
-<dd><p>Visualize strike- and dip angles of the bond pairs in a rose plot.</p>
-</dd></dl>
 
-<dl class="method">
-<dt id="sphere.Spherebin.bulkPorosity">
-<tt class="descname">bulkPorosity</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.Spherebin.bulkPorosity" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate and return the bulk porosity</p>
-</dd></dl>
+<span class="c">### SIMULATION SETUP</span>
 
-<dl class="method">
-<dt id="sphere.Spherebin.consolidate">
-<tt class="descname">consolidate</tt><big>(</big><em>deviatoric_stress=10000.0</em>, <em>periodic=1</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.consolidate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Setup consolidation experiment. Specify the upper wall
-deviatoric stress in Pascal, default value is 10 kPa.</p>
-</dd></dl>
+<span class="c"># Create a sphere object with two preallocated particles and a simulation ID</span>
+<span class="n">SB</span> <span class="o">=</span> <span class="n">sphere</span><span class="o">.</span><span class="n">sim</span><span class="p">(</span><span class="n">np</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">sid</span> <span class="o">=</span> <span class="s">&#39;collision&#39;</span><span class="p">)</span>
 
-<dl class="method">
-<dt id="sphere.Spherebin.createBondPair">
-<tt class="descname">createBondPair</tt><big>(</big><em>i</em>, <em>j</em>, <em>spacing=-0.1</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.createBondPair" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bond particles i and j. Particle j is moved adjacent to particle i,
-and oriented randomly.
-&#64;param spacing (float) The inter-particle distance prescribed. Positive
-values result in a inter-particle distance, negative equal an overlap.
-The value is relative to the sum of the two radii.</p>
-</dd></dl>
+<span class="n">SB</span><span class="o">.</span><span class="n">radius</span><span class="p">[:]</span> <span class="o">=</span> <span class="mf">0.3</span> <span class="c"># set radii to 0.3 m</span>
 
-<dl class="method">
-<dt id="sphere.Spherebin.currentDevs">
-<tt class="descname">currentDevs</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.Spherebin.currentDevs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return current magnitude of the deviatoric normal stress</p>
-</dd></dl>
+<span class="c"># Define the positions of the two particles</span>
+<span class="n">SB</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">])</span>   <span class="c"># particle 1 (idx 0)</span>
+<span class="n">SB</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">11.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">])</span>   <span class="c"># particle 2 (idx 1)</span>
 
-<dl class="method">
-<dt id="sphere.Spherebin.defaultParams">
-<tt class="descname">defaultParams</tt><big>(</big><em>mu_s=0.4</em>, <em>mu_d=0.4</em>, <em>mu_r=0.0</em>, <em>rho=2600</em>, <em>k_n=1160000000.0</em>, <em>k_t=1160000000.0</em>, <em>k_r=0</em>, <em>gamma_n=0</em>, <em>gamma_t=0</em>, <em>gamma_r=0</em>, <em>gamma_wn=10000.0</em>, <em>gamma_wt=10000.0</em>, <em>capillaryCohesion=0</em>, <em>nu=0.0</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.defaultParams" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize particle parameters to default values.
-Radii must be set prior to calling this function.</p>
-</dd></dl>
+<span class="c"># The default velocity is [0,0,0]. Slam particle 1 into particle 2 by defining</span>
+<span class="c"># a positive x velocity for particle 1.</span>
+<span class="n">SB</span><span class="o">.</span><span class="n">vel</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
 
-<dl class="method">
-<dt id="sphere.Spherebin.energy">
-<tt class="descname">energy</tt><big>(</big><em>method</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.energy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the sum of the energy components of all particles.</p>
-</dd></dl>
+<span class="c"># Set the world limits and the particle sorting grid. The particles need to stay</span>
+<span class="c"># within the world limits for the entire simulation, otherwise it will stop!</span>
+<span class="n">SB</span><span class="o">.</span><span class="n">initGridAndWorldsize</span><span class="p">(</span><span class="n">margin</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">)</span>
 
-<dl class="method">
-<dt id="sphere.Spherebin.forcechains">
-<tt class="descname">forcechains</tt><big>(</big><em>lc=200.0</em>, <em>uc=650.0</em>, <em>outformat='png'</em>, <em>disp='2d'</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.forcechains" title="Permalink to this definition">¶</a></dt>
-<dd><p>Visualizes the force chains in the system from the magnitude of the
-normal contact forces, and produces an image of them.
-&#64;param lc: Lower cutoff of contact forces. Contacts below are not
-visualized (float)
-&#64;param uc: Upper cutoff of contact forces. Contacts above are
-visualized with this value (float)
-&#64;param outformat: Format of output image. Possible values are
-&#8216;interactive&#8217;, &#8216;png&#8217;, &#8216;epslatex&#8217;, &#8216;epslatex-color&#8217;
-&#64;param disp: Display forcechains in &#8216;2d&#8217; or &#8216;3d&#8217;
-Warning: Will segfault if no contacts are found.</p>
-</dd></dl>
+<span class="c"># Define the temporal parameters, e.g. the total time (total) and the file</span>
+<span class="c"># output interval (file_dt), both in seconds</span>
+<span class="n">SB</span><span class="o">.</span><span class="n">initTemporal</span><span class="p">(</span><span class="n">total</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">file_dt</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">)</span>
 
-<dl class="method">
-<dt id="sphere.Spherebin.forcechainsRose">
-<tt class="descname">forcechainsRose</tt><big>(</big><em>lower_limit=0.25</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.forcechainsRose" title="Permalink to this definition">¶</a></dt>
-<dd><p>Visualize strike- and dip angles of the strongest force chains in a
-rose plot.</p>
-</dd></dl>
+<span class="c"># Using a &#39;dry&#39; run, the sphere main program will display important parameters.</span>
+<span class="c"># sphere will end after displaying these values.</span>
+<span class="n">SB</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">dry</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
 
-<dl class="method">
-<dt id="sphere.Spherebin.generateBimodalRadii">
-<tt class="descname">generateBimodalRadii</tt><big>(</big><em>r_small=0.005</em>, <em>r_large=0.05</em>, <em>ratio=0.2</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.generateBimodalRadii" title="Permalink to this definition">¶</a></dt>
-<dd><p>Draw radii from two sizes
-&#64;param r_small: Radii of small population (float), in ]0;r_large[
-&#64;param r_large: Radii of large population (float), in ]r_small;inf[
-&#64;param ratio: Approximate volumetric ratio between the two
-populations (large/small).</p>
-</dd></dl>
 
-<dl class="method">
-<dt id="sphere.Spherebin.generateRadii">
-<tt class="descname">generateRadii</tt><big>(</big><em>psd='logn'</em>, <em>radius_mean=0.00044</em>, <em>radius_variance=8.8e-09</em>, <em>histogram=True</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.generateRadii" title="Permalink to this definition">¶</a></dt>
-<dd><p>Draw random particle radii from the selected probability distribution.
-Specify mean radius and variance. The variance should be kept at a
-very low value.</p>
-</dd></dl>
+<span class="c">### RUNNING THE SIMULATION</span>
 
-<dl class="method">
-<dt id="sphere.Spherebin.initGrid">
-<tt class="descname">initGrid</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.Spherebin.initGrid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize grid suitable for the particle positions set previously.
-The margin parameter adjusts the distance (in no. of max. radii)
-from the particle boundaries.</p>
-</dd></dl>
+<span class="c"># Start the simulation on the GPU from the sphere program</span>
+<span class="n">SB</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
-<dl class="method">
-<dt id="sphere.Spherebin.initGridAndWorldsize">
-<tt class="descname">initGridAndWorldsize</tt><big>(</big><em>g=array([ 0.</em>, <em>0.</em>, <em>-9.80665])</em>, <em>margin=2.0</em>, <em>periodic=1</em>, <em>contactmodel=2</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.initGridAndWorldsize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize grid suitable for the particle positions set previously.
-The margin parameter adjusts the distance (in no. of max. radii)
-from the particle boundaries.</p>
-</dd></dl>
 
-<dl class="method">
-<dt id="sphere.Spherebin.initGridPos">
-<tt class="descname">initGridPos</tt><big>(</big><em>g=array([ 0.</em>, <em>0.</em>, <em>-9.80665])</em>, <em>gridnum=array([12</em>, <em>12</em>, <em>36])</em>, <em>periodic=1</em>, <em>contactmodel=2</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.initGridPos" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize particle positions in loose, cubic configuration.
-Radii must be set beforehand.
-xynum is the number of rows in both x- and y- directions.</p>
-</dd></dl>
+<span class="c">### ANALYSIS OF SIMULATION RESULTS</span>
 
-<dl class="method">
-<dt id="sphere.Spherebin.initRandomGridPos">
-<tt class="descname">initRandomGridPos</tt><big>(</big><em>g=array([ 0.</em>, <em>0.</em>, <em>-9.80665])</em>, <em>gridnum=array([12</em>, <em>12</em>, <em>32])</em>, <em>periodic=1</em>, <em>contactmodel=2</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.initRandomGridPos" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize particle positions in loose, cubic configuration.
-Radii must be set beforehand.
-xynum is the number of rows in both x- and y- directions.</p>
-</dd></dl>
+<span class="c"># Plot the system energy through time, image saved as collision-energy.png</span>
+<span class="n">sphere</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">SB</span><span class="o">.</span><span class="n">sid</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s">&#39;energy&#39;</span><span class="p">)</span>
 
-<dl class="method">
-<dt id="sphere.Spherebin.initRandomPos">
-<tt class="descname">initRandomPos</tt><big>(</big><em>g=array([ 0.</em>, <em>0.</em>, <em>-9.80665])</em>, <em>gridnum=array([12</em>, <em>12</em>, <em>36])</em>, <em>periodic=1</em>, <em>contactmodel=2</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.initRandomPos" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize particle positions in loose, cubic configuration.
-Radii must be set beforehand.
-xynum is the number of rows in both x- and y- directions.</p>
-</dd></dl>
+<span class="c"># Render the particles using the built-in raytracer</span>
+<span class="n">SB</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
 
-<dl class="method">
-<dt id="sphere.Spherebin.initTemporal">
-<tt class="descname">initTemporal</tt><big>(</big><em>total</em>, <em>current=0.0</em>, <em>file_dt=0.05</em>, <em>step_count=0</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.initTemporal" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set temporal parameters for the simulation.
-Particle radii and physical parameters need to be set
-prior to these.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sphere.Spherebin.porosities">
-<tt class="descname">porosities</tt><big>(</big><em>outformat='pdf'</em>, <em>zslices=16</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.porosities" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot porosities with depth</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sphere.Spherebin.porosity">
-<tt class="descname">porosity</tt><big>(</big><em>slices=10</em>, <em>verbose=False</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.porosity" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the porosity as a function of depth, by averaging values
-in horizontal slabs.
-Returns porosity values and depth</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sphere.Spherebin.random2bonds">
-<tt class="descname">random2bonds</tt><big>(</big><em>ratio=0.3</em>, <em>spacing=-0.1</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.random2bonds" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bond an amount of particles in two-particle clusters
-&#64;param ratio: The amount of particles to bond, values in ]0.0;1.0] (float)
-&#64;param spacing: The distance relative to the sum of radii between bonded
-particles, neg. values denote an overlap. Values in ]0.0,inf[ (float).
-The particles should be initialized beforehand.
-Note: The actual number of bonds is likely to be somewhat smaller than
-specified, due to the random selection algorithm.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sphere.Spherebin.readbin">
-<tt class="descname">readbin</tt><big>(</big><em>targetbin</em>, <em>verbose=True</em>, <em>bonds=True</em>, <em>devsmod=True</em>, <em>fluid=True</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.readbin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads a target SPHERE binary file</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sphere.Spherebin.render">
-<tt class="descname">render</tt><big>(</big><em>method='pres'</em>, <em>max_val=1000.0</em>, <em>lower_cutoff=0.0</em>, <em>graphicsformat='png'</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.render" title="Permalink to this definition">¶</a></dt>
-<dd><p>Render all output files that belong to the simulation, determined by sid.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sphere.Spherebin.run">
-<tt class="descname">run</tt><big>(</big><em>verbose=True</em>, <em>hideinputfile=False</em>, <em>dry=False</em>, <em>valgrind=False</em>, <em>cudamemcheck=False</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute sphere with target project</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sphere.Spherebin.shear">
-<tt class="descname">shear</tt><big>(</big><em>shear_strain_rate=1</em>, <em>periodic=1</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.shear" title="Permalink to this definition">¶</a></dt>
-<dd><p>Setup shear experiment. Specify the upper wall
-deviatoric stress in Pascal, default value is 10 kPa.
-The shear strain rate is the shear length divided by the
-initial height per second.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sphere.Spherebin.sheardisp">
-<tt class="descname">sheardisp</tt><big>(</big><em>outformat='pdf'</em>, <em>zslices=32</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.sheardisp" title="Permalink to this definition">¶</a></dt>
-<dd><p>Show particle x-displacement vs. the z-pos</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sphere.Spherebin.shearstrain">
-<tt class="descname">shearstrain</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.Spherebin.shearstrain" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates and returns the current shear strain (gamma) value of the experiment</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sphere.Spherebin.shearvel">
-<tt class="descname">shearvel</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.Spherebin.shearvel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates and returns the shear velocity (gamma_dot) of the experiment</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sphere.Spherebin.thinsection_x1x3">
-<tt class="descname">thinsection_x1x3</tt><big>(</big><em>x2='center'</em>, <em>graphicsformat='png'</em>, <em>cbmax=None</em>, <em>arrowscale=0.01</em>, <em>velarrowscale=1.0</em>, <em>slipscale=1.0</em>, <em>verbose=False</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.thinsection_x1x3" title="Permalink to this definition">¶</a></dt>
-<dd><p>Produce a 2D image of particles on a x1,x3 plane, intersecting the second axis at x2.
-Output is saved as &#8216;&lt;sid&gt;-ts-x1x3.txt&#8217; in the current folder.</p>
-<p>An upper limit to the pressure color bar range can be set by the cbmax parameter.</p>
-<dl class="docutils">
-<dt>The data can be plotted in gnuplot with:</dt>
-<dd>gnuplot&gt; set size ratio -1
-gnuplot&gt; set palette defined (0 &#8220;blue&#8221;, 0.5 &#8220;gray&#8221;, 1 &#8220;red&#8221;)
-gnuplot&gt; plot &#8216;&lt;sid&gt;-ts-x1x3.txt&#8217; with circles palette fs transparent solid 0.4 noborder</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="sphere.Spherebin.torqueScript">
-<tt class="descname">torqueScript</tt><big>(</big><em>email='adc&#64;geo.au.dk'</em>, <em>email_alerts='ae'</em>, <em>walltime='24:00:00'</em>, <em>queue='qfermi'</em>, <em>cudapath='/com/cuda/4.0.17/cuda'</em>, <em>spheredir='/home/adc/code/sphere'</em>, <em>workdir='/scratch'</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.torqueScript" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create job script for the Torque queue manager for the binary</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sphere.Spherebin.uniaxialStrainRate">
-<tt class="descname">uniaxialStrainRate</tt><big>(</big><em>wvel=-0.001</em>, <em>periodic=1</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.uniaxialStrainRate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Setup consolidation experiment. Specify the upper wall
-velocity in m/s, default value is -0.001 m/s (i.e. downwards).</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sphere.Spherebin.voidRatio">
-<tt class="descname">voidRatio</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.Spherebin.voidRatio" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the current void ratio</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sphere.Spherebin.writebin">
-<tt class="descname">writebin</tt><big>(</big><em>folder='../input/'</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.Spherebin.writebin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes to a target SPHERE binary file</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sphere.Spherebin.zeroKinematics">
-<tt class="descname">zeroKinematics</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.Spherebin.zeroKinematics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Zero kinematics of particles</p>
-</dd></dl>
-
-</dd></dl>
-
+<span class="c"># Alternative visualization using ParaView. See the documentation of</span>
+<span class="c"># ``sim.writeVTKall()`` for more information about displaying the</span>
+<span class="c"># particles in ParaView.</span>
+<span class="n">SB</span><span class="o">.</span><span class="n">writeVTKall</span><span class="p">()</span>
+</pre></div>
+</td></tr></table></div>
+<p>The full documentation of the <tt class="docutils literal"><span class="pre">sphere</span></tt> Python API can be found below.</p>
+</div>
+<div class="section" id="module-sphere">
+<span id="the-sphere-module"></span><h2>The <tt class="docutils literal"><span class="pre">sphere</span></tt> module<a class="headerlink" href="#module-sphere" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="sphere.V_sphere">
 <tt class="descclassname">sphere.</tt><tt class="descname">V_sphere</tt><big>(</big><em>r</em><big>)</big><a class="headerlink" href="#sphere.V_sphere" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the volume of a sphere with radius r</p>
+<dd><p>Calculates the volume of a sphere with radius r</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The sphere volume [m^3]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="sphere.cleanup">
-<tt class="descclassname">sphere.</tt><tt class="descname">cleanup</tt><big>(</big><em>spherebin</em><big>)</big><a class="headerlink" href="#sphere.cleanup" title="Permalink to this definition">¶</a></dt>
-<dd><p>Remove input/output files and images from simulation</p>
+<tt class="descclassname">sphere.</tt><tt class="descname">cleanup</tt><big>(</big><em>sim</em><big>)</big><a class="headerlink" href="#sphere.cleanup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the input/output files and images belonging to the object simulation
+ID from the <tt class="docutils literal"><span class="pre">input/</span></tt>, <tt class="docutils literal"><span class="pre">output/</span></tt> and <tt class="docutils literal"><span class="pre">img_out/</span></tt> folders.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spherebin</strong> (<em>sim</em>) &#8211; A sim object</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="sphere.convert">
-<tt class="descclassname">sphere.</tt><tt class="descname">convert</tt><big>(</big><em>graphicsformat='png'</em>, <em>folder='../img_out'</em><big>)</big><a class="headerlink" href="#sphere.convert" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts all PPM images in img_out to graphicsformat, using ImageMagick</p>
+<tt class="descclassname">sphere.</tt><tt class="descname">convert</tt><big>(</big><em>graphics_format='png'</em>, <em>folder='../img_out'</em><big>)</big><a class="headerlink" href="#sphere.convert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts all PPM images in img_out to graphics_format using Imagemagick. All
+PPM images are subsequently removed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>graphics_format</strong> (<em>str</em>) &#8211; Convert the images to this format</li>
+<li><strong>folder</strong> (<em>str</em>) &#8211; The folder containing the PPM images to convert</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="sphere.render">
-<tt class="descclassname">sphere.</tt><tt class="descname">render</tt><big>(</big><em>binary</em>, <em>method='pres'</em>, <em>max_val=1000.0</em>, <em>lower_cutoff=0.0</em>, <em>graphicsformat='png'</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.render" title="Permalink to this definition">¶</a></dt>
-<dd><p>Render target binary using the sphere raytracer.</p>
+<tt class="descclassname">sphere.</tt><tt class="descname">render</tt><big>(</big><em>binary</em>, <em>method='pres'</em>, <em>max_val=1000.0</em>, <em>lower_cutoff=0.0</em>, <em>graphics_format='png'</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.render" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render target binary using the <tt class="docutils literal"><span class="pre">sphere</span></tt> raytracer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>method</strong> (<em>str</em>) &#8211; The color visualization method to use for the particles.
+Possible values are: &#8216;normal&#8217;: color all particles with the same
+color, &#8216;pres&#8217;: color by pressure, &#8216;vel&#8217;: color by translational
+velocity, &#8216;angvel&#8217;: color by rotational velocity, &#8216;xdisp&#8217;: color by
+total displacement along the x-axis, &#8216;angpos&#8217;: color by angular
+position.</li>
+<li><strong>max_val</strong> (<em>float</em>) &#8211; The maximum value of the color bar</li>
+<li><strong>lower_cutoff</strong> (<em>float</em>) &#8211; Do not render particles with a value below this
+value, of the field selected by <tt class="docutils literal"><span class="pre">method</span></tt></li>
+<li><strong>graphics_format</strong> (<em>str</em>) &#8211; Convert the PPM images generated by the ray
+tracer to this image format using Imagemagick</li>
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; Show verbose information during ray tracing</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="sphere.run">
 <tt class="descclassname">sphere.</tt><tt class="descname">run</tt><big>(</big><em>binary</em>, <em>verbose=True</em>, <em>hideinputfile=False</em><big>)</big><a class="headerlink" href="#sphere.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute sphere with target binary as input</p>
+<dd><p>Execute <tt class="docutils literal"><span class="pre">sphere</span></tt> with target binary file as input.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>binary</strong> (<em>str</em>) &#8211; Input file for <tt class="docutils literal"><span class="pre">sphere</span></tt></li>
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; Show <tt class="docutils literal"><span class="pre">sphere</span></tt> output</li>
+<li><strong>hideinputfile</strong> (<em>bool</em>) &#8211; Hide the input file</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="sphere.sim">
+<em class="property">class </em><tt class="descclassname">sphere.</tt><tt class="descname">sim</tt><big>(</big><em>sid='unnamed'</em>, <em>np=0</em>, <em>nd=3</em>, <em>nw=0</em>, <em>fluid=False</em><big>)</big><a class="headerlink" href="#sphere.sim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class containing all <tt class="docutils literal"><span class="pre">sphere</span></tt> data.</p>
+<p>Contains functions for reading and writing binaries, as well as simulation
+setup and data analysis. Most arrays are initialized to default values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>np</strong> (<em>int</em>) &#8211; The number of particles to allocate memory for (default = 1)</li>
+<li><strong>nd</strong> (<em>int</em>) &#8211; The number of spatial dimensions (default = 3). Note that 2D and
+1D simulations currently are not possible.</li>
+<li><strong>nw</strong> (<em>int</em>) &#8211; The number of dynamic walls (default = 1)</li>
+<li><strong>sid</strong> (<em>str</em>) &#8211; The simulation id (default = &#8216;unnamed&#8217;). The simulation files
+will be written with this base name.</li>
+<li><strong>fluid</strong> (<em>bool</em>) &#8211; Setup fluid simulation (default = False)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="sphere.sim.acceleration">
+<tt class="descname">acceleration</tt><big>(</big><em>idx=-1</em><big>)</big><a class="headerlink" href="#sphere.sim.acceleration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the acceleration of one or more particles, selected by their
+index. If the index is equal to -1 (default value), all accelerations
+are returned.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>idx</strong> (<em>int, list or numpy.array</em>) &#8211; Index or index range of particles</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">n-by-3 matrix of acceleration(s)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.addParticle">
+<tt class="descname">addParticle</tt><big>(</big><em>x</em>, <em>radius</em>, <em>xysum=array([ 0.</em>, <em>0.])</em>, <em>vel=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>fixvel=array([ 0.])</em>, <em>force=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>angpos=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>angvel=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>torque=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>es_dot=array([ 0.])</em>, <em>es=array([ 0.])</em>, <em>ev_dot=array([ 0.])</em>, <em>ev=array([ 0.])</em>, <em>p=array([ 0.])</em><big>)</big><a class="headerlink" href="#sphere.sim.addParticle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a single particle to the simulation object. The only required
+parameters are the position (x) and the radius (radius).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> (<em>numpy.array</em>) &#8211; A vector pointing to the particle center coordinate.</li>
+<li><strong>radius</strong> (<em>float</em>) &#8211; The particle radius</li>
+<li><strong>vel</strong> (<em>numpy.array</em>) &#8211; The particle linear velocity (default = [0,0,0])</li>
+<li><strong>fixvel</strong> (<em>float</em>) &#8211; Fix horizontal linear velocity (0: No, 1: Yes, default=0)</li>
+<li><strong>angpos</strong> (<em>numpy.array</em>) &#8211; The particle angular position (default = [0,0,0])</li>
+<li><strong>angvel</strong> (<em>numpy.array</em>) &#8211; The particle angular velocity (default = [0,0,0])</li>
+<li><strong>torque</strong> (<em>numpy.array</em>) &#8211; The particle torque (default = [0,0,0])</li>
+<li><strong>es_dot</strong> (<em>float</em>) &#8211; The particle shear energy loss rate (default = 0)</li>
+<li><strong>es</strong> (<em>float</em>) &#8211; The particle shear energy loss (default = 0)</li>
+<li><strong>ev_dot</strong> (<em>float</em>) &#8211; The particle viscous energy rate loss (default = 0)</li>
+<li><strong>ev</strong> (<em>float</em>) &#8211; The particle viscous energy loss (default = 0)</li>
+<li><strong>p</strong> (<em>float</em>) &#8211; The particle pressure (default = 0)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.adjustUpperWall">
+<tt class="descname">adjustUpperWall</tt><big>(</big><em>z_adjust=1.1</em><big>)</big><a class="headerlink" href="#sphere.sim.adjustUpperWall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Included for legacy purposes, calls <a class="reference internal" href="#sphere.sim.adjustWall" title="sphere.sim.adjustWall"><tt class="xref py py-func docutils literal"><span class="pre">adjustWall()</span></tt></a> with <tt class="docutils literal"><span class="pre">idx=0</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>z_adjust</strong> (<em>float</em>) &#8211; Increase the world and grid size by this amount to
+allow for wall movement.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.adjustWall">
+<tt class="descname">adjustWall</tt><big>(</big><em>idx</em>, <em>adjust=1.1</em><big>)</big><a class="headerlink" href="#sphere.sim.adjustWall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adjust grid and dynamic wall to max. particle position</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Param :</th><td class="field-body">idx: The wall to adjust. 0 = +z, upper wall (default), 1 = -x,
+left wall, 2 = +x, right wall, 3 = -y, front wall, 4 = +y, back
+wall.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>z_adjust</strong> (<em>float</em>) &#8211; Increase the world and grid size by this amount to
+allow for wall movement.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.bond">
+<tt class="descname">bond</tt><big>(</big><em>i</em>, <em>j</em><big>)</big><a class="headerlink" href="#sphere.sim.bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a bond between particles with index i and j</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>i</strong> (<em>int</em>) &#8211; Index of first particle in bond</li>
+<li><strong>j</strong> (<em>int</em>) &#8211; Index of second particle in bond</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.bondsRose">
+<tt class="descname">bondsRose</tt><big>(</big><em>graphics_format='pdf'</em><big>)</big><a class="headerlink" href="#sphere.sim.bondsRose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize the trend and plunge angles of the bond pairs in a rose plot.
+The plot is saved in the current folder as
+&#8216;bonds-&lt;simulation id&gt;-rose.&lt;graphics_format&gt;&#8217;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>graphics_format</strong> (<em>str</em>) &#8211; Save the plot in this format</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.bulkPorosity">
+<tt class="descname">bulkPorosity</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.bulkPorosity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the bulk porosity</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The bulk porosity, in [0:1]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.cleanup">
+<tt class="descname">cleanup</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.cleanup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the input/output files and images belonging to the object
+simulation ID from the <tt class="docutils literal"><span class="pre">input/</span></tt>, <tt class="docutils literal"><span class="pre">output/</span></tt> and <tt class="docutils literal"><span class="pre">img_out/</span></tt> folders.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.consolidate">
+<tt class="descname">consolidate</tt><big>(</big><em>normal_stress=10000.0</em><big>)</big><a class="headerlink" href="#sphere.sim.consolidate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup consolidation experiment. Specify the upper wall normal stress in
+Pascal, default value is 10 kPa.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>normal_stress</strong> (<em>float</em>) &#8211; The normal stress to apply from the upper wall</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.contactModel">
+<tt class="descname">contactModel</tt><big>(</big><em>contactmodel</em><big>)</big><a class="headerlink" href="#sphere.sim.contactModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define which contact model to use for the tangential component of
+particle-particle interactions. The elastic-viscous-frictional contact
+model (2) is considered to be the most realistic contact model, while
+the viscous-frictional contact model is significantly faster.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>contactmodel</strong> (<em>int</em>) &#8211; The type of tangential contact model to use
+(visco-frictional = 1, elasto-visco-frictional = 2)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.createBondPair">
+<tt class="descname">createBondPair</tt><big>(</big><em>i</em>, <em>j</em>, <em>spacing=-0.1</em><big>)</big><a class="headerlink" href="#sphere.sim.createBondPair" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bond particles i and j. Particle j is moved adjacent to particle i,
+and oriented randomly.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>i</strong> (<em>int</em>) &#8211; Index of first particle in bond</li>
+<li><strong>j</strong> (<em>int</em>) &#8211; Index of second particle in bond</li>
+<li><strong>spacing</strong> (<em>float</em>) &#8211; The inter-particle distance prescribed. Positive
+values result in a inter-particle distance, negative equal an
+overlap. The value is relative to the sum of the two radii.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.currentNormalStress">
+<tt class="descname">currentNormalStress</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.currentNormalStress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the current magnitude of the top wall normal stress.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The current top wall normal stress in Pascal</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.defaultParams">
+<tt class="descname">defaultParams</tt><big>(</big><em>mu_s=0.4</em>, <em>mu_d=0.4</em>, <em>mu_r=0.0</em>, <em>rho=2600</em>, <em>k_n=1160000000.0</em>, <em>k_t=1160000000.0</em>, <em>k_r=0</em>, <em>gamma_n=0.0</em>, <em>gamma_t=0.0</em>, <em>gamma_r=0.0</em>, <em>gamma_wn=10000.0</em>, <em>gamma_wt=10000.0</em>, <em>capillaryCohesion=0</em><big>)</big><a class="headerlink" href="#sphere.sim.defaultParams" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize particle parameters to default values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>mu_s</strong> (<em>float</em>) &#8211; The coefficient of static friction between particles [-]</li>
+<li><strong>mu_d</strong> (<em>float</em>) &#8211; The coefficient of dynamic friction between particles [-]</li>
+<li><strong>rho</strong> (<em>float</em>) &#8211; The density of the particle material [kg/(m^3)]</li>
+<li><strong>k_n</strong> (<em>float</em>) &#8211; The normal stiffness of the particles [N/m]</li>
+<li><strong>k_t</strong> (<em>float</em>) &#8211; The tangential stiffness of the particles [N/m]</li>
+<li><strong>k_r</strong> (<em>float</em>) &#8211; The rolling stiffness of the particles [N/rad] <em>Parameter
+not used</em></li>
+<li><strong>gamma_n</strong> (<em>float</em>) &#8211; Particle-particle contact normal viscosity [Ns/m]</li>
+<li><strong>gamma_t</strong> (<em>float</em>) &#8211; Particle-particle contact tangential viscosity [Ns/m]</li>
+<li><strong>gamma_r</strong> (<em>float</em>) &#8211; Particle-particle contact rolling viscosity <em>Parameter 
+not used</em></li>
+<li><strong>gamma_wn</strong> (<em>float</em>) &#8211; Wall-particle contact normal viscosity [Ns/m]</li>
+<li><strong>gamma_wt</strong> (<em>float</em>) &#8211; Wall-particle contact tangential viscosity [Ns/m]</li>
+<li><strong>capillaryCohesion</strong> (<em>int</em>) &#8211; Enable particle-particle capillary cohesion
+interaction model (0 = no (default), 1 = yes)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.defineWorldBoundaries">
+<tt class="descname">defineWorldBoundaries</tt><big>(</big><em>L, origo=[0.0, 0.0, 0.0], dx=-1</em><big>)</big><a class="headerlink" href="#sphere.sim.defineWorldBoundaries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the boundaries of the world. Particles will only be able to interact
+within this domain. With dynamic walls, allow space for expansions.
+<em>Important</em>: The particle radii have to be set beforehand. The world
+edges act as static walls.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>L</strong> (<em>numpy.array</em>) &#8211; The upper boundary of the domain [m]</li>
+<li><strong>origo</strong> (<em>numpy.array</em>) &#8211; The lower boundary of the domain [m]. Negative values
+won&#8217;t work. Default = [0.0, 0.0, 0.0].</li>
+<li><strong>dx</strong> (<em>float</em>) &#8211; The cell width in any direction. If the default value is used
+(-1), the cell width is calculated to fit the largest particle.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.disableFluidPressureModulation">
+<tt class="descname">disableFluidPressureModulation</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.disableFluidPressureModulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters for the sine wave modulating the fluid pressures
+at the top boundary to zero.</p>
+<p>See also: <a class="reference internal" href="#sphere.sim.setFluidPressureModulation" title="sphere.sim.setFluidPressureModulation"><tt class="xref py py-func docutils literal"><span class="pre">setFluidPressureModulation()</span></tt></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.energy">
+<tt class="descname">energy</tt><big>(</big><em>method</em><big>)</big><a class="headerlink" href="#sphere.sim.energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the sum of the energy components of all particles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>method</strong> (<em>str</em>) &#8211; The type of energy to return. Possible values are &#8216;pot&#8217;
+for potential energy [J], &#8216;kin&#8217; for kinetic energy [J], &#8216;rot&#8217; for
+rotational energy [J], &#8216;shear&#8217; for energy lost by friction,
+&#8216;shearrate&#8217; for the rate of frictional energy loss [W], &#8216;visc_n&#8217; for
+viscous losses normal to the contact [J], &#8216;visc_n_rate&#8217; for the rate
+of viscous losses normal to the contact [W], and finally &#8216;bondpot&#8217;
+for the potential energy stored in bonds [J]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The value of the selected energy type</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.forcechains">
+<tt class="descname">forcechains</tt><big>(</big><em>lc=200.0</em>, <em>uc=650.0</em>, <em>outformat='png'</em>, <em>disp='2d'</em><big>)</big><a class="headerlink" href="#sphere.sim.forcechains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualizes the force chains in the system from the magnitude of the
+normal contact forces, and produces an image of them. Warning: Will
+segfault if no contacts are found.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>lc</strong> (<em>float</em>) &#8211; Lower cutoff of contact forces. Contacts below are not
+visualized</li>
+<li><strong>uc</strong> (<em>float</em>) &#8211; Upper cutoff of contact forces. Contacts above are
+visualized with this value</li>
+<li><strong>outformat</strong> (<em>str</em>) &#8211; Format of output image. Possible values are
+&#8216;interactive&#8217;, &#8216;png&#8217;, &#8216;epslatex&#8217;, &#8216;epslatex-color&#8217;</li>
+<li><strong>disp</strong> (<em>str</em>) &#8211; Display forcechains in &#8216;2d&#8217; or &#8216;3d&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.forcechainsRose">
+<tt class="descname">forcechainsRose</tt><big>(</big><em>lower_limit=0.25</em>, <em>graphics_format='pdf'</em><big>)</big><a class="headerlink" href="#sphere.sim.forcechainsRose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize trend and plunge angles of the strongest force chains in a
+rose plot. The plots are saved in the current folder with the name
+&#8216;fc-&lt;simulation id&gt;-rose.pdf&#8217;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>lower_limit</strong> (<em>float</em>) &#8211; Do not visualize force chains below this relative
+contact force magnitude, in ]0;1[</li>
+<li><strong>graphics_format</strong> (<em>str</em>) &#8211; Save the plot in this format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.generateBimodalRadii">
+<tt class="descname">generateBimodalRadii</tt><big>(</big><em>r_small=0.005</em>, <em>r_large=0.05</em>, <em>ratio=0.2</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.sim.generateBimodalRadii" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw random radii from two distinct sizes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>r_small</strong> (<em>float</em>) &#8211; Radii of small population [m], in ]0;r_large[</li>
+<li><strong>r_large</strong> (<em>float</em>) &#8211; Radii of large population [m], in ]r_small;inf[</li>
+<li><strong>ratio</strong> (<em>float</em>) &#8211; Approximate volumetric ratio between the two
+populations (large/small).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>See also: <a class="reference internal" href="#sphere.sim.generateRadii" title="sphere.sim.generateRadii"><tt class="xref py py-func docutils literal"><span class="pre">generateRadii()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.generateRadii">
+<tt class="descname">generateRadii</tt><big>(</big><em>psd='logn'</em>, <em>radius_mean=0.00044</em>, <em>radius_variance=8.8e-09</em>, <em>histogram=True</em><big>)</big><a class="headerlink" href="#sphere.sim.generateRadii" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw random particle radii from a selected probability distribution.
+The larger the variance of radii is, the slower the computations will
+run. The reason is two-fold: The smallest particle dictates the time
+step length, where smaller particles cause shorter time steps. At the
+same time, the largest particle determines the sorting cell size, where
+larger particles cause larger cells. Larger cells are likely to contain
+more particles, causing more contact checks.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>psd</strong> (<em>str</em>) &#8211; The particle side distribution. One possible value is
+<tt class="docutils literal"><span class="pre">logn</span></tt>, which is a log-normal probability distribution, suitable
+for approximating well-sorted, coarse sediments. The other possible
+value is <tt class="docutils literal"><span class="pre">uni</span></tt>, which is a uniform distribution from
+<tt class="docutils literal"><span class="pre">radius_mean-radius_variance</span></tt> to <tt class="docutils literal"><span class="pre">radius_mean+radius_variance</span></tt>.</li>
+<li><strong>radius_mean</strong> (<em>float</em>) &#8211; The mean radius [m] (default = 440e-6 m)</li>
+<li><strong>radius_variance</strong> (<em>float</em>) &#8211; The variance in the probability distribution
+[m].</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>See also: <a class="reference internal" href="#sphere.sim.generateBimodalRadii" title="sphere.sim.generateBimodalRadii"><tt class="xref py py-func docutils literal"><span class="pre">generateBimodalRadii()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.initFluid">
+<tt class="descname">initFluid</tt><big>(</big><em>mu=0.00089</em><big>)</big><a class="headerlink" href="#sphere.sim.initFluid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the fluid arrays and the fluid viscosity. The default value
+of <tt class="docutils literal"><span class="pre">mu</span></tt> equals the dynamic viscosity of water at 25 degrees Celcius.
+The value for water at 0 degrees Celcius is 17.87e-4 kg/(m*s).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mu</strong> (<em>float</em>) &#8211; The fluid dynamic viscosity [kg/(m*s)]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.initGrid">
+<tt class="descname">initGrid</tt><big>(</big><em>dx=-1</em><big>)</big><a class="headerlink" href="#sphere.sim.initGrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize grid suitable for the particle positions set previously.
+The margin parameter adjusts the distance (in no. of max. radii)
+from the particle boundaries.
+<em>Important</em>: The particle radii have to be set beforehand if the cell
+width isn&#8217;t specified by <cite>dx</cite>.
+:param dx: The cell width in any direction. If the default value is used</p>
+<blockquote>
+<div>(-1), the cell width is calculated to fit the largest particle.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.initGridAndWorldsize">
+<tt class="descname">initGridAndWorldsize</tt><big>(</big><em>margin=2.0</em><big>)</big><a class="headerlink" href="#sphere.sim.initGridAndWorldsize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize grid suitable for the particle positions set previously.
+The margin parameter adjusts the distance (in no. of max. radii)
+from the particle boundaries. If the upper wall is dynamic, it is placed
+at the top boundary of the world.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>margin</strong> (<em>float</em>) &#8211; Distance to world boundary in no. of max. particle radii</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.initGridPos">
+<tt class="descname">initGridPos</tt><big>(</big><em>gridnum=array([12</em>, <em>12</em>, <em>36])</em><big>)</big><a class="headerlink" href="#sphere.sim.initGridPos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize particle positions in loose, cubic configuration.
+<tt class="docutils literal"><span class="pre">gridnum</span></tt> is the number of cells in the x, y and z directions.
+<em>Important</em>: The particle radii and the boundary conditions (periodic or
+not) for the x and y boundaries have to be set beforehand.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>gridnum</strong> (<em>numpy.array</em>) &#8211; The number of particles in x, y and z directions</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.initRandomGridPos">
+<tt class="descname">initRandomGridPos</tt><big>(</big><em>gridnum=array([12</em>, <em>12</em>, <em>32])</em><big>)</big><a class="headerlink" href="#sphere.sim.initRandomGridPos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize particle positions in loose, cubic configuration with some
+variance. <tt class="docutils literal"><span class="pre">gridnum</span></tt> is the number of cells in the x, y and z
+directions.  <em>Important</em>: The particle radii and the boundary conditions
+(periodic or not) for the x and y boundaries have to be set beforehand.
+The world size and grid height (in the z direction) is readjusted to fit
+the particle positions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>gridnum</strong> (<em>numpy.array</em>) &#8211; The number of particles in x, y and z directions</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.initRandomPos">
+<tt class="descname">initRandomPos</tt><big>(</big><em>gridnum=array([12</em>, <em>12</em>, <em>36])</em><big>)</big><a class="headerlink" href="#sphere.sim.initRandomPos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize particle positions in completely random configuration. Radii
+<em>must</em> be set beforehand. If the x and y boundaries are set as periodic,
+the particle centers will be placed all the way to the edge. On regular,
+non-periodic boundaries, the particles are restrained at the edges to
+make space for their radii within the bounding box.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>gridnum</strong> (<em>numpy.array</em>) &#8211; The number of sorting cells in each spatial direction
+(default = [12, 12, 36])</li>
+<li><strong>dx</strong> (<em>float</em>) &#8211; The cell width in any direction. If the default value is used
+(-1), the cell width is calculated to fit the largest particle.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.initTemporal">
+<tt class="descname">initTemporal</tt><big>(</big><em>total</em>, <em>current=0.0</em>, <em>file_dt=0.05</em>, <em>step_count=0</em>, <em>dt=-1</em><big>)</big><a class="headerlink" href="#sphere.sim.initTemporal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set temporal parameters for the simulation. <em>Important</em>: Particle radii,
+physical parameters, and the optional fluid grid need to be set prior to
+these if the computational time step (dt) isn&#8217;t set explicitly. If the
+parameter <cite>dt</cite> is the default value (-1), the function will estimate the
+best time step length. The value of the computational time step for the
+DEM is checked for stability in the CFD solution if fluid simulation is
+included.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>total</strong> (<em>float</em>) &#8211; The time at which to end the simulation [s]</li>
+<li><strong>current</strong> &#8211; The current time [s] (default = 0.0 s)</li>
+<li><strong>file_dt</strong> &#8211; The interval between output files [s] (default = 0.05 s)</li>
+<li><strong>dt</strong> &#8211; The computational time step length [s]</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Step_count :</th><td class="field-body"><p class="first last">The number of the first output file (default = 0)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.periodicBoundariesX">
+<tt class="descname">periodicBoundariesX</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.periodicBoundariesX" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the x boundary conditions to be periodic.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.periodicBoundariesXY">
+<tt class="descname">periodicBoundariesXY</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.periodicBoundariesXY" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the x and y boundary conditions to be periodic.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.plotConvergence">
+<tt class="descname">plotConvergence</tt><big>(</big><em>graphics_format='png'</em><big>)</big><a class="headerlink" href="#sphere.sim.plotConvergence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the convergence evolution in the CFD solver. The plot is saved 
+in the output folder with the file name
+&#8216;&lt;simulation id&gt;-conv.&lt;graphics_format&gt;&#8217;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>graphics_format</strong> (<em>str</em>) &#8211; Save the plot in this format</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.plotFluidDiffAdvPresZ">
+<tt class="descname">plotFluidDiffAdvPresZ</tt><big>(</big><em>graphics_format='png'</em><big>)</big><a class="headerlink" href="#sphere.sim.plotFluidDiffAdvPresZ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare contributions to the velocity from diffusion and advection,
+assuming the flow is 1D along the z-axis, phi = 1, and dphi = 0. This
+solution is analog to the predicted velocity and not constrained by the
+conservation of mass. The plot is saved in the output folder with the
+name format &#8216;&lt;simulation id&gt;-diff_adv-t=&lt;current time&gt;s-mu=&lt;dynamic
+viscosity&gt;Pa-s.&lt;graphics_format&gt;&#8217;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>graphics_format</strong> (<em>str</em>) &#8211; Save the plot in this format</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.plotFluidPressuresY">
+<tt class="descname">plotFluidPressuresY</tt><big>(</big><em>y=-1</em>, <em>graphics_format='png'</em><big>)</big><a class="headerlink" href="#sphere.sim.plotFluidPressuresY" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot fluid pressures in a plane normal to the second axis.
+The plot is saved in the current folder with the format
+&#8216;p_f-&lt;simulation id&gt;-y&lt;y value&gt;.&lt;graphics_format&gt;&#8217;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>y</strong> (<em>int</em>) &#8211; Plot pressures in fluid cells with these y axis values. If
+this value is -1, the center y position is used.</li>
+<li><strong>graphics_format</strong> (<em>str</em>) &#8211; Save the plot in this format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>See also: <a class="reference internal" href="#sphere.sim.writeFluidVTK" title="sphere.sim.writeFluidVTK"><tt class="xref py py-func docutils literal"><span class="pre">writeFluidVTK()</span></tt></a> and <a class="reference internal" href="#sphere.sim.plotFluidPressuresZ" title="sphere.sim.plotFluidPressuresZ"><tt class="xref py py-func docutils literal"><span class="pre">plotFluidPressuresZ()</span></tt></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.plotFluidPressuresZ">
+<tt class="descname">plotFluidPressuresZ</tt><big>(</big><em>z=-1</em>, <em>graphics_format='png'</em><big>)</big><a class="headerlink" href="#sphere.sim.plotFluidPressuresZ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot fluid pressures in a plane normal to the third axis.
+The plot is saved in the current folder with the format
+&#8216;p_f-&lt;simulation id&gt;-z&lt;z value&gt;.&lt;graphics_format&gt;&#8217;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>z</strong> (<em>int</em>) &#8211; Plot pressures in fluid cells with these z axis values. If
+this value is -1, the center z position is used.</li>
+<li><strong>graphics_format</strong> (<em>str</em>) &#8211; Save the plot in this format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>See also: <a class="reference internal" href="#sphere.sim.writeFluidVTK" title="sphere.sim.writeFluidVTK"><tt class="xref py py-func docutils literal"><span class="pre">writeFluidVTK()</span></tt></a> and <a class="reference internal" href="#sphere.sim.plotFluidPressuresY" title="sphere.sim.plotFluidPressuresY"><tt class="xref py py-func docutils literal"><span class="pre">plotFluidPressuresY()</span></tt></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.plotFluidVelocitiesY">
+<tt class="descname">plotFluidVelocitiesY</tt><big>(</big><em>y=-1</em>, <em>graphics_format='png'</em><big>)</big><a class="headerlink" href="#sphere.sim.plotFluidVelocitiesY" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot fluid velocities in a plane normal to the second axis.
+The plot is saved in the current folder with the format
+&#8216;v_f-&lt;simulation id&gt;-z&lt;z value&gt;.&lt;graphics_format&gt;&#8217;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>y</strong> (<em>int</em>) &#8211; Plot velocities in fluid cells with these y axis values. If
+this value is -1, the center y position is used.</li>
+<li><strong>graphics_format</strong> (<em>str</em>) &#8211; Save the plot in this format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>See also: <a class="reference internal" href="#sphere.sim.writeFluidVTK" title="sphere.sim.writeFluidVTK"><tt class="xref py py-func docutils literal"><span class="pre">writeFluidVTK()</span></tt></a> and <a class="reference internal" href="#sphere.sim.plotFluidVelocitiesZ" title="sphere.sim.plotFluidVelocitiesZ"><tt class="xref py py-func docutils literal"><span class="pre">plotFluidVelocitiesZ()</span></tt></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.plotFluidVelocitiesZ">
+<tt class="descname">plotFluidVelocitiesZ</tt><big>(</big><em>z=-1</em>, <em>graphics_format='png'</em><big>)</big><a class="headerlink" href="#sphere.sim.plotFluidVelocitiesZ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot fluid velocities in a plane normal to the third axis.
+The plot is saved in the current folder with the format
+&#8216;v_f-&lt;simulation id&gt;-z&lt;z value&gt;.&lt;graphics_format&gt;&#8217;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>z</strong> (<em>int</em>) &#8211; Plot velocities in fluid cells with these z axis values. If
+this value is -1, the center z position is used.</li>
+<li><strong>graphics_format</strong> (<em>str</em>) &#8211; Save the plot in this format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>See also: <a class="reference internal" href="#sphere.sim.writeFluidVTK" title="sphere.sim.writeFluidVTK"><tt class="xref py py-func docutils literal"><span class="pre">writeFluidVTK()</span></tt></a> and <a class="reference internal" href="#sphere.sim.plotFluidVelocitiesY" title="sphere.sim.plotFluidVelocitiesY"><tt class="xref py py-func docutils literal"><span class="pre">plotFluidVelocitiesY()</span></tt></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.plotPrescribedFluidPressures">
+<tt class="descname">plotPrescribedFluidPressures</tt><big>(</big><em>graphics_format='png'</em><big>)</big><a class="headerlink" href="#sphere.sim.plotPrescribedFluidPressures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the prescribed fluid pressures through time that may be
+modulated through the class parameters p_mod_A, p_mod_f, and p_mod_phi.
+The plot is saved in the output folder with the file name
+&#8216;&lt;simulation id&gt;-pres.&lt;graphics_format&gt;&#8217;.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.porosities">
+<tt class="descname">porosities</tt><big>(</big><em>graphics_format='pdf'</em>, <em>zslices=16</em><big>)</big><a class="headerlink" href="#sphere.sim.porosities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the averaged porosities with depth. The plot is saved in the format
+&#8216;&lt;simulation id&gt;-porosity.&lt;graphics_format&gt;&#8217;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>graphics_format</strong> (<em>str</em>) &#8211; Save the plot in this format</li>
+<li><strong>zslices</strong> (<em>int</em>) &#8211; The number of points along the vertical axis to sample
+the porosity in</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.porosity">
+<tt class="descname">porosity</tt><big>(</big><em>slices=10</em>, <em>verbose=False</em><big>)</big><a class="headerlink" href="#sphere.sim.porosity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the porosity as a function of depth, by averaging values in
+horizontal slabs. Returns porosity values and their corresponding depth.
+The values are calculated using the external <tt class="docutils literal"><span class="pre">porosity</span></tt> program.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>slices</strong> (<em>int</em>) &#8211; The number of vertical slabs to find porosities in.</li>
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; Show the file name of the temporary file written to
+disk</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A 2d array of depths and their averaged porosities</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.array</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.randomBondPairs">
+<tt class="descname">randomBondPairs</tt><big>(</big><em>ratio=0.3</em>, <em>spacing=-0.1</em><big>)</big><a class="headerlink" href="#sphere.sim.randomBondPairs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bond an amount of particles in two-particle clusters. The particles
+should be initialized beforehand.  Note: The actual number of bonds is
+likely to be somewhat smaller than specified, due to the random
+selection algorithm.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ratio</strong> (<em>float</em>) &#8211; The amount of particles to bond, values in ]0.0;1.0]</li>
+<li><strong>spacing</strong> (<em>float</em>) &#8211; The distance relative to the sum of radii between bonded
+particles, neg. values denote an overlap. Values in ]0.0,inf[.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.readbin">
+<tt class="descname">readbin</tt><big>(</big><em>targetbin</em>, <em>verbose=True</em>, <em>bonds=True</em>, <em>devsmod=True</em>, <em>esysparticle=False</em><big>)</big><a class="headerlink" href="#sphere.sim.readbin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a target <tt class="docutils literal"><span class="pre">sphere</span></tt> binary file.</p>
+<p>See also <a class="reference internal" href="#sphere.sim.writebin" title="sphere.sim.writebin"><tt class="xref py py-func docutils literal"><span class="pre">writebin()</span></tt></a>, <a class="reference internal" href="#sphere.sim.readfirst" title="sphere.sim.readfirst"><tt class="xref py py-func docutils literal"><span class="pre">readfirst()</span></tt></a>, <a class="reference internal" href="#sphere.sim.readlast" title="sphere.sim.readlast"><tt class="xref py py-func docutils literal"><span class="pre">readlast()</span></tt></a>,
+<a class="reference internal" href="#sphere.sim.readsecond" title="sphere.sim.readsecond"><tt class="xref py py-func docutils literal"><span class="pre">readsecond()</span></tt></a>, and <a class="reference internal" href="#sphere.sim.readstep" title="sphere.sim.readstep"><tt class="xref py py-func docutils literal"><span class="pre">readstep()</span></tt></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>targetbin</strong> (<em>str</em>) &#8211; The path to the binary <tt class="docutils literal"><span class="pre">sphere</span></tt> file</li>
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; Show diagnostic information (default = True)</li>
+<li><strong>bonds</strong> (<em>bool</em>) &#8211; The input file contains bond information (default = True).
+This parameter should be true for all recent <tt class="docutils literal"><span class="pre">sphere</span></tt> versions.</li>
+<li><strong>devsmod</strong> (<em>bool</em>) &#8211; The input file contains information about modulating
+stresses at the top wall (default = True). This parameter should be
+true for all recent <tt class="docutils literal"><span class="pre">sphere</span></tt> versions.</li>
+<li><strong>esysparticle</strong> (<em>bool</em>) &#8211; Stop reading the file after reading the kinematics,
+which is useful for reading output files from other DEM programs.
+(default = False)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.readfirst">
+<tt class="descname">readfirst</tt><big>(</big><em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.sim.readfirst" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the first output file from the <tt class="docutils literal"><span class="pre">../output/</span></tt> folder, corresponding
+to the object simulation id (<tt class="docutils literal"><span class="pre">self.sid</span></tt>).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>verbose</strong> (<em>bool</em>) &#8211; Display diagnostic information (default = True)</td>
+</tr>
+</tbody>
+</table>
+<p>See also <a class="reference internal" href="#sphere.sim.readbin" title="sphere.sim.readbin"><tt class="xref py py-func docutils literal"><span class="pre">readbin()</span></tt></a>, <a class="reference internal" href="#sphere.sim.readlast" title="sphere.sim.readlast"><tt class="xref py py-func docutils literal"><span class="pre">readlast()</span></tt></a>, <a class="reference internal" href="#sphere.sim.readsecond" title="sphere.sim.readsecond"><tt class="xref py py-func docutils literal"><span class="pre">readsecond()</span></tt></a>, and
+<a class="reference internal" href="#sphere.sim.readstep" title="sphere.sim.readstep"><tt class="xref py py-func docutils literal"><span class="pre">readstep()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.readlast">
+<tt class="descname">readlast</tt><big>(</big><em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.sim.readlast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the last output file from the <tt class="docutils literal"><span class="pre">../output/</span></tt> folder, corresponding
+to the object simulation id (<tt class="docutils literal"><span class="pre">self.sid</span></tt>).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>verbose</strong> (<em>bool</em>) &#8211; Display diagnostic information (default = True)</td>
+</tr>
+</tbody>
+</table>
+<p>See also <a class="reference internal" href="#sphere.sim.readbin" title="sphere.sim.readbin"><tt class="xref py py-func docutils literal"><span class="pre">readbin()</span></tt></a>, <a class="reference internal" href="#sphere.sim.readfirst" title="sphere.sim.readfirst"><tt class="xref py py-func docutils literal"><span class="pre">readfirst()</span></tt></a>, <a class="reference internal" href="#sphere.sim.readsecond" title="sphere.sim.readsecond"><tt class="xref py py-func docutils literal"><span class="pre">readsecond()</span></tt></a>, and
+<a class="reference internal" href="#sphere.sim.readstep" title="sphere.sim.readstep"><tt class="xref py py-func docutils literal"><span class="pre">readstep()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.readsecond">
+<tt class="descname">readsecond</tt><big>(</big><em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.sim.readsecond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the second output file from the <tt class="docutils literal"><span class="pre">../output/</span></tt> folder,
+corresponding to the object simulation id (<tt class="docutils literal"><span class="pre">self.sid</span></tt>).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>verbose</strong> (<em>bool</em>) &#8211; Display diagnostic information (default = True)</td>
+</tr>
+</tbody>
+</table>
+<p>See also <a class="reference internal" href="#sphere.sim.readbin" title="sphere.sim.readbin"><tt class="xref py py-func docutils literal"><span class="pre">readbin()</span></tt></a>, <a class="reference internal" href="#sphere.sim.readfirst" title="sphere.sim.readfirst"><tt class="xref py py-func docutils literal"><span class="pre">readfirst()</span></tt></a>, <a class="reference internal" href="#sphere.sim.readlast" title="sphere.sim.readlast"><tt class="xref py py-func docutils literal"><span class="pre">readlast()</span></tt></a>,
+and <a class="reference internal" href="#sphere.sim.readstep" title="sphere.sim.readstep"><tt class="xref py py-func docutils literal"><span class="pre">readstep()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.readstep">
+<tt class="descname">readstep</tt><big>(</big><em>step</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.sim.readstep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a output file from the <tt class="docutils literal"><span class="pre">../output/</span></tt> folder, corresponding
+to the object simulation id (<tt class="docutils literal"><span class="pre">self.sid</span></tt>).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>step</strong> (<em>int</em>) &#8211; The output file number to read, starting from 0.</li>
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; Display diagnostic information (default = True)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>See also <a class="reference internal" href="#sphere.sim.readbin" title="sphere.sim.readbin"><tt class="xref py py-func docutils literal"><span class="pre">readbin()</span></tt></a>, <a class="reference internal" href="#sphere.sim.readfirst" title="sphere.sim.readfirst"><tt class="xref py py-func docutils literal"><span class="pre">readfirst()</span></tt></a>, <a class="reference internal" href="#sphere.sim.readlast" title="sphere.sim.readlast"><tt class="xref py py-func docutils literal"><span class="pre">readlast()</span></tt></a>,
+and <a class="reference internal" href="#sphere.sim.readsecond" title="sphere.sim.readsecond"><tt class="xref py py-func docutils literal"><span class="pre">readsecond()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.render">
+<tt class="descname">render</tt><big>(</big><em>method='pres'</em>, <em>max_val=1000.0</em>, <em>lower_cutoff=0.0</em>, <em>graphics_format='png'</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.sim.render" title="Permalink to this definition">¶</a></dt>
+<dd><p>Using the built-in ray tracer, render all output files that belong to
+the simulation, determined by the simulation id (<tt class="docutils literal"><span class="pre">sid</span></tt>).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>method</strong> (<em>str</em>) &#8211; The color visualization method to use for the particles.
+Possible values are: &#8216;normal&#8217;: color all particles with the same
+color, &#8216;pres&#8217;: color by pressure, &#8216;vel&#8217;: color by translational
+velocity, &#8216;angvel&#8217;: color by rotational velocity, &#8216;xdisp&#8217;: color by
+total displacement along the x-axis, &#8216;angpos&#8217;: color by angular
+position.</li>
+<li><strong>max_val</strong> (<em>float</em>) &#8211; The maximum value of the color bar</li>
+<li><strong>lower_cutoff</strong> (<em>float</em>) &#8211; Do not render particles with a value below this
+value, of the field selected by <tt class="docutils literal"><span class="pre">method</span></tt></li>
+<li><strong>graphics_format</strong> (<em>str</em>) &#8211; Convert the PPM images generated by the ray
+tracer to this image format using Imagemagick</li>
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; Show verbose information during ray tracing</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.run">
+<tt class="descname">run</tt><big>(</big><em>verbose=True</em>, <em>hideinputfile=False</em>, <em>dry=False</em>, <em>valgrind=False</em>, <em>cudamemcheck=False</em><big>)</big><a class="headerlink" href="#sphere.sim.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start <tt class="docutils literal"><span class="pre">sphere</span></tt> calculations on the <tt class="docutils literal"><span class="pre">sim</span></tt> object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; Show <tt class="docutils literal"><span class="pre">sphere</span></tt> output</li>
+<li><strong>hideinputfile</strong> (<em>bool</em>) &#8211; Hide the file name of the <tt class="docutils literal"><span class="pre">sphere</span></tt> input file</li>
+<li><strong>dry</strong> (<em>bool</em>) &#8211; Perform a dry run. Important parameter values are shown by
+the <tt class="docutils literal"><span class="pre">sphere</span></tt> program, and it exits afterwards.</li>
+<li><strong>valgrind</strong> (<em>bool</em>) &#8211; Run the program with <tt class="docutils literal"><span class="pre">valgrind</span></tt> in order to check
+memory leaks in the host code. This causes a significant increase in
+computational time.</li>
+<li><strong>cudamemcheck</strong> (<em>bool</em>) &#8211; Run the program with <tt class="docutils literal"><span class="pre">cudamemcheck</span></tt> in order to
+check for device memory leaks and errors. This causes a significant
+increase in computational time.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setBeta">
+<tt class="descname">setBeta</tt><big>(</big><em>beta</em><big>)</big><a class="headerlink" href="#sphere.sim.setBeta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Beta is a fluid solver parameter, used in velocity prediction and
+pressure iteration 1.0: Use old pressures for fluid velocity prediction
+(see Langtangen et al. 2002) 0.0: Do not use old pressures for fluid
+velocity prediction (Chorin&#8217;s original projection method, see Chorin
+(1968) and &#8220;Projection method (fluid dynamics)&#8221; page on Wikipedia.  The
+best results precision and performance-wise are obtained by using a beta
+of 0 and a low tolerance criteria value.</p>
+<p>The default and recommended value is 0.0.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setFluidPressureModulation">
+<tt class="descname">setFluidPressureModulation</tt><big>(</big><em>A</em>, <em>f</em>, <em>phi=0.0</em><big>)</big><a class="headerlink" href="#sphere.sim.setFluidPressureModulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters for the sine wave modulating the fluid pressures
+at the top boundary. Note that a cos-wave is obtained with phi=pi/2.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>A</strong> (<em>float</em>) &#8211; Fluctuation amplitude [Pa]</li>
+<li><strong>f</strong> (<em>float</em>) &#8211; Fluctuation frequency [Hz]</li>
+<li><strong>phi</strong> (<em>float</em>) &#8211; Fluctuation phase shift (default=0.0)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>See also: <a class="reference internal" href="#sphere.sim.disableFluidPressureModulation" title="sphere.sim.disableFluidPressureModulation"><tt class="xref py py-func docutils literal"><span class="pre">disableFluidPressureModulation()</span></tt></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setGamma">
+<tt class="descname">setGamma</tt><big>(</big><em>gamma</em><big>)</big><a class="headerlink" href="#sphere.sim.setGamma" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gamma is a fluid solver parameter, used for smoothing the pressure
+values. The epsilon (pressure) values are smoothed by including the
+average epsilon value of the six closest (face) neighbor cells. This
+parameter should be in the range [0.0;1.0[. The higher the value, the
+more averaging is introduced. A value of 0.0 disables all averaging.</p>
+<p>The default and recommended value is 0.5.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>theta</strong> (<em>float</em>) &#8211; The smoothing parameter value</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setMaxIterations">
+<tt class="descname">setMaxIterations</tt><big>(</big><em>maxiter</em><big>)</big><a class="headerlink" href="#sphere.sim.setMaxIterations" title="Permalink to this definition">¶</a></dt>
+<dd><p>A fluid solver parameter, the value of the maxiter parameter denotes the
+maximal allowed number of fluid solver iterations before ending the
+fluid solver loop prematurely. The residual values are at that point not
+fulfilling the tolerance criteria. The parameter is included to avoid
+infinite hangs.</p>
+<p>The default and recommended value is 1e4.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>maxiter</strong> (<em>int</em>) &#8211; The maximum number of Jacobi iterations in the fluid
+solver</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setTheta">
+<tt class="descname">setTheta</tt><big>(</big><em>theta</em><big>)</big><a class="headerlink" href="#sphere.sim.setTheta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Theta is a fluid solver under-relaxation parameter, used in solution of
+Poisson equation. The value should be within the range ]0.0;1.0]. At a
+value of 1.0, the new estimate of epsilon values is used exclusively. At
+lower values, a linear interpolation between new and old values is used.
+The solution typically converges faster with a value of 1.0, but
+instabilities may be avoided with lower values.</p>
+<p>The default and recommended value is 1.0.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>theta</strong> (<em>float</em>) &#8211; The under-relaxation parameter value</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setTolerance">
+<tt class="descname">setTolerance</tt><big>(</big><em>tolerance</em><big>)</big><a class="headerlink" href="#sphere.sim.setTolerance" title="Permalink to this definition">¶</a></dt>
+<dd><p>A fluid solver parameter, the value of the tolerance parameter denotes
+the required value of the maximum normalized residual for the fluid
+solver.</p>
+<p>The default and recommended value is 1.0e-8.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tolerance</strong> (<em>float</em>) &#8211; The tolerance criteria for the maximal normalized
+residual</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.shear">
+<tt class="descname">shear</tt><big>(</big><em>shear_strain_rate=1.0</em><big>)</big><a class="headerlink" href="#sphere.sim.shear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup shear experiment. The shear strain rate is the shear velocity
+divided by the initial height per second. The shear movement is along
+the positive x axis. The function zeroes the tangential wall viscosity
+(gamma_wt) and the wall friction coefficients (mu_ws, mu_wn).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>shear_strain_rate</strong> (<em>float</em>) &#8211; The shear strain rate to use.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.shearStrain">
+<tt class="descname">shearStrain</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.shearStrain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates and returns the current shear strain (gamma) value of the
+experiment. The shear strain is found by determining the total x-axis
+displacement of the upper, fixed particles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The total shear strain [-]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.shearVel">
+<tt class="descname">shearVel</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.shearVel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates and returns the shear velocity (gamma_dot) of the
+experiment. The shear velocity is the x-axis velocity value of the
+upper particles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The shear velocity applied by the upper, fixed particles [m/s]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.sheardisp">
+<tt class="descname">sheardisp</tt><big>(</big><em>graphics_format='pdf'</em>, <em>zslices=32</em><big>)</big><a class="headerlink" href="#sphere.sim.sheardisp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the particle x-axis displacement against the original vertical
+particle position. The plot is saved in the current directory with the
+file name &#8216;&lt;simulation id&gt;-sheardisp.&lt;graphics_format&gt;&#8217;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>graphics_format</strong> (<em>str</em>) &#8211; Save the plot in this format</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.status">
+<tt class="descname">status</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current simulation status by using the simulation id
+(<tt class="docutils literal"><span class="pre">sid</span></tt>) as an identifier.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The number of the last output file written</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.thinsection_x1x3">
+<tt class="descname">thinsection_x1x3</tt><big>(</big><em>x2='center'</em>, <em>graphics_format='png'</em>, <em>cbmax=None</em>, <em>arrowscale=0.01</em>, <em>velarrowscale=1.0</em>, <em>slipscale=1.0</em>, <em>verbose=False</em><big>)</big><a class="headerlink" href="#sphere.sim.thinsection_x1x3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce a 2D image of particles on a x1,x3 plane, intersecting the
+second axis at x2. Output is saved as &#8216;&lt;sid&gt;-ts-x1x3.txt&#8217; in the
+current folder.</p>
+<p>An upper limit to the pressure color bar range can be set by the
+cbmax parameter.</p>
+<dl class="docutils">
+<dt>The data can be plotted in gnuplot with:</dt>
+<dd>gnuplot&gt; set size ratio -1
+gnuplot&gt; set palette defined (0 &#8220;blue&#8221;, 0.5 &#8220;gray&#8221;, 1 &#8220;red&#8221;)
+gnuplot&gt; plot &#8216;&lt;sid&gt;-ts-x1x3.txt&#8217; with circles palette fs                     transparent solid 0.4 noborder</dd>
+</dl>
+<p>This function also saves a plot of the inter-particle slip angles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x2</strong> (<em>foat</em>) &#8211; The position along the second axis of the intersecting plane</li>
+<li><strong>graphics_format</strong> (<em>str</em>) &#8211; Save the slip angle plot in this format</li>
+<li><strong>cbmax</strong> (<em>float</em>) &#8211; The maximal value of the pressure color bar range</li>
+<li><strong>arrowscale</strong> (<em>float</em>) &#8211; Scale the rotational arrows by this value</li>
+<li><strong>velarrowscale</strong> (<em>float</em>) &#8211; Scale the translational arrows by this value</li>
+<li><strong>slipscale</strong> (<em>float</em>) &#8211; Scale the slip arrows by this value</li>
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; Show function output during calculations</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.torqueScript">
+<tt class="descname">torqueScript</tt><big>(</big><em>email='adc&#64;geo.au.dk'</em>, <em>email_alerts='ae'</em>, <em>walltime='24:00:00'</em>, <em>queue='qfermi'</em>, <em>cudapath='/com/cuda/4.0.17/cuda'</em>, <em>spheredir='/home/adc/code/sphere'</em>, <em>use_workdir=False</em>, <em>workdir='/scratch'</em><big>)</big><a class="headerlink" href="#sphere.sim.torqueScript" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a job script for the Torque queue manager for the simulation
+object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>email</strong> (<em>str</em>) &#8211; The e-mail address that Torque messages should be sent to</li>
+<li><strong>email_alerts</strong> (<em>str</em>) &#8211; The type of Torque messages to send to the e-mail
+address. The character &#8216;b&#8217; causes a mail to be sent when the
+execution begins. The character &#8216;e&#8217; causes a mail to be sent when
+the execution ends normally. The character &#8216;a&#8217; causes a mail to be
+sent if the execution ends abnormally. The characters can be written
+in any order.</li>
+<li><strong>walltime</strong> (<em>str</em>) &#8211; The maximal allowed time for the job, in the format
+&#8216;HH:MM:SS&#8217;.</li>
+<li><strong>queue</strong> (<em>str</em>) &#8211; The Torque queue to schedule the job for</li>
+<li><strong>cudapath</strong> (<em>str</em>) &#8211; The path of the CUDA library on the cluster compute
+nodes</li>
+<li><strong>spheredir</strong> (<em>str</em>) &#8211; The path to the root directory of sphere on the
+cluster</li>
+<li><strong>use_workdir</strong> (<em>bool</em>) &#8211; Use a different working directory than the sphere
+folder</li>
+<li><strong>workdir</strong> (<em>str</em>) &#8211; The working directory during the calculations, if
+<cite>use_workdir=True</cite></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.totalMomentum">
+<tt class="descname">totalMomentum</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.totalMomentum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the sum of particle momentums.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The sum of particle momentums (m*v) [N*s]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.triaxial">
+<tt class="descname">triaxial</tt><big>(</big><em>wvel=-0.001</em>, <em>normal_stress=10000.0</em><big>)</big><a class="headerlink" href="#sphere.sim.triaxial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup triaxial experiment. The upper wall is moved at a fixed velocity
+in m/s, default values is -0.001 m/s (i.e. downwards). The side walls
+are exerting a defined normal stress.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>wvel</strong> (<em>float</em>) &#8211; Upper wall velocity. Negative values mean that the wall
+moves downwards.</li>
+<li><strong>normal_stress</strong> (<em>float</em>) &#8211; The normal stress to apply from the upper wall.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.uniaxialStrainRate">
+<tt class="descname">uniaxialStrainRate</tt><big>(</big><em>wvel=-0.001</em><big>)</big><a class="headerlink" href="#sphere.sim.uniaxialStrainRate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup consolidation experiment. Specify the upper wall velocity in m/s,
+default value is -0.001 m/s (i.e. downwards).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>wvel</strong> (<em>float</em>) &#8211; Upper wall velocity. Negative values mean that the wall
+moves downwards.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.video">
+<tt class="descname">video</tt><big>(</big><em>out_folder='./'</em>, <em>video_format='mp4'</em>, <em>graphics_folder='../img_out/'</em>, <em>graphics_format='png'</em>, <em>fps=25</em>, <em>qscale=1</em>, <em>bitrate=1800</em>, <em>verbose=False</em><big>)</big><a class="headerlink" href="#sphere.sim.video" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses ffmpeg to combine images to animation. All images should be
+rendered beforehand using func:<cite>render()</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>out_folder</strong> (<em>str</em>) &#8211; The output folder for the video file</li>
+<li><strong>video_format</strong> (<em>str</em>) &#8211; The format of the output video</li>
+<li><strong>graphics_folder</strong> (<em>str</em>) &#8211; The folder containing the rendered images</li>
+<li><strong>graphics_format</strong> (<em>str</em>) &#8211; The format of the rendered images</li>
+<li><strong>fps</strong> (<em>int</em>) &#8211; The number of frames per second to use in the video</li>
+<li><strong>qscale</strong> (<em>float</em>) &#8211; The output video quality, in ]0;1]</li>
+<li><strong>bitrate</strong> (<em>int</em>) &#8211; The bitrate to use in the output video</li>
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; Show ffmpeg output</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.voidRatio">
+<tt class="descname">voidRatio</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.voidRatio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the current void ratio</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The void ratio, in [0:1]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.writeFluidVTK">
+<tt class="descname">writeFluidVTK</tt><big>(</big><em>folder='../output/'</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.sim.writeFluidVTK" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a VTK file for the fluid grid to the <tt class="docutils literal"><span class="pre">../output/</span></tt> folder by
+default. The file name will be in the format <tt class="docutils literal"><span class="pre">fluid-&lt;self.sid&gt;.vti</span></tt>.
+The vti files can be used for visualizing the fluid in ParaView.</p>
+<p>The fluid grid is visualized by opening the vti files, and pressing
+&#8220;Apply&#8221; to import all fluid field properties. To visualize the scalar
+fields, such as the pressure, the porosity, the porosity change or the
+velocity magnitude, choose &#8220;Surface&#8221; or &#8220;Surface With Edges&#8221; as the
+&#8220;Representation&#8221;. Choose the desired property as the &#8220;Coloring&#8221; field.
+It may be desirable to show the color bar by pressing the &#8220;Show&#8221; button,
+and &#8220;Rescale&#8221; to fit the color range limits to the current file. The
+coordinate system can be displayed by checking the &#8220;Show Axis&#8221; field.
+All adjustments by default require the &#8220;Apply&#8221; button to be pressed
+before regenerating the view.</p>
+<p>The fluid vector fields (e.g. the fluid velocity) can be visualizing by
+e.g. arrows. To do this, select the fluid data in the &#8220;Pipeline
+Browser&#8221;. Press &#8220;Glyph&#8221; from the &#8220;Common&#8221; toolbar, or go to the
+&#8220;Filters&#8221; mennu, and press &#8220;Glyph&#8221; from the &#8220;Common&#8221; list. Make sure
+that &#8220;Arrow&#8221; is selected as the &#8220;Glyph type&#8221;, and &#8220;Velocity&#8221; as the
+&#8220;Vectors&#8221; value. Adjust the &#8220;Maximum Number of Points&#8221; to be at least as
+big as the number of fluid cells in the grid. Press &#8220;Apply&#8221; to visualize
+the arrows.</p>
+<p>If several data files are generated for the same simulation (e.g. using
+the <a class="reference internal" href="#sphere.sim.writeVTKall" title="sphere.sim.writeVTKall"><tt class="xref py py-func docutils literal"><span class="pre">writeVTKall()</span></tt></a> function), it is able to step the
+visualization through time by using the ParaView controls.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>folder</strong> (<em>str</em>) &#8211; The folder where to place the output binary file (default
+(default = &#8216;../output/&#8217;)</li>
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; Show diagnostic information (default = True)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.writeVTK">
+<tt class="descname">writeVTK</tt><big>(</big><em>folder='../output/'</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.sim.writeVTK" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a VTK file with particle information to the <tt class="docutils literal"><span class="pre">../output/</span></tt> folder
+by default. The file name will be in the format <tt class="docutils literal"><span class="pre">&lt;self.sid&gt;.vtu</span></tt>.
+The vtu files can be used to visualize the particles in ParaView.</p>
+<p>After opening the vtu files, the particle fields will show up in the
+&#8220;Properties&#8221; list. Press &#8220;Apply&#8221; to import all fields into the ParaView
+session. The particles are visualized by selecting the imported data in
+the &#8220;Pipeline Browser&#8221;. Afterwards, click the &#8220;Glyph&#8221; button in the
+&#8220;Common&#8221; toolbar, or go to the &#8220;Filters&#8221; menu, and press &#8220;Glyph&#8221; from
+the &#8220;Common&#8221; list. Choose &#8220;Sphere&#8221; as the &#8220;Glyph Type&#8221;, set &#8220;Radius&#8221; to
+1.0, choose &#8220;scalar&#8221; as the &#8220;Scale Mode&#8221;. Check the &#8220;Edit&#8221; checkbox, and
+set the &#8220;Set Scale Factor&#8221; to 1.0. The field &#8220;Maximum Number of Points&#8221;
+may be increased if the number of particles exceed the default value.
+Finally press &#8220;Apply&#8221;, and the particles will appear in the main window.</p>
+<p>The sphere resolution may be adjusted (&#8220;Theta resolution&#8221;, &#8220;Phi
+resolution&#8221;) to increase the quality and the computational requirements
+of the rendering. All adjustments by default require the &#8220;Apply&#8221; button
+to be pressed before regenerating the view.</p>
+<p>If several vtu files are generated for the same simulation (e.g. using
+the :func:<tt class="docutils literal"><span class="pre">writeVTKall()</span></tt> function), it is able to step the
+visualization through time by using the ParaView controls.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>folder</strong> (<em>str</em>) &#8211; The folder where to place the output binary file (default
+(default = &#8216;../output/&#8217;)</li>
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; Show diagnostic information (default = True)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.writeVTKall">
+<tt class="descname">writeVTKall</tt><big>(</big><em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.sim.writeVTKall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a VTK file for each simulation output file with particle
+information and the fluid grid to the <tt class="docutils literal"><span class="pre">../output/</span></tt> folder by default.
+The file name will be in the format <tt class="docutils literal"><span class="pre">&lt;self.sid&gt;.vtu</span></tt> and
+<tt class="docutils literal"><span class="pre">fluid-&lt;self.sid&gt;.vti</span></tt>. The vtu files can be used to visualize the
+particles, and the vti files for visualizing the fluid in ParaView.</p>
+<p>After opening the vtu files, the particle fields will show up in the
+&#8220;Properties&#8221; list. Press &#8220;Apply&#8221; to import all fields into the ParaView
+session. The particles are visualized by selecting the imported data in
+the &#8220;Pipeline Browser&#8221;. Afterwards, click the &#8220;Glyph&#8221; button in the
+&#8220;Common&#8221; toolbar, or go to the &#8220;Filters&#8221; menu, and press &#8220;Glyph&#8221; from
+the &#8220;Common&#8221; list. Choose &#8220;Sphere&#8221; as the &#8220;Glyph Type&#8221;, set &#8220;Radius&#8221; to
+1.0, choose &#8220;scalar&#8221; as the &#8220;Scale Mode&#8221;. Check the &#8220;Edit&#8221; checkbox, and
+set the &#8220;Set Scale Factor&#8221; to 1.0. The field &#8220;Maximum Number of Points&#8221;
+may be increased if the number of particles exceed the default value.
+Finally press &#8220;Apply&#8221;, and the particles will appear in the main window.</p>
+<p>The sphere resolution may be adjusted (&#8220;Theta resolution&#8221;, &#8220;Phi
+resolution&#8221;) to increase the quality and the computational requirements
+of the rendering.</p>
+<p>The fluid grid is visualized by opening the vti files, and pressing
+&#8220;Apply&#8221; to import all fluid field properties. To visualize the scalar
+fields, such as the pressure, the porosity, the porosity change or the
+velocity magnitude, choose &#8220;Surface&#8221; or &#8220;Surface With Edges&#8221; as the
+&#8220;Representation&#8221;. Choose the desired property as the &#8220;Coloring&#8221; field.
+It may be desirable to show the color bar by pressing the &#8220;Show&#8221; button,
+and &#8220;Rescale&#8221; to fit the color range limits to the current file. The
+coordinate system can be displayed by checking the &#8220;Show Axis&#8221; field.
+All adjustments by default require the &#8220;Apply&#8221; button to be pressed
+before regenerating the view.</p>
+<p>The fluid vector fields (e.g. the fluid velocity) can be visualizing by
+e.g. arrows. To do this, select the fluid data in the &#8220;Pipeline
+Browser&#8221;. Press &#8220;Glyph&#8221; from the &#8220;Common&#8221; toolbar, or go to the
+&#8220;Filters&#8221; mennu, and press &#8220;Glyph&#8221; from the &#8220;Common&#8221; list. Make sure
+that &#8220;Arrow&#8221; is selected as the &#8220;Glyph type&#8221;, and &#8220;Velocity&#8221; as the
+&#8220;Vectors&#8221; value. Adjust the &#8220;Maximum Number of Points&#8221; to be at least as
+big as the number of fluid cells in the grid. Press &#8220;Apply&#8221; to visualize
+the arrows.</p>
+<p>If several data files are generated for the same simulation (e.g. using
+the <a class="reference internal" href="#sphere.sim.writeVTKall" title="sphere.sim.writeVTKall"><tt class="xref py py-func docutils literal"><span class="pre">writeVTKall()</span></tt></a> function), it is able to step the
+visualization through time by using the ParaView controls.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>verbose</strong> (<em>bool</em>) &#8211; Show diagnostic information (default = True)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.writebin">
+<tt class="descname">writebin</tt><big>(</big><em>folder='../input/'</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.sim.writebin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a <tt class="docutils literal"><span class="pre">sphere</span></tt> binary file to the <tt class="docutils literal"><span class="pre">../input/</span></tt> folder by default.
+The file name will be in the format <tt class="docutils literal"><span class="pre">&lt;self.sid&gt;.bin</span></tt>.</p>
+<p>See also <a class="reference internal" href="#sphere.sim.readbin" title="sphere.sim.readbin"><tt class="xref py py-func docutils literal"><span class="pre">readbin()</span></tt></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>folder</strong> (<em>str</em>) &#8211; The folder where to place the output binary file</li>
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; Show diagnostic information (default = True)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.zeroKinematics">
+<tt class="descname">zeroKinematics</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.zeroKinematics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Zero all kinematic parameters of the particles. This function is useful
+when output from one simulation is reused in another simulation.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="function">
 <dt id="sphere.status">
 <tt class="descclassname">sphere.</tt><tt class="descname">status</tt><big>(</big><em>project</em><big>)</big><a class="headerlink" href="#sphere.status" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check the status.dat file for the target project,
-and return the last file numer.</p>
+<dd><p>Check the status.dat file for the target project, and return the last output
+file number.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project</strong> (<em>str</em>) &#8211; The simulation id of the target project</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The last output file written in the simulation calculations</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="sphere.thinsectionVideo">
 <tt class="descclassname">sphere.</tt><tt class="descname">thinsectionVideo</tt><big>(</big><em>project</em>, <em>out_folder='./'</em>, <em>video_format='mp4'</em>, <em>fps=25</em>, <em>qscale=1</em>, <em>bitrate=1800</em>, <em>verbose=False</em><big>)</big><a class="headerlink" href="#sphere.thinsectionVideo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Use ffmpeg to combine thin section images to animation.
-This function will start off by rendering the images.</p>
+<dd><p>Uses ffmpeg to combine thin section images to an animation. This function
+will implicity render the thin section images beforehand.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>project</strong> (<em>str</em>) &#8211; The simulation id of the project to render</li>
+<li><strong>out_folder</strong> (<em>str</em>) &#8211; The output folder for the video file</li>
+<li><strong>video_format</strong> (<em>str</em>) &#8211; The format of the output video</li>
+<li><strong>fps</strong> (<em>int</em>) &#8211; The number of frames per second to use in the video</li>
+<li><strong>qscale</strong> (<em>float</em>) &#8211; The output video quality, in ]0;1]</li>
+<li><strong>bitrate</strong> (<em>int</em>) &#8211; The bitrate to use in the output video</li>
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; Show ffmpeg output</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="sphere.torqueScriptParallel3">
-<tt class="descclassname">sphere.</tt><tt class="descname">torqueScriptParallel3</tt><big>(</big><em>obj1</em>, <em>obj2</em>, <em>obj3</em>, <em>email='adc&#64;geo.au.dk'</em>, <em>email_alerts='ae'</em>, <em>walltime='24:00:00'</em>, <em>queue='qfermi'</em>, <em>cudapath='/com/cuda/4.0.17/cuda'</em>, <em>spheredir='/home/adc/code/sphere'</em>, <em>workdir='/scratch'</em><big>)</big><a class="headerlink" href="#sphere.torqueScriptParallel3" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">sphere.</tt><tt class="descname">torqueScriptParallel3</tt><big>(</big><em>obj1</em>, <em>obj2</em>, <em>obj3</em>, <em>email='adc&#64;geo.au.dk'</em>, <em>email_alerts='ae'</em>, <em>walltime='24:00:00'</em>, <em>queue='qfermi'</em>, <em>cudapath='/com/cuda/4.0.17/cuda'</em>, <em>spheredir='/home/adc/code/sphere'</em>, <em>use_workdir=False</em>, <em>workdir='/scratch'</em><big>)</big><a class="headerlink" href="#sphere.torqueScriptParallel3" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create job script for the Torque queue manager for three binaries,
-executed in parallel.
-Returns the filename of the script</p>
+executed in parallel, ideally on three GPUs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>email</strong> (<em>str</em>) &#8211; The e-mail address that Torque messages should be sent to</li>
+<li><strong>email_alerts</strong> (<em>str</em>) &#8211; The type of Torque messages to send to the e-mail
+address. The character &#8216;b&#8217; causes a mail to be sent when the
+execution begins. The character &#8216;e&#8217; causes a mail to be sent when
+the execution ends normally. The character &#8216;a&#8217; causes a mail to be
+sent if the execution ends abnormally. The characters can be written
+in any order.</li>
+<li><strong>walltime</strong> (<em>str</em>) &#8211; The maximal allowed time for the job, in the format
+&#8216;HH:MM:SS&#8217;.</li>
+<li><strong>queue</strong> (<em>str</em>) &#8211; The Torque queue to schedule the job for</li>
+<li><strong>cudapath</strong> (<em>str</em>) &#8211; The path of the CUDA library on the cluster compute nodes</li>
+<li><strong>spheredir</strong> (<em>str</em>) &#8211; The path to the root directory of sphere on the cluster</li>
+<li><strong>use_workdir</strong> (<em>bool</em>) &#8211; Use a different working directory than the sphere folder</li>
+<li><strong>workdir</strong> (<em>str</em>) &#8211; The working directory during the calculations, if
+<cite>use_workdir=True</cite></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The filename of the script</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>See also <tt class="xref py py-func docutils literal"><span class="pre">torqueScript()</span></tt></p>
 </dd></dl>
 
 <dl class="function">
-<dt id="sphere.torqueScriptSerial3">
-<tt class="descclassname">sphere.</tt><tt class="descname">torqueScriptSerial3</tt><big>(</big><em>obj1</em>, <em>obj2</em>, <em>obj3</em>, <em>email='adc&#64;geo.au.dk'</em>, <em>email_alerts='ae'</em>, <em>walltime='24:00:00'</em>, <em>queue='qfermi'</em>, <em>cudapath='/com/cuda/4.0.17/cuda'</em>, <em>spheredir='/home/adc/code/sphere'</em>, <em>workdir='/scratch'</em><big>)</big><a class="headerlink" href="#sphere.torqueScriptSerial3" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create job script for the Torque queue manager for three binaries</p>
+<dt id="sphere.vector_norm">
+<tt class="descclassname">sphere.</tt><tt class="descname">vector_norm</tt><big>(</big><em>ndvector</em><big>)</big><a class="headerlink" href="#sphere.vector_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a 1D vector of normalized values. The input array should have
+one row per particle, and three rows; one per Euclidean axis.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A value of the velocity magnutude per particle</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="sphere.video">
 <tt class="descclassname">sphere.</tt><tt class="descname">video</tt><big>(</big><em>project</em>, <em>out_folder='./'</em>, <em>video_format='mp4'</em>, <em>graphics_folder='../img_out/'</em>, <em>graphics_format='png'</em>, <em>fps=25</em>, <em>qscale=1</em>, <em>bitrate=1800</em>, <em>verbose=False</em><big>)</big><a class="headerlink" href="#sphere.video" title="Permalink to this definition">¶</a></dt>
-<dd><p>Use ffmpeg to combine images to animation. All images should be rendered beforehand.</p>
+<dd><p>Uses ffmpeg to combine images to animation. All images should be
+rendered beforehand using func:<cite>render()</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>project</strong> (<em>str</em>) &#8211; The simulation id of the project to render</li>
+<li><strong>out_folder</strong> (<em>str</em>) &#8211; The output folder for the video file</li>
+<li><strong>video_format</strong> (<em>str</em>) &#8211; The format of the output video</li>
+<li><strong>graphics_folder</strong> (<em>str</em>) &#8211; The folder containing the rendered images</li>
+<li><strong>graphics_format</strong> (<em>str</em>) &#8211; The format of the rendered images</li>
+<li><strong>fps</strong> (<em>int</em>) &#8211; The number of frames per second to use in the video</li>
+<li><strong>qscale</strong> (<em>float</em>) &#8211; The output video quality, in ]0;1]</li>
+<li><strong>bitrate</strong> (<em>int</em>) &#8211; The bitrate to use in the output video</li>
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; Show ffmpeg output</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="sphere.visualize">
 <tt class="descclassname">sphere.</tt><tt class="descname">visualize</tt><big>(</big><em>project</em>, <em>method='energy'</em>, <em>savefig=True</em>, <em>outformat='png'</em><big>)</big><a class="headerlink" href="#sphere.visualize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Visualize output from the target project,
-where the temporal progress is of interest.</p>
+<dd><p>Visualize output from the target project, where the temporal progress is of
+interest. The output will be saved in the current folder with a name
+combining the simulation id of the project, and the visualization method.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>project</strong> (<em>str</em>) &#8211; The simulation id of the project to render</li>
+<li><strong>method</strong> (<em>str</em>) &#8211; The type of plot to render. Possible values are &#8216;energy&#8217;,
+&#8216;walls&#8217;, &#8216;triaxial&#8217; and &#8216;shear&#8217;</li>
+<li><strong>savefig</strong> (<em>bool</em>) &#8211; Save the image instead of showing it on screen</li>
+<li><strong>outformat</strong> &#8211; The output format of the plot data. This can be an image
+format, or in text (&#8216;txt&#8217;).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
+</div>
 </div>
 
 
@@ -408,12 +1890,18 @@ where the temporal progress is of interest.</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Python API</a><ul>
+<li><a class="reference internal" href="#sample-usage">Sample usage</a></li>
+<li><a class="reference internal" href="#module-sphere">The <tt class="docutils literal"><span class="pre">sphere</span></tt> module</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
-  <p class="topless"><a href="dem.html"
-                        title="previous chapter">Discrete element method</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="sphere_internals.html"
-                        title="next chapter">sphere internals</a></p>
+  <p class="topless"><a href="cfd.html"
+                        title="previous chapter">Fluid simulation and particle-fluid interaction</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/python_api.txt"
@@ -446,16 +1934,13 @@ where the temporal progress is of interest.</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="sphere_internals.html" title="sphere internals"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="dem.html" title="Discrete element method"
+          <a href="cfd.html" title="Fluid simulation and particle-fluid interaction"
              >previous</a> |</li>
-        <li><a href="index.html">sphere 0.35 documentation</a> &raquo;</li> 
+        <li><a href="index.html">sphere 1.00-alpha documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2012, Anders Damsgaard.
+        &copy; Copyright 2014, Anders Damsgaard.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>

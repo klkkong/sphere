@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Import sphere functionality
-from sphere import *
+import sphere
 
 ### EXPERIMENT SETUP ###
 initialization = False
@@ -18,7 +18,7 @@ sim_id = "uniaxial-test"
 ### INITIALIZATION ###
 
 # New class
-init = Spherebin(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
+init = sphere.sim(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
 
 # Save radii
 init.generateRadii(radius_mean = 0.05)
@@ -33,8 +33,6 @@ init.initRandomGridPos(gridnum = numpy.array([12, 12, 1000]), periodic = 0, cont
 init.initTemporal(total = 5.0)
 
 if (initialization == True):
-  # Write input file for sphere
-  init.writebin()
 
   # Run sphere
   init.run()
@@ -51,10 +49,10 @@ if (initialization == True):
 ### CONSOLIDATION ###
 
 # New class
-cons = Spherebin(np = np, nw = 1, sid = sim_id + "-cons")
+cons = sphere.sim(np = np, nw = 1, sid = sim_id + "-cons")
 
 # Read last output file of initialization step
-lastf = status(sim_id + "-init")
+lastf = sphere.status(sim_id + "-init")
 cons.readbin("../output/" + sim_id + "-init.output{:0=5}.bin".format(lastf), verbose=False)
 
 # Setup consolidation experiment
@@ -71,8 +69,6 @@ cons.w_m[0] *= 0.001
 
 
 if (consolidation == True):
-  # Write input file for sphere
-  cons.writebin()
 
   # Run sphere
   cons.run(dry=True) # show values, don't run

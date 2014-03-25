@@ -4,7 +4,7 @@
 // Returns the cellID containing the particle, based cubic grid
 // See Bayraktar et al. 2009
 // Kernel is executed on the device, and is callable from the device only
-__device__ int calcCellID(Float3 x) 
+__device__ unsigned int calcCellID(Float3 x) 
 { 
     unsigned int i_x, i_y, i_z;
 
@@ -14,7 +14,8 @@ __device__ int calcCellID(Float3 x)
     i_z = floor((x.z - devC_grid.origo[2]) / (devC_grid.L[2]/devC_grid.num[2]));
 
     // Integral coordinates are converted to 1D coordinate:
-    return (i_z * devC_grid.num[1]) * devC_grid.num[0] + i_y * devC_grid.num[0] + i_x;
+    return (i_z * devC_grid.num[1])
+        * devC_grid.num[0] + i_y * devC_grid.num[0] + i_x;
 
 } // End of calcCellID(...)
 
@@ -25,7 +26,6 @@ __global__ void calcParticleCellID(unsigned int* dev_gridParticleCellID,
         unsigned int* dev_gridParticleIndex, 
         Float4* dev_x) 
 {
-    //unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x; // Thread id
     unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (idx < devC_np) { // Condition prevents block size error
@@ -35,7 +35,15 @@ __global__ void calcParticleCellID(unsigned int* dev_gridParticleCellID,
 
         unsigned int cellID = calcCellID(MAKE_FLOAT3(x.x, x.y, x.z));
 
+        // Check for NaN
+        if (x.x != x.x || x.y != x.y || x.z != x.z)
+            printf("\ncalcParticleCellID: Error! NaN encountered. "
+                    "idx = %d: cellID = %d, "
+                    "x = %f,%f,%f\n",
+                    idx, cellID, x.x, x.y, x.z);
+
         // Store values    
+        __syncthreads();
         dev_gridParticleCellID[idx] = cellID;
         dev_gridParticleIndex[idx]  = idx;
 
@@ -43,9 +51,8 @@ __global__ void calcParticleCellID(unsigned int* dev_gridParticleCellID,
 } // End of calcParticleCellID(...)
 
 
-// Reorder particle data into sorted order, and find the start and end particle indexes
-// of each cell in the sorted hash array.
-// Kernel executed on device, and callable from host only.
+// Reorder particle data into sorted order, and find the start and end particle
+// indexes of each cell in the sorted hash array.
 __global__ void reorderArrays(unsigned int* dev_cellStart, 
         unsigned int* dev_cellEnd,
         unsigned int* dev_gridParticleCellID, 
@@ -75,7 +82,8 @@ __global__ void reorderArrays(unsigned int* dev_cellStart,
     if (idx < devC_np) { // Condition prevents block size error
         cellID = dev_gridParticleCellID[idx];
 
-        // Load hash data into shared memory, allowing access to neighbor particle cellID values
+        // Load hash data into shared memory, allowing access to neighbor
+        // particle cellID values
         shared_data[tidx+1] = cellID; 
 
         if (idx > 0 && tidx == 0) {
@@ -83,6 +91,8 @@ __global__ void reorderArrays(unsigned int* dev_cellStart,
             shared_data[0] = dev_gridParticleCellID[idx-1];
         }
     }
+    //if (cellID != 0)
+        //printf("reorderArrays: %d,%d\tcellID = %d\n", tidx, idx, cellID);
 
     // Pause completed threads in this block, until all 
     // threads are done loading data into shared memory
@@ -90,9 +100,10 @@ __global__ void reorderArrays(unsigned int* dev_cellStart,
 
     // Find lowest and highest particle index in each cell
     if (idx < devC_np) { // Condition prevents block size error
-        // If this particle has a different cell index to the previous particle, it's the first
-        // particle in the cell -> Store the index of this particle in the cell.
-        // The previous particle must be the last particle in the previous cell.
+        // If this particle has a different cell index to the previous particle,
+        // it's the first particle in the cell -> Store the index of this
+        // particle in the cell. The previous particle must be the last particle
+        // in the previous cell.
         if (idx == 0 || cellID != shared_data[tidx]) {
             dev_cellStart[cellID] = idx;
             if (idx > 0)
@@ -119,7 +130,6 @@ __global__ void reorderArrays(unsigned int* dev_cellStart,
         dev_angvel_sorted[idx] = angvel;
     }
 } // End of reorderArrays(...)
-
 
 #endif
 // vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4

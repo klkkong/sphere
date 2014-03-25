@@ -14,14 +14,16 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
         Float3 n, Float delta, Float wvel)
 {
     // Fetch particle velocities from global memory
-    Float4 linvel_tmp = dev_vel_sorted[idx_a];
+    Float4 vel_tmp = dev_vel_sorted[idx_a];
     Float4 angvel_tmp = dev_angvel_sorted[idx_a];
 
     // Convert velocities to three-component vectors
-    Float3 linvel = MAKE_FLOAT3(linvel_tmp.x,
-            linvel_tmp.y,
-            linvel_tmp.z);
-    Float3 angvel = MAKE_FLOAT3(angvel_tmp.x,
+    Float3 vel_linear = MAKE_FLOAT3(
+            vel_tmp.x,
+            vel_tmp.y,
+            vel_tmp.z);
+    Float3 angvel = MAKE_FLOAT3(
+            angvel_tmp.x,
             angvel_tmp.y,
             angvel_tmp.z);
 
@@ -30,42 +32,58 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
 
     // Contact velocity is the sum of the linear and
     // rotational components
-    Float3 vel = linvel + radius_a * cross(n, angvel) + wvel;
+    //Float3 vel = linvel + radius_a * cross(n, angvel) + wvel;
+    Float3 vel = vel_linear + (radius_a + delta/2.0) * cross(n, angvel) + wvel;
 
     // Normal component of the contact velocity
-    Float vel_n = dot(vel, n);
+    //Float vel_n = dot(vel, n);
+    Float vel_n = -dot(vel, n);
 
     // The tangential velocity is the contact velocity
     // with the normal component subtracted
-    Float3 vel_t = vel - n * (dot(vel, n));
-    Float  vel_t_length = length(vel_t);
+    //Float3 vel_t = vel - n * (dot(vel, n));
+    const Float3 vel_t = vel - n * (dot(n, vel));
+    const Float vel_t_length = length(vel_t);
 
     // Calculate elastic normal component
     //Float3 f_n = -devC_params.k_n * delta * n;
 
     // Normal force component: Elastic - viscous damping
-    Float3 f_n = (-devC_params.k_n * delta - devC_params.gamma_wn * vel_n) * n;
+    //Float3 f_n = (-devC_params.k_n * delta - devC_params.gamma_wn * vel_n) * n;
+    Float3 f_n = (-devC_params.k_n * delta + devC_params.gamma_wn * vel_n) * n;
+
+    // Print data for contact model validation
+    /*printf("f_n_elast = %f\tgamma_wn = %f\tf_n_visc = %f\n",
+            devC_params.k_n*delta,
+            devC_params.gamma_wn,
+            devC_params.gamma_wn*vel_n);*/
+
+    // Store the energy lost by viscous damping. See derivation in
+    // contactLinear()
+    *ev_dot += devC_params.gamma_wn * vel_n * vel_n;
 
     // Make sure the viscous damping doesn't exceed the elastic component,
-    // i.e. the damping factor doesn't exceed the critical damping, 2*sqrt(m*k_n)
-    if (dot(f_n, n) < 0.0f)
-        f_n = MAKE_FLOAT3(0.0f, 0.0f, 0.0f);
+    // i.e. the damping factor doesn't exceed the critical damping:
+    // 2*sqrt(m*k_n)
+    if (dot(f_n, n) < 0.0)
+        f_n = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
-    Float  f_n_length = length(f_n); // Save length for later use
+    const Float f_n_length = length(f_n); // Save length for later use
 
     // Initialize vectors
-    Float3 f_t   = MAKE_FLOAT3(0.0f, 0.0f, 0.0f);
-    Float3 T_res = MAKE_FLOAT3(0.0f, 0.0f, 0.0f);
+    Float3 f_t = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
     // Check that the tangential velocity is high enough to avoid
     // divide by zero (producing a NaN)
-    if (vel_t_length > 0.f) {
+    if (vel_t_length > 0.0 && devC_params.gamma_wt > 0.0) {
 
-        Float f_t_visc  = devC_params.gamma_wt * vel_t_length; // Tangential force by viscous model
+        // Tangential force by viscous model
+        const Float3 f_t_visc = devC_params.gamma_wt * vel_t;
+        const Float f_t_visc_length = length(f_t_visc);
 
         // Determine max. friction
         Float f_t_limit;
-        if (vel_t_length > 0.001f) { // Dynamic
+        if (vel_t_length > 0.0) { // Dynamic
             f_t_limit = devC_params.mu_wd * f_n_length;
         } else { // Static
             f_t_limit = devC_params.mu_ws * f_n_length;
@@ -73,14 +91,15 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
 
         // If the shear force component exceeds the friction,
         // the particle slips and energy is dissipated
-        if (f_t_visc < f_t_limit) {
-            f_t = -1.0f * f_t_visc * vel_t/vel_t_length;
+        if (f_t_visc_length < f_t_limit) {
+            f_t = -1.0*f_t_visc;
 
         } else { // Dynamic friction, friction failure
-            f_t = -1.0f * f_t_limit * vel_t/vel_t_length;
+            f_t = -f_t_limit * vel_t/vel_t_length;
 
             // Shear energy production rate [W]
             //*es_dot += -dot(vel_t, f_t);
+            *es_dot += length(length(f_t) * vel_t * devC_dt) / devC_dt;
         }
     }
 
@@ -98,7 +117,7 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
     *F += f_n + f_t;
 
     // Total torque from wall
-    *T += -radius_a * cross(n, f_t) + T_res;
+    *T += cross(-(radius_a + delta*0.5)*n, f_t);
 
     // Pressure excerted onto particle from this contact
     *p += f_n_length / (4.0f * PI * radius_a*radius_a);
@@ -246,6 +265,7 @@ __device__ void contactLinearViscous(Float3* F, Float3* T,
     // Add force components from this collision to total force for particle
     *F += f_n + f_t + f_c; 
     //*T += -(radius_a + delta_ab/2.0f) * cross(n_ab, f_t) + T_res;
+    *T += -(radius_a + delta_ab/2.0f) * cross(n_ab, f_t);
 
     // Pressure excerted onto the particle from this contact
     *p += f_n_length / (4.0f * PI * radius_a*radius_a);
@@ -436,10 +456,12 @@ __device__ void contactLinear(Float3* F, Float3* T,
             //delta_t = -1.0/devC_params.k_t * devC_params.mu_d * t +
             //+ devC_params.gamma_t * vel_t;
 
-            // In the sliding friction case, the tangential spring is adjusted to
-            // a length consistent with Coulombs (dynamic) condition (Luding 2008)
+            // In the sliding friction case, the tangential spring is adjusted
+            // to a length consistent with Coulombs (dynamic) condition (Luding
+            // 2008)
             delta_t = -1.0/devC_params.k_t
-                * (devC_params.mu_d * length(f_n-f_c) * t + devC_params.gamma_t * vel_t);
+                * (devC_params.mu_d * length(f_n-f_c) * t
+                        + devC_params.gamma_t * vel_t);
 
             // Shear friction heat production rate: 
             // The energy lost from the tangential spring is dissipated as heat

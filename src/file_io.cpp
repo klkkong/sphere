@@ -34,7 +34,8 @@ void DEM::readbin(const char *target)
     unsigned int i;
 
     // Open input file
-    // if target is string: std::ifstream ifs(target.c_str(), std::ios_base::binary);
+    // if target is string:
+    // std::ifstream ifs(target.c_str(), std::ios_base::binary);
     std::ifstream ifs(target, std::ios_base::binary);
     if (!ifs) {
         cerr << "Could not read input binary file '"
@@ -42,12 +43,21 @@ void DEM::readbin(const char *target)
         exit(1);
     }
 
+    Float version;
+    ifs.read(as_bytes(version), sizeof(Float));
+    if (version != VERSION) {
+        std::cerr << "Error: The input file '" << target << "' is written by "
+            "sphere version " << version << ", which is incompatible with this "
+            "version (" << VERSION << ")." << std::endl;
+        exit(1);
+    }
+
     ifs.read(as_bytes(nd), sizeof(nd));
     ifs.read(as_bytes(np), sizeof(np));
 
     if (nd != ND) {
-        cerr << "Dimensionality mismatch between dataset and this SPHERE program.\n"
-            << "The dataset is " << nd 
+        cerr << "Dimensionality mismatch between dataset and this SPHERE "
+            "program.\nThe dataset is " << nd 
             << "D, this SPHERE binary is " << ND << "D.\n"
             << "This execution is terminating." << endl;
         exit(-1); // Return unsuccessful exit status
@@ -66,8 +76,8 @@ void DEM::readbin(const char *target)
     ifs.read(as_bytes(time.file_dt), sizeof(time.file_dt));
     ifs.read(as_bytes(time.step_count), sizeof(time.step_count));
 
-    // For spatial vectors an array of Float4 vectors is chosen for best fit with 
-    // GPU memory handling. Vector variable structure: ( x, y, z, <empty>).
+    // For spatial vectors an array of Float4 vectors is chosen for best fit
+    // with GPU memory handling. Vector variable structure: ( x, y, z, <empty>).
     // Indexing starts from 0.
 
     // Allocate host arrays
@@ -236,58 +246,49 @@ void DEM::readbin(const char *target)
         ifs.read(as_bytes(k.bonds_omega[i].z), sizeof(Float));
     }
 
-    // Read fluid parameters
-    ifs.read(as_bytes(params.nu), sizeof(params.nu));
     unsigned int x, y, z;
 
     if (verbose == 1)
         cout << "Done\n";
 
-    if (params.nu > 0.0 && darcy == 0) {    // Lattice-Boltzmann flow
+    if (navierstokes == 1) {    // Navier Stokes flow
+
+        initNSmem();
+
+        ifs.read(as_bytes(params.mu), sizeof(params.mu));
 
         if (verbose == 1)
-            cout << "  - Reading LBM values:\t\t\t\t  ";
-
-        //f = new Float[grid.num[0]*grid.num[1]*grid.num[2]*19];
-        //f_new = new Float[grid.num[0]*grid.num[1]*grid.num[2]*19];
-        v_rho = new Float4[grid.num[0]*grid.num[1]*grid.num[2]];
-
-        for (z = 0; z<grid.num[2]; ++z) {
-            for (y = 0; y<grid.num[1]; ++y) {
-                for (x = 0; x<grid.num[0]; ++x) {
-                    i = x + grid.num[0]*y + grid.num[0]*grid.num[1]*z;
-                    ifs.read(as_bytes(v_rho[i].x), sizeof(Float));
-                    ifs.read(as_bytes(v_rho[i].y), sizeof(Float));
-                    ifs.read(as_bytes(v_rho[i].z), sizeof(Float));
-                    ifs.read(as_bytes(v_rho[i].w), sizeof(Float));
-                }
-            }
-        }
-
-        if (verbose == 1)
-            cout << "Done" << std::endl;
-
-    } else if (params.nu > 0.0 && darcy == 1) {    // Darcy flow
-
-        const Float cellsizemultiplier = 1.0;
-        initDarcyMem(cellsizemultiplier);
-
-        if (verbose == 1)
-            cout << "  - Reading Darcy values:\t\t\t  ";
+            cout << "  - Reading fluid values:\t\t\t  ";
 
         for (z = 0; z<grid.num[2]; ++z) {
             for (y = 0; y<grid.num[1]; ++y) {
                 for (x = 0; x<grid.num[0]; ++x) {
                     i = idx(x,y,z);
-                    ifs.read(as_bytes(d.V[i].x), sizeof(Float));
-                    ifs.read(as_bytes(d.V[i].y), sizeof(Float));
-                    ifs.read(as_bytes(d.V[i].z), sizeof(Float));
-                    ifs.read(as_bytes(d.H[i]), sizeof(Float));
-                    ifs.read(as_bytes(d.phi[i]), sizeof(Float));
-                    ifs.read(as_bytes(d.K[i]), sizeof(Float));
+                    ifs.read(as_bytes(ns.v[i].x), sizeof(Float));
+                    ifs.read(as_bytes(ns.v[i].y), sizeof(Float));
+                    ifs.read(as_bytes(ns.v[i].z), sizeof(Float));
+                    ifs.read(as_bytes(ns.p[i]), sizeof(Float));
+                    ifs.read(as_bytes(ns.phi[i]), sizeof(Float));
+                    ifs.read(as_bytes(ns.dphi[i]), sizeof(Float));
                 }
             }
         }
+
+        ifs.read(as_bytes(params.rho_f), sizeof(Float));
+        ifs.read(as_bytes(ns.p_mod_A), sizeof(Float));
+        ifs.read(as_bytes(ns.p_mod_f), sizeof(Float));
+        ifs.read(as_bytes(ns.p_mod_phi), sizeof(Float));
+
+        ifs.read(as_bytes(ns.bc_bot), sizeof(int));
+        ifs.read(as_bytes(ns.bc_top), sizeof(int));
+        ifs.read(as_bytes(ns.free_slip_bot), sizeof(int));
+        ifs.read(as_bytes(ns.free_slip_top), sizeof(int));
+
+        ifs.read(as_bytes(ns.gamma), sizeof(Float));
+        ifs.read(as_bytes(ns.theta), sizeof(Float));
+        ifs.read(as_bytes(ns.beta), sizeof(Float));
+        ifs.read(as_bytes(ns.tolerance), sizeof(Float));
+        ifs.read(as_bytes(ns.maxiter), sizeof(unsigned int));
 
         if (verbose == 1)
             cout << "Done" << std::endl;
@@ -309,12 +310,15 @@ void DEM::writebin(const char *target)
     std::ofstream ofs(target, std::ios_base::binary);
     if (!ofs) {
         std::cerr << "could create output binary file '"
-            << target << std::endl;
-        exit(1); // Return unsuccessful exit status
+            << target << "'" << std::endl;
+        exit(1);
     }
 
     // If double precision: Values can be written directly
     if (sizeof(Float) == sizeof(double)) {
+
+        double version = VERSION;
+        ofs.write(as_bytes(version), sizeof(Float));
 
         ofs.write(as_bytes(nd), sizeof(nd));
         ofs.write(as_bytes(np), sizeof(np));
@@ -449,35 +453,42 @@ void DEM::writebin(const char *target)
             ofs.write(as_bytes(k.bonds_omega[i].z), sizeof(Float));
         }
 
-        ofs.write(as_bytes(params.nu), sizeof(params.nu));
-        int x, y, z;
-        if (params.nu > 0.0 && darcy == 0) {    // Lattice Boltzmann flow
-            for (z = 0; z<grid.num[2]; ++z) {
-                for (y = 0; y<grid.num[1]; ++y) {
-                    for (x = 0; x<grid.num[0]; ++x) {
-                        i = x + grid.num[0]*y + grid.num[0]*grid.num[1]*z;
-                        ofs.write(as_bytes(v_rho[i].x), sizeof(Float));
-                        ofs.write(as_bytes(v_rho[i].y), sizeof(Float));
-                        ofs.write(as_bytes(v_rho[i].z), sizeof(Float));
-                        ofs.write(as_bytes(v_rho[i].w), sizeof(Float));
-                    }
-                }
-            }
-        } else if (params.nu > 0.0 && darcy == 1) { // Darcy flow
-            for (z=0; z<d.nz; z++) {
-                for (y=0; y<d.ny; y++) {
-                    for (x=0; x<d.nx; x++) {
+        if (navierstokes == 1) { // Navier Stokes flow
+
+            ofs.write(as_bytes(params.mu), sizeof(params.mu));
+
+            int x, y, z;
+            for (z=0; z<ns.nz; z++) {
+                for (y=0; y<ns.ny; y++) {
+                    for (x=0; x<ns.nx; x++) {
                         i = idx(x,y,z);
-                        ofs.write(as_bytes(d.V[i].x), sizeof(Float));
-                        ofs.write(as_bytes(d.V[i].y), sizeof(Float));
-                        ofs.write(as_bytes(d.V[i].z), sizeof(Float));
-                        ofs.write(as_bytes(d.H[i]), sizeof(Float));
-                        ofs.write(as_bytes(d.phi[i]), sizeof(Float));
-                        ofs.write(as_bytes(d.K[i]), sizeof(Float));
+                        ofs.write(as_bytes(ns.v[i].x), sizeof(Float));
+                        ofs.write(as_bytes(ns.v[i].y), sizeof(Float));
+                        ofs.write(as_bytes(ns.v[i].z), sizeof(Float));
+                        ofs.write(as_bytes(ns.p[i]), sizeof(Float));
+                        ofs.write(as_bytes(ns.phi[i]), sizeof(Float));
+                        ofs.write(as_bytes(ns.dphi[i]), sizeof(Float));
                     }
                 }
             }
+
+            ofs.write(as_bytes(params.rho_f), sizeof(Float));
+            ofs.write(as_bytes(ns.p_mod_A), sizeof(Float));
+            ofs.write(as_bytes(ns.p_mod_f), sizeof(Float));
+            ofs.write(as_bytes(ns.p_mod_phi), sizeof(Float));
+
+            ofs.write(as_bytes(ns.bc_bot), sizeof(int));
+            ofs.write(as_bytes(ns.bc_top), sizeof(int));
+            ofs.write(as_bytes(ns.free_slip_bot), sizeof(int));
+            ofs.write(as_bytes(ns.free_slip_top), sizeof(int));
+
+            ofs.write(as_bytes(ns.gamma), sizeof(Float));
+            ofs.write(as_bytes(ns.theta), sizeof(Float));
+            ofs.write(as_bytes(ns.beta), sizeof(Float));
+            ofs.write(as_bytes(ns.tolerance), sizeof(Float));
+            ofs.write(as_bytes(ns.maxiter), sizeof(unsigned int));
         }
+
 
         // Close file if it is still open
         if (ofs.is_open())

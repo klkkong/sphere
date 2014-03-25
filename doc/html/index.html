@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Welcome to sphere’s documentation! &mdash; sphere 0.35 documentation</title>
+    <title>The sphere documentation &mdash; sphere 1.00-alpha documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.35',
+        VERSION:     '1.00-alpha',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="sphere 0.35 documentation" href="#" />
+    <link rel="top" title="sphere 1.00-alpha documentation" href="#" />
     <link rel="next" title="Introduction" href="introduction.html" /> 
   </head>
   <body>
@@ -42,7 +42,7 @@
         <li class="right" >
           <a href="introduction.html" title="Introduction"
              accesskey="N">next</a> |</li>
-        <li><a href="#">sphere 0.35 documentation</a> &raquo;</li> 
+        <li><a href="#">sphere 1.00-alpha documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -51,43 +51,59 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="welcome-to-sphere-s-documentation">
-<h1>Welcome to sphere&#8217;s documentation!<a class="headerlink" href="#welcome-to-sphere-s-documentation" title="Permalink to this headline">¶</a></h1>
-<p>This is the official documentation for the <em>sphere</em> discrete element modelling
-software. It presents the theory behind the discrete element method (DEM), the
-structure of the software source code, and the Python API for handling
-simulation setup and data analysis.</p>
-<p><em>sphere</em> is developed by Anders Damsgaard Christensen under supervision of David
-Lunbek Egholm and Jan A. Piotrowski, all of the department of Geoscience, Aarhus
-University, Denmark. This document is a work in progress, and is still in an
-early state.</p>
-<p>Contact: Anders Damsgaard Christensen, <a class="reference external" href="http://cs.au.dk/~adc">http://cs.au.dk/~adc</a>,
+  <div class="section" id="the-sphere-documentation">
+<h1>The sphere documentation<a class="headerlink" href="#the-sphere-documentation" title="Permalink to this headline">¶</a></h1>
+<p>This is the official documentation for the <tt class="docutils literal"><span class="pre">sphere</span></tt> discrete element modelling
+software. This document aims at guiding the installation process, documenting
+the usage, and explaining the relevant theory.</p>
+<p><tt class="docutils literal"><span class="pre">sphere</span></tt> is developed by Anders Damsgaard as part as his Ph.D. project, under
+supervision of David Lundbek Egholm and Jan A. Piotrowski, all of the Department
+of Geoscience, Aarhus University, Denmark. The author welcomes interested third
+party developers. This document is a work in progress.</p>
+<p>Contact: Anders Damsgaard, <a class="reference external" href="http://cs.au.dk/~adc">http://cs.au.dk/~adc</a>,
 <a class="reference external" href="mailto:anders&#46;damsgaard&#37;&#52;&#48;geo&#46;au&#46;dk">mailto:anders<span>&#46;</span>damsgaard<span>&#64;</span>geo<span>&#46;</span>au<span>&#46;</span>dk</a></p>
-<p>Contents:</p>
+<div class="section" id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#requirements">Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="introduction.html#building-sphere">Building <em>sphere</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#obtaining-sphere">Obtaining sphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#building-sphere">Building <tt class="docutils literal"><span class="pre">sphere</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#updating-sphere">Updating sphere</a></li>
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#work-flow">Work flow</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="dem.html">Discrete element method</a></li>
-<li class="toctree-l1"><a class="reference internal" href="python_api.html">Python API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sphere_internals.html">sphere internals</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="sphere_internals.html#numerical-algorithm">Numerical algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sphere_internals.html#c-reference">C++ reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dem.html">Discrete element method</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dem.html#contact-search">Contact search</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dem.html#contact-interaction">Contact interaction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dem.html#temporal-integration">Temporal integration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cfd.html">Fluid simulation and particle-fluid interaction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cfd.html#derivation-of-the-navier-stokes-equations-with-porosity">Derivation of the Navier Stokes equations with porosity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfd.html#porosity-estimation">Porosity estimation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfd.html#particle-fluid-interaction">Particle-fluid interaction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfd.html#fluid-dynamics-solution-procedure-by-operator-splitting">Fluid dynamics solution procedure by operator splitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfd.html#boundary-conditions">Boundary conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfd.html#numerical-implementation">Numerical implementation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="python_api.html">Python API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="python_api.html#sample-usage">Sample usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_api.html#module-sphere">The <tt class="docutils literal"><span class="pre">sphere</span></tt> module</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
 <div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
 <li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
 </ul>
+</div>
 </div>
 
 
@@ -98,10 +114,13 @@ early state.</p>
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Welcome to sphere&#8217;s documentation!</a><ul>
+<li><a class="reference internal" href="#">The sphere documentation</a><ul>
+<li><a class="reference internal" href="#contents">Contents</a><ul>
 </ul>
 </li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</li>
 </ul>
 
   <h4>Next topic</h4>
@@ -141,11 +160,11 @@ early state.</p>
         <li class="right" >
           <a href="introduction.html" title="Introduction"
              >next</a> |</li>
-        <li><a href="#">sphere 0.35 documentation</a> &raquo;</li> 
+        <li><a href="#">sphere 1.00-alpha documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2012, Anders Damsgaard.
+        &copy; Copyright 2014, Anders Damsgaard.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
