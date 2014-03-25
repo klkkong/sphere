@@ -8,13 +8,6 @@ License
 ``sphere`` is licensed under the GNU General Public License, v.3.
 See `LICENSE.txt <LICENSE.txt>`_ for more information.
 
-About this branch
------------------
-The git branch ``ns-cfd`` is a work in progress on implementing a Newtonian
-fluid, fully coupled to the particle dynamics, by the Navier Stokes formulation
-of computational fluid dynamics. The merge into the main branch is planned to
-mark the 1.0 release of ``sphere``.
-
 Important release notes
 -----------------------
 2013-03-13: Sphere has been updated to work with CUDA 5.0 or newer *only*.
@@ -31,6 +24,9 @@ general documentation.
 
 2014-03-09: The ``writebin`` member function of the ``sim`` class is now
 implicitly called when calling the ``run`` member function.
+
+2014-03-25: Fluid phase in ``master`` branch simulated by the full Navier-Stokes
+equations.
 
 Documentation
 -------------
