@@ -440,6 +440,13 @@ The plot is saved in the current folder as
 </dd></dl>
 
 <dl class="method">
+<dt id="sphere.sim.cleanup">
+<tt class="descname">cleanup</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.cleanup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the input/output files and images belonging to the object
+simulation ID from the <tt class="docutils literal"><span class="pre">input/</span></tt>, <tt class="docutils literal"><span class="pre">output/</span></tt> and <tt class="docutils literal"><span class="pre">img_out/</span></tt> folders.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="sphere.sim.consolidate">
 <tt class="descname">consolidate</tt><big>(</big><em>normal_stress=10000.0</em><big>)</big><a class="headerlink" href="#sphere.sim.consolidate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Setup consolidation experiment. Specify the upper wall normal stress in
@@ -543,7 +550,7 @@ interaction model (0 = no (default), 1 = yes)</li>
 
 <dl class="method">
 <dt id="sphere.sim.defineWorldBoundaries">
-<tt class="descname">defineWorldBoundaries</tt><big>(</big><em>L, origo=[0.0, 0.0, 0.0]</em><big>)</big><a class="headerlink" href="#sphere.sim.defineWorldBoundaries" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">defineWorldBoundaries</tt><big>(</big><em>L, origo=[0.0, 0.0, 0.0], dx=-1</em><big>)</big><a class="headerlink" href="#sphere.sim.defineWorldBoundaries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the boundaries of the world. Particles will only be able to interact
 within this domain. With dynamic walls, allow space for expansions.
 <em>Important</em>: The particle radii have to be set beforehand. The world
@@ -556,6 +563,8 @@ edges act as static walls.</p>
 <li><strong>L</strong> (<em>numpy.array</em>) &#8211; The upper boundary of the domain [m]</li>
 <li><strong>origo</strong> (<em>numpy.array</em>) &#8211; The lower boundary of the domain [m]. Negative values
 won&#8217;t work. Default = [0.0, 0.0, 0.0].</li>
+<li><strong>dx</strong> (<em>float</em>) &#8211; The cell width in any direction. If the default value is used
+(-1), the cell width is calculated to fit the largest particle.</li>
 </ul>
 </td>
 </tr>
@@ -711,11 +720,21 @@ The value for water at 0 degrees Celcius is 17.87e-4 kg/(m*s).</p>
 
 <dl class="method">
 <dt id="sphere.sim.initGrid">
-<tt class="descname">initGrid</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.initGrid" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">initGrid</tt><big>(</big><em>dx=-1</em><big>)</big><a class="headerlink" href="#sphere.sim.initGrid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize grid suitable for the particle positions set previously.
 The margin parameter adjusts the distance (in no. of max. radii)
 from the particle boundaries.
-<em>Important</em>: The particle radii have to be set beforehand.</p>
+<em>Important</em>: The particle radii have to be set beforehand if the cell
+width isn&#8217;t specified by <cite>dx</cite>.
+:param dx: The cell width in any direction. If the default value is used</p>
+<blockquote>
+<div>(-1), the cell width is calculated to fit the largest particle.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -783,8 +802,13 @@ make space for their radii within the bounding box.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>gridnum</strong> (<em>numpy.array</em>) &#8211; The number of sorting cells in each spatial direction
-(default = [12, 12, 36])</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>gridnum</strong> (<em>numpy.array</em>) &#8211; The number of sorting cells in each spatial direction
+(default = [12, 12, 36])</li>
+<li><strong>dx</strong> (<em>float</em>) &#8211; The cell width in any direction. If the default value is used
+(-1), the cell width is calculated to fit the largest particle.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -792,12 +816,14 @@ make space for their radii within the bounding box.</p>
 
 <dl class="method">
 <dt id="sphere.sim.initTemporal">
-<tt class="descname">initTemporal</tt><big>(</big><em>total</em>, <em>current=0.0</em>, <em>file_dt=0.05</em>, <em>step_count=0</em><big>)</big><a class="headerlink" href="#sphere.sim.initTemporal" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">initTemporal</tt><big>(</big><em>total</em>, <em>current=0.0</em>, <em>file_dt=0.05</em>, <em>step_count=0</em>, <em>dt=-1</em><big>)</big><a class="headerlink" href="#sphere.sim.initTemporal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set temporal parameters for the simulation. <em>Important</em>: Particle radii,
 physical parameters, and the optional fluid grid need to be set prior to
-these. The automatically selected value of the computational time step
-for the DEM is checked for stability in the CFD solution if fluid
-simulation is included.</p>
+these if the computational time step (dt) isn&#8217;t set explicitly. If the
+parameter <cite>dt</cite> is the default value (-1), the function will estimate the
+best time step length. The value of the computational time step for the
+DEM is checked for stability in the CFD solution if fluid simulation is
+included.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -806,6 +832,7 @@ simulation is included.</p>
 <li><strong>total</strong> (<em>float</em>) &#8211; The time at which to end the simulation [s]</li>
 <li><strong>current</strong> &#8211; The current time [s] (default = 0.0 s)</li>
 <li><strong>file_dt</strong> &#8211; The interval between output files [s] (default = 0.05 s)</li>
+<li><strong>dt</strong> &#8211; The computational time step length [s]</li>
 </ul>
 </td>
 </tr>
@@ -1185,6 +1212,19 @@ increase in computational time.</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="sphere.sim.setBeta">
+<tt class="descname">setBeta</tt><big>(</big><em>beta</em><big>)</big><a class="headerlink" href="#sphere.sim.setBeta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Beta is a fluid solver parameter, used in velocity prediction and
+pressure iteration 1.0: Use old pressures for fluid velocity prediction
+(see Langtangen et al. 2002) 0.0: Do not use old pressures for fluid
+velocity prediction (Chorin&#8217;s original projection method, see Chorin
+(1968) and &#8220;Projection method (fluid dynamics)&#8221; page on Wikipedia.  The
+best results precision and performance-wise are obtained by using a beta
+of 0 and a low tolerance criteria value.</p>
+<p>The default and recommended value is 0.0.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="sphere.sim.setFluidPressureModulation">
 <tt class="descname">setFluidPressureModulation</tt><big>(</big><em>A</em>, <em>f</em>, <em>phi=0.0</em><big>)</big><a class="headerlink" href="#sphere.sim.setFluidPressureModulation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the parameters for the sine wave modulating the fluid pressures
@@ -1203,6 +1243,83 @@ at the top boundary. Note that a cos-wave is obtained with phi=pi/2.</p>
 </tbody>
 </table>
 <p>See also: <a class="reference internal" href="#sphere.sim.disableFluidPressureModulation" title="sphere.sim.disableFluidPressureModulation"><tt class="xref py py-func docutils literal"><span class="pre">disableFluidPressureModulation()</span></tt></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setGamma">
+<tt class="descname">setGamma</tt><big>(</big><em>gamma</em><big>)</big><a class="headerlink" href="#sphere.sim.setGamma" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gamma is a fluid solver parameter, used for smoothing the pressure
+values. The epsilon (pressure) values are smoothed by including the
+average epsilon value of the six closest (face) neighbor cells. This
+parameter should be in the range [0.0;1.0[. The higher the value, the
+more averaging is introduced. A value of 0.0 disables all averaging.</p>
+<p>The default and recommended value is 0.5.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>theta</strong> (<em>float</em>) &#8211; The smoothing parameter value</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setMaxIterations">
+<tt class="descname">setMaxIterations</tt><big>(</big><em>maxiter</em><big>)</big><a class="headerlink" href="#sphere.sim.setMaxIterations" title="Permalink to this definition">¶</a></dt>
+<dd><p>A fluid solver parameter, the value of the maxiter parameter denotes the
+maximal allowed number of fluid solver iterations before ending the
+fluid solver loop prematurely. The residual values are at that point not
+fulfilling the tolerance criteria. The parameter is included to avoid
+infinite hangs.</p>
+<p>The default and recommended value is 1e4.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>maxiter</strong> (<em>int</em>) &#8211; The maximum number of Jacobi iterations in the fluid
+solver</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setTheta">
+<tt class="descname">setTheta</tt><big>(</big><em>theta</em><big>)</big><a class="headerlink" href="#sphere.sim.setTheta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Theta is a fluid solver under-relaxation parameter, used in solution of
+Poisson equation. The value should be within the range ]0.0;1.0]. At a
+value of 1.0, the new estimate of epsilon values is used exclusively. At
+lower values, a linear interpolation between new and old values is used.
+The solution typically converges faster with a value of 1.0, but
+instabilities may be avoided with lower values.</p>
+<p>The default and recommended value is 1.0.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>theta</strong> (<em>float</em>) &#8211; The under-relaxation parameter value</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setTolerance">
+<tt class="descname">setTolerance</tt><big>(</big><em>tolerance</em><big>)</big><a class="headerlink" href="#sphere.sim.setTolerance" title="Permalink to this definition">¶</a></dt>
+<dd><p>A fluid solver parameter, the value of the tolerance parameter denotes
+the required value of the maximum normalized residual for the fluid
+solver.</p>
+<p>The default and recommended value is 1.0e-8.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tolerance</strong> (<em>float</em>) &#8211; The tolerance criteria for the maximal normalized
+residual</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -1574,8 +1691,8 @@ that &#8220;Arrow&#8221; is selected as the &#8220;Glyph type&#8221;, and &#8220
 big as the number of fluid cells in the grid. Press &#8220;Apply&#8221; to visualize
 the arrows.</p>
 <p>If several data files are generated for the same simulation (e.g. using
-the <a class="reference internal" href="#sphere.sim.writeVTKall" title="sphere.sim.writeVTKall"><tt class="xref py py-func docutils literal"><span class="pre">writeVTKall()</span></tt></a> function), it is able to step the visualization
-through time by using the ParaView controls.</p>
+the <a class="reference internal" href="#sphere.sim.writeVTKall" title="sphere.sim.writeVTKall"><tt class="xref py py-func docutils literal"><span class="pre">writeVTKall()</span></tt></a> function), it is able to step the
+visualization through time by using the ParaView controls.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1589,8 +1706,8 @@ through time by using the ParaView controls.</p>
 <dl class="method">
 <dt id="sphere.sim.writebin">
 <tt class="descname">writebin</tt><big>(</big><em>folder='../input/'</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.sim.writebin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes a <tt class="docutils literal"><span class="pre">sphere</span></tt> binary file to the <tt class="docutils literal"><span class="pre">../input/</span></tt> folder by default. The
-file name will be in the format <tt class="docutils literal"><span class="pre">&lt;self.sid&gt;.bin</span></tt>.</p>
+<dd><p>Writes a <tt class="docutils literal"><span class="pre">sphere</span></tt> binary file to the <tt class="docutils literal"><span class="pre">../input/</span></tt> folder by default.
+The file name will be in the format <tt class="docutils literal"><span class="pre">&lt;self.sid&gt;.bin</span></tt>.</p>
 <p>See also <a class="reference internal" href="#sphere.sim.readbin" title="sphere.sim.readbin"><tt class="xref py py-func docutils literal"><span class="pre">readbin()</span></tt></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
