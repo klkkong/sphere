@@ -284,6 +284,12 @@ void DEM::readbin(const char *target)
         ifs.read(as_bytes(ns.free_slip_bot), sizeof(int));
         ifs.read(as_bytes(ns.free_slip_top), sizeof(int));
 
+        ifs.read(as_bytes(ns.gamma), sizeof(Float));
+        ifs.read(as_bytes(ns.theta), sizeof(Float));
+        ifs.read(as_bytes(ns.beta), sizeof(Float));
+        ifs.read(as_bytes(ns.tolerance), sizeof(Float));
+        ifs.read(as_bytes(ns.maxiter), sizeof(unsigned int));
+
         if (verbose == 1)
             cout << "Done" << std::endl;
     }
@@ -475,6 +481,12 @@ void DEM::writebin(const char *target)
             ofs.write(as_bytes(ns.bc_top), sizeof(int));
             ofs.write(as_bytes(ns.free_slip_bot), sizeof(int));
             ofs.write(as_bytes(ns.free_slip_top), sizeof(int));
+
+            ofs.write(as_bytes(ns.gamma), sizeof(Float));
+            ofs.write(as_bytes(ns.theta), sizeof(Float));
+            ofs.write(as_bytes(ns.beta), sizeof(Float));
+            ofs.write(as_bytes(ns.tolerance), sizeof(Float));
+            ofs.write(as_bytes(ns.maxiter), sizeof(unsigned int));
         }
 
 

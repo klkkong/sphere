@@ -32,8 +32,8 @@
 //#define GAMMA 0.0
 
 // Tolerance criteria for the normalized residual
-//const double tolerance = 1.0e-3;
-const double tolerance = 1.0e-4;
+const double tolerance = 1.0e-3;
+//const double tolerance = 1.0e-4;
 //const double tolerance = 1.0e-5;
 //const double tolerance = 1.0e-7;
 //const double tolerance = 1.0e-8;

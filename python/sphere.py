@@ -558,6 +558,21 @@ class sim:
             elif (self.free_slip_top != other.free_slip_top):
                 print(77)
                 return 77
+            elif (self.gamma != other.gamma):
+                print(78)
+                return 78
+            elif (self.theta != other.theta):
+                print(79)
+                return 79
+            elif (self.beta != other.beta):
+                print(80)
+                return 80
+            elif (self.tolerance != other.tolerance):
+                print(81)
+                return 81
+            elif (self.maxiter != other.maxiter):
+                print(82)
+                return 82
 
         # All equal
         return 0
@@ -856,6 +871,12 @@ class sim:
                     self.free_slip_top =\
                             numpy.fromfile(fh, dtype=numpy.int32, count=1)
 
+                self.gamma = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                self.theta = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                self.beta  = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                self.tolerance =\
+                        numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                self.maxiter = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
 
         finally:
             if fh is not None:
@@ -993,6 +1014,12 @@ class sim:
                 fh.write(self.bc_top.astype(numpy.int32))
                 fh.write(self.free_slip_bot.astype(numpy.int32))
                 fh.write(self.free_slip_top.astype(numpy.int32))
+
+                fh.write(self.gamma.astype(numpy.float64))
+                fh.write(self.theta.astype(numpy.float64))
+                fh.write(self.beta.astype(numpy.float64))
+                fh.write(self.tolerance.astype(numpy.float64))
+                fh.write(self.maxiter.astype(numpy.uint32))
 
         finally:
             if fh is not None:

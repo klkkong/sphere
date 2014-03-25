@@ -132,8 +132,12 @@ struct NavierStokes {
     int     bc_top;         // 0: Dirichlet, 1: Neumann
     int     free_slip_bot;  // 0: no, 1: yes
     int     free_slip_top;  // 0: no, 1: yes
+    Float   gamma;          // Solver parameter: Smoothing
+    Float   theta;          // Solver parameter: Under-relaxation
+    Float   beta;           // Solver parameter: Solution method
+    Float   tolerance;      // Solver parameter: Max residual tolerance
+    unsigned int maxiter;   // Solver parameter: Max iterations to perform
 };
-
 
 // Image structure
 struct rgba {
