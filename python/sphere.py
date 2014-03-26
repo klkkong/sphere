@@ -1584,6 +1584,12 @@ class sim:
         '''
         self.contactmodel[0] = contactmodel
 
+    def normalBoundariesXY(self):
+        '''
+        Set the x and y boundary conditions to be static walls.
+        '''
+        self.periodic[0] = 0
+
     def periodicBoundariesXY(self):
         '''
         Set the x and y boundary conditions to be periodic.
