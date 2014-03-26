@@ -2276,7 +2276,7 @@ class sim:
         :param mu: The fluid dynamic viscosity [kg/(m*s)]
         :type mu: float
         '''
-        self.mu = numpy.asarrau(mu)
+        self.mu = numpy.asarray(mu)
         self.p_f = numpy.ones((self.num[0], self.num[1], self.num[2]),
                 dtype=numpy.float64)
         self.v_f = numpy.zeros((self.num[0], self.num[1], self.num[2], self.nd),
