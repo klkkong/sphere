@@ -2267,7 +2267,7 @@ class sim:
         self.time_file_dt[0] = file_dt
         self.time_step_count[0] = 0
 
-    def initFluid(self, mu = 8.9e-4):
+    def initFluid(self, mu = 8.9e-4, rho = 1.0e3):
         '''
         Initialize the fluid arrays and the fluid viscosity. The default value
         of ``mu`` equals the dynamic viscosity of water at 25 degrees Celcius.
@@ -2275,8 +2275,12 @@ class sim:
         
         :param mu: The fluid dynamic viscosity [kg/(m*s)]
         :type mu: float
+        :param rho: The fluid density [kg/(m^3)]
+        :type rho: float
         '''
-        self.mu = numpy.asarray(mu)
+        self.mu = numpy.ones(1, dtype=numpy.float64) * mu
+        self.rho_f = numpy.ones(1, dtype=numpy.float64) * rho
+
         self.p_f = numpy.ones((self.num[0], self.num[1], self.num[2]),
                 dtype=numpy.float64)
         self.v_f = numpy.zeros((self.num[0], self.num[1], self.num[2], self.nd),
@@ -2285,6 +2289,21 @@ class sim:
                 dtype=numpy.float64)
         self.dphi = numpy.zeros((self.num[0], self.num[1], self.num[2]),
                 dtype=numpy.float64)
+
+        self.p_mod_A = numpy.zeros(1, dtype=numpy.float64)  # Amplitude [Pa]
+        self.p_mod_f = numpy.zeros(1, dtype=numpy.float64)  # Frequency [Hz]
+        self.p_mod_phi = numpy.zeros(1, dtype=numpy.float64) # Shift [rad]
+
+        self.bc_bot = numpy.zeros(1, dtype=numpy.int32)
+        self.bc_top = numpy.zeros(1, dtype=numpy.int32)
+        self.free_slip_bot = numpy.ones(1, dtype=numpy.int32)
+        self.free_slip_top = numpy.ones(1, dtype=numpy.int32)
+
+        self.gamma = numpy.array(0.0)
+        self.theta = numpy.array(1.0)
+        self.beta = numpy.array(0.0)
+        self.tolerance = numpy.array(1.0e-8)
+        self.maxiter = numpy.array(1e4)
 
     def defaultParams(self,
             mu_s = 0.4,
