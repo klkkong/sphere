@@ -1587,18 +1587,27 @@ class sim:
     def normalBoundariesXY(self):
         '''
         Set the x and y boundary conditions to be static walls.
+        
+        See also :func:`periodicBoundariesXY()` and
+        :func:`periodicBoundariesX()`
         '''
         self.periodic[0] = 0
 
     def periodicBoundariesXY(self):
         '''
         Set the x and y boundary conditions to be periodic.
+        
+        See also :func:`normalBoundariesXY()` and
+        :func:`periodicBoundariesX()`
         '''
         self.periodic[0] = 1
 
     def periodicBoundariesX(self):
         '''
         Set the x boundary conditions to be periodic.
+
+        See also :func:`normalBoundariesXY()` and
+        :func:`periodicBoundariesXY()`
         '''
         self.periodic[0] = 2
 
@@ -3743,6 +3752,9 @@ class sim:
 
         :param theta: The smoothing parameter value
         :type theta: float
+
+        Other solver parameter setting functions: :func:`setTheta()`,
+        :func:`setBeta()`, :func:`setTolerance()` and :func:`setMaxIterations()`
         '''
         self.gamma = numpy.asarray(gamma)
 
@@ -3759,6 +3771,9 @@ class sim:
 
         :param theta: The under-relaxation parameter value
         :type theta: float
+
+        Other solver parameter setting functions: :func:`setGamma()`,
+        :func:`setBeta()`, :func:`setTolerance()` and :func:`setMaxIterations()`
         '''
         self.theta = numpy.asarray(theta)
 
@@ -3774,6 +3789,10 @@ class sim:
         of 0 and a low tolerance criteria value.
 
         The default and recommended value is 0.0.
+
+        Other solver parameter setting functions: :func:`setGamma()`,
+        :func:`setTheta()`, :func:`setTolerance()` and
+        :func:`setMaxIterations()`
         '''
         self.beta = numpy.asarray(beta)
 
@@ -3788,6 +3807,10 @@ class sim:
         :param tolerance: The tolerance criteria for the maximal normalized
             residual
         :type tolerance: float
+
+        Other solver parameter setting functions: :func:`setGamma()`,
+        :func:`setTheta()`, :func:`setBeta()` and
+        :func:`setMaxIterations()`
         '''
         self.tolerance = numpy.asarray(tolerance)
 
@@ -3804,6 +3827,9 @@ class sim:
         :param maxiter: The maximum number of Jacobi iterations in the fluid
             solver
         :type maxiter: int
+
+        Other solver parameter setting functions: :func:`setGamma()`,
+        :func:`setTheta()`, :func:`setBeta()` and :func:`setTolerance()`
         '''
         self.maxiter = numpy.asarray(maxiter)
 

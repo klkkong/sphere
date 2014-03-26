@@ -847,18 +847,24 @@ included.</p>
 <dt id="sphere.sim.normalBoundariesXY">
 <tt class="descname">normalBoundariesXY</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.normalBoundariesXY" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the x and y boundary conditions to be static walls.</p>
+<p>See also <a class="reference internal" href="#sphere.sim.periodicBoundariesXY" title="sphere.sim.periodicBoundariesXY"><tt class="xref py py-func docutils literal"><span class="pre">periodicBoundariesXY()</span></tt></a> and
+<a class="reference internal" href="#sphere.sim.periodicBoundariesX" title="sphere.sim.periodicBoundariesX"><tt class="xref py py-func docutils literal"><span class="pre">periodicBoundariesX()</span></tt></a></p>
 </dd></dl>
 
 <dl class="method">
 <dt id="sphere.sim.periodicBoundariesX">
 <tt class="descname">periodicBoundariesX</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.periodicBoundariesX" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the x boundary conditions to be periodic.</p>
+<p>See also <a class="reference internal" href="#sphere.sim.normalBoundariesXY" title="sphere.sim.normalBoundariesXY"><tt class="xref py py-func docutils literal"><span class="pre">normalBoundariesXY()</span></tt></a> and
+<a class="reference internal" href="#sphere.sim.periodicBoundariesXY" title="sphere.sim.periodicBoundariesXY"><tt class="xref py py-func docutils literal"><span class="pre">periodicBoundariesXY()</span></tt></a></p>
 </dd></dl>
 
 <dl class="method">
 <dt id="sphere.sim.periodicBoundariesXY">
 <tt class="descname">periodicBoundariesXY</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.periodicBoundariesXY" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the x and y boundary conditions to be periodic.</p>
+<p>See also <a class="reference internal" href="#sphere.sim.normalBoundariesXY" title="sphere.sim.normalBoundariesXY"><tt class="xref py py-func docutils literal"><span class="pre">normalBoundariesXY()</span></tt></a> and
+<a class="reference internal" href="#sphere.sim.periodicBoundariesX" title="sphere.sim.periodicBoundariesX"><tt class="xref py py-func docutils literal"><span class="pre">periodicBoundariesX()</span></tt></a></p>
 </dd></dl>
 
 <dl class="method">
@@ -1228,6 +1234,9 @@ velocity prediction (Chorin&#8217;s original projection method, see Chorin
 best results precision and performance-wise are obtained by using a beta
 of 0 and a low tolerance criteria value.</p>
 <p>The default and recommended value is 0.0.</p>
+<p>Other solver parameter setting functions: <a class="reference internal" href="#sphere.sim.setGamma" title="sphere.sim.setGamma"><tt class="xref py py-func docutils literal"><span class="pre">setGamma()</span></tt></a>,
+<a class="reference internal" href="#sphere.sim.setTheta" title="sphere.sim.setTheta"><tt class="xref py py-func docutils literal"><span class="pre">setTheta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setTolerance" title="sphere.sim.setTolerance"><tt class="xref py py-func docutils literal"><span class="pre">setTolerance()</span></tt></a> and
+<a class="reference internal" href="#sphere.sim.setMaxIterations" title="sphere.sim.setMaxIterations"><tt class="xref py py-func docutils literal"><span class="pre">setMaxIterations()</span></tt></a></p>
 </dd></dl>
 
 <dl class="method">
@@ -1268,6 +1277,8 @@ more averaging is introduced. A value of 0.0 disables all averaging.</p>
 </tr>
 </tbody>
 </table>
+<p>Other solver parameter setting functions: <a class="reference internal" href="#sphere.sim.setTheta" title="sphere.sim.setTheta"><tt class="xref py py-func docutils literal"><span class="pre">setTheta()</span></tt></a>,
+<a class="reference internal" href="#sphere.sim.setBeta" title="sphere.sim.setBeta"><tt class="xref py py-func docutils literal"><span class="pre">setBeta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setTolerance" title="sphere.sim.setTolerance"><tt class="xref py py-func docutils literal"><span class="pre">setTolerance()</span></tt></a> and <a class="reference internal" href="#sphere.sim.setMaxIterations" title="sphere.sim.setMaxIterations"><tt class="xref py py-func docutils literal"><span class="pre">setMaxIterations()</span></tt></a></p>
 </dd></dl>
 
 <dl class="method">
@@ -1288,6 +1299,8 @@ solver</td>
 </tr>
 </tbody>
 </table>
+<p>Other solver parameter setting functions: <a class="reference internal" href="#sphere.sim.setGamma" title="sphere.sim.setGamma"><tt class="xref py py-func docutils literal"><span class="pre">setGamma()</span></tt></a>,
+<a class="reference internal" href="#sphere.sim.setTheta" title="sphere.sim.setTheta"><tt class="xref py py-func docutils literal"><span class="pre">setTheta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setBeta" title="sphere.sim.setBeta"><tt class="xref py py-func docutils literal"><span class="pre">setBeta()</span></tt></a> and <a class="reference internal" href="#sphere.sim.setTolerance" title="sphere.sim.setTolerance"><tt class="xref py py-func docutils literal"><span class="pre">setTolerance()</span></tt></a></p>
 </dd></dl>
 
 <dl class="method">
@@ -1308,6 +1321,8 @@ instabilities may be avoided with lower values.</p>
 </tr>
 </tbody>
 </table>
+<p>Other solver parameter setting functions: <a class="reference internal" href="#sphere.sim.setGamma" title="sphere.sim.setGamma"><tt class="xref py py-func docutils literal"><span class="pre">setGamma()</span></tt></a>,
+<a class="reference internal" href="#sphere.sim.setBeta" title="sphere.sim.setBeta"><tt class="xref py py-func docutils literal"><span class="pre">setBeta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setTolerance" title="sphere.sim.setTolerance"><tt class="xref py py-func docutils literal"><span class="pre">setTolerance()</span></tt></a> and <a class="reference internal" href="#sphere.sim.setMaxIterations" title="sphere.sim.setMaxIterations"><tt class="xref py py-func docutils literal"><span class="pre">setMaxIterations()</span></tt></a></p>
 </dd></dl>
 
 <dl class="method">
@@ -1326,6 +1341,9 @@ residual</td>
 </tr>
 </tbody>
 </table>
+<p>Other solver parameter setting functions: <a class="reference internal" href="#sphere.sim.setGamma" title="sphere.sim.setGamma"><tt class="xref py py-func docutils literal"><span class="pre">setGamma()</span></tt></a>,
+<a class="reference internal" href="#sphere.sim.setTheta" title="sphere.sim.setTheta"><tt class="xref py py-func docutils literal"><span class="pre">setTheta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setBeta" title="sphere.sim.setBeta"><tt class="xref py py-func docutils literal"><span class="pre">setBeta()</span></tt></a> and
+<a class="reference internal" href="#sphere.sim.setMaxIterations" title="sphere.sim.setMaxIterations"><tt class="xref py py-func docutils literal"><span class="pre">setMaxIterations()</span></tt></a></p>
 </dd></dl>
 
 <dl class="method">
