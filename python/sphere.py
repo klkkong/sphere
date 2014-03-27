@@ -1717,6 +1717,7 @@ class sim:
         from the particle boundaries.
         *Important*: The particle radii have to be set beforehand if the cell
         width isn't specified by `dx`.
+
         :param dx: The cell width in any direction. If the default value is used
             (-1), the cell width is calculated to fit the largest particle.
         :type dx: float
@@ -2267,7 +2268,8 @@ class sim:
         self.time_file_dt[0] = file_dt
         self.time_step_count[0] = 0
 
-    def initFluid(self, mu = 8.9e-4, rho = 1.0e3):
+    def initFluid(self, mu = 8.9e-4, rho = 1.0e3, p = 1.0,
+            hydrostatic = True):
         '''
         Initialize the fluid arrays and the fluid viscosity. The default value
         of ``mu`` equals the dynamic viscosity of water at 25 degrees Celcius.
@@ -2277,12 +2279,28 @@ class sim:
         :type mu: float
         :param rho: The fluid density [kg/(m^3)]
         :type rho: float
+        :param p: The hydraulic pressure to initialize the cells to. If the
+            parameter `hydrostatic` is set to `True`, this value will apply to
+            the fluid cells at the top
+        :param hydrostatic: Initialize the fluid pressures to the hydrostatic
+            pressure distribution. A pressure gradient with depth is only
+            created if a gravitational acceleration along :math:`z` previously
+            has been specified
+        :type hydrostatic: bool
         '''
         self.mu = numpy.ones(1, dtype=numpy.float64) * mu
         self.rho_f = numpy.ones(1, dtype=numpy.float64) * rho
 
         self.p_f = numpy.ones((self.num[0], self.num[1], self.num[2]),
-                dtype=numpy.float64)
+                dtype=numpy.float64) * p
+
+        if (hydrostatic == True):
+            dz = self.L[2]/self.num[2]
+            for iz in range(self.num[2]):
+                z = dz*iz + 0.5*dz
+                depth = self.L[2] - z
+                self.p_f[:,:,iz] = p + depth * rho * -self.g[2]
+
         self.v_f = numpy.zeros((self.num[0], self.num[1], self.num[2], self.nd),
                 dtype=numpy.float64)
         self.phi = numpy.ones((self.num[0], self.num[1], self.num[2]),
