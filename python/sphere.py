@@ -2296,10 +2296,10 @@ class sim:
 
         if (hydrostatic == True):
             dz = self.L[2]/self.num[2]
-            for iz in range(self.num[2]):
+            for iz in range(self.num[2]-1):
                 z = dz*iz + 0.5*dz
                 depth = self.L[2] - z
-                self.p_f[:,:,iz] = p + depth * rho * -self.g[2]
+                self.p_f[:,:,iz] = p + (depth-dz) * rho * -self.g[2]
 
         self.v_f = numpy.zeros((self.num[0], self.num[1], self.num[2], self.nd),
                 dtype=numpy.float64)
