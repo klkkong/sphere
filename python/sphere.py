@@ -2019,9 +2019,14 @@ class sim:
         self.w_m = numpy.zeros(1)
         self.adjustWall(idx=0, adjust = z_adjust)
 
-    def adjustWall(self, idx, adjust = 1.1):
+    def adjustWall(self, idx, adjust = 1.1, wall_mass_factor = 1.0):
         '''
-        Adjust grid and dynamic wall to max. particle position
+        Adjust grid and dynamic wall to max. particle position. The wall
+        thickness will by standard equal the maximum particle diameter. The
+        density equals the particle density, and the wall size is equal to the
+        width and depth of the simulation domain (`self.L[0]` and `self.L[1]`).
+        The total wall mass can be linearly scaled by the `wall_mass_factor`
+        parameter.
 
         :param: idx: The wall to adjust. 0 = +z, upper wall (default), 1 = -x,
             left wall, 2 = +x, right wall, 3 = -y, front wall, 4 = +y, back
@@ -2030,6 +2035,7 @@ class sim:
         :param z_adjust: Increase the world and grid size by this amount to
             allow for wall movement.
         :type z_adjust: float
+        :param 
         '''
 
         if (idx == 0):
@@ -2054,9 +2060,9 @@ class sim:
             self.w_x[idx] = numpy.array([xmax])
         else:
             self.w_x[idx] = numpy.array([xmin])
-        self.w_m[idx] = numpy.array([self.rho[0]*self.np*math.pi \
-                *(cellsize/2.0)**3])
-
+        #self.w_m[idx] = numpy.array([self.rho[0]*self.np*math.pi \
+        #        *(cellsize/2.0)**3])
+        self.w_m[idx] = numpy.array([self.rho*self.L[0]*self.L[1]*cellsize])
 
     def consolidate(self, normal_stress = 10e3):
         '''
