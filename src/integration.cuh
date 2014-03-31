@@ -357,6 +357,7 @@ __global__ void integrateWalls(
 #endif
 
             // Store data in global memory
+            __syncthreads();
             dev_walls_nx[idx]   = w_nx;
             dev_walls_mvfd[idx] = w_mvfd;
             dev_walls_acc[idx] = acc;
