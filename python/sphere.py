@@ -4191,7 +4191,7 @@ class sim:
 
                 # dilation in number of mean particle diameters
                 d_bar = numpy.mean(self.radius)*2.0
-                dilation[i] = (sb.w_x[0] - w_x0)/d_var
+                dilation[i] = (sb.w_x[0] - w_x0)/d_bar
 
                 # Test if this was the max. shear stress
                 if (tau[i] > tau_u):
