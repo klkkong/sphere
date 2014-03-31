@@ -2142,6 +2142,8 @@ class sim:
         :type shear_strain_rate: float
         '''
 
+        self.nw[0] = 1
+
         # Find lowest and heighest point
         z_min = numpy.min(self.x[:,2] - self.radius)
         z_max = numpy.max(self.x[:,2] + self.radius)
