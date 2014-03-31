@@ -2087,7 +2087,7 @@ class sim:
         # Adjust grid and placement of upper wall
         self.adjustUpperWall()
 
-        # Set the top wall BC to a value of deviatoric stress
+        # Set the top wall BC to a value of normal stress
         self.wmode = numpy.array([1])
         self.w_devs = numpy.ones(1) * normal_stress
 
@@ -2168,6 +2168,7 @@ class sim:
 
         # Adjust grid and placement of upper wall
         self.adjustUpperWall()
+        self.wmode = numpy.array([1])
 
         # Fix horizontal velocity to 0.0 of lowermost particles
         d_max_below = numpy.max(self.radius[numpy.nonzero(self.x[:,2] <
