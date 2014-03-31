@@ -2167,7 +2167,6 @@ class sim:
         self.zeroKinematics()
 
         # Adjust grid and placement of upper wall
-        self.adjustUpperWall()
         self.wmode = numpy.array([1])
 
         # Fix horizontal velocity to 0.0 of lowermost particles
