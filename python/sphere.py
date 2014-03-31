@@ -4191,6 +4191,9 @@ class sim:
 
                 # dilation in number of mean particle diameters
                 d_bar = numpy.mean(self.radius)*2.0
+                if numpy.isnan(d_bar):
+                    raise Exception("Error, d_bar is NaN. Please check that the"
+                            + " radii are initialized.")
                 dilation[i] = (sb.w_x[0] - w_x0)/d_bar
 
                 # Test if this was the max. shear stress
@@ -4218,7 +4221,8 @@ class sim:
                 ax2 = plt.subplot2grid((2,1),(1,0))
                 ax2.set_xlabel('Shear strain [-]')
                 #ax2.set_ylabel('Dilation [m]')
-                ax2.set_ylabel('Dilation [%]')
+                #ax2.set_ylabel('Dilation [%]')
+                ax2.set_ylabel('Dilation, $\Delta h/(2\\bar{r})$ [m]')
                 ax2.plot(xdisp/w_x0, dilation, '+-')
                 ax2.grid()
 
