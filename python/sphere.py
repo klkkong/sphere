@@ -4182,8 +4182,16 @@ class sim:
                     xdisp[i]    = xdisp[i-1] + sb.time_file_dt[0] * shearvel
                 sigma_eff[i] = sb.w_force[0] / A
                 sigma_def[i] = sb.w_devs[0]
-                #dilation[i] = sb.w_x[0] - w_x0   # dilation in meters
-                dilation[i] = (sb.w_x[0] - w_x0)/w_x0 * 100.0 # dilation in percent
+
+                # dilation in meters
+                #dilation[i] = sb.w_x[0] - w_x0
+
+                # dilation in percent
+                #dilation[i] = (sb.w_x[0] - w_x0)/w_x0 * 100.0 # dilation in percent
+
+                # dilation in number of mean particle diameters
+                d_bar = numpy.mean(self.radius)*2.0
+                dilation[i] = (sb.w_x[0] - w_x0)/d_var
 
                 # Test if this was the max. shear stress
                 if (tau[i] > tau_u):
