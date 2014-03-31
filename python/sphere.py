@@ -2064,6 +2064,7 @@ class sim:
         #self.w_m[idx] = numpy.array([self.rho[0]*self.np*math.pi \
         #        *(cellsize/2.0)**3])
         self.w_m[idx] = numpy.array([self.rho*self.L[0]*self.L[1]*d_max])
+        print(self.w_m[idx])
 
     def consolidate(self, normal_stress = 10e3):
         '''
@@ -2164,6 +2165,9 @@ class sim:
 
         # zero kinematics
         self.zeroKinematics()
+
+        # Adjust grid and placement of upper wall
+        self.adjustUpperWall()
 
         # Fix horizontal velocity to 0.0 of lowermost particles
         d_max_below = numpy.max(self.radius[numpy.nonzero(self.x[:,2] <
