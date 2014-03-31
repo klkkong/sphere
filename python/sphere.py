@@ -4197,7 +4197,7 @@ class sim:
                         tau_u, tau_u_shearstrain)
                 fig.text(0.5, 0.03, shearinfo, horizontalalignment='center',
                          fontproperties=FontProperties(size=14))
-                ax1 = plt.subplot2grid((1, 2), (0, 0))
+                ax1 = plt.subplot2grid((2,1), (0,0))
                 ax1.set_xlabel('Shear strain [-]')
                 ax1.set_ylabel('Stress [Pa]')
                 ax1.plot(xdisp / w_x0, sigma_eff, '+-g', label="$\sigma'$")
@@ -4207,7 +4207,7 @@ class sim:
                 ax1.grid()
 
                 # Plot dilation
-                ax2 = plt.subplot2grid((1,2),(0,1))
+                ax2 = plt.subplot2grid((2,1),(1,0))
                 ax2.set_xlabel('Shear strain [-]')
                 ax2.set_ylabel('Dilation [m]')
                 ax2.plot(xdisp/w_x0, dilation, '+-')
