@@ -4182,8 +4182,8 @@ class sim:
                     xdisp[i]    = xdisp[i-1] + sb.time_file_dt[0] * shearvel
                 sigma_eff[i] = sb.w_force[0] / A
                 sigma_def[i] = sb.w_devs[0]
-                dilation[i] = sb.w_x[0] - w_x0   # dilation in meters
-                #dilation[i] = (sb.w_x[0] - w_x0)/w_x0 * 100.0 # dilation in percent
+                #dilation[i] = sb.w_x[0] - w_x0   # dilation in meters
+                dilation[i] = (sb.w_x[0] - w_x0)/w_x0 * 100.0 # dilation in percent
 
                 # Test if this was the max. shear stress
                 if (tau[i] > tau_u):
@@ -4209,7 +4209,8 @@ class sim:
                 # Plot dilation
                 ax2 = plt.subplot2grid((2,1),(1,0))
                 ax2.set_xlabel('Shear strain [-]')
-                ax2.set_ylabel('Dilation [m]')
+                #ax2.set_ylabel('Dilation [m]')
+                ax2.set_ylabel('Dilation [%]')
                 ax2.plot(xdisp/w_x0, dilation, '+-')
                 ax2.grid()
 
