@@ -2051,6 +2051,7 @@ class sim:
         xmax = numpy.max(self.x[:,dim] + self.radius)
 
         cellsize = self.L[0] / self.num[0]
+        d_max = numpy.max(self.radius)*2.0
 
         self.num[dim] = numpy.ceil(((xmax-xmin)*adjust + xmin)/cellsize)
         self.L[dim] = (xmax-xmin)*adjust + xmin
@@ -2062,7 +2063,7 @@ class sim:
             self.w_x[idx] = numpy.array([xmin])
         #self.w_m[idx] = numpy.array([self.rho[0]*self.np*math.pi \
         #        *(cellsize/2.0)**3])
-        self.w_m[idx] = numpy.array([self.rho*self.L[0]*self.L[1]*cellsize])
+        self.w_m[idx] = numpy.array([self.rho*self.L[0]*self.L[1]*d_max])
 
     def consolidate(self, normal_stress = 10e3):
         '''
