@@ -1004,6 +1004,13 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
             dev_ns_dphi[cellidx] = dphi;
             dev_ns_vp_avg[cellidx] = v_avg;
             dev_ns_d_avg[cellidx]  = d_avg;
+
+#ifdef CHECK_NS_FINITE
+            checkFinite("phi", x, y, z, phi);
+            checkFinite("dphi", x, y, z, dphi);
+            checkFinite("v_avg", x, y, z, v_avg);
+            checkFinite("d_avg", x, y, z, d_avg);
+#endif
         } else {
 
             __syncthreads();
@@ -1056,6 +1063,11 @@ __global__ void setUpperPressureNS(
         dev_ns_epsilon[cellidx] = epsilon;
         dev_ns_epsilon_new[cellidx] = epsilon;
         dev_ns_p[cellidx] = new_pressure;
+
+#ifdef CHECK_NS_FINITE
+        checkFinite("epsilon", x, y, z, epsilon);
+        checkFinite("new_pressure", x, y, z, new_pressure);
+#endif
     }
 }
 
@@ -1209,6 +1221,10 @@ __global__ void findNSgradientsDev(
         // Write gradient
         __syncthreads();
         dev_vectorfield[cellidx] = grad;
+
+#ifdef CHECK_NS_FINITE
+        checkFinite("grad", x, y, z, grad);
+#endif
     }
 }
 
@@ -1249,6 +1265,15 @@ __global__ void findvvOuterProdNS(
         dev_ns_v_prod[cellidx6+3] = v.y*v.y;
         dev_ns_v_prod[cellidx6+4] = v.y*v.z;
         dev_ns_v_prod[cellidx6+5] = v.z*v.z;
+
+#ifdef CHECK_NS_FINITE
+        checkFinite("v_prod[0]", x, y, z, v.x*v.x);
+        checkFinite("v_prod[1]", x, y, z, v.x*v.y);
+        checkFinite("v_prod[2]", x, y, z, v.x*v.z);
+        checkFinite("v_prod[3]", x, y, z, v.y*v.y);
+        checkFinite("v_prod[4]", x, y, z, v.y*v.z);
+        checkFinite("v_prod[5]", x, y, z, v.z*v.z);
+#endif
     }
 }
 
@@ -1333,6 +1358,15 @@ __global__ void findNSstressTensor(
         dev_ns_tau[cellidx6+3] = tau_yy;
         dev_ns_tau[cellidx6+4] = tau_yz;
         dev_ns_tau[cellidx6+5] = tau_zz;
+
+#ifdef CHECK_NS_FINITE
+        checkFinite("tau_xx", x, y, z, tau_xx);
+        checkFinite("tau_xy", x, y, z, tau_xy);
+        checkFinite("tau_xz", x, y, z, tau_xz);
+        checkFinite("tau_yy", x, y, z, tau_yy);
+        checkFinite("tau_yz", x, y, z, tau_yz);
+        checkFinite("tau_zz", x, y, z, tau_zz);
+#endif
     }
 }
 
@@ -1398,6 +1432,10 @@ __global__ void findNSdivphiviv(
         // Write divergence
         __syncthreads();
         dev_ns_div_phi_vi_v[cellidx] = div_phi_vi_v;
+
+#ifdef CHECK_NS_FINITE
+        checkFinite("div_phi_vi_v", x, y, z, div_phi_vi_v);
+#endif
     }
 }
 
@@ -1498,6 +1536,10 @@ __global__ void findNSdivphitau(
         // Write divergence
         __syncthreads();
         dev_ns_div_phi_tau[cellidx] = div_phi_tau;
+
+#ifdef CHECK_NS_FINITE
+        checkFinite("div_phi_tau", x, y, z, div_phi_tau);
+#endif
     }
 }
 
@@ -1581,6 +1623,10 @@ __global__ void findNSdivphivv(
         // Write divergence
         __syncthreads();
         dev_ns_div_phi_v_v[cellidx] = div;
+
+#ifdef CHECK_NS_FINITE
+        checkFinite("div_phi_v_v", x, y, z, div);
+#endif
     }
 }
 
