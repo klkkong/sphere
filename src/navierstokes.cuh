@@ -1018,13 +1018,8 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
             //dev_ns_phi[cellidx]  = 1.0;
             //dev_ns_dphi[cellidx] = 0.0;
 
-            if (x == nx/2 && y == ny/2 && z == nz/2 && iteration == 20) {
-                dev_ns_phi[cellidx]  = 0.9;
-                dev_ns_dphi[cellidx] = -0.1;
-            } else {
-                dev_ns_phi[cellidx]  = 1.0;
-                dev_ns_dphi[cellidx] = 0.0;
-            }
+            dev_ns_phi[cellidx]  = 1.0;
+            dev_ns_dphi[cellidx] = 0.0;
 
             dev_ns_vp_avg[cellidx] = MAKE_FLOAT3(0.0, 0.0, 0.0);
             dev_ns_d_avg[cellidx]  = 0.0;
@@ -2427,7 +2422,8 @@ __global__ void applyParticleInteractionForce(
         }
     }
 }
- 
+
+// Find the effective pressure that the top wall should exert
 
 // Print final heads and free memory
 void DEM::endNSdev()
