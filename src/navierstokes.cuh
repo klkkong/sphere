@@ -23,6 +23,32 @@ __inline__ __device__ Float hmean(Float a, Float b) {
     return (2.0*a*b)/(a+b);
 }
 
+// Overloaded helper function for checking whether a value is NaN or Inf
+__device__ void checkFinite(
+        const char* desc,
+        const unsigned int x,
+        const unsigned int y,
+        const unsigned int z,
+        const Float3 v)
+{
+        __syncthreads();
+        if (!isfinite(v.x) || !isfinite(v.y)  || !isfinite(v.z))
+            printf("\n[%d,%d,%d]: Error: %s = %f, %f, %f\n",
+                    x, y, z, desc, v.x, v.y, v.z);
+}
+
+__device__ void checkFinite(
+        const char* desc,
+        const unsigned int x,
+        const unsigned int y,
+        const unsigned int z,
+        const Float s)
+{
+        __syncthreads();
+        if (!isfinite(s))
+            printf("\n[%d,%d,%d]: Error: %s = %f, %f, %f\n", x, y, z, desc, s);
+}
+
 // Initialize memory
 void DEM::initNSmemDev(void)
 {
@@ -979,10 +1005,20 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
             dev_ns_vp_avg[cellidx] = v_avg;
             dev_ns_d_avg[cellidx]  = d_avg;
         } else {
+
             __syncthreads();
             const unsigned int cellidx = idx(x,y,z);
-            dev_ns_phi[cellidx]  = 1.0;
-            dev_ns_dphi[cellidx] = 0.0;
+            //dev_ns_phi[cellidx]  = 1.0;
+            //dev_ns_dphi[cellidx] = 0.0;
+
+            if (x == nx/2 && y == ny/2 && z == nz/2 && iteration == 20) {
+                dev_ns_phi[cellidx]  = 0.9;
+                dev_ns_dphi[cellidx] = -0.1;
+            } else {
+                dev_ns_phi[cellidx]  = 1.0;
+                dev_ns_dphi[cellidx] = 0.0;
+            }
+
             dev_ns_vp_avg[cellidx] = MAKE_FLOAT3(0.0, 0.0, 0.0);
             dev_ns_d_avg[cellidx]  = 0.0;
         }
@@ -1653,6 +1689,10 @@ __global__ void findPredNSvelocities(
         // Save the predicted velocity
         __syncthreads();
         dev_ns_v_p[cellidx] = v_p;
+
+#ifdef CHECK_NS_FINITE
+        checkFinite("v_p", x, y, z, v_p);
+#endif
     }
 }
 
@@ -1784,6 +1824,10 @@ __global__ void findNSforcing(
         // Save forcing function value
         __syncthreads();
         dev_ns_f[cellidx] = f;
+
+#ifdef CHECK_NS_FINITE
+        checkFinite("f", x, y, z, f);
+#endif
     }
 }
 
@@ -1843,6 +1887,10 @@ __global__ void smoothing(
         /*printf("%d,%d,%d\te_xn = %f, e_xp = %f, e_yn = %f, e_yp = %f,"
           " e_zn = %f, e_zp = %f\n", x,y,z, e_xn, e_xp,
           e_yn, e_yp, e_zn, e_zp);*/
+
+#ifdef CHECK_NS_FINITE
+        checkFinite("e_smooth", x, y, z, e_smooth);
+#endif
     }
 }
 
@@ -1936,6 +1984,11 @@ __global__ void jacobiIterationNS(
         __syncthreads();
         dev_ns_epsilon_new[cellidx] = e_relax;
         dev_ns_norm[cellidx] = res_norm;
+
+#ifdef CHECK_NS_FINITE
+        checkFinite("e_relax", x, y, z, e_relax);
+        checkFinite("res_norm", x, y, z, res_norm);
+#endif
     }
 }
 
@@ -2017,6 +2070,10 @@ __global__ void findNormalizedResiduals(
 
         __syncthreads();
         dev_ns_norm[cellidx] = res_norm;
+
+#ifdef CHECK_NS_FINITE
+        checkFinite("res_norm", x, y, z, res_norm);
+#endif
     }
 }
 
@@ -2089,6 +2146,11 @@ __global__ void updateNSvelocityPressure(
         dev_ns_p[cellidx] = p;
         //dev_ns_p[cellidx] = epsilon;
         dev_ns_v[cellidx] = v;
+
+#ifdef CHECK_NS_FINITE
+        checkFinite("p", x, y, z, p);
+        checkFinite("v", x, y, z, v);
+#endif
     }
 }
 
@@ -2154,6 +2216,11 @@ __global__ void findAvgParticleVelocityDiameter(
         __syncthreads();
         dev_ns_vp_avg[cellidx] = v_avg;
         dev_ns_d_avg[cellidx]  = d_avg;
+
+#ifdef CHECK_NS_FINITE
+        checkFinite("v_avg", x, y, z, v_avg);
+        checkFinite("d_avg", x, y, z, d_avg);
+#endif
     }
 }
 
@@ -2239,6 +2306,10 @@ __global__ void findInteractionForce(
 
         __syncthreads();
         dev_ns_fi[cellidx] = fi;
+
+#ifdef CHECK_NS_FINITE
+        checkFinite("fi", x, y, z, fi);
+#endif
     }
 }
 
@@ -2302,6 +2373,10 @@ __global__ void applyParticleInteractionForce(
                 // report to stdout
                 //printf("%d,%d,%d\tapplying force (%f,%f,%f) to particle %d\n",
                         //x,y,z, fd.x, fd.y, fd.z, origidx);
+
+#ifdef CHECK_NS_FINITE
+                checkFinite("fd", x, y, z, fd);
+#endif
             }
         }
     }
