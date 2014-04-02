@@ -87,11 +87,21 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         // velocity. In that case, zero the horizontal acceleration and disable
         // gravity to counteract segregation. Particles may move in the
         // z-dimension, to allow for dilation.
-        if (vel.w > 0.0f) {
+        if (vel.w > 0.0001) {
 
             acc.x = 0.0;
             acc.y = 0.0;
             acc.z -= devC_params.g[2];
+
+            // Zero the angular acceleration
+            angacc = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
+
+        }
+
+        if (vel.w < 0.0001) {
+            acc.x = 0.0;
+            acc.y = 0.0;
+            acc.z = 0.0;
 
             // Zero the angular acceleration
             angacc = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);

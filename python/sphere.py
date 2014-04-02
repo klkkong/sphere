@@ -602,7 +602,9 @@ class sim:
         :type radius: float
         :param vel: The particle linear velocity (default = [0,0,0])
         :type vel: numpy.array
-        :param fixvel: Fix horizontal linear velocity (0: No, 1: Yes, default=0)
+        :param fixvel: 0: Do not fix particle velocity (default), 1: Fix
+            horizontal linear velocity, -1: Fix horizontal and vertical linear
+            velocity
         :type fixvel: float
         :param angpos: The particle angular position (default = [0,0,0])
         :type angpos: numpy.array

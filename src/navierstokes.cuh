@@ -2423,8 +2423,6 @@ __global__ void applyParticleInteractionForce(
     }
 }
 
-// Find the effective pressure that the top wall should exert
-
 // Print final heads and free memory
 void DEM::endNSdev()
 {
