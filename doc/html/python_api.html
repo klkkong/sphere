@@ -339,7 +339,9 @@ parameters are the position (x) and the radius (radius).</p>
 <li><strong>x</strong> (<em>numpy.array</em>) &#8211; A vector pointing to the particle center coordinate.</li>
 <li><strong>radius</strong> (<em>float</em>) &#8211; The particle radius</li>
 <li><strong>vel</strong> (<em>numpy.array</em>) &#8211; The particle linear velocity (default = [0,0,0])</li>
-<li><strong>fixvel</strong> (<em>float</em>) &#8211; Fix horizontal linear velocity (0: No, 1: Yes, default=0)</li>
+<li><strong>fixvel</strong> (<em>float</em>) &#8211; 0: Do not fix particle velocity (default), 1: Fix
+horizontal linear velocity, -1: Fix horizontal and vertical linear
+velocity</li>
 <li><strong>angpos</strong> (<em>numpy.array</em>) &#8211; The particle angular position (default = [0,0,0])</li>
 <li><strong>angvel</strong> (<em>numpy.array</em>) &#8211; The particle angular velocity (default = [0,0,0])</li>
 <li><strong>torque</strong> (<em>numpy.array</em>) &#8211; The particle torque (default = [0,0,0])</li>
@@ -372,8 +374,13 @@ allow for wall movement.</td>
 
 <dl class="method">
 <dt id="sphere.sim.adjustWall">
-<tt class="descname">adjustWall</tt><big>(</big><em>idx</em>, <em>adjust=1.1</em><big>)</big><a class="headerlink" href="#sphere.sim.adjustWall" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adjust grid and dynamic wall to max. particle position</p>
+<tt class="descname">adjustWall</tt><big>(</big><em>idx</em>, <em>adjust=1.1</em>, <em>wall_mass_factor=1.0</em><big>)</big><a class="headerlink" href="#sphere.sim.adjustWall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adjust grid and dynamic wall to max. particle position. The wall
+thickness will by standard equal the maximum particle diameter. The
+density equals the particle density, and the wall size is equal to the
+width and depth of the simulation domain (<cite>self.L[0]</cite> and <cite>self.L[1]</cite>).
+The total wall mass can be linearly scaled by the <cite>wall_mass_factor</cite>
+parameter.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -387,6 +394,7 @@ allow for wall movement.</td>
 </tr>
 </tbody>
 </table>
+<p>:param</p>
 </dd></dl>
 
 <dl class="method">
@@ -704,7 +712,7 @@ value is <tt class="docutils literal"><span class="pre">uni</span></tt>, which i
 
 <dl class="method">
 <dt id="sphere.sim.initFluid">
-<tt class="descname">initFluid</tt><big>(</big><em>mu=0.00089</em><big>)</big><a class="headerlink" href="#sphere.sim.initFluid" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">initFluid</tt><big>(</big><em>mu=0.00089</em>, <em>rho=1000.0</em>, <em>p=1.0</em>, <em>hydrostatic=True</em><big>)</big><a class="headerlink" href="#sphere.sim.initFluid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the fluid arrays and the fluid viscosity. The default value
 of <tt class="docutils literal"><span class="pre">mu</span></tt> equals the dynamic viscosity of water at 25 degrees Celcius.
 The value for water at 0 degrees Celcius is 17.87e-4 kg/(m*s).</p>
@@ -712,7 +720,18 @@ The value for water at 0 degrees Celcius is 17.87e-4 kg/(m*s).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mu</strong> (<em>float</em>) &#8211; The fluid dynamic viscosity [kg/(m*s)]</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>mu</strong> (<em>float</em>) &#8211; The fluid dynamic viscosity [kg/(m*s)]</li>
+<li><strong>rho</strong> (<em>float</em>) &#8211; The fluid density [kg/(m^3)]</li>
+<li><strong>p</strong> &#8211; The hydraulic pressure to initialize the cells to. If the
+parameter <cite>hydrostatic</cite> is set to <cite>True</cite>, this value will apply to
+the fluid cells at the top</li>
+<li><strong>hydrostatic</strong> (<em>bool</em>) &#8211; Initialize the fluid pressures to the hydrostatic
+pressure distribution. A pressure gradient with depth is only
+created if a gravitational acceleration along <img class="math" src="_images/math/b13f21416d84e13708696f34dea81026cda583c9.png" alt="z"/> previously
+has been specified</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -725,14 +744,14 @@ The value for water at 0 degrees Celcius is 17.87e-4 kg/(m*s).</p>
 The margin parameter adjusts the distance (in no. of max. radii)
 from the particle boundaries.
 <em>Important</em>: The particle radii have to be set beforehand if the cell
-width isn&#8217;t specified by <cite>dx</cite>.
-:param dx: The cell width in any direction. If the default value is used</p>
-<blockquote>
-<div>(-1), the cell width is calculated to fit the largest particle.</div></blockquote>
+width isn&#8217;t specified by <cite>dx</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dx</strong> (<em>float</em>) &#8211; The cell width in any direction. If the default value is used
+(-1), the cell width is calculated to fit the largest particle.</td>
+</tr>
 </tbody>
 </table>
 </dd></dl>
@@ -1580,6 +1599,30 @@ rendered beforehand using func:<cite>render()</cite>.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="sphere.sim.visualize">
+<tt class="descname">visualize</tt><big>(</big><em>method='energy'</em>, <em>savefig=True</em>, <em>outformat='png'</em><big>)</big><a class="headerlink" href="#sphere.sim.visualize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize output from the simulation, where the temporal progress is
+of interest. The output will be saved in the current folder with a name
+combining the simulation id of the simulation, and the visualization
+method.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>method</strong> (<em>str</em>) &#8211; The type of plot to render. Possible values are &#8216;energy&#8217;,
+&#8216;walls&#8217;, &#8216;triaxial&#8217; and &#8216;shear&#8217;</li>
+<li><strong>savefig</strong> (<em>bool</em>) &#8211; Save the image instead of showing it on screen</li>
+<li><strong>outformat</strong> &#8211; The output format of the plot data. This can be an
+image format, or in text (&#8216;txt&#8217;).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="sphere.sim.voidRatio">
 <tt class="descname">voidRatio</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.voidRatio" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the current void ratio</p>
@@ -1874,30 +1917,6 @@ rendered beforehand using func:<cite>render()</cite>.</p>
 <li><strong>qscale</strong> (<em>float</em>) &#8211; The output video quality, in ]0;1]</li>
 <li><strong>bitrate</strong> (<em>int</em>) &#8211; The bitrate to use in the output video</li>
 <li><strong>verbose</strong> (<em>bool</em>) &#8211; Show ffmpeg output</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="sphere.visualize">
-<tt class="descclassname">sphere.</tt><tt class="descname">visualize</tt><big>(</big><em>project</em>, <em>method='energy'</em>, <em>savefig=True</em>, <em>outformat='png'</em><big>)</big><a class="headerlink" href="#sphere.visualize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Visualize output from the target project, where the temporal progress is of
-interest. The output will be saved in the current folder with a name
-combining the simulation id of the project, and the visualization method.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>project</strong> (<em>str</em>) &#8211; The simulation id of the project to render</li>
-<li><strong>method</strong> (<em>str</em>) &#8211; The type of plot to render. Possible values are &#8216;energy&#8217;,
-&#8216;walls&#8217;, &#8216;triaxial&#8217; and &#8216;shear&#8217;</li>
-<li><strong>savefig</strong> (<em>bool</em>) &#8211; Save the image instead of showing it on screen</li>
-<li><strong>outformat</strong> &#8211; The output format of the plot data. This can be an image
-format, or in text (&#8216;txt&#8217;).</li>
 </ul>
 </td>
 </tr>
