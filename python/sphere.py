@@ -306,7 +306,7 @@ class sim:
 
             # Smoothing parameter, should be in the range [0.0;1.0[.
             # 0.0 = no smoothing.
-            self.gamma = numpy.array(0.0)
+            self.gamma = numpy.array(0.5)
 
             # Under-relaxation parameter, should be in the range ]0.0;1.0].
             # 1.0 = no under-relaxation
@@ -640,6 +640,26 @@ class sim:
         self.ev_dot = numpy.append(self.ev_dot, ev_dot)
         self.ev     = numpy.append(self.ev, ev)
         self.p      = numpy.append(self.p, p) 
+
+    def deleteAllParticles(self):
+        '''
+        Deletes all particles in the simulation object.
+        '''
+        self.np[0]   = 0
+        self.x       = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.radius  = numpy.ones(self.np, dtype=numpy.float64)
+        self.xysum   = numpy.zeros((self.np, 2), dtype=numpy.float64)
+        self.vel     = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.fixvel  = numpy.zeros(self.np, dtype=numpy.float64)
+        self.force   = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.angpos  = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.angvel  = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.torque  = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.es_dot  = numpy.zeros(self.np, dtype=numpy.float64)
+        self.es      = numpy.zeros(self.np, dtype=numpy.float64)
+        self.ev_dot  = numpy.zeros(self.np, dtype=numpy.float64)
+        self.ev      = numpy.zeros(self.np, dtype=numpy.float64)
+        self.p       = numpy.zeros(self.np, dtype=numpy.float64)
 
     def readbin(self, targetbin, verbose = True, bonds = True, devsmod = True,
             esysparticle = False):
@@ -2332,7 +2352,7 @@ class sim:
         self.free_slip_bot = numpy.ones(1, dtype=numpy.int32)
         self.free_slip_top = numpy.ones(1, dtype=numpy.int32)
 
-        self.gamma = numpy.array(0.0)
+        self.gamma = numpy.array(0.5)
         self.theta = numpy.array(1.0)
         self.beta = numpy.array(0.0)
         self.tolerance = numpy.array(1.0e-8)

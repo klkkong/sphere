@@ -106,7 +106,6 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
             angacc = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
         }
 
-
 #ifdef EULER
         // Forward Euler
         // Truncation error O(dt^2) for positions and velocities

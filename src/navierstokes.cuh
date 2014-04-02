@@ -998,7 +998,7 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
 
             // Save porosity, porosity change, average velocity and average diameter
             __syncthreads();
-            //phi = 1.0; dphi = 0.0; // disable porosity effects
+            phi = 0.5; dphi = 0.0; // disable porosity effects
             const unsigned int cellidx = idx(x,y,z);
             dev_ns_phi[cellidx]  = phi;
             dev_ns_dphi[cellidx] = dphi;
@@ -1700,11 +1700,11 @@ __global__ void findPredNSvelocities(
         // Calculate the predicted velocity
         Float3 v_p = v
             + pressure_term
-            + 1.0/devC_params.rho_f*div_phi_tau*devC_dt/phi
+            + 0.0*1.0/devC_params.rho_f*div_phi_tau*devC_dt/phi
             + devC_dt*(f_g) // uncomment this line to disable gravity
-            - devC_dt*(f_i)
-            - v*dphi/phi
-            - div_phi_vi_v*devC_dt/phi;
+            - 0.0*devC_dt*(f_i)
+            - 0.0*v*dphi/phi
+            - 0.0*div_phi_vi_v*devC_dt/phi;
 
         // Report velocity components to stdout for debugging
         /*const Float3 dv_pres = -ns.beta/devC_params.rho_f*grad_p*devC_dt/phi;
@@ -1806,9 +1806,9 @@ __global__ void findNSforcing(
             // Find forcing function coefficients
             //f1 = 0.0;
             f1 = div_v_p*devC_params.rho_f/devC_dt
-                + dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi)
-                + dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
-            f2 = grad_phi/phi;
+                + 0.0*dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi)
+                + 0.0*dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
+            f2 = 0.0*grad_phi/phi;
 
             // Report values terms in the forcing function for debugging
             /*
