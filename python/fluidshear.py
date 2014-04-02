@@ -7,7 +7,7 @@ sid = 'fluidshear'
 ## Initialization from loose packing to a gravitationally collapsed state
 ## without fluids
 sim = sphere.sim(sid + '-init', np = 2400, fluid = False)
-sim.cleanup()
+#sim.cleanup()
 sim.radius[:] = 0.05
 sim.initRandomGridPos(gridnum = [12, 12, 9000])
 sim.initTemporal(total = 5.0, file_dt = 0.05)
@@ -27,9 +27,6 @@ sim.run(dry=True)
 sim.run()
 sim.writeVTKall()
 sim.visualize('walls')
-
-import sys
-sys.exit()
 
 ## Shear with fluids
 sim.readlast()

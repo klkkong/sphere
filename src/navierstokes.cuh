@@ -998,8 +998,8 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
 
             // Save porosity, porosity change, average velocity and average diameter
             __syncthreads();
-            phi = 0.5; dphi = 0.0; // disable porosity effects
             const unsigned int cellidx = idx(x,y,z);
+            //phi = 0.5; dphi = 0.0; // disable porosity effects const unsigned int cellidx = idx(x,y,z);
             dev_ns_phi[cellidx]  = phi;
             dev_ns_dphi[cellidx] = dphi;
             dev_ns_vp_avg[cellidx] = v_avg;
@@ -1015,8 +1015,6 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
 
             __syncthreads();
             const unsigned int cellidx = idx(x,y,z);
-            //dev_ns_phi[cellidx]  = 1.0;
-            //dev_ns_dphi[cellidx] = 0.0;
 
             dev_ns_phi[cellidx]  = 1.0;
             dev_ns_dphi[cellidx] = 0.0;
@@ -1682,7 +1680,8 @@ __global__ void findPredNSvelocities(
         //const Float3 f_g = devC_params.rho_f*dx*dy*dz*phi*g;
         const Float3 f_g
             = MAKE_FLOAT3(devC_params.g[0], devC_params.g[1], devC_params.g[2])
-            * devC_params.rho_f * dx*dy*dz * phi;
+            * devC_params.rho_f * dx*dy*dz * 0.5;
+            //* devC_params.rho_f * dx*dy*dz * phi;
         //const Float3 f_g = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
         // Find pressure gradient
@@ -2329,7 +2328,8 @@ __global__ void findInteractionForce(
         if (v_rel_length > 0.0) {
             if (phi <= 0.8)       // Ergun equation
                 fi = (150.0*devC_params.mu*not_phi*not_phi/(phi*d_avg*d_avg)
-                        + 1.75*not_phi*devC_params.rho_f*v_rel_length/d_avg)*v_rel;
+                        + 1.75*not_phi*devC_params.rho_f*v_rel_length/d_avg)
+                    *v_rel;
             else if (phi < 0.999) // Wen and Yu equation
                 fi = (3.0/4.0*cd*not_phi*pow(phi,
                             -2.65)*devC_params.mu*devC_params.rho_f

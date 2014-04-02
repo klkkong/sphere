@@ -2086,7 +2086,6 @@ class sim:
         #self.w_m[idx] = numpy.array([self.rho[0]*self.np*math.pi \
         #        *(cellsize/2.0)**3])
         self.w_m[idx] = numpy.array([self.rho*self.L[0]*self.L[1]*d_max])
-        print(self.w_m[idx])
 
     def consolidate(self, normal_stress = 10e3):
         '''
