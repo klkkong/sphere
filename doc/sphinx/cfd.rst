@@ -23,11 +23,13 @@ and the momentum equation:
     \rho \frac{\partial \boldsymbol{v}}{\partial t}
     + \rho (\boldsymbol{v} \cdot \nabla \boldsymbol{v})
     = \nabla \cdot \boldsymbol{\sigma}
-    + \rho \boldsymbol{f}
+    - \boldsymbol{f}^i
+    + \rho \boldsymbol{g}
 
 Here, :math:`\boldsymbol{v}` is the fluid velocity, :math:`\rho` is the
-fluid density, :math:`\boldsymbol{\sigma}` is the `Cauchy stress tensor`_, and
-:math:`\boldsymbol{f}` is a body force (e.g. gravity). For incompressible
+fluid density, :math:`\boldsymbol{\sigma}` is the `Cauchy stress tensor`_,
+:math:`\boldsymbol{f}^i` is the particle-fluid interaction vector and
+:math:`\boldsymbol{g}` is the gravitational acceleration. For incompressible
 Newtonian fluids, the Cauchy stress is given by:
 
 .. math::
@@ -78,7 +80,8 @@ with a body force :math:`\boldsymbol{f}` becomes:
 .. math::
     \frac{D (\phi v_x)}{D t}
     = \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\sigma}) \right]_x
-    + \phi f_x
+    - \frac{1}{\rho} f^i_x
+    + \phi g
 
 In the Eulerian formulation, an advection term is added, and the Cauchy stress
 tensor is represented as isotropic and deviatoric components individually:
@@ -88,7 +91,8 @@ tensor is represented as isotropic and deviatoric components individually:
     + \boldsymbol{v} \cdot \nabla (\phi v_x)
     = \frac{1}{\rho} \left[ \nabla \cdot (-\phi p \boldsymbol{I})
     + \phi \boldsymbol{\tau}) \right]_x
-    + \phi f_x
+    - \frac{1}{\rho} f^i_x
+    + \phi g_x
 
 Using vector identities to rewrite the advection term, and expanding the fluid
 stress tensor term:
@@ -98,9 +102,9 @@ stress tensor term:
     + \nabla \cdot (\phi v_x \boldsymbol{v})
     - \phi v_x (\nabla \cdot \boldsymbol{v})
     = \frac{1}{\rho} \left[ -\nabla \phi p \right]_x
-    + \frac{1}{\rho} \left[ -\phi \nabla p \right]_x
     + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
-    + \phi f_x
+    - \frac{1}{\rho} f^i_x
+    + \phi g_x
 
 Spatial variations in the porosity are neglected,
 
@@ -121,7 +125,8 @@ With these assumptions, the momentum equation simplifies to:
     + \nabla \cdot (\phi v_x \boldsymbol{v})
     = -\frac{1}{\rho} \frac{\partial p}{\partial x}
     + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
-    + \phi f_x
+    - \frac{1}{\rho} f^i_x
+    + \phi g_x
 
 The remaining part of the advection term is for the :math:`x` component
 found as:
@@ -338,7 +343,8 @@ presented by Langtangen et al.  (2002), the predicted velocity
     + \nabla \cdot (\phi v_x \boldsymbol{v})
     = - \frac{1}{\rho} \frac{\Delta p}{\Delta x}
     + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
-    + \phi f_x
+    - \frac{1}{\rho} f^i_x
+    + \phi g_x
 
     \Downarrow
 
@@ -347,7 +353,8 @@ presented by Langtangen et al.  (2002), the predicted velocity
     + \nabla \cdot (\phi v_x \boldsymbol{v})
     = - \frac{1}{\rho} \frac{\Delta p}{\Delta x}
     + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
-    + \phi f_x
+    - \frac{1}{\rho} f^i_x
+    + \phi g_x
 
 We want to isolate :math:`\Delta v_x` in the above equation in order to project
 the new velocity.
@@ -356,7 +363,8 @@ the new velocity.
     \phi \frac{\Delta v_x}{\Delta t}
     = - \frac{1}{\rho} \frac{\Delta p}{\Delta x}
     + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
-    + \phi f_x
+    - \frac{1}{\rho} f^i_x
+    + \phi g_x
     - v_x \frac{\Delta \phi}{\Delta t}
     - \nabla \cdot (\phi v_x \boldsymbol{v})
 
@@ -364,7 +372,8 @@ the new velocity.
     = - \frac{1}{\rho} \frac{\Delta p}{\Delta x} \frac{\Delta t}{\phi}
     + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
       \frac{\Delta t}{\phi}
-    + \Delta t f_x
+    - \frac{\Delta t}{\rho\phi} f^i_x
+    + \Delta t g_x
     - v_x \frac{\Delta \phi}{\phi}
     - \nabla \cdot (\phi v_x \boldsymbol{v}) \frac{\Delta t}{\phi}
 
@@ -381,7 +390,8 @@ in `Chorin (1968)`_.
     - \frac{\beta}{\rho} \frac{\Delta p^t}{\Delta x} \frac{\Delta t}{\phi^t}
     + \frac{1}{\rho} \left[ \nabla \cdot (\phi^t \boldsymbol{\tau}^t) \right]_x
       \frac{\Delta t}{\phi}
-    + \Delta t f_x
+    - \frac{\Delta t}{\rho\phi} f^i_x
+    + \Delta t g_x
     - v^t_x \frac{\Delta \phi}{\phi^t}
     - \nabla \cdot (\phi^t v_x^t \boldsymbol{v}^t) \frac{\Delta t}{\phi^t}
 

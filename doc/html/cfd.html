@@ -72,13 +72,15 @@ continuity equation for an incompressible fluid material is given by:</p>
 <p><img src="_images/math/b588eea9cec4513a3be72255d8d3df214546bfe7.png" alt="\nabla \cdot \boldsymbol{v} = 0"/></p>
 </div><p>and the momentum equation:</p>
 <div class="math">
-<p><img src="_images/math/5b46624e0dc3d79b64f388898e2dff17d232656c.png" alt="\rho \frac{\partial \boldsymbol{v}}{\partial t}
+<p><img src="_images/math/a00f5eb30a7a379b737fd4fafa61160bc0fce4a8.png" alt="\rho \frac{\partial \boldsymbol{v}}{\partial t}
 + \rho (\boldsymbol{v} \cdot \nabla \boldsymbol{v})
 = \nabla \cdot \boldsymbol{\sigma}
-+ \rho \boldsymbol{f}"/></p>
+- \boldsymbol{f}^i
++ \rho \boldsymbol{g}"/></p>
 </div><p>Here, <img class="math" src="_images/math/d0b4b390a4806bb739c6b4adbdf572347ecda952.png" alt="\boldsymbol{v}"/> is the fluid velocity, <img class="math" src="_images/math/0027034d8a10372a06deaf4f4084c01956587479.png" alt="\rho"/> is the
-fluid density, <img class="math" src="_images/math/769bfdcb2a43bde2cd368d82a6f64bd68c876c99.png" alt="\boldsymbol{\sigma}"/> is the <a class="reference external" href="https://en.wikipedia.org/wiki/Cauchy_stress_tensor">Cauchy stress tensor</a>, and
-<img class="math" src="_images/math/69b1fdf87f9a78aaef8057a34aea7a6c17dad726.png" alt="\boldsymbol{f}"/> is a body force (e.g. gravity). For incompressible
+fluid density, <img class="math" src="_images/math/769bfdcb2a43bde2cd368d82a6f64bd68c876c99.png" alt="\boldsymbol{\sigma}"/> is the <a class="reference external" href="https://en.wikipedia.org/wiki/Cauchy_stress_tensor">Cauchy stress tensor</a>,
+<img class="math" src="_images/math/dbb95aa092c199cb518b2fdf22908d217988c251.png" alt="\boldsymbol{f}^i"/> is the particle-fluid interaction vector and
+<img class="math" src="_images/math/a1e91a45b4858dfcbacc9b0d3b28418f1a990df1.png" alt="\boldsymbol{g}"/> is the gravitational acceleration. For incompressible
 Newtonian fluids, the Cauchy stress is given by:</p>
 <div class="math">
 <p><img src="_images/math/c9264cc703654b5651cb89a1c9f5e178b5d15cd0.png" alt="\boldsymbol{\sigma} = -p \boldsymbol{I} + \boldsymbol{\tau}"/></p>
@@ -115,27 +117,29 @@ momentum equations. The continuity equation becomes:</p>
 </div><p>For the <img class="math" src="_images/math/26eeb5258ca5099acf8fe96b2a1049c48c89a5e6.png" alt="x"/> component, the Lagrangian formulation of the momentum equation
 with a body force <img class="math" src="_images/math/69b1fdf87f9a78aaef8057a34aea7a6c17dad726.png" alt="\boldsymbol{f}"/> becomes:</p>
 <div class="math">
-<p><img src="_images/math/900be94839e1ee03a8aa1134961912314905eb27.png" alt="\frac{D (\phi v_x)}{D t}
+<p><img src="_images/math/4fd7ec1b618d0e036da7606d6876e79d81480584.png" alt="\frac{D (\phi v_x)}{D t}
 = \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\sigma}) \right]_x
-+ \phi f_x"/></p>
+- \frac{1}{\rho} f^i_x
++ \phi g"/></p>
 </div><p>In the Eulerian formulation, an advection term is added, and the Cauchy stress
 tensor is represented as isotropic and deviatoric components individually:</p>
 <div class="math">
-<p><img src="_images/math/32e2ba09618e2d303d91d673a25ef66e29e94750.png" alt="\frac{\partial (\phi v_x)}{\partial t}
+<p><img src="_images/math/ff29b7920019a21a45545381f042a08acfba3530.png" alt="\frac{\partial (\phi v_x)}{\partial t}
 + \boldsymbol{v} \cdot \nabla (\phi v_x)
 = \frac{1}{\rho} \left[ \nabla \cdot (-\phi p \boldsymbol{I})
 + \phi \boldsymbol{\tau}) \right]_x
-+ \phi f_x"/></p>
+- \frac{1}{\rho} f^i_x
++ \phi g_x"/></p>
 </div><p>Using vector identities to rewrite the advection term, and expanding the fluid
 stress tensor term:</p>
 <div class="math">
-<p><img src="_images/math/dcf5762fe2b4b81adb93ee084951f42a2f1eadbc.png" alt="\frac{\partial (\phi v_x)}{\partial t}
+<p><img src="_images/math/0e86ca4660ab213ac57b980a736e32499978d2dc.png" alt="\frac{\partial (\phi v_x)}{\partial t}
 + \nabla \cdot (\phi v_x \boldsymbol{v})
 - \phi v_x (\nabla \cdot \boldsymbol{v})
 = \frac{1}{\rho} \left[ -\nabla \phi p \right]_x
-+ \frac{1}{\rho} \left[ -\phi \nabla p \right]_x
 + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
-+ \phi f_x"/></p>
+- \frac{1}{\rho} f^i_x
++ \phi g_x"/></p>
 </div><p>Spatial variations in the porosity are neglected,</p>
 <div class="math">
 <p><img src="_images/math/c42a32017c99646f19bb5807728595d4526c3b30.png" alt="\nabla \phi := 0"/></p>
@@ -146,11 +150,12 @@ zero:</p>
 <p><img src="_images/math/44fafcf5a158459730d0dd7c293b93cdcf62f0a4.png" alt="\nabla \cdot \boldsymbol{v} := 0"/></p>
 </div><p>With these assumptions, the momentum equation simplifies to:</p>
 <div class="math">
-<p><img src="_images/math/6e62843666dcc0fe9a45a1c69c532c82a95a9451.png" alt="\frac{\partial (\phi v_x)}{\partial t}
+<p><img src="_images/math/7f7495bf6b7e8e4c468863b6fd083f72f3a844ac.png" alt="\frac{\partial (\phi v_x)}{\partial t}
 + \nabla \cdot (\phi v_x \boldsymbol{v})
 = -\frac{1}{\rho} \frac{\partial p}{\partial x}
 + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
-+ \phi f_x"/></p>
+- \frac{1}{\rho} f^i_x
++ \phi g_x"/></p>
 </div><p>The remaining part of the advection term is for the <img class="math" src="_images/math/26eeb5258ca5099acf8fe96b2a1049c48c89a5e6.png" alt="x"/> component
 found as:</p>
 <div class="math">
@@ -335,11 +340,12 @@ presented by Langtangen et al.  (2002), the predicted velocity
 <img class="math" src="_images/math/90c8bfc206db2d9f4d0dd102507c9646a70755db.png" alt="\boldsymbol{v}^*"/> after a finite time step
 <img class="math" src="_images/math/a1ffc0a012620941fe660cedabff822ce7162eca.png" alt="\Delta t"/> is found by explicit integration of the momentum equation.</p>
 <div class="math">
-<p><img src="_images/math/7ee03c7bfc1e46255c9d2d47d9b733a068c9ec2b.png" alt="\frac{\Delta (\phi v_x)}{\Delta t}
+<p><img src="_images/math/8d0831e0e18af6fd3f3f1060516faab8016dc054.png" alt="\frac{\Delta (\phi v_x)}{\Delta t}
 + \nabla \cdot (\phi v_x \boldsymbol{v})
 = - \frac{1}{\rho} \frac{\Delta p}{\Delta x}
 + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
-+ \phi f_x
+- \frac{1}{\rho} f^i_x
++ \phi g_x
 
 \Downarrow
 
@@ -348,14 +354,16 @@ presented by Langtangen et al.  (2002), the predicted velocity
 + \nabla \cdot (\phi v_x \boldsymbol{v})
 = - \frac{1}{\rho} \frac{\Delta p}{\Delta x}
 + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
-+ \phi f_x"/></p>
+- \frac{1}{\rho} f^i_x
++ \phi g_x"/></p>
 </div><p>We want to isolate <img class="math" src="_images/math/b5e8dba2403c0723e1ff60ac53116252af8aeb64.png" alt="\Delta v_x"/> in the above equation in order to project
 the new velocity.</p>
 <div class="math">
-<p><img src="_images/math/038474380a078000f31889a32a1dcf79ac38c223.png" alt="\phi \frac{\Delta v_x}{\Delta t}
+<p><img src="_images/math/faee932adbe0b3f8663c9be6fa88d65f456385a7.png" alt="\phi \frac{\Delta v_x}{\Delta t}
 = - \frac{1}{\rho} \frac{\Delta p}{\Delta x}
 + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
-+ \phi f_x
+- \frac{1}{\rho} f^i_x
++ \phi g_x
 - v_x \frac{\Delta \phi}{\Delta t}
 - \nabla \cdot (\phi v_x \boldsymbol{v})
 
@@ -363,7 +371,8 @@ the new velocity.</p>
 = - \frac{1}{\rho} \frac{\Delta p}{\Delta x} \frac{\Delta t}{\phi}
 + \frac{1}{\rho} \left[ \nabla \cdot (\phi \boldsymbol{\tau}) \right]_x
   \frac{\Delta t}{\phi}
-+ \Delta t f_x
+- \frac{\Delta t}{\rho\phi} f^i_x
++ \Delta t g_x
 - v_x \frac{\Delta \phi}{\phi}
 - \nabla \cdot (\phi v_x \boldsymbol{v}) \frac{\Delta t}{\phi}"/></p>
 </div><p>The term <img class="math" src="_images/math/fdb63b9e51abe6bbb16acfb5d7b773ddbb5bf4a8.png" alt="\beta"/> is introduced as an adjustable, dimensionless parameter
@@ -372,13 +381,14 @@ values in the solution procedure (Langtangen et al. 2002).  A value of 0
 corresponds to <a class="reference external" href="https://en.wikipedia.org/wiki/Projection_method_(fluid_dynamics)#Chorin.27s_projection_method">Chorin&#8217;s projection method</a> originally described
 in <a class="reference external" href="http://www.ams.org/journals/mcom/1968-22-104/S0025-5718-1968-0242392-2/S0025-5718-1968-0242392-2.pdf">Chorin (1968)</a>.</p>
 <div class="math">
-<p><img src="_images/math/dbcdbe7c53fa70f8517907ca1b3c440b28512dfc.png" alt="v_x^* = v_x^t + \Delta v_x
+<p><img src="_images/math/9ec27d87740d654f43e3238d5bfe718e521368ce.png" alt="v_x^* = v_x^t + \Delta v_x
 
 v_x^* = v_x^t
 - \frac{\beta}{\rho} \frac{\Delta p^t}{\Delta x} \frac{\Delta t}{\phi^t}
 + \frac{1}{\rho} \left[ \nabla \cdot (\phi^t \boldsymbol{\tau}^t) \right]_x
   \frac{\Delta t}{\phi}
-+ \Delta t f_x
+- \frac{\Delta t}{\rho\phi} f^i_x
++ \Delta t g_x
 - v^t_x \frac{\Delta \phi}{\phi^t}
 - \nabla \cdot (\phi^t v_x^t \boldsymbol{v}^t) \frac{\Delta t}{\phi^t}"/></p>
 </div><p>Here, <img class="math" src="_images/math/1eb29f9de3753a59530941141fcb5c7aa3fa2e38.png" alt="\Delta x"/> denotes the cell spacing. The velocity found
