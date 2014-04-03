@@ -23,21 +23,8 @@ __inline__ __device__ Float hmean(Float a, Float b) {
     return (2.0*a*b)/(a+b);
 }
 
-// Overloaded helper function for checking whether a value is NaN or Inf
-__device__ void checkFinite(
-        const char* desc,
-        const unsigned int x,
-        const unsigned int y,
-        const unsigned int z,
-        const Float3 v)
-{
-        __syncthreads();
-        if (!isfinite(v.x) || !isfinite(v.y)  || !isfinite(v.z))
-            printf("\n[%d,%d,%d]: Error: %s = %f, %f, %f\n",
-                    x, y, z, desc, v.x, v.y, v.z);
-}
-
-__device__ void checkFinite(
+// Helper functions for checking whether a value is NaN or Inf
+__device__ int checkFiniteFloat(
         const char* desc,
         const unsigned int x,
         const unsigned int y,
@@ -45,8 +32,27 @@ __device__ void checkFinite(
         const Float s)
 {
         __syncthreads();
-        if (!isfinite(s))
+        if (!isfinite(s)) {
             printf("\n[%d,%d,%d]: Error: %s = %f, %f, %f\n", x, y, z, desc, s);
+            return 1;
+        }
+        return 0;
+}
+
+__device__ int checkFiniteFloat3(
+        const char* desc,
+        const unsigned int x,
+        const unsigned int y,
+        const unsigned int z,
+        const Float3 v)
+{
+        __syncthreads();
+        if (!isfinite(v.x) || !isfinite(v.y)  || !isfinite(v.z)) {
+            printf("\n[%d,%d,%d]: Error: %s = %f, %f, %f\n",
+                    x, y, z, desc, v.x, v.y, v.z);
+            return 1;
+        }
+        return 0;
 }
 
 // Initialize memory
@@ -1006,10 +1012,10 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
             dev_ns_d_avg[cellidx]  = d_avg;
 
 #ifdef CHECK_NS_FINITE
-            checkFinite("phi", x, y, z, phi);
-            checkFinite("dphi", x, y, z, dphi);
-            checkFinite("v_avg", x, y, z, v_avg);
-            checkFinite("d_avg", x, y, z, d_avg);
+            (void)checkFiniteFloat("phi", x, y, z, phi);
+            (void)checkFiniteFloat("dphi", x, y, z, dphi);
+            (void)checkFiniteFloat3("v_avg", x, y, z, v_avg);
+            (void)checkFiniteFloat("d_avg", x, y, z, d_avg);
 #endif
         } else {
 
@@ -1058,8 +1064,8 @@ __global__ void setUpperPressureNS(
         dev_ns_p[cellidx] = new_pressure;
 
 #ifdef CHECK_NS_FINITE
-        checkFinite("epsilon", x, y, z, epsilon);
-        checkFinite("new_pressure", x, y, z, new_pressure);
+        (void)checkFiniteFloat("epsilon", x, y, z, epsilon);
+        (void)checkFiniteFloat("new_pressure", x, y, z, new_pressure);
 #endif
     }
 }
@@ -1216,7 +1222,7 @@ __global__ void findNSgradientsDev(
         dev_vectorfield[cellidx] = grad;
 
 #ifdef CHECK_NS_FINITE
-        checkFinite("grad", x, y, z, grad);
+        (void)checkFiniteFloat3("grad", x, y, z, grad);
 #endif
     }
 }
@@ -1260,12 +1266,12 @@ __global__ void findvvOuterProdNS(
         dev_ns_v_prod[cellidx6+5] = v.z*v.z;
 
 #ifdef CHECK_NS_FINITE
-        checkFinite("v_prod[0]", x, y, z, v.x*v.x);
-        checkFinite("v_prod[1]", x, y, z, v.x*v.y);
-        checkFinite("v_prod[2]", x, y, z, v.x*v.z);
-        checkFinite("v_prod[3]", x, y, z, v.y*v.y);
-        checkFinite("v_prod[4]", x, y, z, v.y*v.z);
-        checkFinite("v_prod[5]", x, y, z, v.z*v.z);
+        (void)checkFiniteFloat("v_prod[0]", x, y, z, v.x*v.x);
+        (void)checkFiniteFloat("v_prod[1]", x, y, z, v.x*v.y);
+        (void)checkFiniteFloat("v_prod[2]", x, y, z, v.x*v.z);
+        (void)checkFiniteFloat("v_prod[3]", x, y, z, v.y*v.y);
+        (void)checkFiniteFloat("v_prod[4]", x, y, z, v.y*v.z);
+        (void)checkFiniteFloat("v_prod[5]", x, y, z, v.z*v.z);
 #endif
     }
 }
@@ -1353,12 +1359,12 @@ __global__ void findNSstressTensor(
         dev_ns_tau[cellidx6+5] = tau_zz;
 
 #ifdef CHECK_NS_FINITE
-        checkFinite("tau_xx", x, y, z, tau_xx);
-        checkFinite("tau_xy", x, y, z, tau_xy);
-        checkFinite("tau_xz", x, y, z, tau_xz);
-        checkFinite("tau_yy", x, y, z, tau_yy);
-        checkFinite("tau_yz", x, y, z, tau_yz);
-        checkFinite("tau_zz", x, y, z, tau_zz);
+        (void)checkFiniteFloat("tau_xx", x, y, z, tau_xx);
+        (void)checkFiniteFloat("tau_xy", x, y, z, tau_xy);
+        (void)checkFiniteFloat("tau_xz", x, y, z, tau_xz);
+        (void)checkFiniteFloat("tau_yy", x, y, z, tau_yy);
+        (void)checkFiniteFloat("tau_yz", x, y, z, tau_yz);
+        (void)checkFiniteFloat("tau_zz", x, y, z, tau_zz);
 #endif
     }
 }
@@ -1427,7 +1433,7 @@ __global__ void findNSdivphiviv(
         dev_ns_div_phi_vi_v[cellidx] = div_phi_vi_v;
 
 #ifdef CHECK_NS_FINITE
-        checkFinite("div_phi_vi_v", x, y, z, div_phi_vi_v);
+        (void)checkFiniteFloat3("div_phi_vi_v", x, y, z, div_phi_vi_v);
 #endif
     }
 }
@@ -1531,7 +1537,7 @@ __global__ void findNSdivphitau(
         dev_ns_div_phi_tau[cellidx] = div_phi_tau;
 
 #ifdef CHECK_NS_FINITE
-        checkFinite("div_phi_tau", x, y, z, div_phi_tau);
+        (void)checkFiniteFloat3("div_phi_tau", x, y, z, div_phi_tau);
 #endif
     }
 }
@@ -1618,7 +1624,7 @@ __global__ void findNSdivphivv(
         dev_ns_div_phi_v_v[cellidx] = div;
 
 #ifdef CHECK_NS_FINITE
-        checkFinite("div_phi_v_v", x, y, z, div);
+        (void)checkFiniteFloat3("div_phi_v_v", x, y, z, div);
 #endif
     }
 }
@@ -1723,7 +1729,7 @@ __global__ void findPredNSvelocities(
         dev_ns_v_p[cellidx] = v_p;
 
 #ifdef CHECK_NS_FINITE
-        checkFinite("v_p", x, y, z, v_p);
+        (void)checkFiniteFloat3("v_p", x, y, z, v_p);
 #endif
     }
 }
@@ -1858,7 +1864,7 @@ __global__ void findNSforcing(
         dev_ns_f[cellidx] = f;
 
 #ifdef CHECK_NS_FINITE
-        checkFinite("f", x, y, z, f);
+        (void)checkFiniteFloat("f", x, y, z, f);
 #endif
     }
 }
@@ -1921,7 +1927,7 @@ __global__ void smoothing(
           e_yn, e_yp, e_zn, e_zp);*/
 
 #ifdef CHECK_NS_FINITE
-        checkFinite("e_smooth", x, y, z, e_smooth);
+        (void)checkFiniteFloat("e_smooth", x, y, z, e_smooth);
 #endif
     }
 }
@@ -2018,8 +2024,13 @@ __global__ void jacobiIterationNS(
         dev_ns_norm[cellidx] = res_norm;
 
 #ifdef CHECK_NS_FINITE
-        checkFinite("e_relax", x, y, z, e_relax);
-        checkFinite("res_norm", x, y, z, res_norm);
+        (void)checkFiniteFloat("e_new", x, y, z, e_new);
+        (void)checkFiniteFloat("e_relax", x, y, z, e_relax);
+        //(void)checkFiniteFloat("res_norm", x, y, z, res_norm);
+        if (checkFiniteFloat("res_norm", x, y, z, res_norm)) {
+            printf("[%d,%d,%d]\t e = %f\tf = %f\te_new = %f\tres_norm = %f\n",
+                    x,y,z, e, f, e_new, res_norm);
+        }
 #endif
     }
 }
@@ -2104,7 +2115,7 @@ __global__ void findNormalizedResiduals(
         dev_ns_norm[cellidx] = res_norm;
 
 #ifdef CHECK_NS_FINITE
-        checkFinite("res_norm", x, y, z, res_norm);
+        checkFiniteFloat("res_norm", x, y, z, res_norm);
 #endif
     }
 }
@@ -2180,8 +2191,8 @@ __global__ void updateNSvelocityPressure(
         dev_ns_v[cellidx] = v;
 
 #ifdef CHECK_NS_FINITE
-        checkFinite("p", x, y, z, p);
-        checkFinite("v", x, y, z, v);
+        checkFiniteFloat("p", x, y, z, p);
+        checkFiniteFloat3("v", x, y, z, v);
 #endif
     }
 }
@@ -2250,8 +2261,8 @@ __global__ void findAvgParticleVelocityDiameter(
         dev_ns_d_avg[cellidx]  = d_avg;
 
 #ifdef CHECK_NS_FINITE
-        checkFinite("v_avg", x, y, z, v_avg);
-        checkFinite("d_avg", x, y, z, d_avg);
+        checkFiniteFloat3("v_avg", x, y, z, v_avg);
+        checkFiniteFloat("d_avg", x, y, z, d_avg);
 #endif
     }
 }
@@ -2341,7 +2352,7 @@ __global__ void findInteractionForce(
         dev_ns_fi[cellidx] = fi;
 
 #ifdef CHECK_NS_FINITE
-        checkFinite("fi", x, y, z, fi);
+        checkFiniteFloat3("fi", x, y, z, fi);
 #endif
     }
 }
@@ -2408,7 +2419,7 @@ __global__ void applyParticleInteractionForce(
                         //x,y,z, fd.x, fd.y, fd.z, origidx);
 
 #ifdef CHECK_NS_FINITE
-                checkFinite("fd", x, y, z, fd);
+                checkFiniteFloat3("fd", x, y, z, fd);
 #endif
             }
         }
