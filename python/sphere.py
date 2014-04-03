@@ -1710,6 +1710,10 @@ class sim:
         if (dx > 0.0):
             cellsize_min = dx
         else:
+            if (self.np[0] < 1):
+                raise Exception('Error: You need to define dx in '
+                        'defineWorldBoundaries if there are no particles in '
+                        'the simulation.')
             cellsize_min = 2.1 * numpy.amax(self.radius)
 
         # Lower boundary of the sorting grid
