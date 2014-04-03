@@ -1675,15 +1675,6 @@ __global__ void findPredNSvelocities(
         else
             f_i = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
-        // Gravitational drag force on cell fluid mass
-        //const Float3 g = MAKE_FLOAT3(0.0, 0.0, -10.0);
-        //const Float3 f_g = devC_params.rho_f*dx*dy*dz*phi*g;
-        const Float3 f_g
-            = MAKE_FLOAT3(devC_params.g[0], devC_params.g[1], devC_params.g[2])
-            * devC_params.rho_f * dx*dy*dz * 0.5;
-            //* devC_params.rho_f * dx*dy*dz * phi;
-        //const Float3 f_g = MAKE_FLOAT3(0.0, 0.0, 0.0);
-
         // Find pressure gradient
         Float3 grad_p = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
@@ -1699,11 +1690,12 @@ __global__ void findPredNSvelocities(
         // Calculate the predicted velocity
         Float3 v_p = v
             + pressure_term
-            + 0.0*1.0/devC_params.rho_f*div_phi_tau*devC_dt/phi
-            + devC_dt*(f_g) // uncomment this line to disable gravity
-            - 0.0*devC_dt*(f_i)
-            - 0.0*v*dphi/phi
-            - 0.0*div_phi_vi_v*devC_dt/phi;
+            + 1.0/devC_params.rho_f*div_phi_tau*devC_dt/phi
+            + devC_dt
+            *MAKE_FLOAT3(devC_params.g[0], devC_params.g[1], devC_params.g[2])
+            - devC_dt*(f_i)
+            - v*dphi/phi
+            - div_phi_vi_v*devC_dt/phi;
 
         // Report velocity components to stdout for debugging
         /*const Float3 dv_pres = -ns.beta/devC_params.rho_f*grad_p*devC_dt/phi;
@@ -1805,9 +1797,9 @@ __global__ void findNSforcing(
             // Find forcing function coefficients
             //f1 = 0.0;
             f1 = div_v_p*devC_params.rho_f/devC_dt
-                + 0.0*dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi)
-                + 0.0*dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
-            f2 = 0.0*grad_phi/phi;
+                + dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi)
+                + dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
+            f2 = grad_phi/phi;
 
             // Report values terms in the forcing function for debugging
             /*
