@@ -181,11 +181,11 @@ orig.setFluidPressureModulation(A=1.0, f=1.0/orig.time_total[0])
 orig.plotPrescribedFluidPressures()
 orig.run(verbose=False)
 py.plotConvergence()
-py.plotFluidDiffAdvPresZ()
+#py.plotFluidDiffAdvPresZ()
 #py.writeVTKall()
 for it in range(1,py.status()+1): # gradient should be smooth in all output files
     py.readstep(it, verbose=False)
-    py.plotFluidDiffAdvPresZ()
+    #py.plotFluidDiffAdvPresZ()
     ideal_grad_p_z =\
             numpy.linspace(py.p_f[0,0,0], py.p_f[0,0,-1], py.num[2])
     compareNumpyArraysClose(numpy.zeros((1,py.num[2])),\
