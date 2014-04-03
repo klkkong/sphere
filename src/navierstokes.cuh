@@ -1691,9 +1691,9 @@ __global__ void findPredNSvelocities(
         Float3 v_p = v
             + pressure_term
             + 1.0/devC_params.rho_f*div_phi_tau*devC_dt/phi
-            + devC_dt
-            *MAKE_FLOAT3(devC_params.g[0], devC_params.g[1], devC_params.g[2])
-            - devC_dt*(f_i)
+            + MAKE_FLOAT3(devC_params.g[0], devC_params.g[1], devC_params.g[2])
+                *devC_dt
+            - devC_dt/(devC_params.rho_f*phi)*f_i
             - v*dphi/phi
             - div_phi_vi_v*devC_dt/phi;
 
