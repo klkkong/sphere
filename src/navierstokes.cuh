@@ -2279,14 +2279,13 @@ __device__ Float dragCoefficient(Float re)
     return cd;
 }
 
-// Determine the fluid-particle interaction drag force based on the Ergun (1952)
-// equation for dense packed cells (phi <= 0.8), and the Wen and Yu (1966)
-// equation for dilate suspensions (phi > 0.8). Procedure outlined in Shamy and
-// Zeghal (2005) and Goniva et al (2010).
-// Other interaction forces, such as the pressure gradient in the flow field
-// (pressure force), particle rotation (Magnus force), particle acceleration
-// (virtual mass force) or a fluid velocity gradient leading to shear (Saffman
-// force).
+// Determine the fluid-particle interaction drag force per fluid unit volume
+// based on the Ergun (1952) equation for dense packed cells (phi <= 0.8), and
+// the Wen and Yu (1966) equation for dilate suspensions (phi > 0.8). Procedure
+// outlined in Shamy and Zeghal (2005) and Goniva et al (2010).  Other
+// interaction forces, such as the pressure gradient in the flow field (pressure
+// force), particle rotation (Magnus force), particle acceleration (virtual mass
+// force) or a fluid velocity gradient leading to shear (Saffman force).
 __global__ void findInteractionForce(
         Float*  dev_ns_phi,     // in
         Float*  dev_ns_d_avg,   // in
@@ -2294,7 +2293,6 @@ __global__ void findInteractionForce(
         Float3* dev_ns_v,       // in
         Float3* dev_ns_fi)      // out
 {
-
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
     const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
@@ -2324,7 +2322,8 @@ __global__ void findInteractionForce(
         const Float  v_rel_length = length(v_rel);
 
         const Float not_phi = 1.0 - phi;
-        const Float re = (phi*devC_params.rho_f*d_avg)/devC_params.mu * v_rel_length;
+        const Float re = (phi*devC_params.rho_f*d_avg)/devC_params.mu
+            * v_rel_length;
         const Float cd = dragCoefficient(re);
 
         Float3 fi = MAKE_FLOAT3(0.0, 0.0, 0.0);
@@ -2389,7 +2388,8 @@ __global__ void applyParticleInteractionForce(
         const unsigned int startidx = dev_cellStart[cellID];
         unsigned int endidx, i, origidx;
 
-        Float r, phi;
+        Float r;
+        //Float r, phi;
         Float3 fd;
 
         if (startidx != 0xffffffff) {
@@ -2402,11 +2402,12 @@ __global__ void applyParticleInteractionForce(
                 __syncthreads();
                 origidx = dev_gridParticleIndex[i];
                 r = dev_x_sorted[i].w; // radius
-                phi = dev_ns_phi[idx(x,y,z)];
+                //phi = dev_ns_phi[idx(x,y,z)];
 
                 // this term could include the pressure gradient
                 //fd = (-grad_p + fi/(1.0 - phi))*(4.0/3.0*M_PI*r*r*r);
-                fd = (fi/(1.0 - phi))*(4.0/3.0*M_PI*r*r*r);
+                //fd = (fi/(1.0 - phi))*(4.0/3.0*M_PI*r*r*r);
+                fd = fi*(4.0/3.0*M_PI*r*r*r);
 
                 __syncthreads();
                 dev_force[origidx] += MAKE_FLOAT4(fd.x, fd.y, fd.z, 0.0);

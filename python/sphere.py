@@ -949,24 +949,26 @@ class sim:
                 fh.write(self.x[i,:].astype(numpy.float64))
                 fh.write(self.radius[i].astype(numpy.float64))
 
-            fh.write(self.xysum.astype(numpy.float64))
+            if (self.np[0] > 0):
+                fh.write(self.xysum.astype(numpy.float64))
 
             for i in range(self.np):
                 fh.write(self.vel[i,:].astype(numpy.float64))
                 fh.write(self.fixvel[i].astype(numpy.float64))
 
-            fh.write(self.force.astype(numpy.float64))
+            if (self.np[0] > 0):
+                fh.write(self.force.astype(numpy.float64))
 
-            fh.write(self.angpos.astype(numpy.float64))
-            fh.write(self.angvel.astype(numpy.float64))
-            fh.write(self.torque.astype(numpy.float64))
+                fh.write(self.angpos.astype(numpy.float64))
+                fh.write(self.angvel.astype(numpy.float64))
+                fh.write(self.torque.astype(numpy.float64))
 
-            # Per-particle single-value parameters
-            fh.write(self.es_dot.astype(numpy.float64))
-            fh.write(self.es.astype(numpy.float64))
-            fh.write(self.ev_dot.astype(numpy.float64))
-            fh.write(self.ev.astype(numpy.float64))
-            fh.write(self.p.astype(numpy.float64))
+                # Per-particle single-value parameters
+                fh.write(self.es_dot.astype(numpy.float64))
+                fh.write(self.es.astype(numpy.float64))
+                fh.write(self.ev_dot.astype(numpy.float64))
+                fh.write(self.ev.astype(numpy.float64))
+                fh.write(self.p.astype(numpy.float64))
 
             fh.write(self.g.astype(numpy.float64))
             fh.write(self.k_n.astype(numpy.float64))
