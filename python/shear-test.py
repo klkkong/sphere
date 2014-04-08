@@ -31,6 +31,9 @@ init.generateRadii(radius_mean = 0.02)
 # Use default params
 init.defaultParams(gamma_n = 100.0, mu_s = 0.6, mu_d = 0.6)
 
+# Add gravity
+init.g[2] = -9.81
+
 # Initialize positions in random grid (also sets world size)
 hcells = np**(1.0/3.0)
 init.initRandomGridPos(gridnum = numpy.array([hcells, hcells, 1e9]), periodic = 1, contactmodel = 2)
