@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-"""
+'''
 Example of two particles colliding.
 Place script in sphere/python/ folder, and invoke with `python collision.py`
-"""
+'''
 
 # Import the sphere module for setting up, running, and analyzing the
 # experiment. We also need the numpy module when setting arrays in the sphere
