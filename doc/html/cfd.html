@@ -406,48 +406,49 @@ equation:</p>
 </div><p>The predicted velocity is corrected using the new pressure (Langtangen et al.
 2002):</p>
 <div class="math">
-<p><img src="_images/math/e3de9b8fce0b12c8459947bd22c727e379512fcc.png" alt="\boldsymbol{v}^{t+\Delta t} = \boldsymbol{v}^*
-- \frac{\Delta t}{\rho} \nabla \epsilon
+<p><img src="_images/math/52f771ea3758e7653af6c471262bbc0ff0d9cf5a.png" alt="\boldsymbol{v}^{t+\Delta t} = \boldsymbol{v}^*
+%- \frac{\Delta t}{\rho} \nabla \epsilon
+- \frac{\Delta t}{\rho \phi^t} \nabla \epsilon
 \quad \text{where} \quad
 \epsilon = p^{t+\Delta t} - \beta p^t"/></p>
 </div><p>The above formulation of the future velocity is put into the continuity
 equation:</p>
 <div class="math">
-<p><img src="_images/math/25961440701892ff5417a2474f7f52bb353e5d98.png" alt="\Rightarrow
+<p><img src="_images/math/7b1a510ad1f355daa1f756cfd47f75a3a29f5660.png" alt="\Rightarrow
 \phi^t \nabla \cdot
-\left( \boldsymbol{v}^* - \frac{\Delta t}{\rho} \nabla \epsilon \right)
+\left( \boldsymbol{v}^* - \frac{\Delta t}{\rho \phi^t} \nabla \epsilon \right)
 +
-\left( \boldsymbol{v}^* - \frac{\Delta t}{\rho} \nabla \epsilon \right)
+\left( \boldsymbol{v}^* - \frac{\Delta t}{\rho \phi^t} \nabla \epsilon \right)
 \cdot \nabla \phi^t + \frac{\Delta \phi^t}{\Delta t} = 0"/></p>
 </div><div class="math">
-<p><img src="_images/math/1c7a111b8952b4162797cce2cbd426d74083b834.png" alt="\Rightarrow
+<p><img src="_images/math/964fa43eb7c25fa23b82daf41b1b9e16e998ab55.png" alt="\Rightarrow
 \phi^t \nabla \cdot
-\boldsymbol{v}^* - \frac{\Delta t}{\rho} \phi^t \nabla^2 \epsilon
+\boldsymbol{v}^* - \frac{\Delta t}{\rho \phi^t} \phi^t \nabla^2 \epsilon
 + \nabla \phi^t \cdot \boldsymbol{v}^*
-- \nabla \phi^t \cdot \nabla \epsilon \frac{\Delta t}{\rho}
+- \nabla \phi^t \cdot \nabla \epsilon \frac{\Delta t}{\rho \phi^t}
 + \frac{\Delta \phi^t}{\Delta t} = 0"/></p>
 </div><div class="math">
-<p><img src="_images/math/8a2e0d0a28c9ebec91bd12def7b3b36dd9e92da7.png" alt="\Rightarrow
-\frac{\Delta t}{\rho} \phi^t \nabla^2 \epsilon
+<p><img src="_images/math/177b8a21bb3d0e2a33950cd8ceec4f96f5950bd6.png" alt="\Rightarrow
+\frac{\Delta t}{\rho} \nabla^2 \epsilon
 = \phi^t \nabla \cdot \boldsymbol{v}^*
 + \nabla \phi^t \cdot \boldsymbol{v}^*
-- \nabla \phi^t \cdot \nabla \epsilon \frac{\Delta t}{\rho}
+- \nabla \phi^t \cdot \nabla \epsilon \frac{\Delta t}{\rho \phi^t}
 + \frac{\Delta \phi^t}{\Delta t}"/></p>
 </div><p>The pressure difference in time becomes a <a class="reference external" href="https://en.wikipedia.org/wiki/Poisson's_equation">Poisson equation</a> with added terms:</p>
 <div class="math">
-<p><img src="_images/math/7572a9bb14a95da7f7b42fd4b5bec33c42800556.png" alt="\Rightarrow
+<p><img src="_images/math/22176d7707317572382e54a12e13095b61d90c26.png" alt="\Rightarrow
 \nabla^2 \epsilon
-= \frac{\nabla \cdot \boldsymbol{v}^* \rho}{\Delta t}
-+ \frac{\nabla \phi^t \cdot \boldsymbol{v}^* \rho}{\Delta t \phi^t}
+= \frac{\nabla \cdot \boldsymbol{v}^* \phi^t \rho}{\Delta t}
++ \frac{\nabla \phi^t \cdot \boldsymbol{v}^* \rho}{\Delta t}
 - \frac{\nabla \phi^t \cdot \nabla \epsilon}{\phi^t}
-+ \frac{\Delta \phi^t \rho}{\Delta t^2 \phi^t}"/></p>
++ \frac{\Delta \phi^t \rho}{\Delta t^2}"/></p>
 </div><p>The right hand side of the above equation is termed the <em>forcing function</em>
 <img class="math" src="_images/math/bb2c93730dbb48558bb3c4738c956c4e8f816437.png" alt="f"/>, which is decomposed into two terms, <img class="math" src="_images/math/37a9e7fca70e2dce829d902af2088735306bc1a3.png" alt="f_1"/> and <img class="math" src="_images/math/e31584cdce0b50ee39c63081564f6e2ec5a7dcbf.png" alt="f_2"/>:</p>
 <div class="math">
-<p><img src="_images/math/28d83ccd32811c0455355169ed8f6978d8d24dbe.png" alt="f_1
-= \frac{\nabla \cdot \boldsymbol{v}^* \rho}{\Delta t}
-+ \frac{\nabla \phi^t \cdot \boldsymbol{v}^* \rho}{\Delta t \phi^t}
-+ \frac{\Delta \phi^t \rho}{\Delta t^2 \phi^t}
+<p><img src="_images/math/470d00b97569e3a8976841debcd99aaf9c78d7a8.png" alt="f_1
+= \frac{\nabla \cdot \boldsymbol{v}^* \phi^t \rho}{\Delta t}
++ \frac{\nabla \phi^t \cdot \boldsymbol{v}^* \rho}{\Delta t}
++ \frac{\Delta \phi^t \rho}{\Delta t^2}
 
 f_2 =
 \frac{\nabla \phi^t \cdot \nabla \epsilon}{\phi^t}"/></p>

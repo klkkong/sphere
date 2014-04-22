@@ -1746,16 +1746,6 @@ __global__ void findPredNSvelocities(
 // Find the value of the forcing function. Only grad(epsilon) changes during
 // the Jacobi iterations. The remaining, constant terms are only calculated
 // during the first iteration.
-// The forcing function is:
-//   f = (div(v_p)*rho)/dt
-//     + (grad(phi) dot v_p*rho)/(dt*phi)
-//     + (dphi*rho)/(dt*dt*phi)
-//     - (grad(phi) dot grad(epsilon))/phi
-// The following is calculated in the first Jacobi iteration and saved:
-//   f1 = (div(v_p)*rho)/dt
-//      + (grad(phi) dot v_p*rho)/(dt*phi)
-//      + (dphi*rho)/(dt*dt*phi)
-//   f2 = grad(phi)/phi
 // At each iteration, the value of the forcing function is found as:
 //   f = f1 - f2 dot grad(epsilon)
 __global__ void findNSforcing(
@@ -1811,9 +1801,13 @@ __global__ void findNSforcing(
 
             // Find forcing function coefficients
             //f1 = 0.0;
-            f1 = div_v_p*devC_params.rho_f/devC_dt
+            /*f1 = div_v_p*devC_params.rho_f/devC_dt
                 + dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi)
                 + dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
+            f2 = grad_phi/phi;*/
+            f1 = div_v_p*devC_params.rho_f*phi/devC_dt
+                + dot(grad_phi, v_p)*devC_params.rho_f/devC_dt
+                + dphi*devC_params.rho_f/(devC_dt*devC_dt);
             f2 = grad_phi/phi;
 
             // Report values terms in the forcing function for debugging
@@ -2135,6 +2129,7 @@ __global__ void updateNSvelocityPressure(
         Float*  dev_ns_p,
         Float3* dev_ns_v,
         Float3* dev_ns_v_p,
+        Float*  dev_ns_phi,
         Float*  dev_ns_epsilon,
         Float   beta,
         int     bc_bot,
@@ -2166,6 +2161,7 @@ __global__ void updateNSvelocityPressure(
         const Float  p_old   = dev_ns_p[cellidx];
         const Float  epsilon = dev_ns_epsilon[cellidx];
         const Float3 v_p     = dev_ns_v_p[cellidx];
+        const Float  phi     = dev_ns_phi[cellidx];
 
         // New pressure
         Float p = beta*p_old + epsilon;
@@ -2175,7 +2171,8 @@ __global__ void updateNSvelocityPressure(
             = gradient(dev_ns_epsilon, x, y, z, dx, dy, dz);
 
         // Find new velocity
-        Float3 v = v_p - devC_dt/devC_params.rho_f*grad_epsilon;
+        //Float3 v = v_p - devC_dt/devC_params.rho_f*grad_epsilon;
+        Float3 v = v_p - devC_dt/(devC_params.rho_f*phi)*grad_epsilon;
 
         // Print values for debugging
         /* if (z == 0) {

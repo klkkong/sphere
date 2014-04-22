@@ -416,7 +416,8 @@ The predicted velocity is corrected using the new pressure (Langtangen et al.
 
 .. math::
     \boldsymbol{v}^{t+\Delta t} = \boldsymbol{v}^*
-    - \frac{\Delta t}{\rho} \nabla \epsilon
+    %- \frac{\Delta t}{\rho} \nabla \epsilon
+    - \frac{\Delta t}{\rho \phi^t} \nabla \epsilon
     \quad \text{where} \quad
     \epsilon = p^{t+\Delta t} - \beta p^t
 
@@ -426,25 +427,25 @@ equation:
 .. math::
     \Rightarrow
     \phi^t \nabla \cdot
-    \left( \boldsymbol{v}^* - \frac{\Delta t}{\rho} \nabla \epsilon \right)
+    \left( \boldsymbol{v}^* - \frac{\Delta t}{\rho \phi^t} \nabla \epsilon \right)
     +
-    \left( \boldsymbol{v}^* - \frac{\Delta t}{\rho} \nabla \epsilon \right)
+    \left( \boldsymbol{v}^* - \frac{\Delta t}{\rho \phi^t} \nabla \epsilon \right)
     \cdot \nabla \phi^t + \frac{\Delta \phi^t}{\Delta t} = 0
 
 .. math::
     \Rightarrow
     \phi^t \nabla \cdot
-    \boldsymbol{v}^* - \frac{\Delta t}{\rho} \phi^t \nabla^2 \epsilon
+    \boldsymbol{v}^* - \frac{\Delta t}{\rho \phi^t} \phi^t \nabla^2 \epsilon
     + \nabla \phi^t \cdot \boldsymbol{v}^*
-    - \nabla \phi^t \cdot \nabla \epsilon \frac{\Delta t}{\rho}
+    - \nabla \phi^t \cdot \nabla \epsilon \frac{\Delta t}{\rho \phi^t}
     + \frac{\Delta \phi^t}{\Delta t} = 0
 
 .. math::
     \Rightarrow
-    \frac{\Delta t}{\rho} \phi^t \nabla^2 \epsilon
+    \frac{\Delta t}{\rho} \nabla^2 \epsilon
     = \phi^t \nabla \cdot \boldsymbol{v}^*
     + \nabla \phi^t \cdot \boldsymbol{v}^*
-    - \nabla \phi^t \cdot \nabla \epsilon \frac{\Delta t}{\rho}
+    - \nabla \phi^t \cdot \nabla \epsilon \frac{\Delta t}{\rho \phi^t}
     + \frac{\Delta \phi^t}{\Delta t}
 
 The pressure difference in time becomes a `Poisson equation`_ with added terms:
@@ -452,19 +453,19 @@ The pressure difference in time becomes a `Poisson equation`_ with added terms:
 .. math::
     \Rightarrow
     \nabla^2 \epsilon
-    = \frac{\nabla \cdot \boldsymbol{v}^* \rho}{\Delta t}
-    + \frac{\nabla \phi^t \cdot \boldsymbol{v}^* \rho}{\Delta t \phi^t}
+    = \frac{\nabla \cdot \boldsymbol{v}^* \phi^t \rho}{\Delta t}
+    + \frac{\nabla \phi^t \cdot \boldsymbol{v}^* \rho}{\Delta t}
     - \frac{\nabla \phi^t \cdot \nabla \epsilon}{\phi^t}
-    + \frac{\Delta \phi^t \rho}{\Delta t^2 \phi^t}
+    + \frac{\Delta \phi^t \rho}{\Delta t^2}
 
 The right hand side of the above equation is termed the *forcing function*
 :math:`f`, which is decomposed into two terms, :math:`f_1` and :math:`f_2`:
 
 .. math::
     f_1 
-    = \frac{\nabla \cdot \boldsymbol{v}^* \rho}{\Delta t}
-    + \frac{\nabla \phi^t \cdot \boldsymbol{v}^* \rho}{\Delta t \phi^t}
-    + \frac{\Delta \phi^t \rho}{\Delta t^2 \phi^t}
+    = \frac{\nabla \cdot \boldsymbol{v}^* \phi^t \rho}{\Delta t}
+    + \frac{\nabla \phi^t \cdot \boldsymbol{v}^* \rho}{\Delta t}
+    + \frac{\Delta \phi^t \rho}{\Delta t^2}
 
     f_2 =
     \frac{\nabla \phi^t \cdot \nabla \epsilon}{\phi^t}
