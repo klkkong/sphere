@@ -1022,15 +1022,16 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
             __syncthreads();
             const unsigned int cellidx = idx(x,y,z);
 
-            Float phi = 0.5;
-            Float dphi = 0.0;
-            if (iteration == 20 && x == nx/2 && y == ny/2 && z == nz/2) {
-                phi = 0.4;
-                dphi = 0.1;
-            }
-
-            dev_ns_phi[cellidx]  = phi;
-            dev_ns_dphi[cellidx] = dphi;
+            //Float phi = 0.5;
+            //Float dphi = 0.0;
+            //if (iteration == 20 && x == nx/2 && y == ny/2 && z == nz/2) {
+                //phi = 0.4;
+                //dphi = 0.1;
+            //}
+            //dev_ns_phi[cellidx]  = phi;
+            //dev_ns_dphi[cellidx] = dphi;
+            dev_ns_phi[cellidx]  = 1.0;
+            dev_ns_dphi[cellidx] = 0.0;
 
             dev_ns_vp_avg[cellidx] = MAKE_FLOAT3(0.0, 0.0, 0.0);
             dev_ns_d_avg[cellidx]  = 0.0;
@@ -1708,7 +1709,8 @@ __global__ void findPredNSvelocities(
                 *devC_dt
             - devC_dt/(devC_params.rho_f*phi)*f_i
             - v*dphi/phi
-            - div_phi_vi_v*devC_dt/phi;
+            - div_phi_vi_v*devC_dt/phi            // advection term
+            ;
 
         // Report velocity components to stdout for debugging
         /*const Float3 dv_pres = -ns.beta/devC_params.rho_f*grad_p*devC_dt/phi;
@@ -1811,7 +1813,7 @@ __global__ void findNSforcing(
             //f1 = 0.0;
             f1 = div_v_p*devC_params.rho_f/devC_dt
                 + dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi)
-                + dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
+                + 0.0*dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
             f2 = grad_phi/phi;
 
             // Report values terms in the forcing function for debugging
@@ -2345,18 +2347,19 @@ __global__ void findInteractionForce(
                         *v_rel_length/d_avg)*v_rel;
         }
 
-        /*printf("%d,%d,%d\tfi = %f,%f,%f"
-                "\tphi = %f\td_avg = %f"
-                "\tv_rel = %f,%f,%f\t"
-                "\tre = %f\tcd = %f\n",
-                x,y,z, fi.x, fi.y, fi.z,
-                phi, d_avg,
-                v_rel.x, v_rel.y, v_rel.z,
-                re, cd);*/
+        if (v_rel_length > 1.0e-5)
+                printf("%d,%d,%d\tfi = %f,%f,%f"
+                    "\tphi = %f\td_avg = %f"
+                    "\tv_rel = %f,%f,%f\t"
+                    "\tre = %f\tcd = %f\n",
+                    x,y,z, fi.x, fi.y, fi.z,
+                    phi, d_avg,
+                    v_rel.x, v_rel.y, v_rel.z,
+                    re, cd);
 
         __syncthreads();
-        //dev_ns_fi[cellidx] = fi;
-        dev_ns_fi[cellidx] = MAKE_FLOAT3(0.0, 0.0, 0.0);
+        dev_ns_fi[cellidx] = fi;
+        //dev_ns_fi[cellidx] = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
 #ifdef CHECK_NS_FINITE
         checkFiniteFloat3("fi", x, y, z, fi);
