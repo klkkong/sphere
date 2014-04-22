@@ -33,7 +33,7 @@ __device__ int checkFiniteFloat(
 {
         __syncthreads();
         if (!isfinite(s)) {
-            printf("\n[%d,%d,%d]: Error: %s = %f, %f, %f\n", x, y, z, desc, s);
+            printf("\n[%d,%d,%d]: Error: %s = %f\n", x, y, z, desc, s);
             return 1;
         }
         return 0;
@@ -1022,8 +1022,15 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
             __syncthreads();
             const unsigned int cellidx = idx(x,y,z);
 
-            dev_ns_phi[cellidx]  = 1.0;
-            dev_ns_dphi[cellidx] = 0.0;
+            Float phi = 0.5;
+            Float dphi = 0.0;
+            if (iteration == 20 && x == nx/2 && y == ny/2 && z == nz/2) {
+                phi = 0.4;
+                dphi = 0.1;
+            }
+
+            dev_ns_phi[cellidx]  = phi;
+            dev_ns_dphi[cellidx] = dphi;
 
             dev_ns_vp_avg[cellidx] = MAKE_FLOAT3(0.0, 0.0, 0.0);
             dev_ns_d_avg[cellidx]  = 0.0;
@@ -2348,7 +2355,8 @@ __global__ void findInteractionForce(
                 re, cd);*/
 
         __syncthreads();
-        dev_ns_fi[cellidx] = fi;
+        //dev_ns_fi[cellidx] = fi;
+        dev_ns_fi[cellidx] = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
 #ifdef CHECK_NS_FINITE
         checkFiniteFloat3("fi", x, y, z, fi);
