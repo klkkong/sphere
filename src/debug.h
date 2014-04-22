@@ -34,6 +34,9 @@ const int write_conv_log = 1;
 const int conv_log_interval = 10;
 //const int conv_log_interval = 1;
 
+// Enable drag force and particle fluid coupling
+#define CFDDEMCOUPLING
+
 // Check for nan/inf values in fluid solver kernels
 #define CHECK_NS_FINITE
 

@@ -2347,7 +2347,7 @@ __global__ void findInteractionForce(
                         *v_rel_length/d_avg)*v_rel;
         }
 
-        if (v_rel_length > 1.0e-5)
+        /*if (v_rel_length > 1.0e-5)
                 printf("%d,%d,%d\tfi = %f,%f,%f"
                     "\tphi = %f\td_avg = %f"
                     "\tv_rel = %f,%f,%f\t"
@@ -2355,7 +2355,7 @@ __global__ void findInteractionForce(
                     x,y,z, fi.x, fi.y, fi.z,
                     phi, d_avg,
                     v_rel.x, v_rel.y, v_rel.z,
-                    re, cd);
+                    re, cd);*/
 
         __syncthreads();
         dev_ns_fi[cellidx] = fi;
