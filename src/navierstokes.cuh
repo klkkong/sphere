@@ -874,8 +874,8 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
     const Float dz = devC_grid.L[2]/nz;
 
     // Cell sphere radius
-    //const Float R = fmin(dx, fmin(dy,dz)) * 0.5;  // diameter = cell width
-    const Float R = fmin(dx, fmin(dy,dz));        // diameter = 2*cell width
+    const Float R = fmin(dx, fmin(dy,dz)) * 0.5; // diameter = cell width
+    //const Float R = fmin(dx, fmin(dy,dz));       // diameter = 2*cell width
     const Float cell_volume = 4.0/3.0*M_PI*R*R*R;
 
     Float void_volume = cell_volume;
@@ -916,12 +916,14 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
             unsigned int cellID, startIdx, endIdx, i;
 
             // Iterate over 27 neighbor cells, R = cell width
-            /*for (int z_dim=-1; z_dim<2; ++z_dim) { // z-axis
+            for (int z_dim=-1; z_dim<2; ++z_dim) { // z-axis
                 for (int y_dim=-1; y_dim<2; ++y_dim) { // y-axis
-                    for (int x_dim=-1; x_dim<2; ++x_dim) { // x-axis */
-            for (int z_dim=-2; z_dim<3; ++z_dim) { // z-axis
+                    for (int x_dim=-1; x_dim<2; ++x_dim) { // x-axis
+
+            // Iterate over 27 neighbor cells, R = 2*cell width
+            /*for (int z_dim=-2; z_dim<3; ++z_dim) { // z-axis
                 for (int y_dim=-2; y_dim<3; ++y_dim) { // y-axis
-                    for (int x_dim=-2; x_dim<3; ++x_dim) { // x-axis
+                    for (int x_dim=-2; x_dim<3; ++x_dim) { // x-axis */
 
                         // Index of neighbor cell this iteration is looking at
                         targetCell = gridPos + make_int3(x_dim, y_dim, z_dim);
@@ -1109,37 +1111,6 @@ __device__ Float3 gradient(
 
     // Find upwind coefficients
     //const Float kx = 
-
-    // Calculate central-difference gradients
-    return MAKE_FLOAT3(
-            (xp - xn)/(2.0*dx),
-            (yp - yn)/(2.0*dy),
-            (zp - zn)/(2.0*dz));
-}
-
-// Find the dv_i/di gradients in a cell in a homogeneous, cubic 3D vector field
-// using finite central differences
-__device__ Float3 gradient_vector(
-        const Float3* dev_vectorfield,
-        const unsigned int x,
-        const unsigned int y,
-        const unsigned int z,
-        const Float dx,
-        const Float dy,
-        const Float dz)
-{
-    // Read 6 neighbor cells
-    __syncthreads();
-    const Float xn = dev_vectorfield[idx(x-1,y,z)].x;
-    const Float xp = dev_vectorfield[idx(x+1,y,z)].x;
-    const Float yn = dev_vectorfield[idx(x,y-1,z)].y;
-    const Float yp = dev_vectorfield[idx(x,y+1,z)].y;
-    const Float zn = dev_vectorfield[idx(x,y,z-1)].z;
-    const Float zp = dev_vectorfield[idx(x,y,z+1)].z;
-
-    //__syncthreads();
-    //if (p != 0.0)
-        //printf("p[%d,%d,%d] =\t%f\n", x,y,z, p);
 
     // Calculate central-difference gradients
     return MAKE_FLOAT3(
