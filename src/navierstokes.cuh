@@ -1132,13 +1132,54 @@ __device__ Float divergence(
     // Read 6 neighbor cells
     __syncthreads();
     const Float3 xn = dev_vectorfield[idx(x-1,y,z)];
+    //const Float3 v  = dev_vectorfield[idx(x,y,z)];
     const Float3 xp = dev_vectorfield[idx(x+1,y,z)];
     const Float3 yn = dev_vectorfield[idx(x,y-1,z)];
     const Float3 yp = dev_vectorfield[idx(x,y+1,z)];
     const Float3 zn = dev_vectorfield[idx(x,y,z-1)];
     const Float3 zp = dev_vectorfield[idx(x,y,z+1)];
 
-    // Calculate the central-difference gradients and divergence
+    // Calculate upwind coefficients
+    /*const Float3 a = MAKE_FLOAT3(
+            copysign(1.0, v.x),
+            copysign(1.0, v.y),
+            copysign(1.0, v.z));
+    const Float a_xn = fmin(a.x, 0);
+    const Float a_xp = fmax(a.x, 0);
+    const Float a_yn = fmin(a.y, 0);
+    const Float a_yp = fmax(a.y, 0);
+    const Float a_zn = fmin(a.z, 0);
+    const Float a_zp = fmax(a.z, 0);
+
+    // Calculate the upwind differences
+    const Float grad_uw_xn = (v.x - xn.x)/dx;
+    const Float grad_uw_xp = (xp.x - v.x)/dx;
+    const Float grad_uw_yn = (v.y - yn.y)/dy;
+    const Float grad_uw_yp = (yp.y - v.y)/dy;
+    const Float grad_uw_zn = (v.z - zn.z)/dz;
+    const Float grad_uw_zp = (zp.z - v.z)/dz;
+
+    const Float3 grad_uw = MAKE_FLOAT3(
+            a_xp*grad_uw_xn + a_xn*grad_uw_xp,
+            a_yp*grad_uw_yn + a_yn*grad_uw_yp,
+            a_zp*grad_uw_zn + a_zn*grad_uw_zp);
+
+    // Calculate the central-difference gradients
+    const Float3 grad_cd = MAKE_FLOAT3(
+            (xp.x - xn.x)/(2.0*dx),
+            (yp.y - yn.y)/(2.0*dy),
+            (zp.z - zn.z)/(2.0*dz));
+
+    // Weighting parameter
+    const Float tau = 0.5;
+
+    // Determine the weighted average of both discretizations
+    const Float3 grad = tau*grad_uw + (1.0 - tau)*grad_cd;
+
+    // Calculate the divergence
+    return grad.x + grad.y + grad.z;*/
+
+    // Calculate the central difference gradrients and the divergence
     return
         (xp.x - xn.x)/(2.0*dx) +
         (yp.y - yn.y)/(2.0*dy) +
@@ -1357,6 +1398,7 @@ __global__ void findNSdivphiviv(
         // Read porosity and velocity in the 6 neighbor cells
         __syncthreads();
         const Float  phi_xn = dev_ns_phi[idx(x-1,y,z)];
+        //const Float  phi    = dev_ns_phi[idx(x,y,z)];
         const Float  phi_xp = dev_ns_phi[idx(x+1,y,z)];
         const Float  phi_yn = dev_ns_phi[idx(x,y-1,z)];
         const Float  phi_yp = dev_ns_phi[idx(x,y+1,z)];
@@ -1364,11 +1406,74 @@ __global__ void findNSdivphiviv(
         const Float  phi_zp = dev_ns_phi[idx(x,y,z+1)];
 
         const Float3 v_xn = dev_ns_v[idx(x-1,y,z)];
+        //const Float3 v    = dev_ns_v[idx(x,y,z)];
         const Float3 v_xp = dev_ns_v[idx(x+1,y,z)];
         const Float3 v_yn = dev_ns_v[idx(x,y-1,z)];
         const Float3 v_yp = dev_ns_v[idx(x,y+1,z)];
         const Float3 v_zn = dev_ns_v[idx(x,y,z-1)];
         const Float3 v_zp = dev_ns_v[idx(x,y,z+1)];
+
+        // Calculate upwind coefficients
+        /*const Float3 a = MAKE_FLOAT3(
+                copysign(1.0, v.x),
+                copysign(1.0, v.y),
+                copysign(1.0, v.z));
+
+        // Calculate the divergence based on the upwind differences (Griebel et
+        // al. 1998, eq. 3.9)
+        const Float3 div_uw = MAKE_FLOAT3(
+                // x
+                ((1.0 + a.x)*(phi*v.x*v.x - phi_xn*v_xn.x*v_xn.x) +
+                (1.0 - a.x)*(phi_xp*v_xp.x*v_xp.x - phi*v.x*v.x))/(2.0*dx) +
+
+                ((1.0 + a.y)*(phi*v.x*v.y - phi_yn*v_yn.x*v_yn.y) +
+                (1.0 - a.y)*(phi_yp*v_yp.x*v_yp.y - phi*v.x*v.y))/(2.0*dy) +
+
+                ((1.0 + a.z)*(phi*v.x*v.z - phi_zn*v_zn.x*v_zn.z) +
+                (1.0 - a.z)*(phi_zp*v_zp.x*v_zp.z - phi*v.x*v.z))/(2.0*dz),
+
+                // y
+                ((1.0 + a.x)*(phi*v.y*v.x - phi_xn*v_xn.y*v_xn.x) +
+                (1.0 - a.x)*(phi_xp*v_xp.y*v_xp.x - phi*v.y*v.x))/(2.0*dx) +
+
+                ((1.0 + a.y)*(phi*v.y*v.y - phi_yn*v_yn.y*v_yn.y) +
+                (1.0 - a.y)*(phi_yp*v_yp.y*v_yp.y - phi*v.y*v.y))/(2.0*dy) +
+
+                ((1.0 + a.z)*(phi*v.y*v.z - phi_zn*v_zn.y*v_zn.z) +
+                (1.0 - a.z)*(phi_zp*v_zp.y*v_zp.z - phi*v.y*v.z))/(2.0*dz),
+
+                // z
+                ((1.0 + a.x)*(phi*v.z*v.x - phi_xn*v_xn.z*v_xn.x) +
+                (1.0 - a.x)*(phi_xp*v_xp.z*v_xp.x - phi*v.z*v.x))/(2.0*dx) +
+
+                ((1.0 + a.y)*(phi*v.z*v.y - phi_yn*v_yn.z*v_yn.y) +
+                (1.0 - a.y)*(phi_yp*v_yp.z*v_yp.y - phi*v.z*v.y))/(2.0*dy) +
+
+                ((1.0 + a.z)*(phi*v.z*v.z - phi_zn*v_zn.z*v_zn.z) +
+                (1.0 - a.z)*(phi_zp*v_zp.z*v_zp.z - phi*v.z*v.z))/(2.0*dz));
+
+
+        // Calculate the divergence based on the central-difference gradients
+        const Float3 div_cd = MAKE_FLOAT3(
+                // x
+                (phi_xp*v_xp.x*v_xp.x - phi_xn*v_xn.x*v_xn.x)/(2.0*dx) +
+                (phi_yp*v_yp.x*v_yp.y - phi_yn*v_yn.x*v_yn.y)/(2.0*dy) +
+                (phi_zp*v_zp.x*v_zp.z - phi_zn*v_zn.x*v_zn.z)/(2.0*dz),
+                // y
+                (phi_xp*v_xp.y*v_xp.x - phi_xn*v_xn.y*v_xn.x)/(2.0*dx) +
+                (phi_yp*v_yp.y*v_yp.y - phi_yn*v_yn.y*v_yn.y)/(2.0*dy) +
+                (phi_zp*v_zp.y*v_zp.z - phi_zn*v_zn.y*v_zn.z)/(2.0*dz),
+                // z
+                (phi_xp*v_xp.z*v_xp.x - phi_xn*v_xn.z*v_xn.x)/(2.0*dx) +
+                (phi_yp*v_yp.z*v_yp.y - phi_yn*v_yn.z*v_yn.y)/(2.0*dy) +
+                (phi_zp*v_zp.z*v_zp.z - phi_zn*v_zn.z*v_zn.z)/(2.0*dz));
+
+        // Weighting parameter
+        const Float tau = 0.5;
+
+        // Determine the weighted average of both discretizations
+        const Float3 div_phi_vi_v = tau*div_uw + (1.0 - tau)*div_cd;
+        */
 
         // Calculate the divergence: div(phi*v_i*v)
         const Float3 div_phi_vi_v = MAKE_FLOAT3(
