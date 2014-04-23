@@ -874,7 +874,8 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
     const Float dz = devC_grid.L[2]/nz;
 
     // Cell sphere radius
-    const Float R = fmin(dx, fmin(dy,dz)) * 0.5;
+    //const Float R = fmin(dx, fmin(dy,dz)) * 0.5;  // diameter = cell width
+    const Float R = fmin(dx, fmin(dy,dz));        // diameter = 2*cell width
     const Float cell_volume = 4.0/3.0*M_PI*R*R*R;
 
     Float void_volume = cell_volume;
@@ -914,10 +915,13 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
 
             unsigned int cellID, startIdx, endIdx, i;
 
-            // Iterate over 27 neighbor cells
-            for (int z_dim=-1; z_dim<2; ++z_dim) { // z-axis
+            // Iterate over 27 neighbor cells, R = cell width
+            /*for (int z_dim=-1; z_dim<2; ++z_dim) { // z-axis
                 for (int y_dim=-1; y_dim<2; ++y_dim) { // y-axis
-                    for (int x_dim=-1; x_dim<2; ++x_dim) { // x-axis
+                    for (int x_dim=-1; x_dim<2; ++x_dim) { // x-axis */
+            for (int z_dim=-2; z_dim<3; ++z_dim) { // z-axis
+                for (int y_dim=-2; y_dim<3; ++y_dim) { // y-axis
+                    for (int x_dim=-2; x_dim<3; ++x_dim) { // x-axis
 
                         // Index of neighbor cell this iteration is looking at
                         targetCell = gridPos + make_int3(x_dim, y_dim, z_dim);
@@ -1103,6 +1107,9 @@ __device__ Float3 gradient(
     //if (p != 0.0)
         //printf("p[%d,%d,%d] =\t%f\n", x,y,z, p);
 
+    // Find upwind coefficients
+    //const Float kx = 
+
     // Calculate central-difference gradients
     return MAKE_FLOAT3(
             (xp - xn)/(2.0*dx),
@@ -1110,38 +1117,9 @@ __device__ Float3 gradient(
             (zp - zn)/(2.0*dz));
 }
 
-// Find the gradients of the velocity at the center of the cell with index x,y,z
-// and cell size dx,dy,dz
-__device__ Float3 v_gradient(
-        const Float* dev_ns_v_x,
-        const Float* dev_ns_v_y,
-        const Float* dev_ns_v_z,
-        const unsigned int x,
-        const unsigned int y,
-        const unsigned int z,
-        const Float dx,
-        const Float dy,
-        const Float dz)
-{
-    // Read the six cell face velocities
-    __syncthreads();
-    const Float v_xn = dev_ns_v_x[vidx(x,y,z)];
-    const Float v_xp = dev_ns_v_x[vidx(x+1,y,z)];
-    const Float v_yn = dev_ns_v_y[vidx(x,y,z)];
-    const Float v_yp = dev_ns_v_y[vidx(x,y+1,z)];
-    const Float v_zn = dev_ns_v_z[vidx(x,y,z)];
-    const Float v_zp = dev_ns_v_y[vidx(x,y,z+1)];
-
-    // Calculate the velocity gradient
-    return MAKE_FLOAT3(
-            (v_xp - v_xn)/dx,
-            (v_yp - v_yn)/dy,
-            (v_zp - v_zn)/dz);
-}
-
 // Find the dv_i/di gradients in a cell in a homogeneous, cubic 3D vector field
 // using finite central differences
-__device__ Float3 gradient(
+__device__ Float3 gradient_vector(
         const Float3* dev_vectorfield,
         const unsigned int x,
         const unsigned int y,
