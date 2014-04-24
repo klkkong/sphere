@@ -1077,9 +1077,7 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
 
     // Cell sphere radius
     const Float R = fmin(dx, fmin(dy,dz));       // diameter = 2*cell width
-    const Float cell_volume = 4.0/3.0*M_PI*R*R*R;
 
-    Float void_volume = cell_volume;
     Float4 xr;  // particle pos. and radius
 
     // check that we are not outside the fluid grid
@@ -1112,9 +1110,21 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
             int3 targetCell;
 
             // The distance modifier for particles across periodic boundaries
-            Float3 dist, distmod;
+            Float3 distmod;
 
             unsigned int cellID, startIdx, endIdx, i;
+
+            // Diagonal strain rate tensor components
+            Float3 epsilon_ii = MAKE_FLOAT3(0.0, 0.0, 0.0);
+
+            // Vector pointing from cell center to particle center
+            Float3 x_p;
+
+            // Normal vector pointing from cell center towards particle center
+            Float3 n_p;
+
+            // Kernel function (2D disc)
+            const Float dw_q = -1.0;
 
             // Iterate over 27 neighbor cells, R = 2*cell width
             for (int z_dim=-2; z_dim<3; ++z_dim) { // z-axis
@@ -1153,34 +1163,40 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
                                     v  = dev_vel_sorted[i];
                                     r = xr.w;
 
-                                    // Find center distance
-                                    dist = MAKE_FLOAT3(
-                                            X.x - xr.x, 
-                                            X.y - xr.y,
-                                            X.z - xr.z);
-                                    dist += distmod;
-                                    d = length(dist);
+                                    // Find center distance and normal vector
+                                    x_p = MAKE_FLOAT3(
+                                            xr.x - X.x,
+                                            xr.y - X.y,
+                                            xr.z - X.z);
+                                    d = length(x_p);
+                                    n_p = x_p/length(x_p);
 
                                     // Lens shaped intersection
                                     if ((R - r) < d && d < (R + r)) {
-                                        void_volume -=
+                                        /*void_volume -=
                                             1.0/(12.0*d) * (
                                                     M_PI*(R + r - d)*(R + r - d)
                                                     *(d*d + 2.0*d*r - 3.0*r*r
                                                         + 2.0*d*R + 6.0*r*R
-                                                        - 3.0*R*R) );
+                                                        - 3.0*R*R) );*/
                                         v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
                                         d_avg += 2.0*r;
+                                        epsilon_ii +=
+                                            dw_q*MAKE_FLOAT3(v.x, v.y, v.z)*n_p;
                                         n++;
                                     }
 
                                     // Particle fully contained in cell sphere
                                     if (d <= R - r) {
-                                        void_volume -= 4.0/3.0*M_PI*r*r*r;
+                                        //void_volume -= 4.0/3.0*M_PI*r*r*r;
                                         v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
                                         d_avg += 2.0*r;
+                                        epsilon_ii +=
+                                            dw_q*MAKE_FLOAT3(v.x, v.y, v.z)*n_p;
                                         n++;
                                     }
+
+
                                 }
                             }
                         }
@@ -1188,18 +1204,19 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
                 }
             }
 
+            epsilon_ii /= R;
+
+            const Float dphi =
+                (epsilon_ii.x + epsilon_ii.y + epsilon_ii.z)*devC_dt;
+            phi = phi_0 + dphi/devC_dt;
+
+            // Make sure that the porosity is in the interval [0.0;1.0]
+            phi = fmin(1.00, fmax(0.00, phi));
+
             if (phi < 0.999) {
                 v_avg /= n;
                 d_avg /= n;
             }
-
-            // Make sure that the porosity is in the interval [0.0;1.0]
-            phi = fmin(1.00, fmax(0.00, void_volume/cell_volume));
-            //phi = void_volume/cell_volume;
-
-            Float dphi = phi - phi_0;
-            if (iteration == 0)
-                dphi = 0.0;
 
             // report values to stdout for debugging
             //printf("%d,%d,%d\tphi = %f dphi = %f v_avg = %f,%f,%f d_avg = %f\n",
