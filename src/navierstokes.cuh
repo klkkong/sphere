@@ -874,8 +874,8 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
     const Float dz = devC_grid.L[2]/nz;
 
     // Cell sphere radius
-    const Float R = fmin(dx, fmin(dy,dz)) * 0.5; // diameter = cell width
-    //const Float R = fmin(dx, fmin(dy,dz));       // diameter = 2*cell width
+    //const Float R = fmin(dx, fmin(dy,dz)) * 0.5; // diameter = cell width
+    const Float R = fmin(dx, fmin(dy,dz));       // diameter = 2*cell width
     const Float cell_volume = 4.0/3.0*M_PI*R*R*R;
 
     Float void_volume = cell_volume;
@@ -916,14 +916,14 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
             unsigned int cellID, startIdx, endIdx, i;
 
             // Iterate over 27 neighbor cells, R = cell width
-            for (int z_dim=-1; z_dim<2; ++z_dim) { // z-axis
+            /*for (int z_dim=-1; z_dim<2; ++z_dim) { // z-axis
                 for (int y_dim=-1; y_dim<2; ++y_dim) { // y-axis
-                    for (int x_dim=-1; x_dim<2; ++x_dim) { // x-axis
+                    for (int x_dim=-1; x_dim<2; ++x_dim) { // x-axis*/
 
             // Iterate over 27 neighbor cells, R = 2*cell width
-            /*for (int z_dim=-2; z_dim<3; ++z_dim) { // z-axis
+            for (int z_dim=-2; z_dim<3; ++z_dim) { // z-axis
                 for (int y_dim=-2; y_dim<3; ++y_dim) { // y-axis
-                    for (int x_dim=-2; x_dim<3; ++x_dim) { // x-axis */
+                    for (int x_dim=-2; x_dim<3; ++x_dim) { // x-axis
 
                         // Index of neighbor cell this iteration is looking at
                         targetCell = gridPos + make_int3(x_dim, y_dim, z_dim);
@@ -934,7 +934,8 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
                         if (findDistMod(&targetCell, &distmod) != -1) {
 
                             // Calculate linear cell ID
-                            cellID = targetCell.x + targetCell.y * devC_grid.num[0]
+                            cellID = targetCell.x
+                                + targetCell.y * devC_grid.num[0]
                                 + (devC_grid.num[0] * devC_grid.num[1])
                                 * targetCell.z; 
 
@@ -1045,6 +1046,194 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
     }
 }
 
+// Find the porosity in each cell on the base of a sphere, centered at the cell
+// center. 
+__global__ void findPorositiesVelocitiesDiametersSphericalGradient(
+        const unsigned int* dev_cellStart,
+        const unsigned int* dev_cellEnd,
+        const Float4* dev_x_sorted,
+        const Float4* dev_vel_sorted,
+        Float*  dev_ns_phi,
+        Float*  dev_ns_dphi,
+        Float3* dev_ns_vp_avg,
+        Float*  dev_ns_d_avg,
+        const unsigned int iteration,
+        const unsigned int np)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+    
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    // Cell dimensions
+    const Float dx = devC_grid.L[0]/nx;
+    const Float dy = devC_grid.L[1]/ny;
+    const Float dz = devC_grid.L[2]/nz;
+
+    // Cell sphere radius
+    const Float R = fmin(dx, fmin(dy,dz));       // diameter = 2*cell width
+    const Float cell_volume = 4.0/3.0*M_PI*R*R*R;
+
+    Float void_volume = cell_volume;
+    Float4 xr;  // particle pos. and radius
+
+    // check that we are not outside the fluid grid
+    if (x < nx && y < ny && z < nz) {
+
+        if (np > 0) {
+
+            // Cell sphere center position
+            const Float3 X = MAKE_FLOAT3(
+                    x*dx + 0.5*dx,
+                    y*dy + 0.5*dy,
+                    z*dz + 0.5*dz);
+
+            Float d, r;
+            Float phi = 1.00;
+            Float4 v;
+            unsigned int n = 0;
+
+            Float3 v_avg = MAKE_FLOAT3(0.0, 0.0, 0.0);
+            Float  d_avg = 0.0;
+
+            // Read old porosity
+            __syncthreads();
+            Float phi_0 = dev_ns_phi[idx(x,y,z)];
+
+            // The cell 3d index
+            const int3 gridPos = make_int3((int)x,(int)y,(int)z);
+
+            // The neighbor cell 3d index
+            int3 targetCell;
+
+            // The distance modifier for particles across periodic boundaries
+            Float3 dist, distmod;
+
+            unsigned int cellID, startIdx, endIdx, i;
+
+            // Iterate over 27 neighbor cells, R = 2*cell width
+            for (int z_dim=-2; z_dim<3; ++z_dim) { // z-axis
+                for (int y_dim=-2; y_dim<3; ++y_dim) { // y-axis
+                    for (int x_dim=-2; x_dim<3; ++x_dim) { // x-axis
+
+                        // Index of neighbor cell this iteration is looking at
+                        targetCell = gridPos + make_int3(x_dim, y_dim, z_dim);
+
+                        // Get distance modifier for interparticle
+                        // vector, if it crosses a periodic boundary
+                        distmod = MAKE_FLOAT3(0.0, 0.0, 0.0);
+                        if (findDistMod(&targetCell, &distmod) != -1) {
+
+                            // Calculate linear cell ID
+                            cellID = targetCell.x
+                                + targetCell.y * devC_grid.num[0]
+                                + (devC_grid.num[0] * devC_grid.num[1])
+                                * targetCell.z; 
+
+                            // Lowest particle index in cell
+                            startIdx = dev_cellStart[cellID];
+
+                            // Make sure cell is not empty
+                            if (startIdx != 0xffffffff) {
+
+                                // Highest particle index in cell
+                                endIdx = dev_cellEnd[cellID];
+
+                                // Iterate over cell particles
+                                for (i=startIdx; i<endIdx; ++i) {
+
+                                    // Read particle position and radius
+                                    __syncthreads();
+                                    xr = dev_x_sorted[i];
+                                    v  = dev_vel_sorted[i];
+                                    r = xr.w;
+
+                                    // Find center distance
+                                    dist = MAKE_FLOAT3(
+                                            X.x - xr.x, 
+                                            X.y - xr.y,
+                                            X.z - xr.z);
+                                    dist += distmod;
+                                    d = length(dist);
+
+                                    // Lens shaped intersection
+                                    if ((R - r) < d && d < (R + r)) {
+                                        void_volume -=
+                                            1.0/(12.0*d) * (
+                                                    M_PI*(R + r - d)*(R + r - d)
+                                                    *(d*d + 2.0*d*r - 3.0*r*r
+                                                        + 2.0*d*R + 6.0*r*R
+                                                        - 3.0*R*R) );
+                                        v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
+                                        d_avg += 2.0*r;
+                                        n++;
+                                    }
+
+                                    // Particle fully contained in cell sphere
+                                    if (d <= R - r) {
+                                        void_volume -= 4.0/3.0*M_PI*r*r*r;
+                                        v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
+                                        d_avg += 2.0*r;
+                                        n++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (phi < 0.999) {
+                v_avg /= n;
+                d_avg /= n;
+            }
+
+            // Make sure that the porosity is in the interval [0.0;1.0]
+            phi = fmin(1.00, fmax(0.00, void_volume/cell_volume));
+            //phi = void_volume/cell_volume;
+
+            Float dphi = phi - phi_0;
+            if (iteration == 0)
+                dphi = 0.0;
+
+            // report values to stdout for debugging
+            //printf("%d,%d,%d\tphi = %f dphi = %f v_avg = %f,%f,%f d_avg = %f\n",
+            //       x,y,z, phi, dphi, v_avg.x, v_avg.y, v_avg.z, d_avg);
+
+            // Save porosity, porosity change, average velocity and average diameter
+            __syncthreads();
+            const unsigned int cellidx = idx(x,y,z);
+            //phi = 0.5; dphi = 0.0; // disable porosity effects const unsigned int cellidx = idx(x,y,z);
+            dev_ns_phi[cellidx]  = phi;
+            dev_ns_dphi[cellidx] = dphi;
+            dev_ns_vp_avg[cellidx] = v_avg;
+            dev_ns_d_avg[cellidx]  = d_avg;
+
+#ifdef CHECK_NS_FINITE
+            (void)checkFiniteFloat("phi", x, y, z, phi);
+            (void)checkFiniteFloat("dphi", x, y, z, dphi);
+            (void)checkFiniteFloat3("v_avg", x, y, z, v_avg);
+            (void)checkFiniteFloat("d_avg", x, y, z, d_avg);
+#endif
+        } else {
+            // np=0: there are no particles
+
+            __syncthreads();
+            const unsigned int cellidx = idx(x,y,z);
+
+            dev_ns_dphi[cellidx] = 0.0;
+
+            dev_ns_vp_avg[cellidx] = MAKE_FLOAT3(0.0, 0.0, 0.0);
+            dev_ns_d_avg[cellidx]  = 0.0;
+        }
+    }
+}
+
 // Modulate the hydraulic pressure at the upper boundary
 __global__ void setUpperPressureNS(
         Float* dev_ns_p,
@@ -1108,9 +1297,6 @@ __device__ Float3 gradient(
     //__syncthreads();
     //if (p != 0.0)
         //printf("p[%d,%d,%d] =\t%f\n", x,y,z, p);
-
-    // Find upwind coefficients
-    //const Float kx = 
 
     // Calculate central-difference gradients
     return MAKE_FLOAT3(
@@ -1907,8 +2093,6 @@ __global__ void findNSforcing(
         }
 
         // Find the gradient of epsilon, which changes during Jacobi iterations
-        // TODO: Should the gradient of epsilon also be fixed according to BC's
-        // here?
         const Float3 grad_epsilon
             = gradient(dev_ns_epsilon, x, y, z, dx, dy, dz);
 
