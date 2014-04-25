@@ -2328,6 +2328,7 @@ class sim:
             has been specified
         :type hydrostatic: bool
         '''
+        self.fluid = True
         self.mu = numpy.ones(1, dtype=numpy.float64) * mu
         self.rho_f = numpy.ones(1, dtype=numpy.float64) * rho
 

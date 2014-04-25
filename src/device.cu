@@ -844,7 +844,8 @@ __host__ void DEM::startTime()
             // velocities
             if (PROFILING == 1)
                 startTimer(&kernel_tic);
-            findPorositiesVelocitiesDiametersSpherical
+            //findPorositiesVelocitiesDiametersSpherical
+            findPorositiesVelocitiesDiametersSphericalGradient
                 <<<dimGridFluid, dimBlockFluid>>>(
                         dev_cellStart,
                         dev_cellEnd,

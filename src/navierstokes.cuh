@@ -1123,8 +1123,12 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
             // Normal vector pointing from cell center towards particle center
             Float3 n_p;
 
+            // Normalized sphere-particle distance
+            Float q;
+
             // Kernel function (2D disc)
-            const Float dw_q = -1.0;
+            //const Float dw_q = -1.0;
+            Float dw_q;
 
             // Iterate over 27 neighbor cells, R = 2*cell width
             for (int z_dim=-2; z_dim<3; ++z_dim) { // z-axis
@@ -1169,33 +1173,27 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
                                             xr.y - X.y,
                                             xr.z - X.z);
                                     d = length(x_p);
-                                    n_p = x_p/length(x_p);
+                                    n_p = x_p/d;
+                                    q = d/R;
 
-                                    // Lens shaped intersection
-                                    if ((R - r) < d && d < (R + r)) {
-                                        /*void_volume -=
-                                            1.0/(12.0*d) * (
-                                                    M_PI*(R + r - d)*(R + r - d)
-                                                    *(d*d + 2.0*d*r - 3.0*r*r
-                                                        + 2.0*d*R + 6.0*r*R
-                                                        - 3.0*R*R) );*/
-                                        v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
-                                        d_avg += 2.0*r;
-                                        epsilon_ii +=
-                                            dw_q*MAKE_FLOAT3(v.x, v.y, v.z)*n_p;
-                                        n++;
+
+                                    dw_q = 0.0;
+                                    if (0.0 < q && q < 1.0) {
+                                        // 2d disc approximation
+                                        //dw_q = -1.0;
+
+                                        // 3d sphere approximation
+                                        dw_q = -1.5*pow(-q + 1.0, 0.5)
+                                            *pow(q + 1.0, 0.5)
+                                            + 0.5*pow(-q + 1.0, 1.5)
+                                            *pow(q + 1.0, -0.5);
                                     }
 
-                                    // Particle fully contained in cell sphere
-                                    if (d <= R - r) {
-                                        //void_volume -= 4.0/3.0*M_PI*r*r*r;
-                                        v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
-                                        d_avg += 2.0*r;
-                                        epsilon_ii +=
-                                            dw_q*MAKE_FLOAT3(v.x, v.y, v.z)*n_p;
-                                        n++;
-                                    }
-
+                                    v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
+                                    d_avg += 2.0*r;
+                                    epsilon_ii +=
+                                        dw_q*MAKE_FLOAT3(v.x, v.y, v.z)*n_p;
+                                    n++;
 
                                 }
                             }
