@@ -1115,7 +1115,7 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
             unsigned int cellID, startIdx, endIdx, i;
 
             // Diagonal strain rate tensor components
-            Float3 epsilon_ii = MAKE_FLOAT3(0.0, 0.0, 0.0);
+            Float3 dot_epsilon_ii = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
             // Vector pointing from cell center to particle center
             Float3 x_p;
@@ -1126,8 +1126,7 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
             // Normalized sphere-particle distance
             Float q;
 
-            // Kernel function (2D disc)
-            //const Float dw_q = -1.0;
+            // Kernel function derivative value
             Float dw_q;
 
             // Iterate over 27 neighbor cells, R = 2*cell width
@@ -1179,10 +1178,10 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
 
                                     dw_q = 0.0;
                                     if (0.0 < q && q < 1.0) {
-                                        // 2d disc approximation
+                                        // kernel for 2d disc approximation
                                         //dw_q = -1.0;
 
-                                        // 3d sphere approximation
+                                        // kernel for 3d sphere approximation
                                         dw_q = -1.5*pow(-q + 1.0, 0.5)
                                             *pow(q + 1.0, 0.5)
                                             + 0.5*pow(-q + 1.0, 1.5)
@@ -1191,7 +1190,7 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
 
                                     v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
                                     d_avg += 2.0*r;
-                                    epsilon_ii +=
+                                    dot_epsilon_ii +=
                                         dw_q*MAKE_FLOAT3(v.x, v.y, v.z)*n_p;
                                     n++;
 
@@ -1202,11 +1201,17 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
                 }
             }
 
-            epsilon_ii /= R;
+            dot_epsilon_ii /= R;
+            const Float dot_epsilon_kk =
+                dot_epsilon_ii.x + dot_epsilon_ii.y + dot_epsilon_ii.z;
 
             const Float dphi =
-                (epsilon_ii.x + epsilon_ii.y + epsilon_ii.z)*devC_dt;
+                (1.0 - fmin(phi_0,0.99))*dot_epsilon_kk*devC_dt;
             phi = phi_0 + dphi/devC_dt;
+
+            //if (dot_epsilon_kk != 0.0)
+                //printf("%d,%d,%d\tdot_epsilon_kk = %f\tdphi = %f\tphi = %f\n",
+                        //x,y,z, dot_epsilon_kk, dphi, phi);
 
             // Make sure that the porosity is in the interval [0.0;1.0]
             phi = fmin(1.00, fmax(0.00, phi));
