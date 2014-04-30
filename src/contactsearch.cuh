@@ -31,7 +31,7 @@ __device__ int findDistMod(int3* targetCell, Float3* distmod)
         // Periodic y-boundary
         if (targetCell->y < 0) {
             //targetCell->y = devC_grid.num[1] - 1;
-            targetCell->y += devC_grid.num[0];
+            targetCell->y += devC_grid.num[1];
             *distmod += MAKE_FLOAT3(0.0f, devC_grid.L[1], 0.0f);
         }
         if (targetCell->y >= devC_grid.num[1]) {
