@@ -137,6 +137,7 @@ struct NavierStokes {
     Float   beta;           // Solver parameter: Solution method
     Float   tolerance;      // Solver parameter: Max residual tolerance
     unsigned int maxiter;   // Solver parameter: Max iterations to perform
+    unsigned int ndem;      // Solver parameter: DEM time steps per CFD step
 };
 
 // Image structure

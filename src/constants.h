@@ -10,14 +10,13 @@
 // Define the max. number of walls
 #define MAXWALLS 6
 
-
 const Float PI = 3.14159265358979;
 
 // Number of dimensions (1 and 2 NOT functional)
 const unsigned int ND = 3;
 
 // Define source code version
-const double VERSION = 1.00;
+const double VERSION = 1.01;
 
 // Max. number of contacts per particle
 //const int NC = 16;

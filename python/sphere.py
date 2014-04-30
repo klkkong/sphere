@@ -12,7 +12,7 @@ numpy.seterr(all='warn', over='raise')
 
 # Sphere version number. This field should correspond to the value in
 # `../src/constants.h`.
-VERSION=1.0
+VERSION=1.01
 
 class sim:
     '''
@@ -321,6 +321,9 @@ class sim:
             # The maximum number of iterations to perform per time step
             self.maxiter = numpy.array(1e4)
 
+            # The number of DEM time steps to perform between CFD updates
+            self.ndem = numpy.array(1)
+
 
     def __cmp__(self, other):
         '''
@@ -573,6 +576,9 @@ class sim:
             elif (self.maxiter != other.maxiter):
                 print(82)
                 return 82
+            elif (self.ndem != other.ndem):
+                print(83)
+                return 83
 
         # All equal
         return 0
@@ -899,6 +905,8 @@ class sim:
                 self.tolerance =\
                         numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.maxiter = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
+                if (self.version >= 1.01):
+                    self.ndem = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
 
         finally:
             if fh is not None:
@@ -1044,6 +1052,7 @@ class sim:
                 fh.write(self.beta.astype(numpy.float64))
                 fh.write(self.tolerance.astype(numpy.float64))
                 fh.write(self.maxiter.astype(numpy.uint32))
+                fh.write(self.ndem.astype(numpy.uint32))
 
         finally:
             if fh is not None:
@@ -2363,6 +2372,7 @@ class sim:
         self.beta = numpy.array(0.0)
         self.tolerance = numpy.array(1.0e-8)
         self.maxiter = numpy.array(1e4)
+        self.ndem = numpy.array(1)
 
     def defaultParams(self,
             mu_s = 0.4,
@@ -3832,7 +3842,8 @@ class sim:
         :type theta: float
 
         Other solver parameter setting functions: :func:`setTheta()`,
-        :func:`setBeta()`, :func:`setTolerance()` and :func:`setMaxIterations()`
+        :func:`setBeta()`, :func:`setTolerance()`,
+        :func:`setDEMstepsPerCFDstep()` and :func:`setMaxIterations()`
         '''
         self.gamma = numpy.asarray(gamma)
 
@@ -3851,7 +3862,8 @@ class sim:
         :type theta: float
 
         Other solver parameter setting functions: :func:`setGamma()`,
-        :func:`setBeta()`, :func:`setTolerance()` and :func:`setMaxIterations()`
+        :func:`setBeta()`, :func:`setTolerance()`,
+        :func:`setDEMstepsPerCFDstep()` and :func:`setMaxIterations()`
         '''
         self.theta = numpy.asarray(theta)
 
@@ -3869,7 +3881,8 @@ class sim:
         The default and recommended value is 0.0.
 
         Other solver parameter setting functions: :func:`setGamma()`,
-        :func:`setTheta()`, :func:`setTolerance()` and
+        :func:`setTheta()`, :func:`setTolerance()`,
+        :func:`setDEMstepsPerCFDstep()` and
         :func:`setMaxIterations()`
         '''
         self.beta = numpy.asarray(beta)
@@ -3887,7 +3900,7 @@ class sim:
         :type tolerance: float
 
         Other solver parameter setting functions: :func:`setGamma()`,
-        :func:`setTheta()`, :func:`setBeta()` and
+        :func:`setTheta()`, :func:`setBeta()`, :func:`setDEMstepsPerCFDstep()` and
         :func:`setMaxIterations()`
         '''
         self.tolerance = numpy.asarray(tolerance)
@@ -3907,9 +3920,26 @@ class sim:
         :type maxiter: int
 
         Other solver parameter setting functions: :func:`setGamma()`,
-        :func:`setTheta()`, :func:`setBeta()` and :func:`setTolerance()`
+        :func:`setTheta()`, :func:`setBeta()`, :func:`setDEMstepsPerCFDstep()`
+        and :func:`setTolerance()`
         '''
         self.maxiter = numpy.asarray(maxiter)
+
+    def setDEMstepsPerCFDstep(self, ndem):
+        '''
+        A fluid solver parameter, the value of the maxiter parameter denotes the
+        number of DEM time steps to be performed per CFD time step.
+
+        The default value is 1.
+
+        :param ndem: The DEM/CFD time step ratio
+        :type ndem: int
+
+        Other solver parameter setting functions: :func:`setGamma()`,
+        :func:`setTheta()`, :func:`setBeta()`, :func:`setTolerance()` and
+        :func:`setMaxIterations()`.
+        '''
+        self.ndem = numpy.asarray(ndem)
 
     def visualize(self, method = 'energy', savefig = True, outformat = 'png'):
         '''

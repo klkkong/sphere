@@ -84,7 +84,7 @@ void DEM::readbin(const char *target)
     if (verbose == 1)
         cout << "  Allocating host memory:                         ";
     // Allocate more host arrays
-    k.x	     = new Float4[np];
+    k.x      = new Float4[np];
     k.xysum  = new Float2[np];
     k.vel    = new Float4[np];
     k.force  = new Float4[np];
@@ -96,7 +96,7 @@ void DEM::readbin(const char *target)
     e.es     = new Float[np];
     e.ev_dot = new Float[np];
     e.ev     = new Float[np];
-    e.p	     = new Float[np];
+    e.p      = new Float[np];
 
     if (verbose == 1)
         cout << "Done\n";
@@ -289,6 +289,7 @@ void DEM::readbin(const char *target)
         ifs.read(as_bytes(ns.beta), sizeof(Float));
         ifs.read(as_bytes(ns.tolerance), sizeof(Float));
         ifs.read(as_bytes(ns.maxiter), sizeof(unsigned int));
+        ifs.read(as_bytes(ns.ndem), sizeof(unsigned int));
 
         if (verbose == 1)
             cout << "Done" << std::endl;
@@ -487,8 +488,8 @@ void DEM::writebin(const char *target)
             ofs.write(as_bytes(ns.beta), sizeof(Float));
             ofs.write(as_bytes(ns.tolerance), sizeof(Float));
             ofs.write(as_bytes(ns.maxiter), sizeof(unsigned int));
+            ofs.write(as_bytes(ns.ndem), sizeof(unsigned int));
         }
-
 
         // Close file if it is still open
         if (ofs.is_open())
