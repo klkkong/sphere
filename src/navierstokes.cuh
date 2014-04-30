@@ -922,6 +922,7 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
 
             // Iterate over 27 neighbor cells, R = 2*cell width
             for (int z_dim=-2; z_dim<3; ++z_dim) { // z-axis
+            //for (int z_dim=-1; z_dim<2; ++z_dim) { // z-axis
                 for (int y_dim=-2; y_dim<3; ++y_dim) { // y-axis
                     for (int x_dim=-2; x_dim<3; ++x_dim) { // x-axis
 

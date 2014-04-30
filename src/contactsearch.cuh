@@ -18,21 +18,25 @@ __device__ int findDistMod(int3* targetCell, Float3* distmod)
 
         // Periodic x-boundary
         if (targetCell->x < 0) {
-            targetCell->x = devC_grid.num[0] - 1;
+            //targetCell->x = devC_grid.num[0] - 1;
+            targetCell->x += devC_grid.num[0];
             *distmod += MAKE_FLOAT3(devC_grid.L[0], 0.0f, 0.0f);
         }
-        if (targetCell->x == devC_grid.num[0]) {
-            targetCell->x = 0;
+        if (targetCell->x >= devC_grid.num[0]) {
+            //targetCell->x = 0;
+            targetCell->x -= devC_grid.num[0];
             *distmod -= MAKE_FLOAT3(devC_grid.L[0], 0.0f, 0.0f);
         }
 
         // Periodic y-boundary
         if (targetCell->y < 0) {
-            targetCell->y = devC_grid.num[1] - 1;
+            //targetCell->y = devC_grid.num[1] - 1;
+            targetCell->y += devC_grid.num[0];
             *distmod += MAKE_FLOAT3(0.0f, devC_grid.L[1], 0.0f);
         }
-        if (targetCell->y == devC_grid.num[1]) {
-            targetCell->y = 0;
+        if (targetCell->y >= devC_grid.num[1]) {
+            //targetCell->y = 0;
+            targetCell->y -= devC_grid.num[1];
             *distmod -= MAKE_FLOAT3(0.0f, devC_grid.L[1], 0.0f);
         }
 
@@ -42,11 +46,13 @@ __device__ int findDistMod(int3* targetCell, Float3* distmod)
 
         // Periodic x-boundary
         if (targetCell->x < 0) {
-            targetCell->x = devC_grid.num[0] - 1;
+            //targetCell->x = devC_grid.num[0] - 1;
+            targetCell->x += devC_grid.num[0];
             *distmod += MAKE_FLOAT3(devC_grid.L[0], 0.0f, 0.0f);
         }
-        if (targetCell->x == devC_grid.num[0]) {
-            targetCell->x = 0;
+        if (targetCell->x >= devC_grid.num[0]) {
+            //targetCell->x = 0;
+            targetCell->x -= devC_grid.num[0];
             *distmod -= MAKE_FLOAT3(devC_grid.L[0], 0.0f, 0.0f);
         }
 
@@ -66,11 +72,10 @@ __device__ int findDistMod(int3* targetCell, Float3* distmod)
     }
 
     // Handle out-of-grid cases on z-axis
-    if (targetCell->z < 0 || targetCell->z == devC_grid.num[2])
+    if (targetCell->z < 0 || targetCell->z >= devC_grid.num[2])
         return -1;
-
-    // Return successfully
-    return 0;
+    else
+        return 0;
 }
 
 
