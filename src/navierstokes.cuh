@@ -1059,6 +1059,7 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
         Float3* dev_ns_vp_avg,
         Float*  dev_ns_d_avg,
         const unsigned int iteration,
+        const unsigned int ndem,
         const unsigned int np)
 {
     // 3D thread index
@@ -1207,8 +1208,8 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
                 dot_epsilon_ii.x + dot_epsilon_ii.y + dot_epsilon_ii.z;
 
             const Float dphi =
-                (1.0 - fmin(phi_0,0.99))*dot_epsilon_kk*devC_dt;
-            phi = phi_0 + dphi/devC_dt;
+                (1.0 - fmin(phi_0,0.99))*dot_epsilon_kk*ndem*devC_dt;
+            phi = phi_0 + dphi/(ndem*devC_dt);
 
             //if (dot_epsilon_kk != 0.0)
                 //printf("%d,%d,%d\tdot_epsilon_kk = %f\tdphi = %f\tphi = %f\n",
@@ -1911,6 +1912,7 @@ __global__ void findPredNSvelocities(
         int     bc_top,                 // in
         Float   beta,                   // in
         Float3* dev_ns_fi,              // in
+        unsigned int ndem,              // in
         Float3* dev_ns_v_p)             // out
 {
     // 3D thread index
@@ -1959,18 +1961,18 @@ __global__ void findPredNSvelocities(
         Float3 pressure_term = MAKE_FLOAT3(0.0, 0.0, 0.0);
         if (beta > 0.0) {
             grad_p = gradient(dev_ns_p, x, y, z, dx, dy, dz);
-            pressure_term = -beta/devC_params.rho_f*grad_p*devC_dt/phi;
+            pressure_term = -beta/devC_params.rho_f*grad_p*ndem*devC_dt/phi;
         }
 
         // Calculate the predicted velocity
         Float3 v_p = v
             + pressure_term
-            + 1.0/devC_params.rho_f*div_phi_tau*devC_dt/phi
+            + 1.0/devC_params.rho_f*div_phi_tau*ndem*devC_dt/phi
             + MAKE_FLOAT3(devC_params.g[0], devC_params.g[1], devC_params.g[2])
-                *devC_dt
-            - devC_dt/(devC_params.rho_f*phi)*f_i
+                *ndem*devC_dt
+            - ndem*devC_dt/(devC_params.rho_f*phi)*f_i
             - v*dphi/phi
-            - div_phi_vi_v*devC_dt/phi            // advection term
+            - div_phi_vi_v*ndem*devC_dt/phi            // advection term
             ;
 
         // Report velocity components to stdout for debugging
@@ -2017,7 +2019,8 @@ __global__ void findNSforcing(
         Float*  dev_ns_phi,
         Float*  dev_ns_dphi,
         Float3* dev_ns_v_p,
-        unsigned int nijac)
+        unsigned int nijac,
+        unsigned int ndem)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -2066,9 +2069,9 @@ __global__ void findNSforcing(
                 + dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi)
                 + dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
             f2 = grad_phi/phi;*/
-            f1 = div_v_p*devC_params.rho_f*phi/devC_dt
-                + dot(grad_phi, v_p)*devC_params.rho_f/devC_dt
-                + dphi*devC_params.rho_f/(devC_dt*devC_dt);
+            f1 = div_v_p*devC_params.rho_f*phi/(ndem*devC_dt)
+                + dot(grad_phi, v_p)*devC_params.rho_f/(ndem*devC_dt)
+                + dphi*devC_params.rho_f/(ndem*devC_dt*devC_dt);
             f2 = grad_phi/phi;
 
             // Report values terms in the forcing function for debugging
@@ -2392,7 +2395,8 @@ __global__ void updateNSvelocityPressure(
         Float*  dev_ns_epsilon,
         Float   beta,
         int     bc_bot,
-        int     bc_top)
+        int     bc_top,
+        unsigned int ndem)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -2431,7 +2435,7 @@ __global__ void updateNSvelocityPressure(
 
         // Find new velocity
         //Float3 v = v_p - devC_dt/devC_params.rho_f*grad_epsilon;
-        Float3 v = v_p - devC_dt/(devC_params.rho_f*phi)*grad_epsilon;
+        Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*phi)*grad_epsilon;
 
         // Print values for debugging
         /* if (z == 0) {
