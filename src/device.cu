@@ -1461,7 +1461,7 @@ __host__ void DEM::startTime()
             cout << "\r  Current simulation time: " 
                 << time.current << "/"
                 << time.total << " s. ("
-                << t_ratio << " s/s)       "; // << std::flush;
+                << t_ratio << " s_real/s_sim)       "; // << std::flush;
         }
 
 
