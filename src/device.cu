@@ -1291,7 +1291,8 @@ __host__ void DEM::startTime()
                         // Write the Jacobi iteration number and maximum value
                         // of the normalized residual to the log file
                         if (write_res_log == 1)
-                            reslog << nijac << '\t' << max_norm_res << std::endl;
+                            reslog << nijac << '\t' << max_norm_res
+                                << std::endl;
                     }
 
                     if (max_norm_res < ns.tolerance) {
