@@ -31,7 +31,7 @@ orig.vel[0,2] = -0.1
 #orig.vel[0,2] = -0.001
 #orig.setBeta(0.5)
 orig.setTolerance(1.0e-4)
-#orig.setDEMstepsPerCFDstep(100)
+orig.setDEMstepsPerCFDstep(100)
 orig.run(dry=True)
 orig.run(verbose=True)
 py = sphere.sim(sid = orig.sid, fluid = True)

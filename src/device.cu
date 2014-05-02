@@ -884,6 +884,7 @@ __host__ void DEM::startTime()
                 applyParticleInteractionForce<<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_fi,
                         dev_ns_phi,
+                        dev_ns_p,
                         dev_gridParticleIndex,
                         dev_cellStart,
                         dev_cellEnd,

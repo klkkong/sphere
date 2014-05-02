@@ -2632,6 +2632,7 @@ __global__ void findInteractionForce(
 __global__ void applyParticleInteractionForce(
         Float3* dev_ns_fi,                      // in
         Float*  dev_ns_phi,                     // in
+        Float*  dev_ns_p,                     // in
         unsigned int* dev_gridParticleIndex,    // in
         unsigned int* dev_cellStart,            // in
         unsigned int* dev_cellEnd,              // in
@@ -2643,13 +2644,24 @@ __global__ void applyParticleInteractionForce(
     const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
     const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
 
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    // Cell sizes
+    const Float dx = devC_grid.L[0]/nx;
+    const Float dy = devC_grid.L[1]/ny;
+    const Float dz = devC_grid.L[2]/nz;
+
     // Check that we are not outside the fluid grid
-    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
+    if (x < nx && y < ny && z < nz) {
 
         const unsigned int cellidx = idx(x,y,z);
 
         __syncthreads();
         const Float3 fi = dev_ns_fi[cellidx];
+        const Float3 grad_p = gradient(dev_ns_p, x, y, z, dx, dy, dz);
 
         // apply to all particle in the cell
         // Calculate linear cell ID
@@ -2675,10 +2687,11 @@ __global__ void applyParticleInteractionForce(
                 r = dev_x_sorted[i].w; // radius
                 //phi = dev_ns_phi[idx(x,y,z)];
 
-                // this term could include the pressure gradient
-                //fd = (-grad_p + fi/(1.0 - phi))*(4.0/3.0*M_PI*r*r*r);
-                //fd = (fi/(1.0 - phi))*(4.0/3.0*M_PI*r*r*r);
-                fd = fi*(4.0/3.0*M_PI*r*r*r);
+                // stokes drag force
+                //fd = fi*(4.0/3.0*M_PI*r*r*r);
+
+                    // pressure gradient force + stokes drag force
+                    fd = (-1.0*grad_p + fi)*(4.0/3.0*M_PI*r*r*r);
 
                 __syncthreads();
                 dev_force[origidx] += MAKE_FLOAT4(fd.x, fd.y, fd.z, 0.0);
