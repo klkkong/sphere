@@ -1260,8 +1260,46 @@ best results precision and performance-wise are obtained by using a beta
 of 0 and a low tolerance criteria value.</p>
 <p>The default and recommended value is 0.0.</p>
 <p>Other solver parameter setting functions: <a class="reference internal" href="#sphere.sim.setGamma" title="sphere.sim.setGamma"><tt class="xref py py-func docutils literal"><span class="pre">setGamma()</span></tt></a>,
-<a class="reference internal" href="#sphere.sim.setTheta" title="sphere.sim.setTheta"><tt class="xref py py-func docutils literal"><span class="pre">setTheta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setTolerance" title="sphere.sim.setTolerance"><tt class="xref py py-func docutils literal"><span class="pre">setTolerance()</span></tt></a> and
+<a class="reference internal" href="#sphere.sim.setTheta" title="sphere.sim.setTheta"><tt class="xref py py-func docutils literal"><span class="pre">setTheta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setTolerance" title="sphere.sim.setTolerance"><tt class="xref py py-func docutils literal"><span class="pre">setTolerance()</span></tt></a>,
+<a class="reference internal" href="#sphere.sim.setDEMstepsPerCFDstep" title="sphere.sim.setDEMstepsPerCFDstep"><tt class="xref py py-func docutils literal"><span class="pre">setDEMstepsPerCFDstep()</span></tt></a> and
 <a class="reference internal" href="#sphere.sim.setMaxIterations" title="sphere.sim.setMaxIterations"><tt class="xref py py-func docutils literal"><span class="pre">setMaxIterations()</span></tt></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setDEMstepsPerCFDstep">
+<tt class="descname">setDEMstepsPerCFDstep</tt><big>(</big><em>ndem</em><big>)</big><a class="headerlink" href="#sphere.sim.setDEMstepsPerCFDstep" title="Permalink to this definition">¶</a></dt>
+<dd><p>A fluid solver parameter, the value of the maxiter parameter denotes the
+number of DEM time steps to be performed per CFD time step.</p>
+<p>The default value is 1.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ndem</strong> (<em>int</em>) &#8211; The DEM/CFD time step ratio</td>
+</tr>
+</tbody>
+</table>
+<p>Other solver parameter setting functions: <a class="reference internal" href="#sphere.sim.setGamma" title="sphere.sim.setGamma"><tt class="xref py py-func docutils literal"><span class="pre">setGamma()</span></tt></a>,
+<a class="reference internal" href="#sphere.sim.setTheta" title="sphere.sim.setTheta"><tt class="xref py py-func docutils literal"><span class="pre">setTheta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setBeta" title="sphere.sim.setBeta"><tt class="xref py py-func docutils literal"><span class="pre">setBeta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setTolerance" title="sphere.sim.setTolerance"><tt class="xref py py-func docutils literal"><span class="pre">setTolerance()</span></tt></a> and
+<a class="reference internal" href="#sphere.sim.setMaxIterations" title="sphere.sim.setMaxIterations"><tt class="xref py py-func docutils literal"><span class="pre">setMaxIterations()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setFluidBottomFixedPressure">
+<tt class="descname">setFluidBottomFixedPressure</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.setFluidBottomFixedPressure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the lower boundary of the fluid domain to follow the fixed pressure
+value (Dirichlet) boundary condition.</p>
+<p>This is the default behavior for the boundary. See also
+<a class="reference internal" href="#sphere.sim.setFluidBottomNoFlow" title="sphere.sim.setFluidBottomNoFlow"><tt class="xref py py-func docutils literal"><span class="pre">setFluidBottomNoFlow()</span></tt></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setFluidBottomNoFlow">
+<tt class="descname">setFluidBottomNoFlow</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.setFluidBottomNoFlow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the lower boundary of the fluid domain to follow the no-flow
+(Neumann) boundary condition.</p>
+<p>The default behavior for the boundary is fixed value (Dirichlet), see
+<a class="reference internal" href="#sphere.sim.setFluidBottomFixedPressure" title="sphere.sim.setFluidBottomFixedPressure"><tt class="xref py py-func docutils literal"><span class="pre">setFluidBottomFixedPressure()</span></tt></a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1286,6 +1324,24 @@ at the top boundary. Note that a cos-wave is obtained with phi=pi/2.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="sphere.sim.setFluidTopFixedPressure">
+<tt class="descname">setFluidTopFixedPressure</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.setFluidTopFixedPressure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the upper boundary of the fluid domain to follow the fixed pressure
+value (Dirichlet) boundary condition.</p>
+<p>This is the default behavior for the boundary. See also
+<a class="reference internal" href="#sphere.sim.setFluidTopNoFlow" title="sphere.sim.setFluidTopNoFlow"><tt class="xref py py-func docutils literal"><span class="pre">setFluidTopNoFlow()</span></tt></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setFluidTopNoFlow">
+<tt class="descname">setFluidTopNoFlow</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.setFluidTopNoFlow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the upper boundary of the fluid domain to follow the no-flow
+(Neumann) boundary condition.</p>
+<p>The default behavior for the boundary is fixed value (Dirichlet), see
+<a class="reference internal" href="#sphere.sim.setFluidTopFixedPressure" title="sphere.sim.setFluidTopFixedPressure"><tt class="xref py py-func docutils literal"><span class="pre">setFluidTopFixedPressure()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="sphere.sim.setGamma">
 <tt class="descname">setGamma</tt><big>(</big><em>gamma</em><big>)</big><a class="headerlink" href="#sphere.sim.setGamma" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gamma is a fluid solver parameter, used for smoothing the pressure
@@ -1303,7 +1359,8 @@ more averaging is introduced. A value of 0.0 disables all averaging.</p>
 </tbody>
 </table>
 <p>Other solver parameter setting functions: <a class="reference internal" href="#sphere.sim.setTheta" title="sphere.sim.setTheta"><tt class="xref py py-func docutils literal"><span class="pre">setTheta()</span></tt></a>,
-<a class="reference internal" href="#sphere.sim.setBeta" title="sphere.sim.setBeta"><tt class="xref py py-func docutils literal"><span class="pre">setBeta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setTolerance" title="sphere.sim.setTolerance"><tt class="xref py py-func docutils literal"><span class="pre">setTolerance()</span></tt></a> and <a class="reference internal" href="#sphere.sim.setMaxIterations" title="sphere.sim.setMaxIterations"><tt class="xref py py-func docutils literal"><span class="pre">setMaxIterations()</span></tt></a></p>
+<a class="reference internal" href="#sphere.sim.setBeta" title="sphere.sim.setBeta"><tt class="xref py py-func docutils literal"><span class="pre">setBeta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setTolerance" title="sphere.sim.setTolerance"><tt class="xref py py-func docutils literal"><span class="pre">setTolerance()</span></tt></a>,
+<a class="reference internal" href="#sphere.sim.setDEMstepsPerCFDstep" title="sphere.sim.setDEMstepsPerCFDstep"><tt class="xref py py-func docutils literal"><span class="pre">setDEMstepsPerCFDstep()</span></tt></a> and <a class="reference internal" href="#sphere.sim.setMaxIterations" title="sphere.sim.setMaxIterations"><tt class="xref py py-func docutils literal"><span class="pre">setMaxIterations()</span></tt></a></p>
 </dd></dl>
 
 <dl class="method">
@@ -1325,7 +1382,8 @@ solver</td>
 </tbody>
 </table>
 <p>Other solver parameter setting functions: <a class="reference internal" href="#sphere.sim.setGamma" title="sphere.sim.setGamma"><tt class="xref py py-func docutils literal"><span class="pre">setGamma()</span></tt></a>,
-<a class="reference internal" href="#sphere.sim.setTheta" title="sphere.sim.setTheta"><tt class="xref py py-func docutils literal"><span class="pre">setTheta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setBeta" title="sphere.sim.setBeta"><tt class="xref py py-func docutils literal"><span class="pre">setBeta()</span></tt></a> and <a class="reference internal" href="#sphere.sim.setTolerance" title="sphere.sim.setTolerance"><tt class="xref py py-func docutils literal"><span class="pre">setTolerance()</span></tt></a></p>
+<a class="reference internal" href="#sphere.sim.setTheta" title="sphere.sim.setTheta"><tt class="xref py py-func docutils literal"><span class="pre">setTheta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setBeta" title="sphere.sim.setBeta"><tt class="xref py py-func docutils literal"><span class="pre">setBeta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setDEMstepsPerCFDstep" title="sphere.sim.setDEMstepsPerCFDstep"><tt class="xref py py-func docutils literal"><span class="pre">setDEMstepsPerCFDstep()</span></tt></a>
+and <a class="reference internal" href="#sphere.sim.setTolerance" title="sphere.sim.setTolerance"><tt class="xref py py-func docutils literal"><span class="pre">setTolerance()</span></tt></a></p>
 </dd></dl>
 
 <dl class="method">
@@ -1347,7 +1405,8 @@ instabilities may be avoided with lower values.</p>
 </tbody>
 </table>
 <p>Other solver parameter setting functions: <a class="reference internal" href="#sphere.sim.setGamma" title="sphere.sim.setGamma"><tt class="xref py py-func docutils literal"><span class="pre">setGamma()</span></tt></a>,
-<a class="reference internal" href="#sphere.sim.setBeta" title="sphere.sim.setBeta"><tt class="xref py py-func docutils literal"><span class="pre">setBeta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setTolerance" title="sphere.sim.setTolerance"><tt class="xref py py-func docutils literal"><span class="pre">setTolerance()</span></tt></a> and <a class="reference internal" href="#sphere.sim.setMaxIterations" title="sphere.sim.setMaxIterations"><tt class="xref py py-func docutils literal"><span class="pre">setMaxIterations()</span></tt></a></p>
+<a class="reference internal" href="#sphere.sim.setBeta" title="sphere.sim.setBeta"><tt class="xref py py-func docutils literal"><span class="pre">setBeta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setTolerance" title="sphere.sim.setTolerance"><tt class="xref py py-func docutils literal"><span class="pre">setTolerance()</span></tt></a>,
+<a class="reference internal" href="#sphere.sim.setDEMstepsPerCFDstep" title="sphere.sim.setDEMstepsPerCFDstep"><tt class="xref py py-func docutils literal"><span class="pre">setDEMstepsPerCFDstep()</span></tt></a> and <a class="reference internal" href="#sphere.sim.setMaxIterations" title="sphere.sim.setMaxIterations"><tt class="xref py py-func docutils literal"><span class="pre">setMaxIterations()</span></tt></a></p>
 </dd></dl>
 
 <dl class="method">
@@ -1367,7 +1426,7 @@ residual</td>
 </tbody>
 </table>
 <p>Other solver parameter setting functions: <a class="reference internal" href="#sphere.sim.setGamma" title="sphere.sim.setGamma"><tt class="xref py py-func docutils literal"><span class="pre">setGamma()</span></tt></a>,
-<a class="reference internal" href="#sphere.sim.setTheta" title="sphere.sim.setTheta"><tt class="xref py py-func docutils literal"><span class="pre">setTheta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setBeta" title="sphere.sim.setBeta"><tt class="xref py py-func docutils literal"><span class="pre">setBeta()</span></tt></a> and
+<a class="reference internal" href="#sphere.sim.setTheta" title="sphere.sim.setTheta"><tt class="xref py py-func docutils literal"><span class="pre">setTheta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setBeta" title="sphere.sim.setBeta"><tt class="xref py py-func docutils literal"><span class="pre">setBeta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setDEMstepsPerCFDstep" title="sphere.sim.setDEMstepsPerCFDstep"><tt class="xref py py-func docutils literal"><span class="pre">setDEMstepsPerCFDstep()</span></tt></a> and
 <a class="reference internal" href="#sphere.sim.setMaxIterations" title="sphere.sim.setMaxIterations"><tt class="xref py py-func docutils literal"><span class="pre">setMaxIterations()</span></tt></a></p>
 </dd></dl>
 

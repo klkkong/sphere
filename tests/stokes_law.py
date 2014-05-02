@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 print("### Stokes test - single sphere sedimentation ###")
 ## Stokes drag
-orig = sphere.sim(sid = "stokes_law", fluid = True)
+orig = sphere.sim(sid = "stokes_law_DEMCFD1", fluid = True)
 cleanup(orig)
 orig.defaultParams()
 orig.addParticle([0.5,0.5,1.46], 0.05)
@@ -18,7 +18,8 @@ orig.defineWorldBoundaries([1.0,1.0,2.0])
 orig.initFluid(mu = 8.9e-4)
 #orig.initTemporal(total = 1.0, file_dt = 0.01)
 #orig.initTemporal(total = 1.0e-1, file_dt = 5.0e-3)
-orig.initTemporal(total = 5.0, file_dt = 1.0e-2)
+#orig.initTemporal(total = 5.0, file_dt = 1.0e-2)
+orig.initTemporal(total = 1.0, file_dt = 1.0e-2)
 #orig.time_file_dt = orig.time_dt
 #orig.time_total = orig.time_dt*200
 #orig.time_file_dt = orig.time_dt*10
@@ -30,7 +31,7 @@ orig.vel[0,2] = -0.1
 #orig.vel[0,2] = -0.001
 #orig.setBeta(0.5)
 orig.setTolerance(1.0e-4)
-orig.setDEMstepsPerCFDstep(100)
+#orig.setDEMstepsPerCFDstep(100)
 orig.run(dry=True)
 orig.run(verbose=True)
 py = sphere.sim(sid = orig.sid, fluid = True)

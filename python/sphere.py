@@ -2374,6 +2374,46 @@ class sim:
         self.maxiter = numpy.array(1e4)
         self.ndem = numpy.array(1)
 
+    def setFluidBottomNoFlow(self):
+        '''
+        Set the lower boundary of the fluid domain to follow the no-flow
+        (Neumann) boundary condition.
+
+        The default behavior for the boundary is fixed value (Dirichlet), see
+        :func:`setFluidBottomFixedPressure()`.
+        '''
+        self.bc_bot[0] = 1
+
+    def setFluidBottomFixedPressure(self):
+        '''
+        Set the lower boundary of the fluid domain to follow the fixed pressure
+        value (Dirichlet) boundary condition.
+
+        This is the default behavior for the boundary. See also
+        :func:`setFluidBottomNoFlow()`
+        '''
+        self.bc_bot[0] = 0
+
+    def setFluidTopNoFlow(self):
+        '''
+        Set the upper boundary of the fluid domain to follow the no-flow
+        (Neumann) boundary condition.
+
+        The default behavior for the boundary is fixed value (Dirichlet), see
+        :func:`setFluidTopFixedPressure()`.
+        '''
+        self.bc_top[0] = 1
+
+    def setFluidTopFixedPressure(self):
+        '''
+        Set the upper boundary of the fluid domain to follow the fixed pressure
+        value (Dirichlet) boundary condition.
+
+        This is the default behavior for the boundary. See also
+        :func:`setFluidTopNoFlow()`
+        '''
+        self.bc_top[0] = 0
+
     def defaultParams(self,
             mu_s = 0.4,
             mu_d = 0.4,
