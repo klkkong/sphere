@@ -6,12 +6,15 @@
 //#include <cutil_math.h>
 #include <helper_math.h>
 
-#include "vector_arithmetic.h"	// for arbitrary prec. vectors
+#include "vector_arithmetic.h"  // for arbitrary precision vectors
 #include "sphere.h"
 #include "datatypes.h"
 #include "utility.h"
 #include "constants.cuh"
 #include "debug.h"
+
+// Enable reporting of forcing function terms to stdout
+//#define REPORT_FORCING_TERMS
 
 // Arithmetic mean of two numbers
 __inline__ __device__ Float amean(Float a, Float b) {
@@ -2048,6 +2051,10 @@ __global__ void findNSforcing(
         Float f1;
         Float3 f2;
 
+#ifdef REPORT_FORCING_TERMS
+        Float t1, t2, t3, t4;
+#endif
+
         // Check if this is the first Jacobi iteration. If it is, find f1 and f2
         if (nijac == 0) {
 
@@ -2069,16 +2076,19 @@ __global__ void findNSforcing(
                 + dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi)
                 + dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
             f2 = grad_phi/phi;*/
-            f1 = div_v_p*devC_params.rho_f*phi/(ndem*devC_dt)
-                + dot(grad_phi, v_p)*devC_params.rho_f/(ndem*devC_dt)
-                + dphi*devC_params.rho_f/(ndem*devC_dt*devC_dt);
+            const Float dt = devC_dt*ndem;
+            f1 = div_v_p*devC_params.rho_f*phi/dt
+                + dot(grad_phi, v_p)*devC_params.rho_f/dt
+                + dphi*devC_params.rho_f/(dt*dt);
             f2 = grad_phi/phi;
 
+#ifdef REPORT_FORCING_TERMS
             // Report values terms in the forcing function for debugging
+            t1 = div_v_p*phi*devC_params.rho_f/dt;
+            t2 = dot(grad_phi, v_p)*devC_params.rho_f/dt;
+            t4 = dphi*devC_params.rho_f/(dt*dt);
+#endif
             /*
-            const Float f1t1 = div_v_p*devC_params.rho_f/devC_dt;
-            const Float f1t2 = dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi);
-            const Float f1t3 = dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
             printf("[%d,%d,%d] f1 = %f\t"
                     "f1t1 = %f\tf1t2 = %f\tf1t3 = %f\tf2 = %f\n",
                     x,y,z, f1, f1t1, f1t2, f1t3, f2);
@@ -2122,7 +2132,12 @@ __global__ void findNSforcing(
 
         // Forcing function value
         const Float f = f1 - dot(f2, grad_epsilon);
-        //printf("[%d,%d,%d]\tf1 = %f\tf2 = %f\tf = %f\n", x,y,z, f1, f2, f);
+
+#ifdef REPORT_FORCING_TERMS
+        t3 = -dot(f2, grad_epsilon);
+        printf("[%d,%d,%d]\tt1 = %f\tt2 = %f\tt3 = %f\tt4 = %f\n",
+                x,y,z, t1, t2, t3, t4);
+#endif
 
         // Save forcing function value
         __syncthreads();

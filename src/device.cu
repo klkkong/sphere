@@ -675,10 +675,8 @@ __host__ void DEM::startTime()
     // MAIN CALCULATION TIME LOOP
     while (time.current <= time.total) {
 
-
         // Print current step number to terminal
-        //printf("Step: %d\n", time.step_count);
-
+        //printf("\n\n@@@ DEM time step: %ld\n", iter);
 
         // Routine check for errors
         checkForCudaErrors("Start of main while loop");
@@ -690,7 +688,7 @@ __host__ void DEM::startTime()
             // in the fine, uniform and homogenous grid.
             if (PROFILING == 1)
                 startTimer(&kernel_tic);
-            calcParticleCellID<<<dimGrid, dimBlock>>>(dev_gridParticleCellID, 
+            calcParticleCellID<<<dimGrid, dimBlock>>>(dev_gridParticleCellID,
                     dev_gridParticleIndex, 
                     dev_x);
 
@@ -1147,6 +1145,8 @@ __host__ void DEM::startTime()
                 }
 
                 for (unsigned int nijac = 0; nijac<ns.maxiter; ++nijac) {
+
+                    //printf("### Jacobi iteration %d\n", nijac);
 
                     // Only grad(epsilon) changes during the Jacobi iterations.
                     // The remaining terms of the forcing function are only

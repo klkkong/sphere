@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 print("### Stokes test - single sphere sedimentation ###")
 ## Stokes drag
-orig = sphere.sim(sid = "stokes_law_DEMCFD1", fluid = True)
+orig = sphere.sim(sid = "stokes_law_gradP", fluid = True)
 cleanup(orig)
 orig.defaultParams()
 orig.addParticle([0.5,0.5,1.46], 0.05)
