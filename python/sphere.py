@@ -1359,6 +1359,14 @@ class sim:
         default. The file name will be in the format ``fluid-<self.sid>.vti``.
         The vti files can be used for visualizing the fluid in ParaView.
 
+        The scalars (pressure, porosity, porosity change) and the velocity
+        vectors are either placed in a grid where the grid corners correspond to
+        the computational grid center (cell_centered = False). This results in a
+        grid that doesn't appears to span the simulation domain, and values are
+        smoothly interpolated on the cell faces. Alternatively, the
+        visualization grid is equal to the computational grid, and cells face
+        colors are not interpolated (cell_centered = True, default behavior).
+
         The fluid grid is visualized by opening the vti files, and pressing
         "Apply" to import all fluid field properties. To visualize the scalar
         fields, such as the pressure, the porosity, the porosity change or the
@@ -1379,17 +1387,14 @@ class sim:
         big as the number of fluid cells in the grid. Press "Apply" to visualize
         the arrows.
 
+        To visualize the cell-centered data with smooth interpolation, and in
+        order to visualize fluid vector fields, the cell-centered mesh is
+        selected in the "Pipeline Browser", and is filtered using "Filters" ->
+        "Alphabetical" -> "Cell Data to Point Data".
+
         If several data files are generated for the same simulation (e.g. using
         the :func:`writeVTKall()` function), it is able to step the
         visualization through time by using the ParaView controls.
-
-        The scalars (pressure, porosity, porosity change) and the velocity
-        vectors are either placed in a grid where the grid corners correspond to
-        the computational grid center (cell_centered = False). This results in a
-        grid that doesn't appears to span the simulation domain, and values are
-        smoothly interpolated on the cell faces. Alternatively, the
-        visualization grid is equal to the computational grid, and cells face
-        colors are not interpolated (cell_centered = True, default behavior).
 
         :param folder: The folder where to place the output binary file (default
             (default = '../output/')
