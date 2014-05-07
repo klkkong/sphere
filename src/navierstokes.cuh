@@ -2051,10 +2051,6 @@ __global__ void findNSforcing(
         Float f1;
         Float3 f2;
 
-#ifdef REPORT_FORCING_TERMS
-        Float t1, t2, t3, t4;
-#endif
-
         // Check if this is the first Jacobi iteration. If it is, find f1 and f2
         if (nijac == 0) {
 
@@ -2084,9 +2080,12 @@ __global__ void findNSforcing(
 
 #ifdef REPORT_FORCING_TERMS
             // Report values terms in the forcing function for debugging
-            t1 = div_v_p*phi*devC_params.rho_f/dt;
-            t2 = dot(grad_phi, v_p)*devC_params.rho_f/dt;
-            t4 = dphi*devC_params.rho_f/(dt*dt);
+            const Float t1 = div_v_p*phi*devC_params.rho_f/dt;
+            const Float t2 = dot(grad_phi, v_p)*devC_params.rho_f/dt;
+            const Float t4 = dphi*devC_params.rho_f/(dt*dt);
+            if (z >= nz-3)
+                printf("[%d,%d,%d]\tt1 = %f\tt2 = %f\tt4 = %f\n",
+                        x,y,z, t1, t2, t4);
 #endif
             /*
             printf("[%d,%d,%d] f1 = %f\t"
@@ -2134,9 +2133,10 @@ __global__ void findNSforcing(
         const Float f = f1 - dot(f2, grad_epsilon);
 
 #ifdef REPORT_FORCING_TERMS
-        t3 = -dot(f2, grad_epsilon);
-        printf("[%d,%d,%d]\tt1 = %f\tt2 = %f\tt3 = %f\tt4 = %f\n",
-                x,y,z, t1, t2, t3, t4);
+        const Float t3 = -dot(f2, grad_epsilon);
+        if (z >= nz-3)
+            printf("[%d,%d,%d]\tf = %f\tf1 = %f\tt3 = %f\n",
+                    x,y,z, f, f1, t3);
 #endif
 
         // Save forcing function value
@@ -2467,6 +2467,13 @@ __global__ void updateNSvelocityPressure(
 
         //if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
             //v.z = 0.0;
+
+        // Check the advection term using the Courant-Friedrichs-Lewy condition
+        if (v.x*devC_dt/dx + v.y*devC_dt/dy + v.z*devC_dt/dz > 1.0) {
+            printf("[%d,%d,%d] Warning: Advection term in fluid may be "
+                    "unstable (CFL condition), v = %f,%f,%f\n",
+                    x,y,z, v.x, v.y, v.z);
+        }
 
         // Write new values
         __syncthreads();
