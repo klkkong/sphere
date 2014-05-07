@@ -1446,7 +1446,8 @@ __host__ void DEM::startTime()
         }
 
         // Update timers and counters
-        time.current  = iter*time.dt;
+        //time.current  = iter*time.dt;
+        time.current  += time.dt;
         filetimeclock += time.dt;
         ++iter;
 
