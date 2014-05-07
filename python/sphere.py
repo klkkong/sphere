@@ -1352,7 +1352,8 @@ class sim:
             if fh is not None:
                 fh.close()
 
-    def writeFluidVTK(self, folder = '../output/', verbose = True):
+    def writeFluidVTK(self, folder = '../output/', cell_centered = True,
+            verbose = True):
         '''
         Writes a VTK file for the fluid grid to the ``../output/`` folder by
         default. The file name will be in the format ``fluid-<self.sid>.vti``.
@@ -1382,9 +1383,20 @@ class sim:
         the :func:`writeVTKall()` function), it is able to step the
         visualization through time by using the ParaView controls.
 
+        The scalars (pressure, porosity, porosity change) and the velocity
+        vectors are either placed in a grid where the grid corners correspond to
+        the computational grid center (cell_centered = False). This results in a
+        grid that doesn't appears to span the simulation domain, and values are
+        smoothly interpolated on the cell faces. Alternatively, the
+        visualization grid is equal to the computational grid, and cells face
+        colors are not interpolated (cell_centered = True, default behavior).
+
         :param folder: The folder where to place the output binary file (default
             (default = '../output/')
         :type folder: str
+        :param cell_centered: put scalars and vectors at cell centers (True) or
+            cell corners (False), (default = True)
+        :type cell_centered: bool
         :param verbose: Show diagnostic information (default = True)
         :type verbose: bool
         '''
@@ -1394,33 +1406,51 @@ class sim:
         # initalize VTK data structure
         grid = vtk.vtkImageData()
         dx = (self.L-self.origo)/self.num   # cell center spacing
-        grid.SetOrigin(self.origo + 0.5*dx)
+        if cell_centered:
+            grid.SetOrigin(self.origo)
+        else:
+            grid.SetOrigin(self.origo + 0.5*dx)
         grid.SetSpacing(dx)
-        grid.SetDimensions(self.num)    # no. of points in each direction
+        if cell_centered:
+            grid.SetDimensions(self.num + 1) # no. of points in each direction
+        else:
+            grid.SetDimensions(self.num)    # no. of points in each direction
 
         # array of scalars: hydraulic pressures
         pres = vtk.vtkDoubleArray()
         pres.SetName("Pressure")
         pres.SetNumberOfComponents(1)
-        pres.SetNumberOfTuples(grid.GetNumberOfPoints())
+        if cell_centered:
+            pres.SetNumberOfTuples(grid.GetNumberOfCells())
+        else:
+            pres.SetNumberOfTuples(grid.GetNumberOfPoints())
 
         # array of vectors: hydraulic velocities
         vel = vtk.vtkDoubleArray()
         vel.SetName("Velocity")
         vel.SetNumberOfComponents(3)
-        vel.SetNumberOfTuples(grid.GetNumberOfPoints())
+        if cell_centered:
+            vel.SetNumberOfTuples(grid.GetNumberOfCells())
+        else:
+            vel.SetNumberOfTuples(grid.GetNumberOfPoints())
 
         # array of scalars: porosities
         poros = vtk.vtkDoubleArray()
         poros.SetName("Porosity")
         poros.SetNumberOfComponents(1)
-        poros.SetNumberOfTuples(grid.GetNumberOfPoints())
+        if cell_centered:
+            poros.SetNumberOfTuples(grid.GetNumberOfCells())
+        else:
+            poros.SetNumberOfTuples(grid.GetNumberOfPoints())
 
         # array of scalars: porosity change
         dporos = vtk.vtkDoubleArray()
         dporos.SetName("Porosity change")
         dporos.SetNumberOfComponents(1)
-        dporos.SetNumberOfTuples(grid.GetNumberOfPoints())
+        if cell_centered:
+            dporos.SetNumberOfTuples(grid.GetNumberOfCells())
+        else:
+            dporos.SetNumberOfTuples(grid.GetNumberOfPoints())
 
         # insert values
         for z in range(self.num[2]):
@@ -1433,10 +1463,16 @@ class sim:
                     dporos.SetValue(idx, self.dphi[x,y,z])
 
         # add pres array to grid
-        grid.GetPointData().AddArray(pres)
-        grid.GetPointData().AddArray(vel)
-        grid.GetPointData().AddArray(poros)
-        grid.GetPointData().AddArray(dporos)
+        if cell_centered:
+            grid.GetCellData().AddArray(pres)
+            grid.GetCellData().AddArray(vel)
+            grid.GetCellData().AddArray(poros)
+            grid.GetCellData().AddArray(dporos)
+        else:
+            grid.GetPointData().AddArray(pres)
+            grid.GetPointData().AddArray(vel)
+            grid.GetPointData().AddArray(poros)
+            grid.GetPointData().AddArray(dporos)
 
         # write VTK XML image data file
         writer = vtk.vtkXMLImageDataWriter()
@@ -4343,6 +4379,30 @@ class sim:
                     if fh is not None:
                         fh.close()
 
+        elif method == 'fluid-pressure':
+
+            # Read pressure values from simulation binaries
+            for i in range(lastfile+1):
+                sb.readstep(i, verbose = False)
+
+                # Allocate arrays on first run
+                if (i == 0):
+                    p_mean = numpy.zeros(lastfile+1, dtype=numpy.float64)
+
+                p_mean[i] = numpy.mean(sb.p_f)
+
+            t = numpy.linspace(0.0, sb.time_current, lastfile+1)
+
+            # Plotting
+            if (outformat != 'txt'):
+
+                # linear plot of deviatoric stress
+                ax1 = plt.subplot2grid((1,1),(0,0))
+                ax1.set_xlabel('Time $t$, [s]')
+                ax1.set_ylabel('Mean fluid pressure, $\\bar{p}_f$, [Pa]')
+                ax1.plot(t, p_mean, '+-')
+                #ax1.legend()
+                ax1.grid()
 
         else :
             print("Visualization type '" + method + "' not understood")
