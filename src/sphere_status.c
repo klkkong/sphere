@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/types.h>
+#include <dirent.h>
 
-int print_usage(char* argv0, int return_status);
+int print_usage(FILE* stream, char* argv0, int return_status);
 
 int main(int argc, char *argv[])
 {
@@ -11,16 +13,39 @@ int main(int argc, char *argv[])
     char *cwd;
     cwd = getcwd(0, 0);
     if (!cwd) {  // Terminate program execution if path is not obtained
-        fprintf(stderr, "getcwd failed");
-        return 1; // Return unsuccessful exit status
+        perror("Could not read path to current workind directory "
+                "(getcwd failed)");
+        return 1;
     }
 
-    // Simulation name/ID read from first input argument
-    if (argc != 2)
-        return print_usage(argv[0], 1);
+    if (argc == 1) {
+        DIR *dir;
+        struct dirent *ent;
+        char outputdir[1000];
+        char* dotpos;
+        sprintf(outputdir, "%s/output/", cwd);
+        if ((dir = opendir(outputdir)) != NULL) {
+            puts("Simulations with the following ID's are found in the "
+                    "./output/ folder:");
 
-    if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
-        return print_usage(argv[0], 0);
+            while ((ent = readdir(dir)) != NULL) {
+                if ((dotpos = strstr(ent->d_name, ".status.dat")) != NULL) {
+                    *dotpos = '\0';
+                    printf("\t%s\n", ent->d_name);
+                }
+            }
+            closedir(dir);
+        } else {
+            fprintf(stderr, "Error: could not open directory: %s\n", outputdir);
+            return 1;
+        }
+        return 0;
+
+    } else if (argc != 2) {
+        return print_usage(stderr, argv[0], 1);
+    } else if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
+        return print_usage(stdout, argv[0], 0);
+    }
 
     char *sim_name = argv[1];
 
@@ -56,10 +81,12 @@ int main(int argc, char *argv[])
     }
 }
 
-int print_usage(char* argv0, int return_status)
+int print_usage(FILE* stream, char* argv0, int return_status)
 {
-    fprintf(stderr, "You need to specify the simulation ID as an input "
-            "parameter, e.g.\n%s particle_test\n", argv0);
+    fprintf(stream, "sphere simulation status checker. Usage:\n"
+            "%s [simulation id]\n"
+            "If the simulation id isn't specified, a list of simulations \n"
+            "found in the ./output/ folder will be shown\n", argv0);
     return return_status;
 }
 
