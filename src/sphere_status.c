@@ -105,7 +105,8 @@ int open_status_file(char* cwd, char* sim_name, int format) {
         return 0; // Exit program successfully
 
     } else {
-        fprintf(stderr, "Error: Could not open file %s\n", file);
+        fprintf(stderr, "Error: Could not open file %s\n"
+                "Run this program with `--help` flag for help.\n", file);
         return 1;
     }
 }
