@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
+
+int print_usage(char* argv0, int return_status);
 
 int main(int argc, char *argv[])
 {
@@ -13,11 +16,11 @@ int main(int argc, char *argv[])
     }
 
     // Simulation name/ID read from first input argument
-    if (argc != 2) {
-        fprintf(stderr, "You need to specify the simulation ID as an input "
-                "parameter, e.g.\n%s particle_test\n", argv[0]);
-        return 1;
-    }
+    if (argc != 2)
+        return print_usage(argv[0], 1);
+
+    if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
+        return print_usage(argv[0], 0);
 
     char *sim_name = argv[1];
 
@@ -52,4 +55,14 @@ int main(int argc, char *argv[])
         return 1;
     }
 }
+
+int print_usage(char* argv0, int return_status)
+{
+    fprintf(stderr, "You need to specify the simulation ID as an input "
+            "parameter, e.g.\n%s particle_test\n", argv0);
+    return return_status;
+}
+
+
+
 // vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
