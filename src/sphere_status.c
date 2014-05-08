@@ -19,7 +19,11 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (argc == 1) {
+    if (argc == 1 || argc != 2) {
+        return print_usage(stderr, argv[0], 1);
+    } else if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
+        return print_usage(stdout, argv[0], 0);
+    } else if (strcmp(argv[1], "-l") == 0 || strcmp(argv[1], "--list") == 0) {
         DIR *dir;
         struct dirent *ent;
         char outputdir[1000];
@@ -45,10 +49,6 @@ int main(int argc, char *argv[])
         }
         return 0;
 
-    } else if (argc != 2) {
-        return print_usage(stderr, argv[0], 1);
-    } else if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
-        return print_usage(stdout, argv[0], 0);
     }
 
     return open_status_file(cwd, argv[1], 0);
@@ -57,9 +57,17 @@ int main(int argc, char *argv[])
 int print_usage(FILE* stream, char* argv0, int return_status)
 {
     fprintf(stream, "sphere simulation status checker. Usage:\n"
-            "%s [simulation id]\n"
-            "If the simulation id isn't specified, a list of simulations \n"
-            "found in the ./output/ folder will be shown\n", argv0);
+            " %s [simulation id]\n"
+            " %s [-h,--help]\n"
+            " %s [-l,--list]\n"
+            "Arguments:\n"
+            " simulation id\tShow detailed status of simulation.\n"
+            " -h, --help\tShow this help message.\n"
+            " -l, --list\tPrint a list of simulations found in the ./output/ "
+            "folder.\n"
+            "\t\tEach simulation ID will be appended by a string showing:\n"
+            "\t([CURRENT SIMULATION TIME] s, [PERCENTAGE COMPLETED] %%, "
+            "[LATEST OUTPUT FILE])\n", argv0, argv0, argv0);
     return return_status;
 }
 
@@ -101,5 +109,4 @@ int open_status_file(char* cwd, char* sim_name, int format) {
         return 1;
     }
 }
-
 // vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
