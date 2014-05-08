@@ -1351,7 +1351,8 @@ __device__ Float divergence(
     const Float3 zp = dev_vectorfield[idx(x,y,z+1)];
 
     // Calculate upwind coefficients
-    /*const Float3 a = MAKE_FLOAT3(
+    /*
+    const Float3 a = MAKE_FLOAT3(
             copysign(1.0, v.x),
             copysign(1.0, v.y),
             copysign(1.0, v.z));
@@ -2001,6 +2002,7 @@ __global__ void findPredNSvelocities(
 
         // Save the predicted velocity
         __syncthreads();
+        v_p = MAKE_FLOAT3(0.0, 0.0, 0.0);
         dev_ns_v_p[cellidx] = v_p;
 
 #ifdef CHECK_NS_FINITE
@@ -2451,6 +2453,7 @@ __global__ void updateNSvelocityPressure(
         // Find new velocity
         //Float3 v = v_p - devC_dt/devC_params.rho_f*grad_epsilon;
         Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*phi)*grad_epsilon;
+        v = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
         // Print values for debugging
         /* if (z == 0) {
