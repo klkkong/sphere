@@ -540,7 +540,7 @@ pressures and velocities:
 
 .. math::
     \bar{\boldsymbol{v}}^{t+\Delta t} =
-    \bar{\boldsymbol{v}}^* - \frac{\Delta t}{\rho} \nabla \epsilon
+    \bar{\boldsymbol{v}}^* - \frac{\Delta t}{\rho\phi} \nabla \epsilon
 
 
 Boundary conditions

@@ -1705,10 +1705,17 @@ image format, or in text (&#8216;txt&#8217;).</li>
 
 <dl class="method">
 <dt id="sphere.sim.writeFluidVTK">
-<tt class="descname">writeFluidVTK</tt><big>(</big><em>folder='../output/'</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.sim.writeFluidVTK" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">writeFluidVTK</tt><big>(</big><em>folder='../output/'</em>, <em>cell_centered=True</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.sim.writeFluidVTK" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes a VTK file for the fluid grid to the <tt class="docutils literal"><span class="pre">../output/</span></tt> folder by
 default. The file name will be in the format <tt class="docutils literal"><span class="pre">fluid-&lt;self.sid&gt;.vti</span></tt>.
 The vti files can be used for visualizing the fluid in ParaView.</p>
+<p>The scalars (pressure, porosity, porosity change) and the velocity
+vectors are either placed in a grid where the grid corners correspond to
+the computational grid center (cell_centered = False). This results in a
+grid that doesn&#8217;t appears to span the simulation domain, and values are
+smoothly interpolated on the cell faces. Alternatively, the
+visualization grid is equal to the computational grid, and cells face
+colors are not interpolated (cell_centered = True, default behavior).</p>
 <p>The fluid grid is visualized by opening the vti files, and pressing
 &#8220;Apply&#8221; to import all fluid field properties. To visualize the scalar
 fields, such as the pressure, the porosity, the porosity change or the
@@ -1727,6 +1734,10 @@ that &#8220;Arrow&#8221; is selected as the &#8220;Glyph type&#8221;, and &#8220
 &#8220;Vectors&#8221; value. Adjust the &#8220;Maximum Number of Points&#8221; to be at least as
 big as the number of fluid cells in the grid. Press &#8220;Apply&#8221; to visualize
 the arrows.</p>
+<p>To visualize the cell-centered data with smooth interpolation, and in
+order to visualize fluid vector fields, the cell-centered mesh is
+selected in the &#8220;Pipeline Browser&#8221;, and is filtered using &#8220;Filters&#8221; -&gt;
+&#8220;Alphabetical&#8221; -&gt; &#8220;Cell Data to Point Data&#8221;.</p>
 <p>If several data files are generated for the same simulation (e.g. using
 the <a class="reference internal" href="#sphere.sim.writeVTKall" title="sphere.sim.writeVTKall"><tt class="xref py py-func docutils literal"><span class="pre">writeVTKall()</span></tt></a> function), it is able to step the
 visualization through time by using the ParaView controls.</p>
@@ -1737,6 +1748,8 @@ visualization through time by using the ParaView controls.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>folder</strong> (<em>str</em>) &#8211; The folder where to place the output binary file (default
 (default = &#8216;../output/&#8217;)</li>
+<li><strong>cell_centered</strong> (<em>bool</em>) &#8211; put scalars and vectors at cell centers (True) or
+cell corners (False), (default = True)</li>
 <li><strong>verbose</strong> (<em>bool</em>) &#8211; Show diagnostic information (default = True)</li>
 </ul>
 </td>
