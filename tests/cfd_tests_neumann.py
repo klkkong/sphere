@@ -63,3 +63,4 @@ else:
     print("Flow field:\t\t" + failed())
     raise Exception("Failed")
 
+orig.cleanup()
