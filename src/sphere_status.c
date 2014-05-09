@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
             while ((ent = readdir(dir)) != NULL) {
                 if ((dotpos = strstr(ent->d_name, ".status.dat")) != NULL) {
                     *dotpos = '\0';
-                    sprintf(outstring, "%-44s ", ent->d_name);
+                    sprintf(outstring, "%-45s ", ent->d_name);
                     for (p = outstring; *p != '\0'; p++)
                         if (*p == ' ') *p = '.';
                     printf("  %s ", outstring);
@@ -95,7 +95,7 @@ int open_status_file(char* cwd, char* sim_name, int format) {
         }
 
         if (format == 1) {
-            printf("%.2fs / %3.0f%% / %5d",
+            printf("%5.2fs / %3.0f%% / %5d",
                     time_current, time_percentage, file_nr);
         } else {
             printf("Reading %s:\n"
