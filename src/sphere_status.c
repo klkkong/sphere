@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
                     sprintf(outstring, "%-45s ", ent->d_name);
                     for (p = outstring; *p != '\0'; p++)
                         if (*p == ' ') *p = '.';
-                    printf("  %s ", outstring);
+                    printf("  %s", outstring);
                     (void)open_status_file(cwd, ent->d_name, 1);
                     puts("");
 
@@ -95,7 +95,7 @@ int open_status_file(char* cwd, char* sim_name, int format) {
         }
 
         if (format == 1) {
-            printf("%5.2fs / %3.0f%% / %5d",
+            printf("%6.2fs / %3.0f%% / %5d",
                     time_current, time_percentage, file_nr);
         } else {
             printf("Reading %s:\n"
