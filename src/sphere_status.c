@@ -52,15 +52,16 @@ int main(int argc, char *argv[])
                     (void)open_status_file(cwd, namelist[i]->d_name, 1);
                     puts("");
                 }
+                free(namelist[i]);
             }
-            free(namelist[n]);
+            free(namelist);
         }
-        free(namelist);
         return 0;
 
     }
-
-    return open_status_file(cwd, argv[1], 0);
+    int ret = open_status_file(cwd, argv[1], 0);
+    free(cwd);
+    return ret;
 }
 
 int print_usage(FILE* stream, char* argv0, int return_status)
