@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
@@ -24,34 +25,37 @@ int main(int argc, char *argv[])
     } else if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
         return print_usage(stdout, argv[0], 0);
     } else if (strcmp(argv[1], "-l") == 0 || strcmp(argv[1], "--list") == 0) {
-        DIR *dir;
-        struct dirent *ent;
+        struct dirent **namelist;
+        int n, i;
         char outputdir[1000];
         char* dotpos;
         char outstring[100];
         char* p;
         sprintf(outputdir, "%s/output/", cwd);
-        if ((dir = opendir(outputdir)) != NULL) {
+        n = scandir(outputdir, &namelist, 0 , alphasort);
+        if (n < 0) {
+            fprintf(stderr, "Error: could not open directory: %s\n", outputdir);
+            return 1;
+        } else {
             puts("Simulations with the following ID's are found in the "
                     "./output/ folder:");
 
-            while ((ent = readdir(dir)) != NULL) {
-                if ((dotpos = strstr(ent->d_name, ".status.dat")) != NULL) {
+            for (i = 0; i<n; i++) {
+                if ((dotpos = strstr(namelist[i]->d_name, ".status.dat"))
+                        != NULL) {
+                
                     *dotpos = '\0';
-                    sprintf(outstring, "%-45s ", ent->d_name);
+                    sprintf(outstring, "%-45s ", namelist[i]->d_name);
                     for (p = outstring; *p != '\0'; p++)
                         if (*p == ' ') *p = '.';
                     printf("  %s", outstring);
-                    (void)open_status_file(cwd, ent->d_name, 1);
+                    (void)open_status_file(cwd, namelist[i]->d_name, 1);
                     puts("");
-
                 }
             }
-            closedir(dir);
-        } else {
-            fprintf(stderr, "Error: could not open directory: %s\n", outputdir);
-            return 1;
+            free(namelist[n]);
         }
+        free(namelist);
         return 0;
 
     }
