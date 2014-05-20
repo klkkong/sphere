@@ -2429,8 +2429,7 @@ __global__ void updateNSvelocityPressure(
         const Float  p_old   = dev_ns_p[cellidx];
         const Float  epsilon = dev_ns_epsilon[cellidx];
         const Float3 v_p     = dev_ns_v_p[cellidx];
-        //const Float  phi     = dev_ns_phi[cellidx];
-        const Float  dphi    = dev_ns_dphi[cellidx];
+        //const Float  dphi    = dev_ns_dphi[cellidx];
 
         // New pressure
         Float p = beta*p_old + epsilon;
@@ -2445,8 +2444,10 @@ __global__ void updateNSvelocityPressure(
 #endif
 
 #ifdef MODEL_B
-        //Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*phi)*grad_epsilon;
-        Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*dphi)*grad_epsilon;
+        __syncthreads();
+        const Float  phi = dev_ns_phi[cellidx];
+        Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*phi)*grad_epsilon;
+        //Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*dphi)*grad_epsilon;
 #endif
 
         // Print values for debugging
