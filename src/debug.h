@@ -40,4 +40,16 @@ const int conv_log_interval = 10;
 // Check for nan/inf values in fluid solver kernels
 #define CHECK_NS_FINITE
 
+// Enable reporting of forcing function terms to stdout
+//#define REPORT_FORCING_TERMS
+
+// Enable reporting of velocity prediction components to stdout
+//#define REPORT_V_P_COMPONENTS
+
+// Choose solver model (see Zhu et al. 2007 "Discrete particle simulation of
+// particulate systems: Theoretical developments"
+// Choose exactly one.
+#define MODEL_A
+//#define MODEL_B
+
 #endif

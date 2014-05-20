@@ -1365,6 +1365,7 @@ __host__ void DEM::startTime()
                         dev_ns_v,
                         dev_ns_v_p,
                         dev_ns_phi,
+                        dev_ns_dphi,
                         dev_ns_epsilon,
                         ns.beta,
                         ns.bc_bot,

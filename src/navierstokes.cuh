@@ -13,9 +13,6 @@
 #include "constants.cuh"
 #include "debug.h"
 
-// Enable reporting of forcing function terms to stdout
-//#define REPORT_FORCING_TERMS
-
 // Arithmetic mean of two numbers
 __inline__ __device__ Float amean(Float a, Float b) {
     return (a+b)*0.5;
@@ -1015,8 +1012,8 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
 
             // Save porosity, porosity change, average velocity and average diameter
             __syncthreads();
+            //phi = 0.5; dphi = 0.0; // disable porosity effects
             const unsigned int cellidx = idx(x,y,z);
-            //phi = 0.5; dphi = 0.0; // disable porosity effects const unsigned int cellidx = idx(x,y,z);
             dev_ns_phi[cellidx]  = phi;
             dev_ns_dphi[cellidx] = dphi;
             dev_ns_vp_avg[cellidx] = v_avg;
@@ -1971,29 +1968,41 @@ __global__ void findPredNSvelocities(
         // Calculate the predicted velocity
         Float3 v_p = v
             + pressure_term
-            + 1.0/devC_params.rho_f*div_phi_tau*ndem*devC_dt/phi
+            + 1.0/devC_params.rho_f*div_phi_tau*ndem*devC_dt/phi // diffusion
             + MAKE_FLOAT3(devC_params.g[0], devC_params.g[1], devC_params.g[2])
-                *ndem*devC_dt
+                *ndem*devC_dt     // gravity term
             - ndem*devC_dt/(devC_params.rho_f*phi)*f_i
             - v*dphi/phi
-            - div_phi_vi_v*ndem*devC_dt/phi            // advection term
+            - div_phi_vi_v*ndem*devC_dt/phi    // advection term
             ;
 
+#ifdef REPORT_V_P_COMPONENTS
         // Report velocity components to stdout for debugging
-        /*const Float3 dv_pres = -ns.beta/devC_params.rho_f*grad_p*devC_dt/phi;
-        const Float3 dv_diff = 1.0/devC_params.rho_f*div_phi_tau*devC_dt/phi;
-        const Float3 dv_f = devC_dt*f_g;
+        const Float3 dv_pres = pressure_term;
+        const Float3 dv_diff =
+            1.0/devC_params.rho_f*div_phi_tau*ndem*devC_dt/phi;
+        const Float3 dv_g = MAKE_FLOAT3(devC_params.g[0], devC_params.g[1],
+                devC_params.g[2])*ndem*devC_dt;
+        const Float3 dv_fi = -1.0*ndem*devC_dt/(devC_params.rho_f*phi)*f_i;
         const Float3 dv_dphi = -1.0*v*dphi/phi;
-        const Float3 dv_adv = -1.0*div_phi_vi_v*devC_dt/phi;
-        printf("[%d,%d,%d]\tv_p = %f\t%f\t%f\tdv_pres = %f\t%f\t%f\t"
-                "dv_diff = %f\t%f\t%f\tdv_f = %f\t%f\t%f\tv_dphi = %f\t%f\t%f\t"
-                "dv_adv = %f\t%f\t%f\n",
-                x, y, z, v_p.x, v_p.y, v_p.z,
-                dv_pres.x, dv_pres.y, dv_pres.z,
-                dv_diff.x, dv_diff.y, dv_diff.z,
-                dv_f.x, dv_f.y, dv_f.z,
-                dv_dphi.x, dv_dphi.y, dv_dphi.z,
-                dv_adv.x, dv_adv.y, dv_adv.z);*/
+        const Float3 dv_adv = -1.0*div_phi_vi_v*ndem*devC_dt/phi;
+            printf("[%d,%d,%d]\t"
+                    "v_p = %e\t%e\t%e\t"
+                    "dv_pres = %e\t%e\t%e\t"
+                    "dv_diff = %e\t%e\t%e\t"
+                    "dv_g = %e\t%e\t%e\t"
+                    "dv_fi = %e\t%e\t%e\t"
+                    "v_dphi = %e\t%e\t%e\t"
+                    "dv_adv = %e\t%e\t%e\n",
+                    x, y, z,
+                    v_p.x, v_p.y, v_p.z,
+                    dv_pres.x, dv_pres.y, dv_pres.z,
+                    dv_diff.x, dv_diff.y, dv_diff.z,
+                    dv_g.x, dv_g.y, dv_g.z,
+                    dv_fi.x, dv_fi.y, dv_fi.z,
+                    dv_dphi.x, dv_dphi.y, dv_dphi.z,
+                    dv_adv.x, dv_adv.y, dv_adv.z);
+#endif
 
         // Enforce Neumann BC if specified
         if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
@@ -2068,51 +2077,29 @@ __global__ void findNSforcing(
             const Float3 grad_phi
                 = gradient(dev_ns_phi, x, y, z, dx, dy, dz);
 
-            // Find forcing function coefficients
-            //f1 = 0.0;
-            /*f1 = div_v_p*devC_params.rho_f/devC_dt
-                + dot(grad_phi, v_p)*devC_params.rho_f/(devC_dt*phi)
-                + dphi*devC_params.rho_f/(devC_dt*devC_dt*phi);
-            f2 = grad_phi/phi;*/
+            // CFD time step
             const Float dt = devC_dt*ndem;
-            f1 = div_v_p*devC_params.rho_f*phi/dt
-                + dot(grad_phi, v_p)*devC_params.rho_f/dt
-                + dphi*devC_params.rho_f/(dt*dt);
-            f2 = grad_phi/phi;
 
-#ifdef REPORT_FORCING_TERMS
-            // Report values terms in the forcing function for debugging
+            // Find forcing function terms
+#ifdef MODEL_A
+            const Float t1 = devC_params.rho_f*div_v_p/dt;
+            const Float t2 = dot(v_p, grad_phi)*devC_params.rho_f/(dt*phi);
+            const Float t4 = dphi*devC_params.rho_f/(dt*dt*phi);
+#endif
+#ifdef MODEL_B
             const Float t1 = div_v_p*phi*devC_params.rho_f/dt;
             const Float t2 = dot(grad_phi, v_p)*devC_params.rho_f/dt;
             const Float t4 = dphi*devC_params.rho_f/(dt*dt);
+#endif
+            f1 = t1 + t2 + t4;
+            f2 = grad_phi/phi; // t3/grad(epsilon)
+
+#ifdef REPORT_FORCING_TERMS
+            // Report values terms in the forcing function for debugging
             if (z >= nz-3)
                 printf("[%d,%d,%d]\tt1 = %f\tt2 = %f\tt4 = %f\n",
                         x,y,z, t1, t2, t4);
 #endif
-            /*
-            printf("[%d,%d,%d] f1 = %f\t"
-                    "f1t1 = %f\tf1t2 = %f\tf1t3 = %f\tf2 = %f\n",
-                    x,y,z, f1, f1t1, f1t2, f1t3, f2);
-            printf("[%d,%d,%d] v_p = %f\tdiv_v_p = %f\tgrad_phi = %f,%f,%f\t"
-                    "phi = %f\tdphi = %f\n",
-                    x,y,z, v_p, div_v_p, grad_phi.x, grad_phi.y, grad_phi.z,
-                    phi, dphi);
-
-            const Float phi_xn = dev_ns_phi[idx(x-1,y,z)];
-            const Float phi_xp = dev_ns_phi[idx(x+1,y,z)];
-            const Float phi_yn = dev_ns_phi[idx(x,y-1,z)];
-            const Float phi_yp = dev_ns_phi[idx(x,y+1,z)];
-            const Float phi_zn = dev_ns_phi[idx(x,y,z-1)];
-            const Float phi_zp = dev_ns_phi[idx(x,y,z+1)];
-
-            printf("[%d,%d,%d] phi: "
-                    "xn = %f\t"
-                    "xp = %f\t"
-                    "yn = %f\t"
-                    "yp = %f\t"
-                    "zn = %f\t"
-                    "zp = %f\n",
-                    x,y,z, phi_xn, phi_xp, phi_yn, phi_yp, phi_zn, phi_zp);*/
 
             // Save values
             __syncthreads();
@@ -2132,7 +2119,7 @@ __global__ void findNSforcing(
             = gradient(dev_ns_epsilon, x, y, z, dx, dy, dz);
 
         // Forcing function value
-        const Float f = f1 - dot(f2, grad_epsilon);
+        const Float f = f1 - dot(grad_epsilon, f2);
 
 #ifdef REPORT_FORCING_TERMS
         const Float t3 = -dot(f2, grad_epsilon);
@@ -2409,6 +2396,7 @@ __global__ void updateNSvelocityPressure(
         Float3* dev_ns_v,
         Float3* dev_ns_v_p,
         Float*  dev_ns_phi,
+        Float*  dev_ns_dphi,
         Float*  dev_ns_epsilon,
         Float   beta,
         int     bc_bot,
@@ -2441,7 +2429,8 @@ __global__ void updateNSvelocityPressure(
         const Float  p_old   = dev_ns_p[cellidx];
         const Float  epsilon = dev_ns_epsilon[cellidx];
         const Float3 v_p     = dev_ns_v_p[cellidx];
-        const Float  phi     = dev_ns_phi[cellidx];
+        //const Float  phi     = dev_ns_phi[cellidx];
+        const Float  dphi    = dev_ns_dphi[cellidx];
 
         // New pressure
         Float p = beta*p_old + epsilon;
@@ -2451,9 +2440,14 @@ __global__ void updateNSvelocityPressure(
             = gradient(dev_ns_epsilon, x, y, z, dx, dy, dz);
 
         // Find new velocity
-        //Float3 v = v_p - devC_dt/devC_params.rho_f*grad_epsilon;
-        Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*phi)*grad_epsilon;
-        //v = MAKE_FLOAT3(0.0, 0.0, 0.0);
+#ifdef MODEL_A
+        Float3 v = v_p - ndem*devC_dt/devC_params.rho_f*grad_epsilon;
+#endif
+
+#ifdef MODEL_B
+        //Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*phi)*grad_epsilon;
+        Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*dphi)*grad_epsilon;
+#endif
 
         // Print values for debugging
         /* if (z == 0) {
