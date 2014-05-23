@@ -2104,55 +2104,49 @@ __global__ void findPredNSvelocities(
             ;*/
 
 #ifdef SET_1
-        Float3 v_p = v
-            + pressure_term         // pressure gradient
-            - dt/(rho*phi)*f_i       // particle fluid interaction
-            + dt/(rho*phi)*div_tau  // diffusion
-            + MAKE_FLOAT3(devC_params.g[0], devC_params.g[1],
-                    devC_params.g[2])*dt  // gravity
-            - v*dphi/phi            // porosity change
-            - div_phi_vi_v*dt/phi;  // advection
+            const Float3 interaction_term = -dt/(rho*phi)*f_i;
+            const Float3 diffusion_term = dt/(rho*phi)*div_tau;
+            const Float3 gravity_term = MAKE_FLOAT3(
+                    devC_params.g[0], devC_params.g[1], devC_params.g[2])*dt;
+            const Float3 porosity_term = -v*dphi/phi;
+            const Float3 advection_term = -div_phi_vi_v*dt/phi;
 #endif
 #ifdef SET_2
-        Float3 v_p = v
-            + pressure_term         // pressure gradient
-            - dt/(rho*phi)*f_i      // particle fluid interaction
-            + dt/rho*div_tau        // diffusion
-            + MAKE_FLOAT3(devC_params.g[0], devC_params.g[1],
-                    devC_params.g[2])*dt  // gravity
-            - v*dphi/phi            // porosity change
-            - div_phi_vi_v*dt/phi;  // advection
+            const Float3 interaction_term = -dt/(rho*phi)*f_i;
+            const Float3 diffusion_term = dt/rho*div_tau;
+            const Float3 gravity_term = MAKE_FLOAT3(
+                    devC_params.g[0], devC_params.g[1], devC_params.g[2])*dt;
+            const Float3 porosity_term = -v*dphi/phi;
+            const Float3 advection_term = -div_phi_vi_v*dt/phi;
 #endif
 
+        Float v_p = v
+            + pressure_term
+            + interaction_term
+            + diffusion_term
+            + gravity_term
+            + porosity_term
+            + advection_term;
 
-        /*
 #ifdef REPORT_V_P_COMPONENTS
         // Report velocity components to stdout for debugging
-        const Float3 dv_pres = pressure_term;
-        const Float3 dv_diff =
-            1.0/devC_params.rho_f*div_phi_tau*ndem*devC_dt/phi;
-        const Float3 dv_g = MAKE_FLOAT3(devC_params.g[0], devC_params.g[1],
-                devC_params.g[2])*ndem*devC_dt;
-        const Float3 dv_fi = -1.0*ndem*devC_dt/(devC_params.rho_f*phi)*f_i;
-        const Float3 dv_dphi = -1.0*v*dphi/phi;
-        const Float3 dv_adv = -1.0*div_phi_vi_v*ndem*devC_dt/phi;
-            printf("[%d,%d,%d]\t"
-                    "v_p = %e\t%e\t%e\t"
-                    "dv_pres = %e\t%e\t%e\t"
-                    "dv_diff = %e\t%e\t%e\t"
-                    "dv_g = %e\t%e\t%e\t"
-                    "dv_fi = %e\t%e\t%e\t"
-                    "v_dphi = %e\t%e\t%e\t"
-                    "dv_adv = %e\t%e\t%e\n",
-                    x, y, z,
-                    v_p.x, v_p.y, v_p.z,
-                    dv_pres.x, dv_pres.y, dv_pres.z,
-                    dv_diff.x, dv_diff.y, dv_diff.z,
-                    dv_g.x, dv_g.y, dv_g.z,
-                    dv_fi.x, dv_fi.y, dv_fi.z,
-                    dv_dphi.x, dv_dphi.y, dv_dphi.z,
-                    dv_adv.x, dv_adv.y, dv_adv.z);
-#endif*/
+        printf("[%d,%d,%d]\t"
+                "v_p = %e\t%e\t%e\t"
+                "pres = %e\t%e\t%e\t"
+                "interact = %e\t%e\t%e\t"
+                "diff = %e\t%e\t%e\t"
+                "grav = %e\t%e\t%e\t"
+                "poros = %e\t%e\t%e\t"
+                "adv = %e\t%e\t%e\n"
+                x, y, z,
+                v_p.x, v_p.y, v_p.z,
+                pressure_term.x, pressure_term.y, pressure_term.z, 
+                interaction_term.x, interaction_term.y, interaction_term.z, 
+                diffusion_term.x, diffusion_term.y, diffusion_term.z, 
+                gravity_term.x, gravity_term.y, gravity_term.z, 
+                porosity_term.x, porosity_term.y, porosity_term.z, 
+                advection_term.x, advection_term.y, advection_term.z);
+#endif
 
         // Enforce Neumann BC if specified
         if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
@@ -2247,9 +2241,8 @@ __global__ void findNSforcing(
 
 #ifdef REPORT_FORCING_TERMS
             // Report values terms in the forcing function for debugging
-            if (z >= nz-3)
-                printf("[%d,%d,%d]\tt1 = %f\tt2 = %f\tt4 = %f\n",
-                        x,y,z, t1, t2, t4);
+            printf("[%d,%d,%d]\tt1 = %f\tt2 = %f\tt4 = %f\n",
+                    x,y,z, t1, t2, t4);
 #endif
 
             // Save values
