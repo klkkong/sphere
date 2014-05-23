@@ -46,10 +46,13 @@ const int conv_log_interval = 10;
 // Enable reporting of velocity prediction components to stdout
 //#define REPORT_V_P_COMPONENTS
 
-// Choose solver model (see Zhu et al. 2007 "Discrete particle simulation of
-// particulate systems: Theoretical developments"
+// Choose solver model (see Zhou et al. 2010 "Discrete particle simulation of
+// particle-fluid flow: model formulations and their applicability", table. 1.
+// SET_1 corresponds exactly to Model B in Zhu et al. 2007 "Discrete particle
+// simulation of particulate systems: Theoretical developments".
+// SET_2 corresponds approximately to Model A in Zhu et al. 2007.
 // Choose exactly one.
-#define MODEL_A
-//#define MODEL_B
+#define SET_1
+//#define SET_2
 
 #endif

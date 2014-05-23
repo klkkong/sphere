@@ -869,7 +869,7 @@ __host__ void DEM::startTime()
 
             if (np > 0) {
                 // Determine the interaction force
-                findInteractionForce<<<dimGridFluid, dimBlockFluid>>>(
+                /*findInteractionForce<<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_phi,
                         dev_ns_d_avg,
                         dev_ns_vp_avg,
@@ -890,6 +890,31 @@ __host__ void DEM::startTime()
                         dev_force);
                 cudaThreadSynchronize();
                 checkForCudaErrorsIter("Post applyParticleInteractionForce",
+                        iter);*/
+
+                // Per particle, find the fluid-particle interaction force f_pf
+                // and apply it to the particle
+                findInteractionForce<<<dimGrid, dimBlock>>>(
+                        dev_x,
+                        dev_vel,
+                        dev_ns_phi,
+                        dev_ns_p,
+                        dev_ns_v,
+                        dev_ns_tau,
+                        dev_ns_f_pf,
+                        dev_force);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post findInteractionForce", iter);
+
+                // Apply fluid-particle interaction force to the fluid
+                applyInteractionForceToFluid<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_gridParticleIndex,
+                        dev_cellStart,
+                        dev_cellEnd,
+                        dev_ns_f_pf,
+                        dev_ns_fi);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post applyInteractionForceToFluid",
                         iter);
             }
 #endif
@@ -1007,15 +1032,19 @@ __host__ void DEM::startTime()
                 // fluid velocities
                 if (PROFILING == 1)
                     startTimer(&kernel_tic);
-                findNSdivphitau<<<dimGridFluid, dimBlockFluid>>>(
+                /*findNSdivphitau<<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_phi,
                         dev_ns_tau,
-                        dev_ns_div_phi_tau);
+                        dev_ns_div_phi_tau);*/
+                findNSdivtau<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_tau,
+                        dev_ns_div_tau);
                 cudaThreadSynchronize();
                 if (PROFILING == 1)
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                             &t_findNSdivphitau);
-                checkForCudaErrorsIter("Post findNSdivphitau", iter);
+                //checkForCudaErrorsIter("Post findNSdivphitau", iter);
+                checkForCudaErrorsIter("Post findNSdivtau", iter);
 
                 // Predict the fluid velocities on the base of the old pressure
                 // field and ignoring the incompressibility constraint
@@ -1027,7 +1056,8 @@ __host__ void DEM::startTime()
                         dev_ns_phi,
                         dev_ns_dphi,
                         dev_ns_div_phi_vi_v,
-                        dev_ns_div_phi_tau,
+                        //dev_ns_div_phi_tau,
+                        dev_ns_div_tau,
                         ns.bc_bot,
                         ns.bc_top,
                         ns.beta,

@@ -87,8 +87,10 @@ void DEM::initNSmemDev(void)
     cudaMalloc((void**)&dev_ns_f1, memSizeF);    // constant addition in forcing
     cudaMalloc((void**)&dev_ns_f2, memSizeF*3);  // constant slope in forcing
     cudaMalloc((void**)&dev_ns_tau, memSizeF*6); // stress tensor (symmetrical)
+    cudaMalloc((void**)&dev_ns_div_tau, memSizeF*6); // div(tau)
     cudaMalloc((void**)&dev_ns_div_phi_vi_v, memSizeF*3); // div(phi*vi*v)
-    cudaMalloc((void**)&dev_ns_div_phi_tau, memSizeF*3);  // div(phi*tau)
+    //cudaMalloc((void**)&dev_ns_div_phi_tau, memSizeF*3);  // div(phi*tau)
+    cudaMalloc((void**)&dev_ns_f_pf, sizeof(Float3)*np); // particle fluid force
 
     checkForCudaErrors("End of initNSmemDev");
 }
@@ -120,7 +122,9 @@ void DEM::freeNSmemDev()
     cudaFree(dev_ns_f2);
     cudaFree(dev_ns_tau);
     cudaFree(dev_ns_div_phi_vi_v);
-    cudaFree(dev_ns_div_phi_tau);
+    //cudaFree(dev_ns_div_phi_tau);
+    cudaFree(dev_ns_div_tau);
+    cudaFree(dev_ns_f_pf);
 }
 
 // Transfer to device
@@ -1395,6 +1399,83 @@ __device__ Float divergence(
         (zp.z - zn.z)/(2.0*dz);
 }
 
+// Find the divergence of a tensor field
+__device__ Float3 divergence_tensor(
+        Float*  dev_tensorfield,
+        const unsigned int x,
+        const unsigned int y,
+        const unsigned int z,
+        const Float dx,
+        const Float dy,
+        const Float dz)
+{
+    __syncthreads();
+
+    // Read the tensor in the 6 neighbor cells
+    const Float t_xx_xp = dev_tensorfield[idx(x+1,y,z)*6];
+    const Float t_xy_xp = dev_tensorfield[idx(x+1,y,z)*6+1];
+    const Float t_xz_xp = dev_tensorfield[idx(x+1,y,z)*6+2];
+    const Float t_yy_xp = dev_tensorfield[idx(x+1,y,z)*6+3];
+    const Float t_yz_xp = dev_tensorfield[idx(x+1,y,z)*6+4];
+    const Float t_zz_xp = dev_tensorfield[idx(x+1,y,z)*6+5];
+
+    const Float t_xx_xn = dev_tensorfield[idx(x-1,y,z)*6];
+    const Float t_xy_xn = dev_tensorfield[idx(x-1,y,z)*6+1];
+    const Float t_xz_xn = dev_tensorfield[idx(x-1,y,z)*6+2];
+    const Float t_yy_xn = dev_tensorfield[idx(x-1,y,z)*6+3];
+    const Float t_yz_xn = dev_tensorfield[idx(x-1,y,z)*6+4];
+    const Float t_zz_xn = dev_tensorfield[idx(x-1,y,z)*6+5];
+
+    const Float t_xx_yp = dev_tensorfield[idx(x,y+1,z)*6];
+    const Float t_xy_yp = dev_tensorfield[idx(x,y+1,z)*6+1];
+    const Float t_xz_yp = dev_tensorfield[idx(x,y+1,z)*6+2];
+    const Float t_yy_yp = dev_tensorfield[idx(x,y+1,z)*6+3];
+    const Float t_yz_yp = dev_tensorfield[idx(x,y+1,z)*6+4];
+    const Float t_zz_yp = dev_tensorfield[idx(x,y+1,z)*6+5];
+
+    const Float t_xx_yn = dev_tensorfield[idx(x,y-1,z)*6];
+    const Float t_xy_yn = dev_tensorfield[idx(x,y-1,z)*6+1];
+    const Float t_xz_yn = dev_tensorfield[idx(x,y-1,z)*6+2];
+    const Float t_yy_yn = dev_tensorfield[idx(x,y-1,z)*6+3];
+    const Float t_yz_yn = dev_tensorfield[idx(x,y-1,z)*6+4];
+    const Float t_zz_yn = dev_tensorfield[idx(x,y-1,z)*6+5];
+
+    const Float t_xx_zp = dev_tensorfield[idx(x,y,z+1)*6];
+    const Float t_xy_zp = dev_tensorfield[idx(x,y,z+1)*6+1];
+    const Float t_xz_zp = dev_tensorfield[idx(x,y,z+1)*6+2];
+    const Float t_yy_zp = dev_tensorfield[idx(x,y,z+1)*6+3];
+    const Float t_yz_zp = dev_tensorfield[idx(x,y,z+1)*6+4];
+    const Float t_zz_zp = dev_tensorfield[idx(x,y,z+1)*6+5];
+
+    const Float t_xx_zn = dev_tensorfield[idx(x,y,z-1)*6];
+    const Float t_xy_zn = dev_tensorfield[idx(x,y,z-1)*6+1];
+    const Float t_xz_zn = dev_tensorfield[idx(x,y,z-1)*6+2];
+    const Float t_yy_zn = dev_tensorfield[idx(x,y,z-1)*6+3];
+    const Float t_yz_zn = dev_tensorfield[idx(x,y,z-1)*6+4];
+    const Float t_zz_zn = dev_tensorfield[idx(x,y,z-1)*6+5];
+
+    // Calculate div(phi*tau)
+    const Float3 div_tensor = MAKE_FLOAT3(
+            // x
+            (t_xx_xp - t_xx_xn)/dx +
+            (t_xy_yp - t_xy_yn)/dy +
+            (t_xz_zp - t_xz_zn)/dz,
+            // y
+            (t_xy_xp - t_xy_xn)/dx +
+            (t_yy_yp - t_yy_yn)/dy +
+            (t_yz_zp - t_yz_zn)/dz,
+            // z
+            (t_xz_xp - t_xz_xn)/dx +
+            (t_yz_yp - t_yz_yn)/dy +
+            (t_zz_zp - t_zz_zn)/dz);
+
+#ifdef CHECK_NS_FINITE
+    (void)checkFiniteFloat3("div_tensor", x, y, z, div_tensor);
+#endif
+    return div_tensor;
+}
+
+
 // Find the spatial gradient in e.g. pressures per cell
 // using first order central differences
 __global__ void findNSgradientsDev(
@@ -1708,6 +1789,40 @@ __global__ void findNSdivphiviv(
 #endif
     }
 }
+__global__ void findNSdivtau(
+        Float*  dev_ns_tau,      // in
+        Float3* dev_ns_div_tau)  // out
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    // Cell sizes
+    const Float dx = devC_grid.L[0]/nx;
+    const Float dy = devC_grid.L[1]/ny;
+    const Float dz = devC_grid.L[2]/nz;
+
+    // 1D thread index
+    const unsigned int cellidx = idx(x,y,z);
+
+    // Check that we are not outside the fluid grid
+    if (x < nx && y < ny && z < nz) {
+        
+        __syncthreads();
+        const Float3 div_tau =
+            divergence_tensor(dev_ns_tau, x, y, z, dx, dy, dz);
+
+        __syncthreads();
+        dev_ns_div_tau[cellidx] = div_tau;
+    }
+}
+
 
 // Find the divergence of phi*tau
 __global__ void findNSdivphitau(
@@ -1908,7 +2023,8 @@ __global__ void findPredNSvelocities(
         Float*  dev_ns_phi,             // in
         Float*  dev_ns_dphi,            // in
         Float3* dev_ns_div_phi_vi_v,    // in
-        Float3* dev_ns_div_phi_tau,     // in
+        //Float3* dev_ns_div_phi_tau,     // in
+        Float3* dev_ns_div_tau,         // in
         int     bc_bot,                 // in
         int     bc_top,                 // in
         Float   beta,                   // in
@@ -1943,7 +2059,8 @@ __global__ void findPredNSvelocities(
         const Float  phi          = dev_ns_phi[cellidx];
         const Float  dphi         = dev_ns_dphi[cellidx];
         const Float3 div_phi_vi_v = dev_ns_div_phi_vi_v[cellidx];
-        const Float3 div_phi_tau  = dev_ns_div_phi_tau[cellidx];
+        //const Float3 div_phi_tau  = dev_ns_div_phi_tau[cellidx];
+        const Float3 div_tau      = dev_ns_div_tau[cellidx];
 
         // The particle-fluid interaction force should only be incoorporated if
         // there is a fluid viscosity
@@ -1952,6 +2069,10 @@ __global__ void findPredNSvelocities(
             f_i = dev_ns_fi[cellidx];
         else
             f_i = MAKE_FLOAT3(0.0, 0.0, 0.0);
+
+        const Float dt = ndem*devC_dt;
+        const Float mu = devC_params.mu;
+        const Float rho = devC_params.rho_f;
 
         // Find pressure gradient
         Float3 grad_p = MAKE_FLOAT3(0.0, 0.0, 0.0);
@@ -1962,20 +2083,50 @@ __global__ void findPredNSvelocities(
         Float3 pressure_term = MAKE_FLOAT3(0.0, 0.0, 0.0);
         if (beta > 0.0) {
             grad_p = gradient(dev_ns_p, x, y, z, dx, dy, dz);
-            pressure_term = -beta/devC_params.rho_f*grad_p*ndem*devC_dt/phi;
+#ifdef SET_1
+            pressure_term = -beta*dt/(rho*phi)*grad_p;
+#endif
+#ifdef SET_2
+            pressure_term = -beta*dt/rho*grad_p;
+#endif
         }
 
         // Calculate the predicted velocity
+        /*
         Float3 v_p = v
             + pressure_term
             + 1.0/devC_params.rho_f*div_phi_tau*ndem*devC_dt/phi // diffusion
             + MAKE_FLOAT3(devC_params.g[0], devC_params.g[1], devC_params.g[2])
                 *ndem*devC_dt     // gravity term
             - ndem*devC_dt/(devC_params.rho_f*phi)*f_i
+            //- ndem*devC_dt/(devC_params.rho_f*phi*dx*dy*dz)*f_i
             - v*dphi/phi
             - div_phi_vi_v*ndem*devC_dt/phi    // advection term
-            ;
+            ;*/
 
+#ifdef SET_1
+        Float3 v_p = v
+            + pressure_term         // pressure gradient
+            - dt/(mu*phi)*f_i       // particle fluid interaction
+            + dt/(rho*phi)*div_tau  // diffusion
+            + MAKE_FLOAT3(devC_params.g[0], devC_params.g[1],
+                    devC_params.g[2])*dt  // gravity
+            - v*dphi/phi            // porosity change
+            - div_phi_vi_v*dt/phi;  // advection
+#endif
+#ifdef SET_2
+        Float3 v_p = v
+            + pressure_term         // pressure gradient
+            - dt/(rho*phi)*f_i      // particle fluid interaction
+            + dt/rho*div_tau        // diffusion
+            + MAKE_FLOAT3(devC_params.g[0], devC_params.g[1],
+                    devC_params.g[2])*dt  // gravity
+            - v*dphi/phi            // porosity change
+            - div_phi_vi_v*dt/phi;  // advection
+#endif
+
+
+        /*
 #ifdef REPORT_V_P_COMPONENTS
         // Report velocity components to stdout for debugging
         const Float3 dv_pres = pressure_term;
@@ -2002,7 +2153,7 @@ __global__ void findPredNSvelocities(
                     dv_fi.x, dv_fi.y, dv_fi.z,
                     dv_dphi.x, dv_dphi.y, dv_dphi.z,
                     dv_adv.x, dv_adv.y, dv_adv.z);
-#endif
+#endif*/
 
         // Enforce Neumann BC if specified
         if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
@@ -2081,15 +2232,16 @@ __global__ void findNSforcing(
             const Float dt = devC_dt*ndem;
 
             // Find forcing function terms
-#ifdef MODEL_A
-            const Float t1 = devC_params.rho_f*div_v_p/dt;
-            const Float t2 = dot(v_p, grad_phi)*devC_params.rho_f/(dt*phi);
-            const Float t4 = dphi*devC_params.rho_f/(dt*dt*phi);
-#endif
-#ifdef MODEL_B
-            const Float t1 = div_v_p*phi*devC_params.rho_f/dt;
-            const Float t2 = dot(grad_phi, v_p)*devC_params.rho_f/dt;
+#ifdef SET_1
+            const Float t1 = phi*devC_params.rho_f*div_v_p/dt;
+            const Float t2 = devC_params.rho_f*dot(v_p, grad_phi)/dt;
             const Float t4 = dphi*devC_params.rho_f/(dt*dt);
+
+#endif
+#ifdef SET_2
+            const Float t1 = devC_params.rho_f*div_v_p/dt;
+            const Float t2 = devC_params.rho_f*dot(v_p, grad_phi)/(phi*dt);
+            const Float t4 = dphi*devC_params.rho_f/(dt*dt*phi);
 #endif
             f1 = t1 + t2 + t4;
             f2 = grad_phi/phi; // t3/grad(epsilon)
@@ -2439,15 +2591,13 @@ __global__ void updateNSvelocityPressure(
             = gradient(dev_ns_epsilon, x, y, z, dx, dy, dz);
 
         // Find new velocity
-#ifdef MODEL_A
-        Float3 v = v_p - ndem*devC_dt/devC_params.rho_f*grad_epsilon;
-#endif
-
-#ifdef MODEL_B
+#ifdef SET_1
         __syncthreads();
-        const Float  phi = dev_ns_phi[cellidx];
+        const Float phi = dev_ns_phi[cellidx];
         Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*phi)*grad_epsilon;
-        //Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*dphi)*grad_epsilon;
+#endif
+#ifdef SET_2
+        Float3 v = v_p - ndem*devC_dt/devC_params.rho_f*grad_epsilon;
 #endif
 
         // Print values for debugging
@@ -2575,7 +2725,7 @@ __device__ Float dragCoefficient(Float re)
 // interaction forces, such as the pressure gradient in the flow field (pressure
 // force), particle rotation (Magnus force), particle acceleration (virtual mass
 // force) or a fluid velocity gradient leading to shear (Saffman force).
-__global__ void findInteractionForce(
+/*__global__ void findInteractionForce(
         Float*  dev_ns_phi,     // in
         Float*  dev_ns_d_avg,   // in
         Float3* dev_ns_vp_avg,  // in
@@ -2627,16 +2777,6 @@ __global__ void findInteractionForce(
                         *v_rel_length/d_avg)*v_rel;
         }
 
-        /*if (v_rel_length > 1.0e-5)
-                printf("%d,%d,%d\tfi = %f,%f,%f"
-                    "\tphi = %f\td_avg = %f"
-                    "\tv_rel = %f,%f,%f\t"
-                    "\tre = %f\tcd = %f\n",
-                    x,y,z, fi.x, fi.y, fi.z,
-                    phi, d_avg,
-                    v_rel.x, v_rel.y, v_rel.z,
-                    re, cd);*/
-
         __syncthreads();
         dev_ns_fi[cellidx] = fi;
         //dev_ns_fi[cellidx] = MAKE_FLOAT3(0.0, 0.0, 0.0);
@@ -2645,14 +2785,145 @@ __global__ void findInteractionForce(
         checkFiniteFloat3("fi", x, y, z, fi);
 #endif
     }
+}*/
+
+// Find particle-fluid interaction force as outlined by Zhou et al. 2010, and
+// originally by Gidaspow 1992.
+__global__ void findInteractionForce(
+        Float4* dev_x,          // in
+        Float4* dev_vel,        // in
+        Float*  dev_ns_phi,     // in
+        Float*  dev_ns_p,       // in
+        Float3* dev_ns_v,       // in
+        Float*  dev_ns_tau,     // in
+        Float3* dev_ns_f_pf,    // out
+        Float4* dev_force)      // out
+{
+    unsigned int i = threadIdx.x + blockIdx.x*blockDim.x; // Particle index
+
+    if (i < devC_np) {
+
+        // Particle information
+        __syncthreads();
+        const Float4 x   = dev_x[i];
+        const Float4 vel = dev_vel[i];
+        const Float3 v_p = MAKE_FLOAT3(vel.x, vel.y, vel.z);
+        const Float  d = x.w;
+
+        // Fluid cell
+        const unsigned int i_x =
+            floor((x.x - devC_grid.origo[0])/(devC_grid.L[0]/devC_grid.num[0]));
+        const unsigned int i_y =
+            floor((x.y - devC_grid.origo[1])/(devC_grid.L[1]/devC_grid.num[1]));
+        const unsigned int i_z =
+            floor((x.z - devC_grid.origo[2])/(devC_grid.L[2]/devC_grid.num[2]));
+        const unsigned int cellidx = idx(i_x, i_y, i_z);
+
+        // Cell sizes
+        const Float dx = devC_grid.L[0]/devC_grid.num[0];
+        const Float dy = devC_grid.L[1]/devC_grid.num[1];
+        const Float dz = devC_grid.L[2]/devC_grid.num[2];
+
+        // Fluid information
+        __syncthreads();
+        const Float  phi = dev_ns_phi[cellidx];
+        const Float3 v_f = dev_ns_v[cellidx];
+
+        const Float3 v_rel = v_f - v_p;
+        const Float  v_rel_length = length(v_rel);
+
+        const Float V_p = dx*dy*dz - phi*dx*dy*dz;
+        const Float Re  = devC_params.rho_f*d*phi*v_rel_length/devC_params.mu;
+        const Float Cd  = pow(0.63 + 4.8/pow(Re, 0.5), 2.0);
+        const Float chi = 3.7 - 0.65*exp(-pow(1.5 - log10(Re), 2.0)/2.0);
+
+        // Drag force
+        const Float3 f_d = 0.125*Cd*devC_params.rho_f*M_PI*d*d*phi*phi
+            *v_rel_length*v_rel*pow(phi, -chi);
+
+        // Pressure gradient force
+        const Float3 f_p =
+            -1.0*gradient(dev_ns_p, i_x, i_y, i_z, dx, dy, dz)*V_p;
+
+        // Viscous force
+        const Float3 f_v =
+            -1.0*divergence_tensor(dev_ns_tau, i_x, i_y, i_z, dx, dy, dz)*V_p;
+
+        // Interaction force on particle (force) and fluid (f_pf)
+        __syncthreads();
+        const Float3 f_pf = f_d + f_p + f_v;
+#ifdef SET_1
+        dev_ns_f_pf[i] = f_pf;
+#endif
+#ifdef SET_2
+        dev_ns_f_pf[i] = f_d;
+#endif
+        dev_force[i] += MAKE_FLOAT4(f_pf.x, f_pf.y, f_pf.z, 0.0);
+    }
+}
+
+// Apply the fluid-particle interaction force to the fluid cell based on the
+// interaction forces from each particle in it
+__global__ void applyInteractionForceToFluid(
+        unsigned int* dev_gridParticleIndex,    // in
+        unsigned int* dev_cellStart,            // in
+        unsigned int* dev_cellEnd,              // in
+        Float3* dev_ns_f_pf,                    // in
+        Float3* dev_ns_fi)                      // out
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    // Cell sizes
+    const Float dx = devC_grid.L[0]/nx;
+    const Float dy = devC_grid.L[1]/ny;
+    const Float dz = devC_grid.L[2]/nz;
+
+    // Check that we are not outside the fluid grid
+    if (x < nx && y < ny && z < nz) {
+
+        const unsigned int cellidx = idx(x,y,z);
+
+        // Calculate linear cell ID
+        const unsigned int cellID = x + y * devC_grid.num[0]
+            + (devC_grid.num[0] * devC_grid.num[1]) * z; 
+
+        const unsigned int startidx = dev_cellStart[cellID];
+        unsigned int endidx, i, origidx;
+
+        Float3 fi;
+
+        if (startidx != 0xffffffff) {
+
+            __syncthreads();
+            endidx = dev_cellEnd[cellID];
+
+            for (i=startidx; i<endidx; ++i) {
+
+                __syncthreads();
+                origidx = dev_gridParticleIndex[i];
+                fi += dev_ns_f_pf[origidx];
+            }
+        }
+
+        __syncthreads();
+        dev_ns_fi[cellidx] = fi/(dx*dy*dz);
+    }
 }
 
 // Apply the fluid-particle interaction force to all particles in each fluid
 // cell.
-__global__ void applyParticleInteractionForce(
+/*__global__ void applyParticleInteractionForce(
         Float3* dev_ns_fi,                      // in
         Float*  dev_ns_phi,                     // in
-        Float*  dev_ns_p,                     // in
+        Float*  dev_ns_p,                       // in
         unsigned int* dev_gridParticleIndex,    // in
         unsigned int* dev_cellStart,            // in
         unsigned int* dev_cellEnd,              // in
@@ -2729,7 +3000,7 @@ __global__ void applyParticleInteractionForce(
             }
         }
     }
-}
+}*/
 
 // Print final heads and free memory
 void DEM::endNSdev()
