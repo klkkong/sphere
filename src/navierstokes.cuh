@@ -2855,15 +2855,11 @@ __global__ void findInteractionForce(
         const Float3 f_pf = f_d + f_p + f_v;
 
 #ifdef CHECK_NS_FINITE
-        printf("%d [%d,%d,%d]\tV_p=%f Re=%f Cd=%f chi=%f\n",
-                i, i_x, i_y, i_z, V_p, Re, Cd, chi);
-        //checkFiniteFloat("V_p", i_x, i_y, i_z, V_p);
-        //checkFiniteFloat("Re", i_x, i_y, i_z, Re);
-        //checkFiniteFloat("Cd", i_x, i_y, i_z, Cd);
-        //checkFiniteFloat("chi", i_x, i_y, i_z, chi);
-        checkFiniteFloat3("f_d", i_x, i_y, i_z, f_d);
-        checkFiniteFloat3("f_p", i_x, i_y, i_z, f_p);
-        checkFiniteFloat3("f_v", i_x, i_y, i_z, f_v);
+        //printf("%d [%d,%d,%d]\tV_p=%f Re=%f Cd=%f chi=%f\n",
+         //       i, i_x, i_y, i_z, V_p, Re, Cd, chi);
+        //checkFiniteFloat3("f_d", i_x, i_y, i_z, f_d);
+        //checkFiniteFloat3("f_p", i_x, i_y, i_z, f_p);
+        //checkFiniteFloat3("f_v", i_x, i_y, i_z, f_v);
         checkFiniteFloat3("f_pf", i_x, i_y, i_z, f_pf);
 #endif
 
