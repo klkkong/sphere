@@ -277,6 +277,8 @@ double DEM::maxNormResNS()
                         << x << "," << y << "," << z << std::endl;
                     std::cerr << "\tt = " << time.current << ", iter = "
                         << int(time.current/time.dt) << std::endl;
+                    std::cerr << "This often happens if the system has become "
+                        "unstable." << std::endl;
                     exit(1);
                 }
                 if (norm_res > max_norm_res)
