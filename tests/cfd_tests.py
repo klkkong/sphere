@@ -22,8 +22,8 @@ orig.initTemporal(total = 0.2, file_dt = 0.01)
 orig.time_file_dt = orig.time_dt*0.99
 orig.time_total = orig.time_dt*10
 #orig.run(dry=True)
-#orig.run(verbose=False)
-orig.run(verbose=True)
+orig.run(verbose=False)
+#orig.run(verbose=True)
 py = sphere.sim(sid = orig.sid, fluid = True)
 
 ones = numpy.ones((orig.num))

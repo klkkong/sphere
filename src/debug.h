@@ -30,8 +30,8 @@ const int write_res_log = 0;
 const int write_conv_log = 1;
 
 // The interval between iteration number reporting in 'output/<sid>-conv.log'
-const int conv_log_interval = 10;
-//const int conv_log_interval = 1;
+//const int conv_log_interval = 10;
+const int conv_log_interval = 4;
 
 // Enable drag force and particle fluid coupling
 #define CFD_DEM_COUPLING
