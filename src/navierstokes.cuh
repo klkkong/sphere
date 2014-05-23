@@ -2071,7 +2071,6 @@ __global__ void findPredNSvelocities(
             f_i = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
         const Float dt = ndem*devC_dt;
-        const Float mu = devC_params.mu;
         const Float rho = devC_params.rho_f;
 
         // Find pressure gradient
@@ -2107,7 +2106,7 @@ __global__ void findPredNSvelocities(
 #ifdef SET_1
         Float3 v_p = v
             + pressure_term         // pressure gradient
-            - dt/(mu*phi)*f_i       // particle fluid interaction
+            - dt/(rho*phi)*f_i       // particle fluid interaction
             + dt/(rho*phi)*div_tau  // diffusion
             + MAKE_FLOAT3(devC_params.g[0], devC_params.g[1],
                     devC_params.g[2])*dt  // gravity
