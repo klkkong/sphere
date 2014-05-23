@@ -2830,8 +2830,10 @@ __global__ void findInteractionForce(
         Float Cd  = pow(0.63 + 4.8/pow(Re, 0.5), 2.0);
         const Float chi = 3.7 - 0.65*exp(-pow(1.5 - log10(Re), 2.0)/2.0);
 
-        if (v_rel_length < 1.0e-6) // avoid Re=0 -> Cd=inf
+        if (v_rel_length < 1.0e-6) { // avoid Re=0 -> Cd=inf, chi=-nan
             Cd = 0.0;
+            chi = 0.0;
+        }
 
         // Drag force
         const Float3 f_d = 0.125*Cd*devC_params.rho_f*M_PI*d*d*phi*phi
@@ -2855,11 +2857,11 @@ __global__ void findInteractionForce(
         const Float3 f_pf = f_d + f_p + f_v;
 
 #ifdef CHECK_NS_FINITE
-        //printf("%d [%d,%d,%d]\tV_p=%f Re=%f Cd=%f chi=%f\n",
-         //       i, i_x, i_y, i_z, V_p, Re, Cd, chi);
-        //checkFiniteFloat3("f_d", i_x, i_y, i_z, f_d);
-        //checkFiniteFloat3("f_p", i_x, i_y, i_z, f_p);
-        //checkFiniteFloat3("f_v", i_x, i_y, i_z, f_v);
+        printf("%d [%d,%d,%d]\tV_p=%f Re=%f Cd=%f chi=%f\n",
+                i, i_x, i_y, i_z, V_p, Re, Cd, chi);
+        checkFiniteFloat3("f_d", i_x, i_y, i_z, f_d);
+        checkFiniteFloat3("f_p", i_x, i_y, i_z, f_p);
+        checkFiniteFloat3("f_v", i_x, i_y, i_z, f_v);
         checkFiniteFloat3("f_pf", i_x, i_y, i_z, f_pf);
 #endif
 
