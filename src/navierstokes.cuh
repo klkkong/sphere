@@ -2851,12 +2851,19 @@ __global__ void findInteractionForce(
         // Interaction force on particle (force) and fluid (f_pf)
         __syncthreads();
         const Float3 f_pf = f_d + f_p + f_v;
+
+#ifdef CHECK_NS_FINITE
+        checkFiniteFloat3("f_pf", i_x, i_y, i_z, f_pf);
+#endif
+
 #ifdef SET_1
         dev_ns_f_pf[i] = f_pf;
 #endif
+
 #ifdef SET_2
         dev_ns_f_pf[i] = f_d;
 #endif
+
         dev_force[i] += MAKE_FLOAT4(f_pf.x, f_pf.y, f_pf.z, 0.0);
     }
 }
@@ -2913,6 +2920,9 @@ __global__ void applyInteractionForceToFluid(
         }
 
         __syncthreads();
+#ifdef CHECK_NS_FINITE
+        checkFiniteFloat3("fi", x, y, z, fi/(dx*dy*dz));
+#endif
         dev_ns_fi[cellidx] = fi/(dx*dy*dz);
     }
 }

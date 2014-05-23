@@ -52,7 +52,7 @@ const int conv_log_interval = 10;
 // simulation of particulate systems: Theoretical developments".
 // SET_2 corresponds approximately to Model A in Zhu et al. 2007.
 // Choose exactly one.
-//#define SET_1
-#define SET_2
+#define SET_1
+//#define SET_2
 
 #endif
