@@ -22,8 +22,8 @@ py.readbin("../input/" + orig.sid + ".bin", verbose=False)
 compare(orig, py, "Python IO:")
 
 # Test C++ IO routines
-orig.run(verbose=True, hideinputfile=True)
-#orig.run(verbose=True, hideinputfile=False, cfd=True)
+#orig.run(verbose=True, hideinputfile=True)
+orig.run(verbose=True, hideinputfile=False)
 cpp = sphere.sim(fluid=True)
 cpp.readbin("../output/" + orig.sid + ".output00000.bin", verbose=False)
 compare(orig, cpp, "C++ IO:   ")

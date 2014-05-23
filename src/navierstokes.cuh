@@ -2782,14 +2782,15 @@ __device__ Float dragCoefficient(Float re)
 // Find particle-fluid interaction force as outlined by Zhou et al. 2010, and
 // originally by Gidaspow 1992.
 __global__ void findInteractionForce(
-        Float4* dev_x,          // in
-        Float4* dev_vel,        // in
-        Float*  dev_ns_phi,     // in
-        Float*  dev_ns_p,       // in
-        Float3* dev_ns_v,       // in
-        Float*  dev_ns_tau,     // in
-        Float3* dev_ns_f_pf,    // out
-        Float4* dev_force)      // out
+        Float4* dev_x,           // in
+        Float4* dev_vel,         // in
+        Float*  dev_ns_phi,      // in
+        Float*  dev_ns_p,        // in
+        Float3* dev_ns_v,        // in
+        Float*  dev_ns_tau,      // in
+        const unsigned int iter, // in
+        Float3* dev_ns_f_pf,     // out
+        Float4* dev_force)       // out
 {
     unsigned int i = threadIdx.x + blockIdx.x*blockDim.x; // Particle index
 
@@ -2838,14 +2839,22 @@ __global__ void findInteractionForce(
             -1.0*gradient(dev_ns_p, i_x, i_y, i_z, dx, dy, dz)*V_p;
 
         // Viscous force
-        const Float3 f_v =
-            -1.0*divergence_tensor(dev_ns_tau, i_x, i_y, i_z, dx, dy, dz)*V_p;
+        Float3 f_v;
+        if (iter == 0) 
+            f_v = MAKE_FLOAT3(0.0, 0.0, 0.0);
+        else
+            f_v =
+                -1.0*divergence_tensor(dev_ns_tau, i_x, i_y, i_z, dx, dy, dz)
+                *V_p;
 
         // Interaction force on particle (force) and fluid (f_pf)
         __syncthreads();
         const Float3 f_pf = f_d + f_p + f_v;
 
 #ifdef CHECK_NS_FINITE
+        checkFiniteFloat3("f_d", i_x, i_y, i_z, f_d);
+        checkFiniteFloat3("f_p", i_x, i_y, i_z, f_p);
+        checkFiniteFloat3("f_v", i_x, i_y, i_z, f_v);
         checkFiniteFloat3("f_pf", i_x, i_y, i_z, f_pf);
 #endif
 

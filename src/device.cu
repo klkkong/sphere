@@ -833,7 +833,6 @@ __host__ void DEM::startTime()
 
         // Solve Navier Stokes flow through the grid
         if (navierstokes == 1) {
-
             checkForCudaErrorsIter("Before findPorositiesDev", iter);
             // Find cell porosities, average particle velocities, and average
             // particle diameters. These are needed for predicting the fluid
@@ -901,6 +900,7 @@ __host__ void DEM::startTime()
                         dev_ns_p,
                         dev_ns_v,
                         dev_ns_tau,
+                        iter,
                         dev_ns_f_pf,
                         dev_force);
                 cudaThreadSynchronize();
