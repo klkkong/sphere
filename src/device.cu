@@ -948,14 +948,14 @@ __host__ void DEM::startTime()
                     cudaThreadSynchronize();
                     checkForCudaErrorsIter("Post setUpperPressureNS", iter);
 
-                    if (report_even_more_epsilon == 1) {
-                        std::cout
-                            << "\n@@@@@@ TIME STEP " << iter << " @@@@@@"
-                            << "\n###### EPSILON AFTER setUpperPressureNS "
-                            << "######" << std::endl;
-                        transferNSepsilonFromGlobalDeviceMemory();
-                        printNSarray(stdout, ns.epsilon, "epsilon");
-                    }
+#ifdef REPORT_MORE_EPSILON
+                    std::cout
+                        << "\n@@@@@@ TIME STEP " << iter << " @@@@@@"
+                        << "\n###### EPSILON AFTER setUpperPressureNS "
+                        << "######" << std::endl;
+                    transferNSepsilonFromGlobalDeviceMemory();
+                    printNSarray(stdout, ns.epsilon, "epsilon");
+#endif
                 }
 
                 // Set the values of the ghost nodes in the grid
@@ -1100,13 +1100,13 @@ __host__ void DEM::startTime()
                                 &t_setNSepsilon);
                     checkForCudaErrorsIter("Post setNSepsilonInterior", iter);
 
-                    if (report_even_more_epsilon == 1) {
-                        std::cout
-                            << "\n###### EPSILON AFTER setNSepsilonInterior "
-                            << "######" << std::endl;
-                        transferNSepsilonFromGlobalDeviceMemory();
-                        printNSarray(stdout, ns.epsilon, "epsilon");
-                    }
+#ifdef REPORT_MORE_EPSILON
+                    std::cout
+                        << "\n###### EPSILON AFTER setNSepsilonInterior "
+                        << "######" << std::endl;
+                    transferNSepsilonFromGlobalDeviceMemory();
+                    printNSarray(stdout, ns.epsilon, "epsilon");
+#endif
 
                     // Set the epsilon values at the lower boundary
                     pressure = ns.p[idx(0,0,0)];
@@ -1124,13 +1124,13 @@ __host__ void DEM::startTime()
                                 &t_setNSdirichlet);
                     checkForCudaErrorsIter("Post setNSepsilonBottom", iter);
 
-                    if (report_even_more_epsilon == 1) {
-                        std::cout
-                            << "\n###### EPSILON AFTER setNSepsilonBottom "
-                            << "######" << std::endl;
-                        transferNSepsilonFromGlobalDeviceMemory();
-                        printNSarray(stdout, ns.epsilon, "epsilon");
-                    }
+#ifdef REPORT_MORE_EPSILON
+                    std::cout
+                        << "\n###### EPSILON AFTER setNSepsilonBottom "
+                        << "######" << std::endl;
+                    transferNSepsilonFromGlobalDeviceMemory();
+                    printNSarray(stdout, ns.epsilon, "epsilon");
+#endif
 
                     /*setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                       dev_ns_epsilon);
@@ -1144,13 +1144,13 @@ __host__ void DEM::startTime()
                     checkForCudaErrorsIter("Post setNSghostNodesEpsilon(1)",
                             iter);
 
-                    if (report_even_more_epsilon == 1) {
-                        std::cout <<
-                            "\n###### EPSILON AFTER setNSghostNodes(epsilon) "
-                            << "######" << std::endl;
-                        transferNSepsilonFromGlobalDeviceMemory();
-                        printNSarray(stdout, ns.epsilon, "epsilon");
-                    }
+#ifdef REPORT_MORE_EPSILON
+                    std::cout <<
+                        "\n###### EPSILON AFTER setNSghostNodes(epsilon) "
+                        << "######" << std::endl;
+                    transferNSepsilonFromGlobalDeviceMemory();
+                    printNSarray(stdout, ns.epsilon, "epsilon");
+#endif
                 }
 
                 // Solve the system of epsilon using a Jacobi iterative solver.
@@ -1166,13 +1166,13 @@ __host__ void DEM::startTime()
                     reslog.open("max_res_norm.dat");
 
                 // transfer normalized residuals from GPU to CPU
-                if (report_epsilon == 1) {
-                    std::cout << "\n###### BEFORE FIRST JACOBI ITERATION ######"
-                        << "\n@@@@@@ TIME STEP " << iter << " @@@@@@"
-                        << std::endl;
-                    transferNSepsilonFromGlobalDeviceMemory();
-                    printNSarray(stdout, ns.epsilon, "epsilon");
-                }
+#ifdef REPORT_MORE_EPSILON
+                std::cout << "\n###### BEFORE FIRST JACOBI ITERATION ######"
+                    << "\n@@@@@@ TIME STEP " << iter << " @@@@@@"
+                    << std::endl;
+                transferNSepsilonFromGlobalDeviceMemory();
+                printNSarray(stdout, ns.epsilon, "epsilon");
+#endif
 
                 for (unsigned int nijac = 0; nijac<ns.maxiter; ++nijac) {
 
@@ -1213,14 +1213,14 @@ __host__ void DEM::startTime()
                     checkForCudaErrorsIter("Post setNSghostNodesEpsilon(2)",
                             iter);
 
-                    if (report_epsilon == 1) {
-                        std::cout << "\n###### JACOBI ITERATION "
-                            << nijac
-                            << " after setNSghostNodes(epsilon,2) ######"
-                            << std::endl;
-                        transferNSepsilonFromGlobalDeviceMemory();
-                        printNSarray(stdout, ns.epsilon, "epsilon");
-                    }
+#ifdef REPORT_EPSILON
+                    std::cout << "\n###### JACOBI ITERATION "
+                        << nijac
+                        << " after setNSghostNodes(epsilon,2) ######"
+                        << std::endl;
+                    transferNSepsilonFromGlobalDeviceMemory();
+                    printNSarray(stdout, ns.epsilon, "epsilon");
+#endif
 
                     /*smoothing<Float><<<dimGridFluid, dimBlockFluid>>>(
                       dev_ns_epsilon,
@@ -1228,13 +1228,13 @@ __host__ void DEM::startTime()
                       cudaThreadSynchronize();
                       checkForCudaErrorsIter("Post smoothing", iter);
 
-                      if (report_epsilon == 1) {
+#ifdef REPORT_EPSILON
                       std::cout << "\n###### JACOBI ITERATION "
                       << nijac << " after smoothing(epsilon) ######"
                       << std::endl;
                       transferNSepsilonFromGlobalDeviceMemory();
                       printNSarray(stdout, ns.epsilon, "epsilon");
-                      }
+#endif
 
                       setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                       dev_ns_epsilon,
@@ -1300,13 +1300,13 @@ __host__ void DEM::startTime()
                       checkForCudaErrorsIter("Post findNormalizedResiduals",
                       iter);*/
 
-                    if (report_epsilon == 1) {
-                        std::cout << "\n###### JACOBI ITERATION "
-                            << nijac << " after jacobiIterationNS ######"
-                            << std::endl;
-                        transferNSepsilonFromGlobalDeviceMemory();
-                        printNSarray(stdout, ns.epsilon, "epsilon");
-                    }
+#ifdef REPORT_EPSILON
+                    std::cout << "\n###### JACOBI ITERATION "
+                        << nijac << " after jacobiIterationNS ######"
+                        << std::endl;
+                    transferNSepsilonFromGlobalDeviceMemory();
+                    printNSarray(stdout, ns.epsilon, "epsilon");
+#endif
 
                     if (nijac % nijacnorm == 0) {
 
@@ -1357,13 +1357,13 @@ __host__ void DEM::startTime()
                                 ("Post setNSghostNodesEpsilon(4)", iter);
                         }
 
-                        if (report_epsilon == 1) {
-                            std::cout << "\n###### JACOBI ITERATION "
-                                << nijac << " after smoothing ######"
-                                << std::endl;
-                            transferNSepsilonFromGlobalDeviceMemory();
-                            printNSarray(stdout, ns.epsilon, "epsilon");
-                        }
+#ifdef REPORT_EPSILON
+                        std::cout << "\n###### JACOBI ITERATION "
+                            << nijac << " after smoothing ######"
+                            << std::endl;
+                        transferNSepsilonFromGlobalDeviceMemory();
+                        printNSarray(stdout, ns.epsilon, "epsilon");
+#endif
 
                         break;  // solution has converged, exit Jacobi loop
                     }

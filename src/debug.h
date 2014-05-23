@@ -21,9 +21,8 @@ const unsigned int nijacnorm = 10;
 const int write_res_log = 0;
 
 // Report epsilon values during Jacobi iterations to stdout
-// 0: False, 1: True
-const int report_epsilon = 0;
-const int report_even_more_epsilon = 0;
+//#define REPORT_EPSILON
+//#define REPORT_MORE_EPSILON
 
 // Report the number of iterations it took before convergence to logfile
 // 'output/<sid>-conv.dat'
