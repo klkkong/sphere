@@ -2828,7 +2828,7 @@ __global__ void findInteractionForce(
         const Float V_p = dx*dy*dz - phi*dx*dy*dz;
         const Float Re  = devC_params.rho_f*d*phi*v_rel_length/devC_params.mu;
         Float Cd  = pow(0.63 + 4.8/pow(Re, 0.5), 2.0);
-        const Float chi = 3.7 - 0.65*exp(-pow(1.5 - log10(Re), 2.0)/2.0);
+        Float chi = 3.7 - 0.65*exp(-pow(1.5 - log10(Re), 2.0)/2.0);
 
         if (v_rel_length < 1.0e-6) { // avoid Re=0 -> Cd=inf, chi=-nan
             Cd = 0.0;
