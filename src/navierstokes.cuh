@@ -2108,19 +2108,19 @@ __global__ void findPredNSvelocities(
             const Float3 diffusion_term = dt/(rho*phi)*div_tau;
             const Float3 gravity_term = MAKE_FLOAT3(
                     devC_params.g[0], devC_params.g[1], devC_params.g[2])*dt;
-            const Float3 porosity_term = -v*dphi/phi;
-            const Float3 advection_term = -div_phi_vi_v*dt/phi;
+            const Float3 porosity_term = -1.0*v*dphi/phi;
+            const Float3 advection_term = -1.0*div_phi_vi_v*dt/phi;
 #endif
 #ifdef SET_2
             const Float3 interaction_term = -dt/(rho*phi)*f_i;
             const Float3 diffusion_term = dt/rho*div_tau;
             const Float3 gravity_term = MAKE_FLOAT3(
                     devC_params.g[0], devC_params.g[1], devC_params.g[2])*dt;
-            const Float3 porosity_term = -v*dphi/phi;
-            const Float3 advection_term = -div_phi_vi_v*dt/phi;
+            const Float3 porosity_term = -1.0*v*dphi/phi;
+            const Float3 advection_term = -1.0*div_phi_vi_v*dt/phi;
 #endif
 
-        Float v_p = v
+        Float3 v_p = v
             + pressure_term
             + interaction_term
             + diffusion_term
@@ -2137,7 +2137,7 @@ __global__ void findPredNSvelocities(
                 "diff = %e\t%e\t%e\t"
                 "grav = %e\t%e\t%e\t"
                 "poros = %e\t%e\t%e\t"
-                "adv = %e\t%e\t%e\n"
+                "adv = %e\t%e\t%e\n",
                 x, y, z,
                 v_p.x, v_p.y, v_p.z,
                 pressure_term.x, pressure_term.y, pressure_term.z, 
