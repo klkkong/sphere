@@ -642,7 +642,7 @@ __host__ void DEM::startTime()
     double t_findPorositiesDev = 0.0;
     double t_findNSstressTensor = 0.0;
     double t_findNSdivphiviv = 0.0;
-    double t_findNSdivphitau = 0.0;
+    double t_findNSdivtau = 0.0;
     double t_findPredNSvelocities = 0.0;
     double t_setNSepsilon = 0.0;
     double t_setNSdirichlet = 0.0;
@@ -1042,8 +1042,8 @@ __host__ void DEM::startTime()
                 cudaThreadSynchronize();
                 if (PROFILING == 1)
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                            &t_findNSdivphitau);
-                //checkForCudaErrorsIter("Post findNSdivphitau", iter);
+                            &t_findNSdivtau);
+                //checkForCudaErrorsIter("Post findNSdivtau", iter);
                 checkForCudaErrorsIter("Post findNSdivtau", iter);
 
                 // Predict the fluid velocities on the base of the old pressure
@@ -1621,7 +1621,7 @@ __host__ void DEM::startTime()
             t_topology + t_interact + t_bondsLinear + t_latticeBoltzmannD3Q19 +
             t_integrate + t_summation + t_integrateWalls + t_findPorositiesDev +
             t_findNSstressTensor +
-            t_findNSdivphiviv + t_findNSdivphitau + t_findPredNSvelocities +
+            t_findNSdivphiviv + t_findNSdivtau + t_findPredNSvelocities +
             t_setNSepsilon + t_setNSdirichlet + t_setNSghostNodesDev +
             t_findNSforcing + t_jacobiIterationNS + t_updateNSvelocityPressure;
 
@@ -1657,8 +1657,8 @@ __host__ void DEM::startTime()
             << " s" << "\t(" << 100.0*t_findNSstressTensor/t_sum << " %)\n"
             << "  - findNSdivphiviv:\t\t" << t_findNSdivphiviv/1000.0
             << " s" << "\t(" << 100.0*t_findNSdivphiviv/t_sum << " %)\n"
-            << "  - findNSdivphitau:\t\t" << t_findNSdivphitau/1000.0
-            << " s" << "\t(" << 100.0*t_findNSdivphitau/t_sum << " %)\n"
+            << "  - findNSdivtau:\t\t" << t_findNSdivtau/1000.0
+            << " s" << "\t(" << 100.0*t_findNSdivtau/t_sum << " %)\n"
             << "  - findPredNSvelocities:\t" << t_findPredNSvelocities/1000.0
             << " s" << "\t(" << 100.0*t_findPredNSvelocities/t_sum << " %)\n"
             << "  - setNSepsilon:\t\t" << t_setNSepsilon/1000.0
