@@ -6,10 +6,10 @@ sid = 'fluidshear'
 
 ## Initialization from loose packing to a gravitationally collapsed state
 ## without fluids
-sim = sphere.sim(sid + '-init', np = 2400, fluid = False)
+sim = sphere.sim(sid + '-init', np = 24000, fluid = False)
 #sim.cleanup()
 sim.radius[:] = 0.05
-sim.initRandomGridPos(gridnum = [12, 12, 9000])
+sim.initRandomGridPos(gridnum = [16, 16, 9000])
 sim.initTemporal(total = 5.0, file_dt = 0.05)
 sim.g[2] = -9.81
 sim.run(dry=True)
@@ -32,9 +32,9 @@ sim.visualize('walls')
 sim.readlast()
 sim.sid = sid + '-shear'
 sim.shear()
-sim.fluid = True
 sim.initFluid(mu = 17.87e-4, p = 1.0e5, hydrostatic = True)
 sim.bc_bot[0] = 1  # Neumann BC
+sim.setDEMstepsPerCFDstep(100)
 sim.initTemporal(total = 1.0, file_dt = 0.01)
 sim.run(dry=True)
 sim.run()

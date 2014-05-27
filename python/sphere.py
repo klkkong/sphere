@@ -1058,7 +1058,7 @@ class sim:
             if fh is not None:
                 fh.close()
 
-    def writeVTKall(self, verbose = True):
+    def writeVTKall(self, cell_centered = True, verbose = True):
         '''
         Writes a VTK file for each simulation output file with particle
         information and the fluid grid to the ``../output/`` folder by default.
@@ -1126,13 +1126,15 @@ class sim:
                     sb.writeVTK(verbose=False)
             if (self.fluid == True):
                 if (i == 0):
-                    sb.writeFluidVTK(verbose=verbose)
+                    sb.writeFluidVTK(verbose=verbose,
+                            cell_centered=cell_centered)
                 elif (i == lastfile):
                     if (verbose == True):
                         print("\tto")
-                    sb.writeFluidVTK(verbose=verbose)
+                    sb.writeFluidVTK(verbose=verbose,
+                            cell_centered=cell_centered)
                 else:
-                    sb.writeFluidVTK(verbose=False)
+                    sb.writeFluidVTK(verbose=False, cell_centered=cell_centered)
 
     def writeVTK(self, folder = '../output/', verbose = True):
         '''
