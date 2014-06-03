@@ -222,8 +222,14 @@ __inline__ __device__ unsigned int idx(
 __inline__ __device__ unsigned int vidx(
         const int x, const int y, const int z)
 {
-    return x + (devC_grid.num[0]+1)*y
-        + (devC_grid.num[0]+1)*(devC_grid.num[1]+1)*z;
+    // without ghost nodes
+    //return x + (devC_grid.num[0]+1)*y
+        //+ (devC_grid.num[0]+1)*(devC_grid.num[1]+1)*z;
+
+    // with ghost nodes
+    // the ghost nodes are placed at x,y,z = -1 and WIDTH+1
+    return (x+1) + (devC_grid.num[0]+3)*(y+1)
+        + (devC_grid.num[0]+3)*(devC_grid.num[1]+3)*(z+1);
 }
 
 // Find averaged cell velocities from cell-face velocities. This function works
