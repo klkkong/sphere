@@ -2685,7 +2685,7 @@ __global__ void updateNSvelocity(
         const Float v_p_x = dev_ns_v_p_x[cellidx];
         const Float v_p_y = dev_ns_v_p_y[cellidx];
         const Float v_p_z = dev_ns_v_p_z[cellidx];
-        const Float3 v_p = MAKE_FLOAT3(v_p_x, v_p_z, v_p_z);
+        const Float3 v_p = MAKE_FLOAT3(v_p_x, v_p_y, v_p_z);
 
         const Float epsilon_xn = dev_ns_epsilon[idx(x-1,y,z)];
         const Float epsilon_c  = dev_ns_epsilon[idx(x,y,z)];
@@ -2951,19 +2951,19 @@ __global__ void findInteractionForce(
         __syncthreads();
         const Float phi = dev_ns_phi[cellidx];
 
-        const Float v_x   = dev_ns_v_x[vidx(x,y,z)];
-        const Float v_x_p = dev_ns_v_x[vidx(x+1,y,z)];
-        const Float v_y   = dev_ns_v_x[vidx(x,y,z)];
-        const Float v_y_p = dev_ns_v_x[vidx(x,y+1,z)];
-        const Float v_z   = dev_ns_v_x[vidx(x,y,z)];
-        const Float v_z_p = dev_ns_v_x[vidx(x,y,z+1)];
+        const Float v_x   = dev_ns_v_x[vidx(i_x,i_y,i_z)];
+        const Float v_x_p = dev_ns_v_x[vidx(i_x+1,y,i_z)];
+        const Float v_y   = dev_ns_v_x[vidx(i_x,i_y,i_z)];
+        const Float v_y_p = dev_ns_v_x[vidx(i_x,i_y+1,i_z)];
+        const Float v_z   = dev_ns_v_x[vidx(i_x,i_y,i_z)];
+        const Float v_z_p = dev_ns_v_x[vidx(i_x,i_y,i_z+1)];
 
-        const Float div_tau_x   = dev_ns_div_tau_x[vidx(x,y,z)];
-        const Float div_tau_x_p = dev_ns_div_tau_x[vidx(x+1,y,z)];
-        const Float div_tau_y   = dev_ns_div_tau_x[vidx(x,y,z)];
-        const Float div_tau_y_p = dev_ns_div_tau_x[vidx(x,y+1,z)];
-        const Float div_tau_z   = dev_ns_div_tau_x[vidx(x,y,z)];
-        const Float div_tau_z_p = dev_ns_div_tau_x[vidx(x,y,z+1)];
+        const Float div_tau_x   = dev_ns_div_tau_x[vidx(i_x,i_y,i_z)];
+        const Float div_tau_x_p = dev_ns_div_tau_x[vidx(i_x+1,i_y,i_z)];
+        const Float div_tau_y   = dev_ns_div_tau_y[vidx(i_x,i_y,i_z)];
+        const Float div_tau_y_p = dev_ns_div_tau_y[vidx(i_x,i_y+1,i_z)];
+        const Float div_tau_z   = dev_ns_div_tau_z[vidx(i_x,i_y,i_z)];
+        const Float div_tau_z_p = dev_ns_div_tau_z[vidx(i_x,i_y,i_z+1)];
 
         const Float3 v_f = MAKE_FLOAT3(
                 (v_x + v_x_p)/2.0,
