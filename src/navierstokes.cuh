@@ -2090,7 +2090,6 @@ __global__ void findPredNSvelocities(
         Float*  dev_ns_v_x,             // in
         Float*  dev_ns_v_y,             // in
         Float*  dev_ns_v_z,             // in
-        Float3* dev_ns_v,               // in
         Float*  dev_ns_phi,             // in
         Float*  dev_ns_dphi,            // in
         Float*  dev_ns_div_tau_x,       // in

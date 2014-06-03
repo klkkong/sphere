@@ -194,7 +194,7 @@ class DEM {
         Float3* dev_ns_f2;           // Constant slopes in forcing function
         Float*  dev_ns_v_prod;       // Outer product of fluid velocities
         //Float*  dev_ns_tau;          // Fluid stress tensor
-        //Float3* dev_ns_div_phi_vi_v; // div(phi*vi*v)
+        Float3* dev_ns_div_phi_vi_v; // div(phi*vi*v)
         //Float3* dev_ns_div_phi_tau;  // div(phi*tau)
         Float3* dev_ns_div_tau;      // div(tau)
         Float*  dev_ns_div_tau_x;    // div(tau) on x-face
