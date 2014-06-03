@@ -2130,11 +2130,11 @@ __global__ void findPredNSvelocities(
 
         // Values that are needed for calculating the predicted velocity
         __syncthreads();
-        const Float3 v_face = MAKE_FLOAT3(
+        const Float3 v = MAKE_FLOAT3(
                 dev_ns_v_x[vidx],
                 dev_ns_v_y[vidx],
                 dev_ns_v_z[vidx]);
-        const Float3 div_tau_face = MAKE_FLOAT3(
+        const Float3 div_tau = MAKE_FLOAT3(
                 dev_ns_div_tau_x[vidx],
                 dev_ns_div_tau_y[vidx],
                 dev_ns_div_tau_z[vidx]);
@@ -2214,14 +2214,10 @@ __global__ void findPredNSvelocities(
 #endif
         }
 
-        // calculate the advection term using a first-order upwind scheme
-        // div_phi_vf_vf
-
-
-        const float3 div_phi_vf_vx = make_float3(
-                div_phi_vx_vf,
-                div_phi_vy_vf,
-                div_phi_vz_vf)k
+        const Float3 div_phi_vi_v = MAKE_FLOAT3(
+                (div_phi_vi_v_xn.x + div_phi_vi_v_c.x)/2.0,
+                (div_phi_vi_v_yn.y + div_phi_vi_v_c.y)/2.0,
+                (div_phi_vi_v_zn.z + div_phi_vi_v_c.z)/2.0);
 
         // Determine the predicted velocity
 #ifdef SET_1
