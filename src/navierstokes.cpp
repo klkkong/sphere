@@ -52,8 +52,8 @@ unsigned int DEM::NScellsVelocity()
 {
     // Congruent padding for velocity grids. See "Cohen and Molemaker 'A fast
     // double precision CFD code using CUDA'" for details
-    //return (ns.nx+3)*(ns.ny+3)*(ns.nz+3);
-    return (ns.nx+1)*(ns.ny+1)*(ns.nz+1);
+    return (ns.nx+3)*(ns.ny+3)*(ns.nz+3);
+    //return (ns.nx+1)*(ns.ny+1)*(ns.nz+1);
 }
 
 // Free memory
