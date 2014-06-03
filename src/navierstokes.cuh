@@ -2081,7 +2081,7 @@ __global__ void findPredNSvelocities(
     const Float dz = devC_grid.L[2]/nz;
 
     // 1D thread index
-    const unsigned int vidx = vidx(x,y,z);
+    const unsigned int fidx = vidx(x,y,z);
     const unsigned int cellidx = idx(x,y,z);
 
     // Check that we are not outside the fluid grid
@@ -2090,13 +2090,13 @@ __global__ void findPredNSvelocities(
         // Values that are needed for calculating the predicted velocity
         __syncthreads();
         const Float3 v = MAKE_FLOAT3(
-                dev_ns_v_x[vidx],
-                dev_ns_v_y[vidx],
-                dev_ns_v_z[vidx]);
+                dev_ns_v_x[fidx],
+                dev_ns_v_y[fidx],
+                dev_ns_v_z[fidx]);
         const Float3 div_tau = MAKE_FLOAT3(
-                dev_ns_div_tau_x[vidx],
-                dev_ns_div_tau_y[vidx],
-                dev_ns_div_tau_z[vidx]);
+                dev_ns_div_tau_x[fidx],
+                dev_ns_div_tau_y[fidx],
+                dev_ns_div_tau_z[fidx]);
 
         // cell center values
         const Float phi_xn    = dev_ns_phi[idx(x-1,y,z)];
@@ -2231,9 +2231,9 @@ __global__ void findPredNSvelocities(
 
         // Save the predicted velocity
         __syncthreads();
-        dev_ns_v_p_x[vidx] = v_p.x;
-        dev_ns_v_p_y[vidx] = v_p.y;
-        dev_ns_v_p_z[vidx] = v_p.z;
+        dev_ns_v_p_x[fidx] = v_p.x;
+        dev_ns_v_p_y[fidx] = v_p.y;
+        dev_ns_v_p_z[fidx] = v_p.z;
 
 #ifdef CHECK_NS_FINITE
         (void)checkFiniteFloat3("v_p", x, y, z, v_p);
@@ -2692,13 +2692,13 @@ __global__ void updateNSvelocity(
         const Float3 v_p = MAKE_FLOAT3(v_p_x, v_p_z, v_p_z);
 
         const Float epsilon_xn = dev_ns_epsilon[idx(x-1,y,z)];
-        const Float epsilon_c  = dev_ns_epsilon[cellidx];
+        const Float epsilon_c  = dev_ns_epsilon[idx(x,y,z)];
         const Float epsilon_yn = dev_ns_epsilon[idx(x,y-1,z)];
         const Float epsilon_zn = dev_ns_epsilon[idx(x,y,z-1)];
 
 
         const Float phi_xn = dev_ns_phi[idx(x-1,y,z)];
-        const Float phi_c  = dev_ns_phi[cellidx];
+        const Float phi_c  = dev_ns_phi[idx(x,y,z)];
         const Float phi_yn = dev_ns_phi[idx(x,y-1,z)];
         const Float phi_zn = dev_ns_phi[idx(x,y,z-1)];
 
@@ -2954,6 +2954,7 @@ __global__ void findInteractionForce(
         // Fluid information
         __syncthreads();
         const Float phi = dev_ns_phi[cellidx];
+
         const Float v_x   = dev_ns_v_x[vidx(x,y,z)];
         const Float v_x_p = dev_ns_v_x[vidx(x+1,y,z)];
         const Float v_y   = dev_ns_v_x[vidx(x,y,z)];
@@ -3225,12 +3226,12 @@ __global__ void interpolateFaceToCenter(
         const unsigned int cellidx = idx(x,y,z);
 
         __syncthreads();
-        const Float x_n = dev_in_x[idx(x,y,z)];
-        const Float x_p = dev_in_x[idx(x+1,y,z)];
-        const Float y_n = dev_in_x[idx(x,y,z)];
-        const Float y_p = dev_in_x[idx(x,y+1,z)];
-        const Float z_n = dev_in_x[idx(x,y,z)];
-        const Float z_p = dev_in_x[idx(x,y,z+1)];
+        const Float x_n = dev_in_x[vidx(x,y,z)];
+        const Float x_p = dev_in_x[vidx(x+1,y,z)];
+        const Float y_n = dev_in_x[vidx(x,y,z)];
+        const Float y_p = dev_in_x[vidx(x,y+1,z)];
+        const Float z_n = dev_in_x[vidx(x,y,z)];
+        const Float z_p = dev_in_x[vidx(x,y,z+1)];
 
         const val = MAKE_FLOAT3(
                 (x_n + x_p)/2.0,
