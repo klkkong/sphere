@@ -1195,7 +1195,9 @@ __host__ void DEM::startTime()
                             dev_ns_f,
                             dev_ns_phi,
                             dev_ns_dphi,
-                            dev_ns_v_p,
+                            dev_ns_v_x,
+                            dev_ns_v_y,
+                            dev_ns_v_z,
                             nijac,
                             ns.ndem);
                     cudaThreadSynchronize();

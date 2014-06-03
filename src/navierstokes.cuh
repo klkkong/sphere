@@ -1396,7 +1396,9 @@ __device__ Float3 gradient(
 
 // Find the divergence in a cell in a homogeneous, cubic, 3D vector field
 __device__ Float divergence(
-        const Float3* dev_vectorfield,
+        const Float* dev_vectorfield_x,
+        const Float* dev_vectorfield_y,
+        const Float* dev_vectorfield_z,
         const unsigned int x,
         const unsigned int y,
         const unsigned int z,
@@ -1404,62 +1406,20 @@ __device__ Float divergence(
         const Float dy,
         const Float dz)
 {
-    // Read 6 neighbor cells
+    // Read 6 cell-face values
     __syncthreads();
-    const Float3 xn = dev_vectorfield[idx(x-1,y,z)];
-    //const Float3 v  = dev_vectorfield[idx(x,y,z)];
+    const Float3 xn = dev_vectorfield[idx(x,y,z)];
     const Float3 xp = dev_vectorfield[idx(x+1,y,z)];
-    const Float3 yn = dev_vectorfield[idx(x,y-1,z)];
+    const Float3 yn = dev_vectorfield[idx(x,y,z)];
     const Float3 yp = dev_vectorfield[idx(x,y+1,z)];
-    const Float3 zn = dev_vectorfield[idx(x,y,z-1)];
+    const Float3 zn = dev_vectorfield[idx(x,y,z)];
     const Float3 zp = dev_vectorfield[idx(x,y,z+1)];
-
-    // Calculate upwind coefficients
-    /*
-    const Float3 a = MAKE_FLOAT3(
-            copysign(1.0, v.x),
-            copysign(1.0, v.y),
-            copysign(1.0, v.z));
-    const Float a_xn = fmin(a.x, 0);
-    const Float a_xp = fmax(a.x, 0);
-    const Float a_yn = fmin(a.y, 0);
-    const Float a_yp = fmax(a.y, 0);
-    const Float a_zn = fmin(a.z, 0);
-    const Float a_zp = fmax(a.z, 0);
-
-    // Calculate the upwind differences
-    const Float grad_uw_xn = (v.x - xn.x)/dx;
-    const Float grad_uw_xp = (xp.x - v.x)/dx;
-    const Float grad_uw_yn = (v.y - yn.y)/dy;
-    const Float grad_uw_yp = (yp.y - v.y)/dy;
-    const Float grad_uw_zn = (v.z - zn.z)/dz;
-    const Float grad_uw_zp = (zp.z - v.z)/dz;
-
-    const Float3 grad_uw = MAKE_FLOAT3(
-            a_xp*grad_uw_xn + a_xn*grad_uw_xp,
-            a_yp*grad_uw_yn + a_yn*grad_uw_yp,
-            a_zp*grad_uw_zn + a_zn*grad_uw_zp);
-
-    // Calculate the central-difference gradients
-    const Float3 grad_cd = MAKE_FLOAT3(
-            (xp.x - xn.x)/(2.0*dx),
-            (yp.y - yn.y)/(2.0*dy),
-            (zp.z - zn.z)/(2.0*dz));
-
-    // Weighting parameter
-    const Float tau = 0.5;
-
-    // Determine the weighted average of both discretizations
-    const Float3 grad = tau*grad_uw + (1.0 - tau)*grad_cd;
-
-    // Calculate the divergence
-    return grad.x + grad.y + grad.z;*/
 
     // Calculate the central difference gradrients and the divergence
     return
-        (xp.x - xn.x)/(2.0*dx) +
-        (yp.y - yn.y)/(2.0*dy) +
-        (zp.z - zn.z)/(2.0*dz);
+        (xp.x - xn.x)/dx +
+        (yp.y - yn.y)/dy +
+        (zp.z - zn.z)/dz;
 }
 
 // Find the divergence of a tensor field
@@ -2293,7 +2253,9 @@ __global__ void findNSforcing(
         Float*  dev_ns_f,
         Float*  dev_ns_phi,
         Float*  dev_ns_dphi,
-        //Float3* dev_ns_v_p,
+        Float*  dev_ns_v_x,
+        Float*  dev_ns_v_y,
+        Float*  dev_ns_v_z,
         unsigned int nijac,
         unsigned int ndem)
 {
@@ -2334,7 +2296,8 @@ __global__ void findNSforcing(
 
             // Calculate derivatives
             const Float  div_v_p
-                = divergence(dev_ns_v_p, x, y, z, dx, dy, dz);
+                = divergence(dev_ns_v_p_x, dev_ns_v_p_y, dev_ns_v_p_z,
+                        x, y, z, dx, dy, dz);
             const Float3 grad_phi
                 = gradient(dev_ns_phi, x, y, z, dx, dy, dz);
 
