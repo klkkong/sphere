@@ -1397,22 +1397,32 @@ __host__ void DEM::startTime()
                 // Find the new pressures and velocities
                 if (PROFILING == 1)
                     startTimer(&kernel_tic);
-                updateNSvelocityPressure<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_p,
-                        dev_ns_v,
-                        dev_ns_v_p,
+
+                updateNSpressure<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_epsilon,
+                        ns.beta,
+                        dev_ns_p);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post updateNSpressure", iter);
+
+                updateNSvelocity<<<dimGridFluidFace, dimBlockFluidFace>>>(
+                        dev_ns_v_p_x,
+                        dev_ns_v_p_y,
+                        dev_ns_v_p_z,
                         dev_ns_phi,
-                        dev_ns_dphi,
                         dev_ns_epsilon,
                         ns.beta,
                         ns.bc_bot,
                         ns.bc_top,
-                        ns.ndem);
+                        ns.ndem,
+                        dev_ns_v_x,
+                        dev_ns_v_y,
+                        dev_ns_v_z);
                 cudaThreadSynchronize();
                 if (PROFILING == 1)
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                             &t_updateNSvelocityPressure);
-                checkForCudaErrorsIter("Post updateNSvelocityPressure", iter);
+                checkForCudaErrorsIter("Post updateNSvelocity", iter);
             }
 
             /*std::cout << "\n###### ITERATION "

@@ -2615,17 +2615,53 @@ __global__ void findNormalizedResiduals(
 
 
 // Computes the new velocity and pressure using the corrector
-__global__ void updateNSvelocityPressure(
-        Float*  dev_ns_p,
-        Float3* dev_ns_v,
-        Float3* dev_ns_v_p,
-        Float*  dev_ns_phi,
-        Float*  dev_ns_dphi,
-        Float*  dev_ns_epsilon,
-        Float   beta,
-        int     bc_bot,
-        int     bc_top,
-        unsigned int ndem)
+__global__ void updateNSpressure(
+        Float* dev_ns_epsilon,  // in
+        Float  beta,            // in
+        Float* dev_ns_p)        // out
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // 1D thread index
+    const unsigned int cellidx = idx(x,y,z);
+
+    // Check that we are not outside the fluid grid
+    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
+
+        // Read values
+        __syncthreads();
+        const Float  p_old   = dev_ns_p[cellidx];
+        const Float  epsilon = dev_ns_epsilon[cellidx];
+
+        // New pressure
+        Float p = beta*p_old + epsilon;
+
+        // Write new values
+        __syncthreads();
+        dev_ns_p[cellidx] = p;
+
+#ifdef CHECK_NS_FINITE
+        checkFiniteFloat("p", x, y, z, p);
+#endif
+    }
+}
+
+__global__ void updateNSvelocity(
+        Float* dev_ns_v_p_x,    // in
+        Float* dev_ns_v_p_y,    // in
+        Float* dev_ns_v_p_z,    // in
+        Float* dev_ns_phi,      // in
+        Float* dev_ns_epsilon,  // in
+        Float  beta,            // in
+        int    bc_bot,          // in
+        int    bc_top,          // in
+        unsigned int ndem,      // in
+        Float* dev_ns_v_x,      // out
+        Float* dev_ns_v_y,      // out
+        Float* dev_ns_v_z)      // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -2643,29 +2679,43 @@ __global__ void updateNSvelocityPressure(
     const Float dz = devC_grid.L[2]/nz;
 
     // 1D thread index
-    const unsigned int cellidx = idx(x,y,z);
+    const unsigned int cellidx = vidx(x,y,z);
 
     // Check that we are not outside the fluid grid
-    if (x < nx && y < ny && z < nz) {
+    if (x <= nx && y <= ny && z <= nz) {
 
         // Read values
         __syncthreads();
-        const Float  p_old   = dev_ns_p[cellidx];
-        const Float  epsilon = dev_ns_epsilon[cellidx];
-        const Float3 v_p     = dev_ns_v_p[cellidx];
-        //const Float  dphi    = dev_ns_dphi[cellidx];
+        const Float v_p_x = dev_ns_v_p_x[cellidx];
+        const Float v_p_y = dev_ns_v_p_y[cellidx];
+        const Float v_p_z = dev_ns_v_p_z[cellidx];
+        const Float3 v_p = MAKE_FLOAT3(v_p_x, v_p_z, v_p_z);
 
-        // New pressure
-        Float p = beta*p_old + epsilon;
+        const Float epsilon_xn = dev_ns_epsilon[idx(x-1,y,z)];
+        const Float epsilon_c  = dev_ns_epsilon[cellidx];
+        const Float epsilon_yn = dev_ns_epsilon[idx(x,y-1,z)];
+        const Float epsilon_zn = dev_ns_epsilon[idx(x,y,z-1)];
+
+
+        const Float phi_xn = dev_ns_phi[idx(x-1,y,z)];
+        const Float phi_c  = dev_ns_phi[cellidx];
+        const Float phi_yn = dev_ns_phi[idx(x,y-1,z)];
+        const Float phi_zn = dev_ns_phi[idx(x,y,z-1)];
+
+        const Float3 phi = MAKE_FLOAT3(
+                (phi_c + phi_xn)/2.0,
+                (phi_c + phi_yn)/2.0,
+                (phi_c + phi_zn)/2.0);
 
         // Find corrector gradient
-        const Float3 grad_epsilon
-            = gradient(dev_ns_epsilon, x, y, z, dx, dy, dz);
+        const Float3 grad_epsilon = MAKE_FLOAT3(
+                (epsilon_c - epsilon_xn)/dx,
+                (epsilon_c - epsilon_yn)/dy,
+                (epsilon_c - epsilon_zn)/dz);
 
         // Find new velocity
 #ifdef SET_1
         __syncthreads();
-        const Float phi = dev_ns_phi[cellidx];
         Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*phi)*grad_epsilon;
 #endif
 #ifdef SET_2
@@ -2689,7 +2739,9 @@ __global__ void updateNSvelocityPressure(
             //v.z = 0.0;
 
         // Check the advection term using the Courant-Friedrichs-Lewy condition
-        if (v.x*devC_dt/dx + v.y*devC_dt/dy + v.z*devC_dt/dz > 1.0) {
+        if (v.x*ndem*devC_dt/dx
+                + v.y*ndem*devC_dt/dy
+                + v.z*ndem*devC_dt/dz > 1.0) {
             printf("[%d,%d,%d] Warning: Advection term in fluid may be "
                     "unstable (CFL condition), v = %f,%f,%f\n",
                     x,y,z, v.x, v.y, v.z);
@@ -2697,12 +2749,11 @@ __global__ void updateNSvelocityPressure(
 
         // Write new values
         __syncthreads();
-        dev_ns_p[cellidx] = p;
-        //dev_ns_p[cellidx] = epsilon;
-        dev_ns_v[cellidx] = v;
+        dev_ns_v_x[cellidx] = v.x;
+        dev_ns_v_y[cellidx] = v.y;
+        dev_ns_v_z[cellidx] = v.z;
 
 #ifdef CHECK_NS_FINITE
-        checkFiniteFloat("p", x, y, z, p);
         checkFiniteFloat3("v", x, y, z, v);
 #endif
     }
