@@ -3278,13 +3278,13 @@ __global__ void findFaceDivTau(
         const Float v_x_zn = dev_ns_v_x[vidx(x,y,z-1)];
         const Float v_x_zp = dev_ns_v_x[vidx(x,y,z+1)];
 
-        const Float x_y_xn = dev_nx_v_y[vidx(x-1,y,z)];
-        const Float x_y_xp = dev_nx_v_y[vidx(x+1,y,z)];
+        const Float v_y_xn = dev_ns_v_y[vidx(x-1,y,z)];
+        const Float v_y_xp = dev_ns_v_y[vidx(x+1,y,z)];
         const Float v_y_yn = dev_ns_v_y[vidx(x,y-1,z)];
         const Float v_y = dev_ns_v_y[faceidx];
         const Float v_y_yp = dev_ns_v_y[vidx(x,y+1,z)];
-        const Float x_y_zn = dev_nx_v_y[vidx(x,y,z-1)];
-        const Float x_y_zp = dev_nx_v_y[vidx(x,y,z+1)];
+        const Float v_y_zn = dev_ns_v_y[vidx(x,y,z-1)];
+        const Float v_y_zp = dev_ns_v_y[vidx(x,y,z+1)];
 
         const Float v_z_xn = dev_ns_v_z[vidx(x-1,y,z)];
         const Float v_z_xp = dev_ns_v_z[vidx(x+1,y,z)];
