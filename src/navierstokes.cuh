@@ -2242,18 +2242,18 @@ __global__ void findPredNSvelocities(
 // At each iteration, the value of the forcing function is found as:
 //   f = f1 - f2 dot grad(epsilon)
 __global__ void findNSforcing(
-        Float*  dev_ns_epsilon,
-        Float*  dev_ns_f1,
-        Float3* dev_ns_f2,
-        Float*  dev_ns_f,
-        Float*  dev_ns_phi,
-        Float*  dev_ns_dphi,
-        Float3* dev_ns_v_p,
-        Float*  dev_ns_v_x,
-        Float*  dev_ns_v_y,
-        Float*  dev_ns_v_z,
-        unsigned int nijac,
-        unsigned int ndem)
+        Float*  dev_ns_epsilon,     // in
+        Float*  dev_ns_phi,         // in
+        Float*  dev_ns_dphi,        // in
+        Float3* dev_ns_v_p,         // in
+        Float*  dev_ns_v_p_x,       // in
+        Float*  dev_ns_v_p_y,       // in
+        Float*  dev_ns_v_p_z,       // in
+        unsigned int nijac,         // in
+        unsigned int ndem,          // in
+        Float*  dev_ns_f1,          // out
+        Float3* dev_ns_f2,          // out
+        Float*  dev_ns_f)           // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;

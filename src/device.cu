@@ -1199,17 +1199,17 @@ __host__ void DEM::startTime()
                         startTimer(&kernel_tic);
                     findNSforcing<<<dimGridFluid, dimBlockFluid>>>(
                             dev_ns_epsilon,
-                            dev_ns_f1,
-                            dev_ns_f2,
-                            dev_ns_f,
                             dev_ns_phi,
                             dev_ns_dphi,
                             dev_ns_v_p,
-                            dev_ns_v_x,
-                            dev_ns_v_y,
-                            dev_ns_v_z,
+                            dev_ns_v_p_x,
+                            dev_ns_v_p_y,
+                            dev_ns_v_p_z,
                             nijac,
-                            ns.ndem);
+                            ns.ndem,
+                            dev_ns_f1,
+                            dev_ns_f2,
+                            dev_ns_f);
                     cudaThreadSynchronize();
                     if (PROFILING == 1)
                         stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
