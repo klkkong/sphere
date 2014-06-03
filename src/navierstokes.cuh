@@ -2952,7 +2952,7 @@ __global__ void findInteractionForce(
         const Float phi = dev_ns_phi[cellidx];
 
         const Float v_x   = dev_ns_v_x[vidx(i_x,i_y,i_z)];
-        const Float v_x_p = dev_ns_v_x[vidx(i_x+1,y,i_z)];
+        const Float v_x_p = dev_ns_v_x[vidx(i_x+1,i_y,i_z)];
         const Float v_y   = dev_ns_v_x[vidx(i_x,i_y,i_z)];
         const Float v_y_p = dev_ns_v_x[vidx(i_x,i_y+1,i_z)];
         const Float v_z   = dev_ns_v_x[vidx(i_x,i_y,i_z)];
@@ -3193,9 +3193,9 @@ __global__ void interpolateCenterToFace(
         const Float3 zn = dev_in[idx(x,y,z-1)];
         const Float3 center = dev_in[idx(x,y,z)];
 
-        const Float3 x_val = (center.x - xn.x)/2.0;
-        const Float3 y_val = (center.y - yn.y)/2.0;
-        const Float3 z_val = (center.z - zn.z)/2.0;
+        const Float x_val = (center.x - xn.x)/2.0;
+        const Float y_val = (center.y - yn.y)/2.0;
+        const Float z_val = (center.z - zn.z)/2.0;
 
         __syncthreads();
         dev_out_x[faceidx] = x_val;
@@ -3229,7 +3229,7 @@ __global__ void interpolateFaceToCenter(
         const Float z_n = dev_in_x[vidx(x,y,z)];
         const Float z_p = dev_in_x[vidx(x,y,z+1)];
 
-        const val = MAKE_FLOAT3(
+        const Float3 val = MAKE_FLOAT3(
                 (x_n + x_p)/2.0,
                 (y_n + y_p)/2.0,
                 (z_n + z_p)/2.0);
@@ -3241,7 +3241,7 @@ __global__ void interpolateFaceToCenter(
 
 // Launch per cell face node. Set velocity ghost nodes beforehand.
 // Find div(tau) at all cell faces.
-__global__ findFaceDivTau(
+__global__ void findFaceDivTau(
         Float* dev_ns_v_x,
         Float* dev_ns_v_y,
         Float* dev_ns_v_z,
