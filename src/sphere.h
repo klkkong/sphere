@@ -175,7 +175,7 @@ class DEM {
         Float*  dev_ns_v_x;          // Cell fluid velocity in staggered grid
         Float*  dev_ns_v_y;          // Cell fluid velocity in staggered grid
         Float*  dev_ns_v_z;          // Cell fluid velocity in staggered grid
-        Float3* dev_ns_v_p;          // Predicted cell fluid velocity
+        //Float3* dev_ns_v_p;          // Predicted cell fluid velocity
         Float*  dev_ns_v_p_x;        // Predicted cell fluid velocity in st. gr.
         Float*  dev_ns_v_p_y;        // Predicted cell fluid velocity in st. gr.
         Float*  dev_ns_v_p_z;        // Predicted cell fluid velocity in st. gr.
@@ -184,7 +184,7 @@ class DEM {
         Float3* dev_ns_fi;           // Particle-fluid interaction force
         Float*  dev_ns_phi;          // Cell porosity
         Float*  dev_ns_dphi;         // Cell porosity change
-        Float3* dev_ns_div_phi_v_v;  // Divegence used in velocity prediction
+        //Float3* dev_ns_div_phi_v_v;  // Divegence used in velocity prediction
         Float*  dev_ns_epsilon;      // Pressure difference
         Float*  dev_ns_epsilon_new;  // Pressure diff. after Jacobi iteration
         Float*  dev_ns_epsilon_old;  // Pressure diff. before Jacobi iteration
@@ -193,10 +193,13 @@ class DEM {
         Float*  dev_ns_f1;           // Constant terms in forcing function
         Float3* dev_ns_f2;           // Constant slopes in forcing function
         Float*  dev_ns_v_prod;       // Outer product of fluid velocities
-        Float*  dev_ns_tau;          // Fluid stress tensor
-        Float3* dev_ns_div_phi_vi_v; // div(phi*vi*v)
+        //Float*  dev_ns_tau;          // Fluid stress tensor
+        //Float3* dev_ns_div_phi_vi_v; // div(phi*vi*v)
         //Float3* dev_ns_div_phi_tau;  // div(phi*tau)
         Float3* dev_ns_div_tau;      // div(tau)
+        Float*  dev_ns_div_tau_x;    // div(tau) on x-face
+        Float*  dev_ns_div_tau_y;    // div(tau) on y-face
+        Float*  dev_ns_div_tau_z;    // div(tau) on z-face
         Float3* dev_ns_f_pf;         // Particle-fluid interaction force
 
         //// Navier Stokes functions

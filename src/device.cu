@@ -557,12 +557,23 @@ __host__ void DEM::startTime()
     unsigned int blocksPerGridBonds = iDivUp(params.nb0, threadsPerBlock); 
     dim3 dimGridBonds(blocksPerGridBonds, 1, 1); // Blocks arranged in 1D grid
 
-    // Use 3D block and grid layout for fluid calculations
+    // Use 3D block and grid layout for cell-centered fluid calculations
     dim3 dimBlockFluid(8, 8, 8);    // 512 threads per block
     dim3 dimGridFluid(
             iDivUp(grid.num[0], dimBlockFluid.x),
             iDivUp(grid.num[1], dimBlockFluid.y),
             iDivUp(grid.num[2], dimBlockFluid.z));
+    if (dimGridFluid.z > 64 && navierstokes == 1) {
+        cerr << "Error: dimGridFluid.z > 64" << endl;
+        exit(1);
+    }
+
+    // Use 3D block and grid layout for cell-face fluid calculations
+    dim3 dimBlockFluidFace(8, 8, 8);    // 512 threads per block
+    dim3 dimGridFluidFace(
+            iDivUp(grid.num[0]+1, dimBlockFluid.x),
+            iDivUp(grid.num[1]+1, dimBlockFluid.y),
+            iDivUp(grid.num[2]+1, dimBlockFluid.z));
     if (dimGridFluid.z > 64 && navierstokes == 1) {
         cerr << "Error: dimGridFluid.z > 64" << endl;
         exit(1);
@@ -867,29 +878,42 @@ __host__ void DEM::startTime()
             }*/
 
             if (np > 0) {
-                // Determine the interaction force
-                /*findInteractionForce<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_phi,
-                        dev_ns_d_avg,
-                        dev_ns_vp_avg,
-                        dev_ns_v,
-                        dev_ns_fi);
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post findInteractionForce", iter);
 
-                // Apply interaction force to the particles
-                applyParticleInteractionForce<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_fi,
-                        dev_ns_phi,
-                        dev_ns_p,
-                        dev_gridParticleIndex,
-                        dev_cellStart,
-                        dev_cellEnd,
-                        dev_x_sorted,
-                        dev_force);
+                if (iter == 0) {
+                    // set cell center ghost nodes
+                    setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_ns_v, ns.bc_bot, ns.bc_top);
+
+                    // find cell face velocities
+                    interpolateCenterToFace
+                        <<<dimGridFluidFace, dimBlockFluidFace>>>(
+                            dev_ns_v,
+                            dev_ns_v_x,
+                            dev_ns_v_y,
+                            dev_ns_v_z);
+                    cudaThreadSynchronize();
+                    checkForCudaErrors("Post interpolateCenterToFace");
+                }
+
+                setNSghostNodesFace<Float>
+                    <<<dimGridFluidFace, dimBlockFluidFace>>>(
+                        dev_ns_v_x,
+                        dev_ns_v_y,
+                        dev_ns_v_z,
+                        ns.bc_bot,
+                        ns.bc_top);
                 cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post applyParticleInteractionForce",
-                        iter);*/
+                checkForCudaErrorsIter("Post setNSghostNodesFace", iter);
+
+                findFaceDivTau<<<dimGridFluidFace, dimBlockFluidFace>>>(
+                        dev_ns_v_x,
+                        dev_ns_v_y,
+                        dev_ns_v_z,
+                        dev_ns_div_tau_x,
+                        dev_ns_div_tau_y,
+                        dev_ns_div_tau_z);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post findFaceDivTau", iter);
 
                 // Per particle, find the fluid-particle interaction force f_pf
                 // and apply it to the particle
@@ -898,9 +922,12 @@ __host__ void DEM::startTime()
                         dev_vel,
                         dev_ns_phi,
                         dev_ns_p,
-                        dev_ns_v,
-                        dev_ns_tau,
-                        iter,
+                        dev_ns_v_x,
+                        dev_ns_v_y,
+                        dev_ns_v_z,
+                        dev_ns_div_tau_x,
+                        dev_ns_div_tau_y,
+                        dev_ns_div_tau_z,
                         dev_ns_f_pf,
                         dev_force);
                 cudaThreadSynchronize();
@@ -961,21 +988,19 @@ __host__ void DEM::startTime()
                 // Set the values of the ghost nodes in the grid
                 if (PROFILING == 1)
                     startTimer(&kernel_tic);
-                /*setNSghostNodesDev<<<dimGridFluid, dimBlockFluid>>>(
-                  dev_ns_p,
-                  dev_ns_v,
-                  dev_ns_v_p,
-                  dev_ns_phi,
-                  dev_ns_dphi,
-                  dev_ns_epsilon);*/
+
                 setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_p, ns.bc_bot, ns.bc_top);
 
-                setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_v, ns.bc_bot, ns.bc_top);
+                //setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
+                        //dev_ns_v, ns.bc_bot, ns.bc_top);
 
-                setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_v_p, ns.bc_bot, ns.bc_top);
+                setNSghostNodesFace<Float>
+                    <<<dimGridFluidFace, dimBlockFluidFace>>>(
+                        dev_ns_v_p_x,
+                        dev_ns_v_p_y,
+                        dev_ns_v_p_z,
+                        ns.bc_bot, ns.bc_top);
 
                 setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_phi, ns.bc_bot, ns.bc_top);
@@ -993,26 +1018,15 @@ __host__ void DEM::startTime()
                   transferNSepsilonFromGlobalDeviceMemory();
                   printNSarray(stdout, ns.epsilon, "epsilon");*/
 
-                // Find the fluid stress tensor, needed for predicting the fluid
-                // velocities
-                if (PROFILING == 1)
-                    startTimer(&kernel_tic);
-                findNSstressTensor<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_v,
-                        dev_ns_tau);
+                // interpolate velocities to cell centers which makes velocity
+                // prediction easier
+                interpolateFaceToCenter<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_v_x,
+                        dev_ns_v_y,
+                        dev_ns_v_z,
+                        dev_ns_v);
                 cudaThreadSynchronize();
-                if (PROFILING == 1)
-                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                            &t_findNSstressTensor);
-                checkForCudaErrorsIter("Post findNSstressTensor", iter);
-
-                // Set stress tensor values in the ghost nodes
-                setNSghostNodes_tau<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_tau,
-                        ns.bc_bot,
-                        ns.bc_top); 
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post setNSghostNodes_tau", iter);
+                checkForCudaErrorsIter("Post interpolateFaceToCenter", iter);
 
                 // Find the divergence of phi*vi*v, needed for predicting the
                 // fluid velocities
@@ -1028,53 +1042,44 @@ __host__ void DEM::startTime()
                             &t_findNSdivphiviv);
                 checkForCudaErrorsIter("Post findNSdivphiviv", iter);
 
-                // Find the divergence of phi*tau, needed for predicting the
-                // fluid velocities
-                if (PROFILING == 1)
-                    startTimer(&kernel_tic);
-                /*findNSdivphitau<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_phi,
-                        dev_ns_tau,
-                        dev_ns_div_phi_tau);*/
-                findNSdivtau<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_tau,
-                        dev_ns_div_tau);
-                cudaThreadSynchronize();
-                if (PROFILING == 1)
-                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                            &t_findNSdivtau);
-                //checkForCudaErrorsIter("Post findNSdivtau", iter);
-                checkForCudaErrorsIter("Post findNSdivtau", iter);
-
                 // Predict the fluid velocities on the base of the old pressure
                 // field and ignoring the incompressibility constraint
                 if (PROFILING == 1)
                     startTimer(&kernel_tic);
-                findPredNSvelocities<<<dimGridFluid, dimBlockFluid>>>(
+                findPredNSvelocities<<<dimGridFluidFace, dimBlockFluidFace>>>(
                         dev_ns_p,
+                        dev_ns_v_x,
+                        dev_ns_v_y,
+                        dev_ns_v_z,
                         dev_ns_v,
                         dev_ns_phi,
                         dev_ns_dphi,
-                        dev_ns_div_phi_vi_v,
-                        //dev_ns_div_phi_tau,
-                        dev_ns_div_tau,
+                        dev_ns_div_tau_x,
+                        dev_ns_div_tau_y,
+                        dev_ns_div_tau_z,
                         ns.bc_bot,
                         ns.bc_top,
                         ns.beta,
                         dev_ns_fi,
                         ns.ndem,
-                        dev_ns_v_p);
+                        dev_ns_v_p_x,
+                        dev_ns_v_p_y,
+                        dev_ns_v_p_z);
                 cudaThreadSynchronize();
                 if (PROFILING == 1)
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                             &t_findPredNSvelocities);
                 checkForCudaErrorsIter("Post findPredNSvelocities", iter);
 
-                setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_v_p);
+                setNSghostNodesFace<Float>
+                    <<<dimGridFluidFace, dimBlockFluidFace>>>(
+                        dev_ns_v_p_x,
+                        dev_ns_v_p_y,
+                        dev_ns_v_p_z,
+                        ns.bc_bot, ns.bc_top);
                 cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post setNSghostNodesFloat3(dev_ns_v_p)",
-                        iter);
+                checkForCudaErrorsIter(
+                        "Post setNSghostNodesFaceFloat3(dev_ns_v_p)", iter);
 
                 // In the first iteration of the sphere program, we'll need to
                 // manually estimate the values of epsilon. In the subsequent
@@ -1506,6 +1511,17 @@ __host__ void DEM::startTime()
             // completed
             cudaThreadSynchronize();
             checkForCudaErrorsIter("Beginning of file output section", iter);
+
+            // v_x, v_y, v_z -> v
+            if (navierstokes == 1) {
+                interpolateFaceToCenter<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_v_x,
+                        dev_ns_v_y,
+                        dev_ns_v_z,
+                        dev_ns_v);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post interpolateFaceToCenter", iter);
+            }
 
             //// Copy device data to host memory
             transferFromGlobalDeviceMemory();

@@ -69,7 +69,7 @@ void DEM::initNSmemDev(void)
     cudaMalloc((void**)&dev_ns_v_x, memSizeFvel);// velocity in stag. grid
     cudaMalloc((void**)&dev_ns_v_y, memSizeFvel);// velocity in stag. grid
     cudaMalloc((void**)&dev_ns_v_z, memSizeFvel);// velocity in stag. grid
-    cudaMalloc((void**)&dev_ns_v_p, memSizeF*3); // predicted cell velocity
+    //cudaMalloc((void**)&dev_ns_v_p, memSizeF*3); // predicted cell velocity
     cudaMalloc((void**)&dev_ns_v_p_x, memSizeFvel); // pred. vel. in stag. grid
     cudaMalloc((void**)&dev_ns_v_p_y, memSizeFvel); // pred. vel. in stag. grid
     cudaMalloc((void**)&dev_ns_v_p_z, memSizeFvel); // pred. vel. in stag. grid
@@ -78,7 +78,7 @@ void DEM::initNSmemDev(void)
     cudaMalloc((void**)&dev_ns_fi, memSizeF*3);  // interaction force
     cudaMalloc((void**)&dev_ns_phi, memSizeF);   // cell porosity
     cudaMalloc((void**)&dev_ns_dphi, memSizeF);  // cell porosity change
-    cudaMalloc((void**)&dev_ns_div_phi_v_v, memSizeF*3); // div(phi v v)
+    //cudaMalloc((void**)&dev_ns_div_phi_v_v, memSizeF*3); // div(phi v v)
     cudaMalloc((void**)&dev_ns_epsilon, memSizeF); // pressure difference
     cudaMalloc((void**)&dev_ns_epsilon_new, memSizeF); // new pressure diff.
     cudaMalloc((void**)&dev_ns_epsilon_old, memSizeF); // old pressure diff.
@@ -87,7 +87,10 @@ void DEM::initNSmemDev(void)
     cudaMalloc((void**)&dev_ns_f1, memSizeF);    // constant addition in forcing
     cudaMalloc((void**)&dev_ns_f2, memSizeF*3);  // constant slope in forcing
     cudaMalloc((void**)&dev_ns_tau, memSizeF*6); // stress tensor (symmetrical)
-    cudaMalloc((void**)&dev_ns_div_tau, memSizeF*6); // div(tau)
+    cudaMalloc((void**)&dev_ns_div_tau, memSizeF3); // div(tau), cell center
+    cudaMalloc((void**)&dev_ns_div_tau_x, memSizeFvel); // div(tau), cell face
+    cudaMalloc((void**)&dev_ns_div_tau_y, memSizeFvel); // div(tau), cell face
+    cudaMalloc((void**)&dev_ns_div_tau_z, memSizeFvel); // div(tau), cell face
     cudaMalloc((void**)&dev_ns_div_phi_vi_v, memSizeF*3); // div(phi*vi*v)
     //cudaMalloc((void**)&dev_ns_div_phi_tau, memSizeF*3);  // div(phi*tau)
     cudaMalloc((void**)&dev_ns_f_pf, sizeof(Float3)*np); // particle fluid force
@@ -103,7 +106,7 @@ void DEM::freeNSmemDev()
     cudaFree(dev_ns_v_x);
     cudaFree(dev_ns_v_y);
     cudaFree(dev_ns_v_z);
-    cudaFree(dev_ns_v_p);
+    //cudaFree(dev_ns_v_p);
     cudaFree(dev_ns_v_p_x);
     cudaFree(dev_ns_v_p_y);
     cudaFree(dev_ns_v_p_z);
@@ -112,7 +115,7 @@ void DEM::freeNSmemDev()
     cudaFree(dev_ns_fi);
     cudaFree(dev_ns_phi);
     cudaFree(dev_ns_dphi);
-    cudaFree(dev_ns_div_phi_v_v);
+    //cudaFree(dev_ns_div_phi_v_v);
     cudaFree(dev_ns_epsilon);
     cudaFree(dev_ns_epsilon_new);
     cudaFree(dev_ns_epsilon_old);
@@ -123,7 +126,10 @@ void DEM::freeNSmemDev()
     cudaFree(dev_ns_tau);
     cudaFree(dev_ns_div_phi_vi_v);
     //cudaFree(dev_ns_div_phi_tau);
-    cudaFree(dev_ns_div_tau);
+    //cudaFree(dev_ns_div_tau);
+    cudaFree(dev_ns_div_tau_x);
+    cudaFree(dev_ns_div_tau_y);
+    cudaFree(dev_ns_div_tau_z);
     cudaFree(dev_ns_f_pf);
 }
 
@@ -144,7 +150,7 @@ void DEM::transferNStoGlobalDeviceMemory(int statusmsg)
     cudaMemcpy(dev_ns_p, ns.p, memSizeF, cudaMemcpyHostToDevice);
     checkForCudaErrors("transferNStoGlobalDeviceMemory after first cudaMemcpy");
     cudaMemcpy(dev_ns_v, ns.v, memSizeF*3, cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_ns_v_p, ns.v_p, memSizeF*3, cudaMemcpyHostToDevice);
+    //cudaMemcpy(dev_ns_v_p, ns.v_p, memSizeF*3, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_ns_phi, ns.phi, memSizeF, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_ns_dphi, ns.dphi, memSizeF, cudaMemcpyHostToDevice);
 
@@ -165,7 +171,7 @@ void DEM::transferNSfromGlobalDeviceMemory(int statusmsg)
     cudaMemcpy(ns.p, dev_ns_p, memSizeF, cudaMemcpyDeviceToHost);
     checkForCudaErrors("In transferNSfromGlobalDeviceMemory, dev_ns_p", 0);
     cudaMemcpy(ns.v, dev_ns_v, memSizeF*3, cudaMemcpyDeviceToHost);
-    cudaMemcpy(ns.v_p, dev_ns_v_p, memSizeF*3, cudaMemcpyDeviceToHost);
+    //cudaMemcpy(ns.v_p, dev_ns_v_p, memSizeF*3, cudaMemcpyDeviceToHost);
     cudaMemcpy(ns.phi, dev_ns_phi, memSizeF, cudaMemcpyDeviceToHost);
     cudaMemcpy(ns.dphi, dev_ns_dphi, memSizeF, cudaMemcpyDeviceToHost);
     cudaMemcpy(ns.norm, dev_ns_norm, memSizeF, cudaMemcpyDeviceToHost);
@@ -621,6 +627,63 @@ __global__ void setNSghostNodes(
             dev_scalarfield[idx(x,y,nz)] = val;     // Neumann
         if (z == nz-1 && bc_top == 2)
             dev_scalarfield[idx(x,y,-1)] = val;     // Periodic +z
+    }
+}
+
+// Update a field in the ghost nodes from their parent cell values. The edge
+// (diagonal) cells are not written since they are not read.
+// Launch per face.
+template<typename T>
+__global__ void setNSghostNodesFace(
+        T* dev_scalarfield_x,
+        T* dev_scalarfield_y,
+        T* dev_scalarfield_z,
+        int bc_bot,
+        int bc_top)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    // check that we are not outside the fluid grid
+    if (x <= nx && y <= ny && z <= nz) {
+
+        const T val_x = dev_scalarfield_x[vidx(x,y,z)];
+        const T val_y = dev_scalarfield_y[vidx(x,y,z)];
+        const T val_z = dev_scalarfield_z[vidx(x,y,z)];
+
+        // x
+        if (x == 0)
+            dev_scalarfield_x[vidx(nx+1,y,z)] = val_x;
+        if (x == nx)
+            dev_scalarfield_x[vidx(-1,y,z)] = val_x;
+
+        // y
+        if (y == 0)
+            dev_scalarfield_y[vidx(x,ny+1,z)] = val_y;
+        if (y == ny)
+            dev_scalarfield_y[vidx(x,-1,z)] = val_y;
+
+        // z
+        if (z == 0 && bc_bot == 0)
+            dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Dirichlet
+        if (z == 1 && bc_bot == 1)
+            dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Neumann
+        if (z == 0 && bc_bot == 2)
+            dev_scalarfield_z[vidx(x,y,nz+1)] = val_z;   // Periodic -z
+
+        if (z == nz && bc_top == 0)
+            dev_scalarfield_z[vidx(x,y,nz)] = val_z;     // Dirichlet
+        if (z == nz-1 && bc_top == 1)
+            dev_scalarfield_z[vidx(x,y,nz)] = val_z;     // Neumann
+        if (z == nz && bc_top == 2)
+            dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Periodic +z
     }
 }
 
@@ -1688,7 +1751,7 @@ __global__ void findNSdivphiviv(
         // Read porosity and velocity in the 6 neighbor cells
         __syncthreads();
         const Float  phi_xn = dev_ns_phi[idx(x-1,y,z)];
-        //const Float  phi    = dev_ns_phi[idx(x,y,z)];
+        const Float  phi    = dev_ns_phi[idx(x,y,z)];
         const Float  phi_xp = dev_ns_phi[idx(x+1,y,z)];
         const Float  phi_yn = dev_ns_phi[idx(x,y-1,z)];
         const Float  phi_yp = dev_ns_phi[idx(x,y+1,z)];
@@ -1696,7 +1759,7 @@ __global__ void findNSdivphiviv(
         const Float  phi_zp = dev_ns_phi[idx(x,y,z+1)];
 
         const Float3 v_xn = dev_ns_v[idx(x-1,y,z)];
-        //const Float3 v    = dev_ns_v[idx(x,y,z)];
+        const Float3 v    = dev_ns_v[idx(x,y,z)];
         const Float3 v_xp = dev_ns_v[idx(x+1,y,z)];
         const Float3 v_yn = dev_ns_v[idx(x,y-1,z)];
         const Float3 v_yp = dev_ns_v[idx(x,y+1,z)];
@@ -1704,7 +1767,8 @@ __global__ void findNSdivphiviv(
         const Float3 v_zp = dev_ns_v[idx(x,y,z+1)];
 
         // Calculate upwind coefficients
-        /*const Float3 a = MAKE_FLOAT3(
+        //*
+        const Float3 a = MAKE_FLOAT3(
                 copysign(1.0, v.x),
                 copysign(1.0, v.y),
                 copysign(1.0, v.z));
@@ -1763,8 +1827,9 @@ __global__ void findNSdivphiviv(
 
         // Determine the weighted average of both discretizations
         const Float3 div_phi_vi_v = tau*div_uw + (1.0 - tau)*div_cd;
-        */
+        //*/
 
+        /*
         // Calculate the divergence: div(phi*v_i*v)
         const Float3 div_phi_vi_v = MAKE_FLOAT3(
                 // x
@@ -1779,6 +1844,7 @@ __global__ void findNSdivphiviv(
                 (phi_xp*v_xp.z*v_xp.x - phi_xn*v_xn.z*v_xn.x)/(2.0*dx) +
                 (phi_yp*v_yp.z*v_yp.y - phi_yn*v_yn.z*v_yn.y)/(2.0*dy) +
                 (phi_zp*v_zp.z*v_zp.z - phi_zn*v_zn.z*v_zn.z)/(2.0*dz));
+                // */
 
         // Write divergence
         __syncthreads();
@@ -1929,6 +1995,7 @@ __global__ void findNSdivphitau(
 }
 
 // Find the divergence of phi v v
+// Unused
 __global__ void findNSdivphivv(
         Float*  dev_ns_v_prod, // in
         Float*  dev_ns_phi,    // in
@@ -2017,20 +2084,27 @@ __global__ void findNSdivphivv(
 
 
 // Find predicted fluid velocity
+// Launch per face.
 __global__ void findPredNSvelocities(
         Float*  dev_ns_p,               // in
+        Float*  dev_ns_v_x,             // in
+        Float*  dev_ns_v_y,             // in
+        Float*  dev_ns_v_z,             // in
         Float3* dev_ns_v,               // in
         Float*  dev_ns_phi,             // in
         Float*  dev_ns_dphi,            // in
+        Float*  dev_ns_div_tau_x,       // in
+        Float*  dev_ns_div_tau_y,       // in
+        Float*  dev_ns_div_tau_z,       // in
         Float3* dev_ns_div_phi_vi_v,    // in
-        //Float3* dev_ns_div_phi_tau,     // in
-        Float3* dev_ns_div_tau,         // in
         int     bc_bot,                 // in
         int     bc_top,                 // in
         Float   beta,                   // in
         Float3* dev_ns_fi,              // in
         unsigned int ndem,              // in
-        Float3* dev_ns_v_p)             // out
+        Float*  dev_ns_v_p_x,           // out
+        Float*  dev_ns_v_p_y,           // out
+        Float*  dev_ns_v_p_z)           // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -2048,76 +2122,123 @@ __global__ void findPredNSvelocities(
     const Float dz = devC_grid.L[2]/nz;
 
     // 1D thread index
+    const unsigned int vidx = vidx(x,y,z);
     const unsigned int cellidx = idx(x,y,z);
 
     // Check that we are not outside the fluid grid
-    if (x < nx && y < ny && z < nz) {
+    if (x <= nx && y <= ny && z <= nz) {
 
         // Values that are needed for calculating the predicted velocity
         __syncthreads();
-        const Float3 v            = dev_ns_v[cellidx];
-        const Float  phi          = dev_ns_phi[cellidx];
-        const Float  dphi         = dev_ns_dphi[cellidx];
-        const Float3 div_phi_vi_v = dev_ns_div_phi_vi_v[cellidx];
-        //const Float3 div_phi_tau  = dev_ns_div_phi_tau[cellidx];
-        const Float3 div_tau      = dev_ns_div_tau[cellidx];
+        const Float3 v_face = MAKE_FLOAT3(
+                dev_ns_v_x[vidx],
+                dev_ns_v_y[vidx],
+                dev_ns_v_z[vidx]);
+        const Float3 div_tau_face = MAKE_FLOAT3(
+                dev_ns_div_tau_x[vidx],
+                dev_ns_div_tau_y[vidx],
+                dev_ns_div_tau_z[vidx]);
+
+        // cell center values
+        const Float phi_xn    = dev_ns_phi[idx(x-1,y,z)];
+        const Float phi_c     = dev_ns_phi[cellidx];
+        const Float phi_yn    = dev_ns_phi[idx(x,y-1,z)];
+        const Float phi_zn    = dev_ns_phi[idx(x,y,z-1)];
+
+        const Float dphi_xn   = dev_ns_dphi[idx(x-1,y,z)];
+        const Float dphi_c    = dev_ns_dphi[cellidx];
+        const Float dphi_yn   = dev_ns_dphi[idx(x,y-1,z)];
+        const Float dphi_zn   = dev_ns_dphi[idx(x,y,z-1)];
+
+        const Float3 v_xn = dev_ns_v[idx(x-1,y,z)];
+        const Float3 v_c  = dev_ns_v[cellidx];
+        const Float3 v_yn = dev_ns_v[idx(x,y-1,z)];
+        const Float3 v_zn = dev_ns_v[idx(x,y,z-1)];
+
+        const Float3 div_phi_vi_v_xn = dev_ns_div_phi_vi_v[idx(x-1,y,z)];
+        const Float3 div_phi_vi_v_c  = dev_ns_div_phi_vi_v[cellidx];
+        const Float3 div_phi_vi_v_yn = dev_ns_div_phi_vi_v[idx(x,y-1,z)];
+        const Float3 div_phi_vi_v_zn = dev_ns_div_phi_vi_v[idx(x,y,z-1)];
+
+        // component-wise average values
+        const Float3 phi = MAKE_FLOAT3(
+                (phi_c + phi_xn)/2.0,
+                (phi_c + phi_yn)/2.0,
+                (phi_c + phi_zn)/2.0);
+        const Float3 dphi = MAKE_FLOAT3(
+                (dphi_c + dphi_xn)/2.0,
+                (dphi_c + dphi_yn)/2.0,
+                (dphi_c + dphi_zn)/2.0);
 
         // The particle-fluid interaction force should only be incoorporated if
         // there is a fluid viscosity
-        Float3 f_i;
-        if (devC_params.mu > 0.0)
-            f_i = dev_ns_fi[cellidx];
-        else
-            f_i = MAKE_FLOAT3(0.0, 0.0, 0.0);
+        Float3 f_i_c, f_i_xn, f_i_yn, f_i_zn;
+        if (devC_params.mu > 0.0) {
+            f_i_c  = dev_ns_fi[cellidx];
+            f_i_xn = dev_ns_fi[idx(x-1,y,z)];
+            f_i_yn = dev_ns_fi[idx(x,y-1,z)];
+            f_i_zn = dev_ns_fi[idx(x,y,z-1)];
+        } else {
+            f_i_c  = MAKE_FLOAT3(0.0, 0.0, 0.0);
+            f_i_xn = MAKE_FLOAT3(0.0, 0.0, 0.0);
+            f_i_yn = MAKE_FLOAT3(0.0, 0.0, 0.0);
+            f_i_zn = MAKE_FLOAT3(0.0, 0.0, 0.0);
+        }
+        const Float3 f_i = MAKE_FLOAT3(
+                (f_i_c.x + f_i_xn.x)/2.0,
+                (f_i_c.y + f_i_yn.y)/2.0,
+                (f_i_c.z + f_i_zn.z)/2.0);
 
         const Float dt = ndem*devC_dt;
         const Float rho = devC_params.rho_f;
-
-        // Find pressure gradient
-        Float3 grad_p = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
         // The pressure gradient is not needed in Chorin's projection method
         // (ns.beta=0), so only has to be looked up in pressure-dependant
         // projection methods
         Float3 pressure_term = MAKE_FLOAT3(0.0, 0.0, 0.0);
         if (beta > 0.0) {
-            grad_p = gradient(dev_ns_p, x, y, z, dx, dy, dz);
+            __syncthreads();
+            const Float p    = dev_ns_p[cellidx];
+            const Float p_xn = dev_ns_p[idx(x-1,y,z)];
+            const Float p_yn = dev_ns_p[idx(x,y-1,z)];
+            const Float p_zn = dev_ns_p[idx(x,y,z-1)];
+            const Float3 grad_p = MAKE_FLOAT3(
+                    (p - p_xn)/dx,
+                    (p - p_yn)/dy,
+                    (p - p_zn)/dz);
 #ifdef SET_1
-            pressure_term = -beta*dt/(rho*phi)*grad_p;
+            pressure_term = -beta*dt/(rho*phi)*grad_p_x;
 #endif
 #ifdef SET_2
             pressure_term = -beta*dt/rho*grad_p;
 #endif
         }
 
-        // Calculate the predicted velocity
-        /*
-        Float3 v_p = v
-            + pressure_term
-            + 1.0/devC_params.rho_f*div_phi_tau*ndem*devC_dt/phi // diffusion
-            + MAKE_FLOAT3(devC_params.g[0], devC_params.g[1], devC_params.g[2])
-                *ndem*devC_dt     // gravity term
-            - ndem*devC_dt/(devC_params.rho_f*phi)*f_i
-            //- ndem*devC_dt/(devC_params.rho_f*phi*dx*dy*dz)*f_i
-            - v*dphi/phi
-            - div_phi_vi_v*ndem*devC_dt/phi    // advection term
-            ;*/
+        // calculate the advection term using a first-order upwind scheme
+        // div_phi_vf_vf
 
+
+        const float3 div_phi_vf_vx = make_float3(
+                div_phi_vx_vf,
+                div_phi_vy_vf,
+                div_phi_vz_vf)k
+
+        // Determine the predicted velocity
 #ifdef SET_1
-            const Float3 interaction_term = -dt/(rho*phi)*f_i;
-            const Float3 diffusion_term = dt/(rho*phi)*div_tau;
-            const Float3 gravity_term = MAKE_FLOAT3(
+        const Float3 interaction_term = -dt/(rho*phi)*f_i;
+        const Float3 diffusion_term = dt/(rho*phi)*div_tau;
+        const Float3 gravity_term = MAKE_FLOAT3(
                     devC_params.g[0], devC_params.g[1], devC_params.g[2])*dt;
-            const Float3 porosity_term = -1.0*v*dphi/phi;
-            const Float3 advection_term = -1.0*div_phi_vi_v*dt/phi;
+        const Float3 porosity_term = -1.0*v*dphi/phi;
+        const Float3 advection_term = -1.0*div_phi_vi_v*dt/phi;
 #endif
 #ifdef SET_2
-            const Float3 interaction_term = -dt/(rho*phi)*f_i;
-            const Float3 diffusion_term = dt/rho*div_tau;
-            const Float3 gravity_term = MAKE_FLOAT3(
-                    devC_params.g[0], devC_params.g[1], devC_params.g[2])*dt;
-            const Float3 porosity_term = -1.0*v*dphi/phi;
-            const Float3 advection_term = -1.0*div_phi_vi_v*dt/phi;
+        const Float3 interaction_term = -dt/(rho*phi)*f_i;
+        const Float3 diffusion_term = dt/rho*div_tau;
+        const Float3 gravity_term = MAKE_FLOAT3(
+                devC_params.g[0], devC_params.g[1], devC_params.g[2])*dt;
+        const Float3 porosity_term = -1.0*v*dphi/phi;
+        const Float3 advection_term = -1.0*div_phi_vi_v*dt/phi;
 #endif
 
         Float3 v_p = v
@@ -2155,8 +2276,9 @@ __global__ void findPredNSvelocities(
 
         // Save the predicted velocity
         __syncthreads();
-        //v_p = MAKE_FLOAT3(0.0, 0.0, 0.0);
-        dev_ns_v_p[cellidx] = v_p;
+        dev_ns_v_p_x[vidx] = v_p.x;
+        dev_ns_v_p_y[vidx] = v_p.y;
+        dev_ns_v_p_z[vidx] = v_p.z;
 
 #ifdef CHECK_NS_FINITE
         (void)checkFiniteFloat3("v_p", x, y, z, v_p);
@@ -2176,7 +2298,7 @@ __global__ void findNSforcing(
         Float*  dev_ns_f,
         Float*  dev_ns_phi,
         Float*  dev_ns_dphi,
-        Float3* dev_ns_v_p,
+        //Float3* dev_ns_v_p,
         unsigned int nijac,
         unsigned int ndem)
 {
@@ -2786,9 +2908,12 @@ __global__ void findInteractionForce(
         Float4* dev_vel,         // in
         Float*  dev_ns_phi,      // in
         Float*  dev_ns_p,        // in
-        Float3* dev_ns_v,        // in
-        Float*  dev_ns_tau,      // in
-        const unsigned int iter, // in
+        Float*  dev_ns_v_x,      // in
+        Float*  dev_ns_v_y,      // in
+        Float*  dev_ns_v_z,      // in
+        Float*  dev_ns_div_tau_x,// in
+        Float*  dev_ns_div_tau_y,// in
+        Float*  dev_ns_div_tau_z,// in
         Float3* dev_ns_f_pf,     // out
         Float4* dev_force)       // out
 {
@@ -2819,8 +2944,30 @@ __global__ void findInteractionForce(
 
         // Fluid information
         __syncthreads();
-        const Float  phi = dev_ns_phi[cellidx];
-        const Float3 v_f = dev_ns_v[cellidx];
+        const Float phi = dev_ns_phi[cellidx];
+        const Float v_x   = dev_ns_v_x[vidx(x,y,z)];
+        const Float v_x_p = dev_ns_v_x[vidx(x+1,y,z)];
+        const Float v_y   = dev_ns_v_x[vidx(x,y,z)];
+        const Float v_y_p = dev_ns_v_x[vidx(x,y+1,z)];
+        const Float v_z   = dev_ns_v_x[vidx(x,y,z)];
+        const Float v_z_p = dev_ns_v_x[vidx(x,y,z+1)];
+
+        const Float div_tau_x   = dev_ns_div_tau_x[vidx(x,y,z)];
+        const Float div_tau_x_p = dev_ns_div_tau_x[vidx(x+1,y,z)];
+        const Float div_tau_y   = dev_ns_div_tau_x[vidx(x,y,z)];
+        const Float div_tau_y_p = dev_ns_div_tau_x[vidx(x,y+1,z)];
+        const Float div_tau_z   = dev_ns_div_tau_x[vidx(x,y,z)];
+        const Float div_tau_z_p = dev_ns_div_tau_x[vidx(x,y,z+1)];
+
+        const Float3 v_f = MAKE_FLOAT3(
+                (v_x + v_x_p)/2.0,
+                (v_y + v_y_p)/2.0,
+                (v_z + v_z_p)/2.0);
+
+        const Float3 div_tau = MAKE_FLOAT3(
+                (div_tau_x + div_tau_x_p)/2.0,
+                (div_tau_y + div_tau_y_p)/2.0,
+                (div_tau_z + div_tau_z_p)/2.0);
 
         const Float3 v_rel = v_f - v_p;
         const Float  v_rel_length = length(v_rel);
@@ -2844,13 +2991,7 @@ __global__ void findInteractionForce(
             -1.0*gradient(dev_ns_p, i_x, i_y, i_z, dx, dy, dz)*V_p;
 
         // Viscous force
-        Float3 f_v;
-        if (iter == 0) 
-            f_v = MAKE_FLOAT3(0.0, 0.0, 0.0);
-        else
-            f_v =
-                -1.0*divergence_tensor(dev_ns_tau, i_x, i_y, i_z, dx, dy, dz)
-                *V_p;
+        const Float3 f_v = -1.0*div_tau*V_p;
 
         // Interaction force on particle (force) and fluid (f_pf)
         __syncthreads();
@@ -3019,6 +3160,156 @@ __global__ void applyInteractionForceToFluid(
         }
     }
 }*/
+
+// Launch per cell face node.
+// Cell center ghost nodes must be set prior to call.
+__global__ void interpolateCenterToFace(
+        Float3* dev_in,
+        Float*  dev_out_x,
+        Float*  dev_out_y,
+        Float*  dev_out_z)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Check that we are not outside the fluid grid
+    if (x <= devC_grid.num[0]
+            && y <= devC_grid.num[1]
+            && z <= devC_grid.num[2]) {
+
+        const unsigned int faceidx = vidx(x,y,z);
+
+        __syncthreads();
+        const Float3 xn = dev_in[idx(x-1,y,z)];
+        const Float3 yn = dev_in[idx(x,y-1,z)];
+        const Float3 zn = dev_in[idx(x,y,z-1)];
+        const Float3 center = dev_in[idx(x,y,z)];
+
+        const Float3 x_val = (center.x - xn.x)/2.0;
+        const Float3 y_val = (center.y - yn.y)/2.0;
+        const Float3 z_val = (center.z - zn.z)/2.0;
+
+        __syncthreads();
+        dev_out_x[faceidx] = x_val;
+        dev_out_y[faceidx] = y_val;
+        dev_out_z[faceidx] = z_val;
+    }
+}
+
+// Launch per cell center node
+__global__ void interpolateFaceToCenter(
+        Float*  dev_in_x,
+        Float*  dev_in_y,
+        Float*  dev_in_z,
+        Float3* dev_out)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Check that we are not outside the fluid grid
+    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
+
+        const unsigned int cellidx = idx(x,y,z);
+
+        __syncthreads();
+        const Float x_n = dev_in_x[idx(x,y,z)];
+        const Float x_p = dev_in_x[idx(x+1,y,z)];
+        const Float y_n = dev_in_x[idx(x,y,z)];
+        const Float y_p = dev_in_x[idx(x,y+1,z)];
+        const Float z_n = dev_in_x[idx(x,y,z)];
+        const Float z_p = dev_in_x[idx(x,y,z+1)];
+
+        const val = MAKE_FLOAT3(
+                (x_n + x_p)/2.0,
+                (y_n + y_p)/2.0,
+                (z_n + z_p)/2.0);
+
+        __syncthreads();
+        dev_out[cellidx] = val;
+    }
+}
+
+// Launch per cell face node. Set velocity ghost nodes beforehand.
+// Find div(tau) at all cell faces.
+__global__ findFaceDivTau(
+        Float* dev_ns_v_x,
+        Float* dev_ns_v_y,
+        Float* dev_ns_v_z,
+        Float* dev_ns_div_tau_x,
+        Float* dev_ns_div_tau_y,
+        Float* dev_ns_div_tau_z)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    // Cell sizes
+    const Float dx = devC_grid.L[0]/nx;
+    const Float dy = devC_grid.L[1]/ny;
+    const Float dz = devC_grid.L[2]/nz;
+
+    // Check that we are not outside the fluid grid
+    if (x <= nx && y <= ny && z <= nz) {
+
+        const unsigned int faceidx = vidx(x,y,z);
+
+        __syncthreads();
+        const Float v_x_xn = dev_ns_v_x[vidx(x-1,y,z)];
+        const Float v_x = dev_ns_v_x[faceidx];
+        const Float v_x_xp = dev_ns_v_x[vidx(x+1,y,z)];
+        const Float v_x_yn = dev_ns_v_x[vidx(x,y-1,z)];
+        const Float v_x_yp = dev_ns_v_x[vidx(x,y+1,z)];
+        const Float v_x_zn = dev_ns_v_x[vidx(x,y,z-1)];
+        const Float v_x_zp = dev_ns_v_x[vidx(x,y,z+1)];
+
+        const Float x_y_xn = dev_nx_v_y[vidx(x-1,y,z)];
+        const Float x_y_xp = dev_nx_v_y[vidx(x+1,y,z)];
+        const Float v_y_yn = dev_ns_v_y[vidx(x,y-1,z)];
+        const Float v_y = dev_ns_v_y[faceidx];
+        const Float v_y_yp = dev_ns_v_y[vidx(x,y+1,z)];
+        const Float x_y_zn = dev_nx_v_y[vidx(x,y,z-1)];
+        const Float x_y_zp = dev_nx_v_y[vidx(x,y,z+1)];
+
+        const Float v_z_xn = dev_ns_v_z[vidx(x-1,y,z)];
+        const Float v_z_xp = dev_ns_v_z[vidx(x+1,y,z)];
+        const Float v_z_yn = dev_ns_v_z[vidx(x,y-1,z)];
+        const Float v_z_yp = dev_ns_v_z[vidx(x,y+1,z)];
+        const Float v_z_zn = dev_ns_v_z[vidx(x,y,z-1)];
+        const Float v_z = dev_ns_v_z[faceidx];
+        const Float v_z_zp = dev_ns_v_z[vidx(x,y,z+1)];
+
+        const Float div_tau_x =
+            devC_params.mu*(
+                    (v_x_xp - 2.0*v_x + v_x_xn)/(dx*dx) +
+                    (v_x_yp - 2.0*v_x + v_x_yn)/(dy*dy) +
+                    (v_x_zp - 2.0*v_x + v_x_zn)/(dz*dz));
+        const Float div_tau_y =
+            devC_params.mu*(
+                    (v_y_xp - 2.0*v_y + v_y_xn)/(dx*dx) +
+                    (v_y_yp - 2.0*v_y + v_y_yn)/(dy*dy) +
+                    (v_y_zp - 2.0*v_y + v_y_zn)/(dz*dz));
+        const Float div_tau_z =
+            devC_params.mu*(
+                    (v_z_xp - 2.0*v_z + v_z_xn)/(dx*dx) +
+                    (v_z_yp - 2.0*v_z + v_z_yn)/(dy*dy) +
+                    (v_z_zp - 2.0*v_z + v_z_zn)/(dz*dz));
+
+        __syncthreads();
+        dev_ns_div_tau_x[faceidx] = div_tau_x;
+        dev_ns_div_tau_y[faceidx] = div_tau_y;
+        dev_ns_div_tau_z[faceidx] = div_tau_z;
+    }
+}
 
 // Print final heads and free memory
 void DEM::endNSdev()
