@@ -2207,7 +2207,7 @@ __global__ void findPredNSvelocities(
                     (p - p_yn)/dy,
                     (p - p_zn)/dz);
 #ifdef SET_1
-            pressure_term = -beta*dt/(rho*phi)*grad_p_x;
+            pressure_term = -beta*dt/(rho*phi)*grad_p;
 #endif
 #ifdef SET_2
             pressure_term = -beta*dt/rho*grad_p;
