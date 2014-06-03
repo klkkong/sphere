@@ -17,21 +17,21 @@ const int color_output = 0;
 void DEM::initNSmem()
 {
     // Number of cells
-    ns.nx = floor(grid.num[0]);
-    ns.ny = floor(grid.num[1]);
-    ns.nz = floor(grid.num[2]);
+    ns.nx = grid.num[0];
+    ns.ny = grid.num[1];
+    ns.nz = grid.num[2];
     unsigned int ncells = NScells();
-    unsigned int ncells_st = NScellsVelocity();
+    //unsigned int ncells_st = NScellsVelocity();
 
     ns.p     = new Float[ncells];     // hydraulic pressure
     ns.v     = new Float3[ncells];    // hydraulic velocity
-    ns.v_x   = new Float[ncells_st];  // hydraulic velocity in staggered grid
-    ns.v_y   = new Float[ncells_st];  // hydraulic velocity in staggered grid
-    ns.v_z   = new Float[ncells_st];  // hydraulic velocity in staggered grid
-    ns.v_p   = new Float3[ncells];    // predicted hydraulic velocity
-    ns.v_p_x = new Float[ncells_st];  // pred. hydraulic velocity in st. grid
-    ns.v_p_y = new Float[ncells_st];  // pred. hydraulic velocity in st. grid
-    ns.v_p_z = new Float[ncells_st];  // pred. hydraulic velocity in st. grid
+    //ns.v_x   = new Float[ncells_st];  // hydraulic velocity in staggered grid
+    //ns.v_y   = new Float[ncells_st];  // hydraulic velocity in staggered grid
+    //ns.v_z   = new Float[ncells_st];  // hydraulic velocity in staggered grid
+    //ns.v_p   = new Float3[ncells];    // predicted hydraulic velocity
+    //ns.v_p_x = new Float[ncells_st];  // pred. hydraulic velocity in st. grid
+    //ns.v_p_y = new Float[ncells_st];  // pred. hydraulic velocity in st. grid
+    //ns.v_p_z = new Float[ncells_st];  // pred. hydraulic velocity in st. grid
     ns.phi   = new Float[ncells];     // porosity
     ns.dphi  = new Float[ncells];     // porosity change
     ns.norm  = new Float[ncells];     // normalized residual of epsilon
@@ -52,8 +52,8 @@ unsigned int DEM::NScellsVelocity()
 {
     // Congruent padding for velocity grids. See "Cohen and Molemaker 'A fast
     // double precision CFD code using CUDA'" for details
-    return (ns.nx+3)*(ns.ny+3)*(ns.nz+3);
-    //return (ns.nx+1)*(ns.ny+1)*(ns.nz+1);
+    //return (ns.nx+1)*(ns.ny+1)*(ns.nz+1); // without ghost nodes
+    return (ns.nx+3)*(ns.ny+3)*(ns.nz+3); // with ghost nodes
 }
 
 // Free memory
@@ -61,13 +61,13 @@ void DEM::freeNSmem()
 {
     delete[] ns.p;
     delete[] ns.v;
-    delete[] ns.v_x;
-    delete[] ns.v_y;
-    delete[] ns.v_z;
-    delete[] ns.v_p;
-    delete[] ns.v_p_x;
-    delete[] ns.v_p_y;
-    delete[] ns.v_p_z;
+    //delete[] ns.v_x;
+    //delete[] ns.v_y;
+    //delete[] ns.v_z;
+    //delete[] ns.v_p;
+    //delete[] ns.v_p_x;
+    //delete[] ns.v_p_y;
+    //delete[] ns.v_p_z;
     delete[] ns.phi;
     delete[] ns.dphi;
     delete[] ns.norm;
