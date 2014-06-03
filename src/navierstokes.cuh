@@ -86,8 +86,8 @@ void DEM::initNSmemDev(void)
     cudaMalloc((void**)&dev_ns_f, memSizeF);     // forcing function value
     cudaMalloc((void**)&dev_ns_f1, memSizeF);    // constant addition in forcing
     cudaMalloc((void**)&dev_ns_f2, memSizeF*3);  // constant slope in forcing
-    cudaMalloc((void**)&dev_ns_tau, memSizeF*6); // stress tensor (symmetrical)
-    cudaMalloc((void**)&dev_ns_div_tau, memSizeF3); // div(tau), cell center
+    //cudaMalloc((void**)&dev_ns_tau, memSizeF*6); // stress tensor (symmetrical)
+    //cudaMalloc((void**)&dev_ns_div_tau, memSizeF*3); // div(tau), cell center
     cudaMalloc((void**)&dev_ns_div_tau_x, memSizeFvel); // div(tau), cell face
     cudaMalloc((void**)&dev_ns_div_tau_y, memSizeFvel); // div(tau), cell face
     cudaMalloc((void**)&dev_ns_div_tau_z, memSizeFvel); // div(tau), cell face
@@ -123,7 +123,7 @@ void DEM::freeNSmemDev()
     cudaFree(dev_ns_f);
     cudaFree(dev_ns_f1);
     cudaFree(dev_ns_f2);
-    cudaFree(dev_ns_tau);
+    //cudaFree(dev_ns_tau);
     cudaFree(dev_ns_div_phi_vi_v);
     //cudaFree(dev_ns_div_phi_tau);
     //cudaFree(dev_ns_div_tau);
@@ -1408,18 +1408,18 @@ __device__ Float divergence(
 {
     // Read 6 cell-face values
     __syncthreads();
-    const Float3 xn = dev_vectorfield[idx(x,y,z)];
-    const Float3 xp = dev_vectorfield[idx(x+1,y,z)];
-    const Float3 yn = dev_vectorfield[idx(x,y,z)];
-    const Float3 yp = dev_vectorfield[idx(x,y+1,z)];
-    const Float3 zn = dev_vectorfield[idx(x,y,z)];
-    const Float3 zp = dev_vectorfield[idx(x,y,z+1)];
+    const Float xn = dev_vectorfield_x[vidx(x,y,z)];
+    const Float xp = dev_vectorfield_x[vidx(x+1,y,z)];
+    const Float yn = dev_vectorfield_y[vidx(x,y,z)];
+    const Float yp = dev_vectorfield_y[vidx(x,y+1,z)];
+    const Float zn = dev_vectorfield_z[vidx(x,y,z)];
+    const Float zp = dev_vectorfield_z[vidx(x,y,z+1)];
 
     // Calculate the central difference gradrients and the divergence
     return
-        (xp.x - xn.x)/dx +
-        (yp.y - yn.y)/dy +
-        (zp.z - zn.z)/dz;
+        (xp - xn)/dx +
+        (yp - yn)/dy +
+        (zp - zn)/dz;
 }
 
 // Find the divergence of a tensor field
@@ -2109,11 +2109,6 @@ __global__ void findPredNSvelocities(
         const Float dphi_yn   = dev_ns_dphi[idx(x,y-1,z)];
         const Float dphi_zn   = dev_ns_dphi[idx(x,y,z-1)];
 
-        const Float3 v_xn = dev_ns_v[idx(x-1,y,z)];
-        const Float3 v_c  = dev_ns_v[cellidx];
-        const Float3 v_yn = dev_ns_v[idx(x,y-1,z)];
-        const Float3 v_zn = dev_ns_v[idx(x,y,z-1)];
-
         const Float3 div_phi_vi_v_xn = dev_ns_div_phi_vi_v[idx(x-1,y,z)];
         const Float3 div_phi_vi_v_c  = dev_ns_div_phi_vi_v[cellidx];
         const Float3 div_phi_vi_v_yn = dev_ns_div_phi_vi_v[idx(x,y-1,z)];
@@ -2253,6 +2248,7 @@ __global__ void findNSforcing(
         Float*  dev_ns_f,
         Float*  dev_ns_phi,
         Float*  dev_ns_dphi,
+        Float3* dev_ns_v_p,
         Float*  dev_ns_v_x,
         Float*  dev_ns_v_y,
         Float*  dev_ns_v_z,

@@ -175,7 +175,7 @@ class DEM {
         Float*  dev_ns_v_x;          // Cell fluid velocity in staggered grid
         Float*  dev_ns_v_y;          // Cell fluid velocity in staggered grid
         Float*  dev_ns_v_z;          // Cell fluid velocity in staggered grid
-        //Float3* dev_ns_v_p;          // Predicted cell fluid velocity
+        Float3* dev_ns_v_p;          // Averaged predicted cell fluid velocity
         Float*  dev_ns_v_p_x;        // Predicted cell fluid velocity in st. gr.
         Float*  dev_ns_v_p_y;        // Predicted cell fluid velocity in st. gr.
         Float*  dev_ns_v_p_z;        // Predicted cell fluid velocity in st. gr.
@@ -196,7 +196,7 @@ class DEM {
         //Float*  dev_ns_tau;          // Fluid stress tensor
         Float3* dev_ns_div_phi_vi_v; // div(phi*vi*v)
         //Float3* dev_ns_div_phi_tau;  // div(phi*tau)
-        Float3* dev_ns_div_tau;      // div(tau)
+        //Float3* dev_ns_div_tau;      // div(tau)
         Float*  dev_ns_div_tau_x;    // div(tau) on x-face
         Float*  dev_ns_div_tau_y;    // div(tau) on y-face
         Float*  dev_ns_div_tau_z;    // div(tau) on z-face

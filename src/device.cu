@@ -1079,7 +1079,16 @@ __host__ void DEM::startTime()
                         ns.bc_bot, ns.bc_top);
                 cudaThreadSynchronize();
                 checkForCudaErrorsIter(
-                        "Post setNSghostNodesFaceFloat3(dev_ns_v_p)", iter);
+                        "Post setNSghostNodesFace(dev_ns_v_p)", iter);
+
+                interpolateFaceToCenter<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_v_p_x,
+                        dev_ns_v_p_y,
+                        dev_ns_v_p_z,
+                        dev_ns_v_p);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post interpolateFaceToCenter", iter);
+
 
                 // In the first iteration of the sphere program, we'll need to
                 // manually estimate the values of epsilon. In the subsequent
@@ -1195,6 +1204,7 @@ __host__ void DEM::startTime()
                             dev_ns_f,
                             dev_ns_phi,
                             dev_ns_dphi,
+                            dev_ns_v_p,
                             dev_ns_v_x,
                             dev_ns_v_y,
                             dev_ns_v_z,
