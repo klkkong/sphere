@@ -2843,75 +2843,6 @@ __device__ Float dragCoefficient(Float re)
     return cd;
 }
 
-// Determine the fluid-particle interaction drag force per fluid unit volume
-// based on the Ergun (1952) equation for dense packed cells (phi <= 0.8), and
-// the Wen and Yu (1966) equation for dilate suspensions (phi > 0.8). Procedure
-// outlined in Shamy and Zeghal (2005) and Goniva et al (2010).  Other
-// interaction forces, such as the pressure gradient in the flow field (pressure
-// force), particle rotation (Magnus force), particle acceleration (virtual mass
-// force) or a fluid velocity gradient leading to shear (Saffman force).
-/*__global__ void findInteractionForce(
-        Float*  dev_ns_phi,     // in
-        Float*  dev_ns_d_avg,   // in
-        Float3* dev_ns_vp_avg,  // in
-        Float3* dev_ns_v,       // in
-        Float3* dev_ns_fi)      // out
-{
-    // 3D thread index
-    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
-    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
-    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
-
-    // Check that we are not outside the fluid grid
-    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
-
-        const unsigned int cellidx = idx(x,y,z);
-
-        __syncthreads();
-        const Float  phi = dev_ns_phi[cellidx];
-        const Float3 vf_avg = dev_ns_v[cellidx];
-
-        Float d_avg;
-        Float3 vp_avg;
-        if (phi < 0.999) {
-            __syncthreads();
-            d_avg  = dev_ns_d_avg[cellidx];
-            vp_avg = dev_ns_vp_avg[cellidx];
-        } else {  // cell is empty
-            d_avg = 1.0; // some value different from 0
-            vp_avg = vf_avg;
-        }
-
-        const Float3 v_rel = vf_avg - vp_avg;
-        const Float  v_rel_length = length(v_rel);
-
-        const Float not_phi = 1.0 - phi;
-        const Float re = (phi*devC_params.rho_f*d_avg)/devC_params.mu
-            * v_rel_length;
-        const Float cd = dragCoefficient(re);
-
-        Float3 fi = MAKE_FLOAT3(0.0, 0.0, 0.0);
-        if (v_rel_length > 0.0) {
-            if (phi <= 0.8)       // Ergun equation
-                fi = (150.0*devC_params.mu*not_phi*not_phi/(phi*d_avg*d_avg)
-                        + 1.75*not_phi*devC_params.rho_f*v_rel_length/d_avg)
-                    *v_rel;
-            else if (phi < 0.999) // Wen and Yu equation
-                fi = (3.0/4.0*cd*not_phi*pow(phi,
-                            -2.65)*devC_params.mu*devC_params.rho_f
-                        *v_rel_length/d_avg)*v_rel;
-        }
-
-        __syncthreads();
-        dev_ns_fi[cellidx] = fi;
-        //dev_ns_fi[cellidx] = MAKE_FLOAT3(0.0, 0.0, 0.0);
-
-#ifdef CHECK_NS_FINITE
-        checkFiniteFloat3("fi", x, y, z, fi);
-#endif
-    }
-}*/
-
 // Find particle-fluid interaction force as outlined by Zhou et al. 2010, and
 // originally by Gidaspow 1992.
 __global__ void findInteractionForce(
@@ -3010,8 +2941,12 @@ __global__ void findInteractionForce(
         const Float3 f_pf = f_d + f_p + f_v;
 
 #ifdef CHECK_NS_FINITE
-        //printf("%d [%d,%d,%d]\tV_p=%f Re=%f Cd=%f chi=%f\n",
-                //i, i_x, i_y, i_z, V_p, Re, Cd, chi);
+        printf("%d [%d,%d,%d]\tV_p=%f Re=%f Cd=%f chi=%f\n"
+        "  f_d=%f,%f,%f f_p=%f,%f,%f f_v=%f,%f,%f\n",
+                i, i_x, i_y, i_z, V_p, Re, Cd, chi,
+                f_d.x, f_d.y, f_d.z,
+                f_p.x, f_p.y, f_p.z,
+                f_v.x, f_v.y, f_v.z);
         checkFiniteFloat3("f_d", i_x, i_y, i_z, f_d);
         checkFiniteFloat3("f_p", i_x, i_y, i_z, f_p);
         checkFiniteFloat3("f_v", i_x, i_y, i_z, f_v);
@@ -3317,8 +3252,8 @@ __global__ void findFaceDivTau(
                     (v_z_zp - 2.0*v_z + v_z_zn)/(dz*dz));
 
         __syncthreads();
-        printf("div_tau [%d,%d,%d] = %f, %f, %f\n", x,y,z,
-                div_tau_x, div_tau_y, div_tau_z);
+        //printf("div_tau [%d,%d,%d] = %f, %f, %f\n", x,y,z,
+                //div_tau_x, div_tau_y, div_tau_z);
         dev_ns_div_tau_x[faceidx] = div_tau_x;
         dev_ns_div_tau_y[faceidx] = div_tau_y;
         dev_ns_div_tau_z[faceidx] = div_tau_z;
