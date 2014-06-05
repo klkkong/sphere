@@ -2126,13 +2126,13 @@ __global__ void findPredNSvelocities(
 
         // component-wise average values
         const Float3 phi = MAKE_FLOAT3(
-                (phi_c + phi_xn)/2.0,
-                (phi_c + phi_yn)/2.0,
-                (phi_c + phi_zn)/2.0);
+                amean(phi_c, phi_xn),
+                amean(phi_c, phi_yn),
+                amean(phi_c, phi_zn));
         const Float3 dphi = MAKE_FLOAT3(
-                (dphi_c + dphi_xn)/2.0,
-                (dphi_c + dphi_yn)/2.0,
-                (dphi_c + dphi_zn)/2.0);
+                amean(dphi_c, dphi_xn),
+                amean(dphi_c, dphi_yn),
+                amean(dphi_c, dphi_zn));
 
         // The particle-fluid interaction force should only be incoorporated if
         // there is a fluid viscosity
@@ -2149,9 +2149,9 @@ __global__ void findPredNSvelocities(
             f_i_zn = MAKE_FLOAT3(0.0, 0.0, 0.0);
         }
         const Float3 f_i = MAKE_FLOAT3(
-                (f_i_c.x + f_i_xn.x)/2.0,
-                (f_i_c.y + f_i_yn.y)/2.0,
-                (f_i_c.z + f_i_zn.z)/2.0);
+                amean(f_i_c.x, f_i_xn.x),
+                amean(f_i_c.y, f_i_yn.y),
+                amean(f_i_c.z, f_i_zn.z));
 
         const Float dt = ndem*devC_dt;
         const Float rho = devC_params.rho_f;
@@ -2179,9 +2179,9 @@ __global__ void findPredNSvelocities(
         }
 
         const Float3 div_phi_vi_v = MAKE_FLOAT3(
-                (div_phi_vi_v_xn.x + div_phi_vi_v_c.x)/2.0,
-                (div_phi_vi_v_yn.y + div_phi_vi_v_c.y)/2.0,
-                (div_phi_vi_v_zn.z + div_phi_vi_v_c.z)/2.0);
+                amean(div_phi_vi_v_xn.x, div_phi_vi_v_c.x),
+                amean(div_phi_vi_v_yn.y, div_phi_vi_v_c.y),
+                amean(div_phi_vi_v_zn.z, div_phi_vi_v_c.z));
 
         // Determine the predicted velocity
 #ifdef SET_1
@@ -2723,9 +2723,9 @@ __global__ void updateNSvelocity(
         const Float phi_zn = dev_ns_phi[idx(x,y,z-1)];
 
         const Float3 phi = MAKE_FLOAT3(
-                (phi_c + phi_xn)/2.0,
-                (phi_c + phi_yn)/2.0,
-                (phi_c + phi_zn)/2.0);
+                amean(phi_c, phi_xn),
+                amean(phi_c, phi_yn),
+                amean(phi_c, phi_zn));
 
         // Find corrector gradient
         const Float3 grad_epsilon = MAKE_FLOAT3(
@@ -2921,14 +2921,14 @@ __global__ void findInteractionForce(
         const Float div_tau_z_p = dev_ns_div_tau_z[vidx(i_x,i_y,i_z+1)];
 
         const Float3 v_f = MAKE_FLOAT3(
-                (v_x + v_x_p)/2.0,
-                (v_y + v_y_p)/2.0,
-                (v_z + v_z_p)/2.0);
+                amean(v_x, v_x_p),
+                amean(v_y, v_y_p),
+                amean(v_z, v_z_p));
 
         const Float3 div_tau = MAKE_FLOAT3(
-                (div_tau_x + div_tau_x_p)/2.0,
-                (div_tau_y + div_tau_y_p)/2.0,
-                (div_tau_z + div_tau_z_p)/2.0);
+                amean(div_tau_x, div_tau_x_p),
+                amean(div_tau_y, div_tau_y_p),
+                amean(div_tau_z, div_tau_z_p));
 
         const Float3 v_rel = v_f - v_p;
         const Float  v_rel_length = length(v_rel);
@@ -3073,9 +3073,9 @@ __global__ void interpolateCenterToFace(
         const Float3 zn = dev_in[idx(x,y,z-1)];
         const Float3 center = dev_in[idx(x,y,z)];
 
-        const Float x_val = (center.x - xn.x)/2.0;
-        const Float y_val = (center.y - yn.y)/2.0;
-        const Float z_val = (center.z - zn.z)/2.0;
+        const Float x_val = amean(center.x, xn.x);
+        const Float y_val = amean(center.y, yn.y);
+        const Float z_val = amean(center.z, zn.z);
 
         __syncthreads();
         //printf("c2f [%d,%d,%d] = %f,%f,%f\n", x,y,z, x_val, y_val, z_val);
@@ -3115,9 +3115,9 @@ __global__ void interpolateFaceToCenter(
         const Float z_p = dev_in_z[vidx(x,y,z+1)];
 
         const Float3 val = MAKE_FLOAT3(
-                (x_n + x_p)/2.0,
-                (y_n + y_p)/2.0,
-                (z_n + z_p)/2.0);
+                amean(x_n, x_p),
+                amean(y_n, y_p),
+                amean(z_n, z_p));
 
         __syncthreads();
         //printf("[%d,%d,%d] = %f, %f, %f\n", x,y,z, val.x, val.y, val.z);
