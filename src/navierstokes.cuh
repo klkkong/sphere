@@ -69,7 +69,7 @@ void DEM::initNSmemDev(void)
     cudaMalloc((void**)&dev_ns_v_x, memSizeFvel);// velocity in stag. grid
     cudaMalloc((void**)&dev_ns_v_y, memSizeFvel);// velocity in stag. grid
     cudaMalloc((void**)&dev_ns_v_z, memSizeFvel);// velocity in stag. grid
-    //cudaMalloc((void**)&dev_ns_v_p, memSizeF*3); // predicted cell velocity
+    cudaMalloc((void**)&dev_ns_v_p, memSizeF*3); // predicted cell velocity
     cudaMalloc((void**)&dev_ns_v_p_x, memSizeFvel); // pred. vel. in stag. grid
     cudaMalloc((void**)&dev_ns_v_p_y, memSizeFvel); // pred. vel. in stag. grid
     cudaMalloc((void**)&dev_ns_v_p_z, memSizeFvel); // pred. vel. in stag. grid
@@ -106,7 +106,7 @@ void DEM::freeNSmemDev()
     cudaFree(dev_ns_v_x);
     cudaFree(dev_ns_v_y);
     cudaFree(dev_ns_v_z);
-    //cudaFree(dev_ns_v_p);
+    cudaFree(dev_ns_v_p);
     cudaFree(dev_ns_v_p_x);
     cudaFree(dev_ns_v_p_y);
     cudaFree(dev_ns_v_p_z);
@@ -3017,11 +3017,14 @@ __global__ void applyInteractionForceToFluid(
             }
         }
 
+        const Float3 F_pf = fi/(dx*dy*dz);
+
         __syncthreads();
 #ifdef CHECK_NS_FINITE
         checkFiniteFloat3("fi", x, y, z, fi/(dx*dy*dz));
 #endif
-        dev_ns_fi[cellidx] = fi/(dx*dy*dz);
+        //printf("F_pf [%d,%d,%d] = %f,%f,%f\n", x,y,z, F_pf.x, F_pf.y, F_pf.z);
+        dev_ns_fi[cellidx] = F_pf;
     }
 }
 
@@ -3076,8 +3079,14 @@ __global__ void interpolateFaceToCenter(
     const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
     const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
 
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
     // Check that we are not outside the fluid grid
-    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
+    //if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
+    if (x < nx && y < ny && z < nz) {
 
         __syncthreads();
         const Float x_n = dev_in_x[vidx(x,y,z)];
@@ -3093,13 +3102,15 @@ __global__ void interpolateFaceToCenter(
                 (z_n + z_p)/2.0);
 
         __syncthreads();
-        //printf("[%d,%d,%d] = %f\n", x,y,z, val);
+        //printf("[%d,%d,%d] = %f, %f, %f\n", x,y,z, val.x, val.y, val.z);
         dev_out[idx(x,y,z)] = val;
     }
 }
 
 // Launch per cell face node. Set velocity ghost nodes beforehand.
 // Find div(tau) at all cell faces.
+// Warning: The grid-corner values will be invalid, along with the non-normal
+// components of the ghost nodes
 __global__ void findFaceDivTau(
         Float* dev_ns_v_x,
         Float* dev_ns_v_y,
@@ -3171,8 +3182,8 @@ __global__ void findFaceDivTau(
                     (v_z_zp - 2.0*v_z + v_z_zn)/(dz*dz));
 
         __syncthreads();
-        printf("div_tau [%d,%d,%d] = %f, %f, %f\n", x,y,z,
-                div_tau_x, div_tau_y, div_tau_z);
+        //printf("div_tau [%d,%d,%d] = %f, %f, %f\n", x,y,z,
+                //div_tau_x, div_tau_y, div_tau_z);
         dev_ns_div_tau_x[faceidx] = div_tau_x;
         dev_ns_div_tau_y[faceidx] = div_tau_y;
         dev_ns_div_tau_z[faceidx] = div_tau_z;
