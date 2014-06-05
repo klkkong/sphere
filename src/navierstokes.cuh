@@ -658,38 +658,76 @@ __global__ void setNSghostNodesFace(
     const unsigned int nz = devC_grid.num[2];
 
     // check that we are not outside the fluid grid
-    if (x <= nx && y <= ny && z <= nz) {
+    //if (x <= nx && y <= ny && z <= nz) {
+    if (x < nx && y < ny && z < nz) {
 
         const T val_x = dev_scalarfield_x[vidx(x,y,z)];
         const T val_y = dev_scalarfield_y[vidx(x,y,z)];
         const T val_z = dev_scalarfield_z[vidx(x,y,z)];
 
         // x
-        if (x == 0)
+        if (x == 0) {
+            dev_scalarfield_x[vidx(nx,y,z)] = val_x;
+            dev_scalarfield_y[vidx(nx,y,z)] = val_y;
+            dev_scalarfield_z[vidx(nx,y,z)] = val_z;
+        }
+        if (x == 1) {
             dev_scalarfield_x[vidx(nx+1,y,z)] = val_x;
-        if (x == nx)
+        }
+        if (x == nx-1) {
             dev_scalarfield_x[vidx(-1,y,z)] = val_x;
+            dev_scalarfield_y[vidx(-1,y,z)] = val_y;
+            dev_scalarfield_z[vidx(-1,y,z)] = val_z;
+        }
 
         // y
-        if (y == 0)
+        if (y == 0) {
+            dev_scalarfield_x[vidx(x,ny,z)] = val_x;
+            dev_scalarfield_y[vidx(x,ny,z)] = val_y;
+            dev_scalarfield_z[vidx(x,ny,z)] = val_z;
+        }
+        if (y == 1) {
             dev_scalarfield_y[vidx(x,ny+1,z)] = val_y;
-        if (y == ny)
+        }
+        if (y == ny-1) {
+            dev_scalarfield_x[vidx(x,-1,z)] = val_x;
             dev_scalarfield_y[vidx(x,-1,z)] = val_y;
+            dev_scalarfield_z[vidx(x,-1,z)] = val_z;
+        }
 
         // z
-        if (z == 0 && bc_bot == 0)
-            dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Dirichlet
-        if (z == 1 && bc_bot == 1)
-            dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Neumann
-        if (z == 0 && bc_bot == 2)
+        if (z == 0 && bc_bot == 0) {
+            dev_scalarfield_x[vidx(x,y,-1)] = val_y;     // Dirichlet -z
+            dev_scalarfield_y[vidx(x,y,-1)] = val_x;     // Dirichlet -z
+            dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Dirichlet -z
+        }
+        if (z == 1 && bc_bot == 1) {
+            dev_scalarfield_x[vidx(x,y,-1)] = val_x;     // Neumann -z
+            dev_scalarfield_y[vidx(x,y,-1)] = val_y;     // Neumann -z
+            dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Neumann -z
+        }
+        if (z == 0 && bc_bot == 2) {
+            dev_scalarfield_x[vidx(x,y,nz)] = val_x;     // Periodic -z
+            dev_scalarfield_y[vidx(x,y,nz)] = val_y;     // Periodic -z
+            dev_scalarfield_z[vidx(x,y,nz)] = val_z;     // Periodic -z
+        }
+        if (z == 1 && bc_bot == 2) {
             dev_scalarfield_z[vidx(x,y,nz+1)] = val_z;   // Periodic -z
+        }
 
-        if (z == nz && bc_top == 0)
-            dev_scalarfield_z[vidx(x,y,nz)] = val_z;     // Dirichlet
-        if (z == nz-1 && bc_top == 1)
-            dev_scalarfield_z[vidx(x,y,nz)] = val_z;     // Neumann
-        if (z == nz && bc_top == 2)
+        if (z == nz-1 && bc_top == 0) {
+            dev_scalarfield_z[vidx(x,y,nz)] = val_z;     // Dirichlet +z
+        }
+        if (z == nz-2 && bc_top == 1) {
+            dev_scalarfield_x[vidx(x,y,nz)] = val_x;     // Neumann +z
+            dev_scalarfield_y[vidx(x,y,nz)] = val_y;     // Neumann +z
+            dev_scalarfield_z[vidx(x,y,nz)] = val_z;     // Neumann +z
+        }
+        if (z == nz-1 && bc_top == 2) {
+            dev_scalarfield_x[vidx(x,y,-1)] = val_x;     // Periodic +z
+            dev_scalarfield_y[vidx(x,y,-1)] = val_y;     // Periodic +z
             dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Periodic +z
+        }
     }
 }
 

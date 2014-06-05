@@ -97,7 +97,8 @@ unsigned int DEM::vidx(
         const int y,
         const int z)
 {
-    return x + (ns.nx+1)*y + (ns.nx+1)*(ns.ny+1)*z;
+    //return x + (ns.nx+1)*y + (ns.nx+1)*(ns.ny+1)*z; // without ghost nodes
+    return x + (ns.nx+3)*y + (ns.nx+3)*(ns.ny+3)*z; // with ghost nodes
 }
 
 // Determine if the FTCS (forward time, central space) solution of the Navier
