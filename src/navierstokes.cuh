@@ -2941,12 +2941,13 @@ __global__ void findInteractionForce(
         const Float3 f_pf = f_d + f_p + f_v;
 
 #ifdef CHECK_NS_FINITE
+        /*
         printf("%d [%d,%d,%d]\tV_p=%f Re=%f Cd=%f chi=%f\n"
         "  f_d=%f,%f,%f f_p=%f,%f,%f f_v=%f,%f,%f\n",
                 i, i_x, i_y, i_z, V_p, Re, Cd, chi,
                 f_d.x, f_d.y, f_d.z,
                 f_p.x, f_p.y, f_p.z,
-                f_v.x, f_v.y, f_v.z);
+                f_v.x, f_v.y, f_v.z);// */
         checkFiniteFloat3("f_d", i_x, i_y, i_z, f_d);
         checkFiniteFloat3("f_p", i_x, i_y, i_z, f_p);
         checkFiniteFloat3("f_v", i_x, i_y, i_z, f_v);
@@ -3024,89 +3025,6 @@ __global__ void applyInteractionForceToFluid(
     }
 }
 
-// Apply the fluid-particle interaction force to all particles in each fluid
-// cell.
-/*__global__ void applyParticleInteractionForce(
-        Float3* dev_ns_fi,                      // in
-        Float*  dev_ns_phi,                     // in
-        Float*  dev_ns_p,                       // in
-        unsigned int* dev_gridParticleIndex,    // in
-        unsigned int* dev_cellStart,            // in
-        unsigned int* dev_cellEnd,              // in
-        Float4* dev_x_sorted,                   // in
-        Float4* dev_force)                      // out
-{
-    // 3D thread index
-    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
-    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
-    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
-
-    // Grid dimensions
-    const unsigned int nx = devC_grid.num[0];
-    const unsigned int ny = devC_grid.num[1];
-    const unsigned int nz = devC_grid.num[2];
-
-    // Cell sizes
-    const Float dx = devC_grid.L[0]/nx;
-    const Float dy = devC_grid.L[1]/ny;
-    const Float dz = devC_grid.L[2]/nz;
-
-    // Check that we are not outside the fluid grid
-    if (x < nx && y < ny && z < nz) {
-
-        const unsigned int cellidx = idx(x,y,z);
-
-        __syncthreads();
-        const Float3 fi = dev_ns_fi[cellidx];
-        const Float3 grad_p = gradient(dev_ns_p, x, y, z, dx, dy, dz);
-
-        // apply to all particle in the cell
-        // Calculate linear cell ID
-        const unsigned int cellID = x + y * devC_grid.num[0]
-            + (devC_grid.num[0] * devC_grid.num[1]) * z; 
-
-        const unsigned int startidx = dev_cellStart[cellID];
-        unsigned int endidx, i, origidx;
-
-        Float r;
-        //Float r, phi;
-        Float3 fd;
-
-        if (startidx != 0xffffffff) {
-
-            __syncthreads();
-            endidx = dev_cellEnd[cellID];
-
-            for (i=startidx; i<endidx; ++i) {
-
-                __syncthreads();
-                origidx = dev_gridParticleIndex[i];
-                r = dev_x_sorted[i].w; // radius
-                //phi = dev_ns_phi[idx(x,y,z)];
-
-                // stokes drag force
-                //fd = fi*(4.0/3.0*M_PI*r*r*r);
-
-                    // pressure gradient force + stokes drag force
-                    fd = (-1.0*grad_p + fi)*(4.0/3.0*M_PI*r*r*r);
-
-                __syncthreads();
-                dev_force[origidx] += MAKE_FLOAT4(fd.x, fd.y, fd.z, 0.0);
-
-                // disable fluid->particle interaction
-                //dev_force[origidx] += MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
-
-                // report to stdout
-                //printf("%d,%d,%d\tapplying force (%f,%f,%f) to particle %d\n",
-                        //x,y,z, fd.x, fd.y, fd.z, origidx);
-
-#ifdef CHECK_NS_FINITE
-                checkFiniteFloat3("fd", x, y, z, fd);
-#endif
-            }
-        }
-    }
-}*/
 
 // Launch per cell face node.
 // Cell center ghost nodes must be set prior to call.
@@ -3207,6 +3125,7 @@ __global__ void findFaceDivTau(
 
     // Check that we are not outside the fluid grid
     if (x <= nx && y <= ny && z <= nz) {
+    //if (x < nx && y < ny && z < nz) {
 
         const unsigned int faceidx = vidx(x,y,z);
 
@@ -3252,12 +3171,13 @@ __global__ void findFaceDivTau(
                     (v_z_zp - 2.0*v_z + v_z_zn)/(dz*dz));
 
         __syncthreads();
-        //printf("div_tau [%d,%d,%d] = %f, %f, %f\n", x,y,z,
-                //div_tau_x, div_tau_y, div_tau_z);
+        printf("div_tau [%d,%d,%d] = %f, %f, %f\n", x,y,z,
+                div_tau_x, div_tau_y, div_tau_z);
         dev_ns_div_tau_x[faceidx] = div_tau_x;
         dev_ns_div_tau_y[faceidx] = div_tau_y;
         dev_ns_div_tau_z[faceidx] = div_tau_z;
     }
+
 }
 
 // Print final heads and free memory
