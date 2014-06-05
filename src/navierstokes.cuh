@@ -13,6 +13,9 @@
 #include "constants.cuh"
 #include "debug.h"
 
+#define REPORT_V_P_COMPONENTS
+#define REPORT_FORCING_TERMS
+
 // Arithmetic mean of two numbers
 __inline__ __device__ Float amean(Float a, Float b) {
     return (a+b)*0.5;
@@ -2247,6 +2250,7 @@ __global__ void findPredNSvelocities(
             + porosity_term
             + advection_term;
 
+        printf("\n\nhello, world\n\n");
 #ifdef REPORT_V_P_COMPONENTS
         // Report velocity components to stdout for debugging
         printf("[%d,%d,%d]\t"

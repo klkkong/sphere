@@ -915,6 +915,23 @@ __host__ void DEM::startTime()
                 cudaThreadSynchronize();
                 checkForCudaErrorsIter("Post findFaceDivTau", iter);
 
+                /*setUpperDivTau<<<dimGridFluidFace, dimBlockFluid>>>(
+                        dev_ns_p, ns.bc_bot, ns.bc_top);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_p)", iter)
+                */
+
+                setNSghostNodesFace<Float>
+                    <<<dimGridFluidFace, dimBlockFluid>>>(
+                        dev_ns_div_tau_x,
+                        dev_ns_div_tau_y,
+                        dev_ns_div_tau_z,
+                        ns.bc_bot,
+                        ns.bc_top);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_div_tau)",
+                        iter);
+
                 setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_p, ns.bc_bot, ns.bc_top);
                 cudaThreadSynchronize();
@@ -1513,6 +1530,11 @@ __host__ void DEM::startTime()
         time.current  += time.dt;
         filetimeclock += time.dt;
         ++iter;
+
+        // Make sure all preceding tasks are complete
+        if (cudaDeviceSynchronize() != cudaSuccess) {
+            cerr << "Error during cudaDeviceSynchronize()" << endl;
+        }
 
         // Report time to console
         if (verbose == 1 && (iter % stdout_report == 0)) {
