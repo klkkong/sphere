@@ -1816,6 +1816,9 @@ __global__ void findNSdivphiviv(
         __syncthreads();
         dev_ns_div_phi_vi_v[cellidx] = div_phi_vi_v;
 
+        //printf("div(phi*v*v) [%d,%d,%d] = %f, %f, %f\n", x,y,z,
+                //div_phi_vi_v.x, div_phi_vi_v.y, div_phi_vi_v.z);
+
 #ifdef CHECK_NS_FINITE
         (void)checkFiniteFloat3("div_phi_vi_v", x, y, z, div_phi_vi_v);
 #endif
@@ -2092,6 +2095,7 @@ __global__ void findPredNSvelocities(
 
     // Check that we are not outside the fluid grid
     if (x <= nx && y <= ny && z <= nz) {
+    //if (x < nx && y < ny && z < nz) {
 
         // Values that are needed for calculating the predicted velocity
         __syncthreads();
@@ -2229,6 +2233,20 @@ __global__ void findPredNSvelocities(
         if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
             v_p.z = v.z;
             //v_p.z = 0.0;
+
+        // Do not set components placed in ghost node cells
+        if (x == nx) {
+            v_p.y = 0.0;
+            v_p.z = 0.0;
+        }
+        if (y == ny) {
+            v_p.x = 0.0;
+            v_p.z = 0.0;
+        }
+        if (z == nz) {
+            v_p.x = 0.0;
+            v_p.y = 0.0;
+        }
 
         // Save the predicted velocity
         __syncthreads();
