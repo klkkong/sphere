@@ -2180,8 +2180,8 @@ __global__ void findPredNSvelocities(
 
         const Float3 div_phi_vi_v = MAKE_FLOAT3(
                 amean(div_phi_vi_v_xn.x, div_phi_vi_v_c.x),
-                amean(div_phi_vi_v_yn.y, div_phi_vi_v_c.y),
-                amean(div_phi_vi_v_zn.z, div_phi_vi_v_c.z));
+                amean(div_phi_vi_v_yn.x, div_phi_vi_v_c.y),
+                amean(div_phi_vi_v_zn.x, div_phi_vi_v_c.z));
 
         // Determine the predicted velocity
 #ifdef SET_1
