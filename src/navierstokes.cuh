@@ -59,7 +59,7 @@ __device__ int checkFiniteFloat3(
 void DEM::initNSmemDev(void)
 {
     // size of scalar field
-    unsigned int memSizeF  = sizeof(Float)*NScells();
+    unsigned int memSizeF = sizeof(Float)*NScells();
 
     // size of velocity arrays in staggered grid discretization
     unsigned int memSizeFvel = sizeof(Float)*NScellsVelocity();
@@ -3204,6 +3204,7 @@ __global__ void interpolateCenterToFace(
         const Float z_val = (center.z - zn.z)/2.0;
 
         __syncthreads();
+        //printf("c2f [%d,%d,%d] = %f,%f,%f\n", x,y,z, x_val, y_val, z_val);
         dev_out_x[faceidx] = x_val;
         dev_out_y[faceidx] = y_val;
         dev_out_z[faceidx] = z_val;
@@ -3225,15 +3226,13 @@ __global__ void interpolateFaceToCenter(
     // Check that we are not outside the fluid grid
     if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
 
-        const unsigned int cellidx = idx(x,y,z);
-
         __syncthreads();
         const Float x_n = dev_in_x[vidx(x,y,z)];
         const Float x_p = dev_in_x[vidx(x+1,y,z)];
-        const Float y_n = dev_in_x[vidx(x,y,z)];
-        const Float y_p = dev_in_x[vidx(x,y+1,z)];
-        const Float z_n = dev_in_x[vidx(x,y,z)];
-        const Float z_p = dev_in_x[vidx(x,y,z+1)];
+        const Float y_n = dev_in_y[vidx(x,y,z)];
+        const Float y_p = dev_in_y[vidx(x,y+1,z)];
+        const Float z_n = dev_in_z[vidx(x,y,z)];
+        const Float z_p = dev_in_z[vidx(x,y,z+1)];
 
         const Float3 val = MAKE_FLOAT3(
                 (x_n + x_p)/2.0,
@@ -3241,7 +3240,8 @@ __global__ void interpolateFaceToCenter(
                 (z_n + z_p)/2.0);
 
         __syncthreads();
-        dev_out[cellidx] = val;
+        //printf("[%d,%d,%d] = %f\n", x,y,z, val);
+        dev_out[idx(x,y,z)] = val;
     }
 }
 
@@ -3317,6 +3317,8 @@ __global__ void findFaceDivTau(
                     (v_z_zp - 2.0*v_z + v_z_zn)/(dz*dz));
 
         __syncthreads();
+        printf("div_tau [%d,%d,%d] = %f, %f, %f\n", x,y,z,
+                div_tau_x, div_tau_y, div_tau_z);
         dev_ns_div_tau_x[faceidx] = div_tau_x;
         dev_ns_div_tau_y[faceidx] = div_tau_y;
         dev_ns_div_tau_z[faceidx] = div_tau_z;

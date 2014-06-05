@@ -571,11 +571,11 @@ __host__ void DEM::startTime()
     // Use 3D block and grid layout for cell-face fluid calculations
     dim3 dimBlockFluidFace(8, 8, 8);    // 512 threads per block
     dim3 dimGridFluidFace(
-            iDivUp(grid.num[0]+1, dimBlockFluid.x),
-            iDivUp(grid.num[1]+1, dimBlockFluid.y),
-            iDivUp(grid.num[2]+1, dimBlockFluid.z));
-    if (dimGridFluid.z > 64 && navierstokes == 1) {
-        cerr << "Error: dimGridFluid.z > 64" << endl;
+            iDivUp(grid.num[0]+1, dimBlockFluidFace.x),
+            iDivUp(grid.num[1]+1, dimBlockFluidFace.y),
+            iDivUp(grid.num[2]+1, dimBlockFluidFace.z));
+    if (dimGridFluidFace.z > 64 && navierstokes == 1) {
+        cerr << "Error: dimGridFluidFace.z > 64" << endl;
         exit(1);
     }
 

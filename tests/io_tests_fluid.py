@@ -23,6 +23,7 @@ compare(orig, py, "Python IO:")
 
 # Test C++ IO routines
 #orig.run(verbose=True, hideinputfile=True)
+orig.run(dry=True)
 orig.run(verbose=True, hideinputfile=False, cudamemcheck=True)
 cpp = sphere.sim(fluid=True)
 cpp.readbin("../output/" + orig.sid + ".output00000.bin", verbose=False)
