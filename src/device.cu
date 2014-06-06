@@ -36,25 +36,25 @@ __host__ void DEM::initializeGPU(void)
 
     // Variables containing device properties
     cudaDeviceProp prop;
-    int devicecount;
+    int deviceCount;
     int cudaDriverVersion;
     int cudaRuntimeVersion;
 
     checkForCudaErrors("Before initializing CUDA device");
 
     // Register number of devices
-    cudaGetDeviceCount(&devicecount);
+    cudaGetDeviceCount(&deviceCount);
 
-    if (devicecount == 0) {
+    if (deviceCount == 0) {
         std::cerr << "\nERROR: No CUDA-enabled devices availible. Bye."
             << std::endl;
         exit(EXIT_FAILURE);
-    } else if (devicecount == 1) {
+    } else if (deviceCount == 1) {
         if (verbose == 1)
             cout << "  System contains 1 CUDA compatible device.\n";
     } else {
         if (verbose == 1)
-            cout << "  System contains " << devicecount
+            cout << "  System contains " << deviceCount
                 << " CUDA compatible devices.\n";
     }
 
@@ -143,9 +143,7 @@ __global__ void checkConstantValues(int* dev_equal,
             dev_params->mu != devC_params.mu ||
             dev_params->rho_f != devC_params.rho_f)
         *dev_equal = 2; // Not ok
-
 }
-
 
 // Copy the constant data components to device memory,
 // and check whether the values correspond to the 
@@ -915,12 +913,6 @@ __host__ void DEM::startTime()
                 cudaThreadSynchronize();
                 checkForCudaErrorsIter("Post findFaceDivTau", iter);
 
-                /*setUpperDivTau<<<dimGridFluidFace, dimBlockFluid>>>(
-                        dev_ns_p, ns.bc_bot, ns.bc_top);
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_p)", iter)
-                */
-
                 setNSghostNodesFace<Float>
                     <<<dimGridFluidFace, dimBlockFluid>>>(
                         dev_ns_div_tau_x,
@@ -1049,6 +1041,12 @@ __host__ void DEM::startTime()
                         dev_ns_v);
                 cudaThreadSynchronize();
                 checkForCudaErrorsIter("Post interpolateFaceToCenter", iter);
+
+                // Set cell-center velocity ghost nodes
+                setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
+                    dev_ns_v, ns.bc_bot, ns.bc_top);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post setNSghostNodes(v)", iter);
 
                 // Find the divergence of phi*vi*v, needed for predicting the
                 // fluid velocities

@@ -1862,6 +1862,7 @@ __global__ void findNSdivphiviv(
 #endif
     }
 }
+
 __global__ void findNSdivtau(
         Float*  dev_ns_tau,      // in
         Float3* dev_ns_div_tau)  // out
@@ -2249,14 +2250,14 @@ __global__ void findPredNSvelocities(
 
 #ifdef REPORT_V_P_COMPONENTS
         // Report velocity components to stdout for debugging
-        printf("[%d,%d,%d]\t"
-                "v_p = %e\t%e\t%e\t"
-                "pres = %e\t%e\t%e\t"
-                "interact = %e\t%e\t%e\t"
-                "diff = %e\t%e\t%e\t"
-                "grav = %e\t%e\t%e\t"
-                "poros = %e\t%e\t%e\t"
-                "adv = %e\t%e\t%e\n",
+        printf("\n[%d,%d,%d]"
+                "\tv_p      = %+e %+e %+e\n"
+                "\tpres     = %+e %+e %+e\n"
+                "\tinteract = %+e %+e %+e\n"
+                "\tdiff     = %+e %+e %+e\n"
+                "\tgrav     = %+e %+e %+e\n"
+                "\tporos    = %+e %+e %+e\n"
+                "\tadv      = %+e %+e %+e\n",
                 x, y, z,
                 v_p.x, v_p.y, v_p.z,
                 pressure_term.x, pressure_term.y, pressure_term.z, 
@@ -2997,9 +2998,12 @@ __global__ void findInteractionForce(
         const Float3 f_pf = f_d + f_p + f_v;
 
 #ifdef CHECK_NS_FINITE
-        /*
-        printf("%d [%d,%d,%d]\tV_p=%f Re=%f Cd=%f chi=%f\n"
-        "  f_d=%f,%f,%f f_p=%f,%f,%f f_v=%f,%f,%f\n",
+        //*
+        printf("\n%d [%d,%d,%d]\n"
+               "\tV_p = %f Re=%f Cd=%f chi=%f\n"
+               "\tf_d = %+e %+e %+e\n"
+               "\tf_p = %+e %+e %+e\n"
+               "\tf_v = %+e %+e %+e\n",
                 i, i_x, i_y, i_z, V_p, Re, Cd, chi,
                 f_d.x, f_d.y, f_d.z,
                 f_p.x, f_p.y, f_p.z,
@@ -3191,8 +3195,8 @@ __global__ void findFaceDivTau(
     const Float dz = devC_grid.L[2]/nz;
 
     // Check that we are not outside the fluid grid
-    if (x <= nx && y <= ny && z <= nz) {
-    //if (x < nx && y < ny && z < nz) {
+    //if (x <= nx && y <= ny && z <= nz) {
+    if (x < nx && y < ny && z < nz) {
 
         const unsigned int faceidx = vidx(x,y,z);
 
