@@ -181,7 +181,7 @@ class DEM {
         Float*  dev_ns_v_p_z;        // Predicted cell fluid velocity in st. gr.
         Float3* dev_ns_vp_avg;       // Average particle velocity in cell
         Float*  dev_ns_d_avg;        // Average particle diameter in cell
-        Float3* dev_ns_fi;           // Particle-fluid interaction force
+        Float3* dev_ns_F_pf;         // Interaction force on fluid
         Float*  dev_ns_phi;          // Cell porosity
         Float*  dev_ns_dphi;         // Cell porosity change
         //Float3* dev_ns_div_phi_v_v;  // Divegence used in velocity prediction
@@ -200,7 +200,7 @@ class DEM {
         Float*  dev_ns_div_tau_x;    // div(tau) on x-face
         Float*  dev_ns_div_tau_y;    // div(tau) on y-face
         Float*  dev_ns_div_tau_z;    // div(tau) on z-face
-        Float3* dev_ns_f_pf;         // Particle-fluid interaction force
+        Float3* dev_ns_f_pf;         // Interaction force on particles
 
         //// Navier Stokes functions
 

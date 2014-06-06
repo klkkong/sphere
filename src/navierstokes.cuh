@@ -75,8 +75,10 @@ void DEM::initNSmemDev(void)
     cudaMalloc((void**)&dev_ns_v_p_z, memSizeFface); // pred. vel. in stag. grid
     cudaMalloc((void**)&dev_ns_vp_avg, memSizeF*3); // avg. particle velocity
     cudaMalloc((void**)&dev_ns_d_avg, memSizeF); // avg. particle diameter
-    //cudaMalloc((void**)&dev_ns_F_pf, memSizeF*3);  // interaction force
-    cudaMalloc((void**)&dev_ns_F_pf, memSizeFface);  // interaction force
+    cudaMalloc((void**)&dev_ns_F_pf, memSizeF*3);  // interaction force
+    //cudaMalloc((void**)&dev_ns_F_pf_x, memSizeFface);  // interaction force
+    //cudaMalloc((void**)&dev_ns_F_pf_y, memSizeFface);  // interaction force
+    //cudaMalloc((void**)&dev_ns_F_pf_z, memSizeFface);  // interaction force
     cudaMalloc((void**)&dev_ns_phi, memSizeF);   // cell porosity
     cudaMalloc((void**)&dev_ns_dphi, memSizeF);  // cell porosity change
     //cudaMalloc((void**)&dev_ns_div_phi_v_v, memSizeF*3); // div(phi v v)
@@ -87,7 +89,7 @@ void DEM::initNSmemDev(void)
     cudaMalloc((void**)&dev_ns_f, memSizeF);     // forcing function value
     cudaMalloc((void**)&dev_ns_f1, memSizeF);    // constant addition in forcing
     cudaMalloc((void**)&dev_ns_f2, memSizeF*3);  // constant slope in forcing
-    //cudaMalloc((void**)&dev_ns_tau, memSizeF*6); // stress tensor (symmetrical)
+    //cudaMalloc((void**)&dev_ns_tau, memSizeF*6); // stress tensor
     //cudaMalloc((void**)&dev_ns_div_tau, memSizeF*3); // div(tau), cell center
     cudaMalloc((void**)&dev_ns_div_tau_x, memSizeFface); // div(tau), cell face
     cudaMalloc((void**)&dev_ns_div_tau_y, memSizeFface); // div(tau), cell face
@@ -114,6 +116,9 @@ void DEM::freeNSmemDev()
     cudaFree(dev_ns_vp_avg);
     cudaFree(dev_ns_d_avg);
     cudaFree(dev_ns_F_pf);
+    //cudaFree(dev_ns_F_pf_x);
+    //cudaFree(dev_ns_F_pf_y);
+    //cudaFree(dev_ns_F_pf_z);
     cudaFree(dev_ns_phi);
     cudaFree(dev_ns_dphi);
     //cudaFree(dev_ns_div_phi_v_v);
@@ -3034,7 +3039,7 @@ __global__ void applyInteractionForceToFluid(
         unsigned int* dev_cellStart,            // in
         unsigned int* dev_cellEnd,              // in
         Float3* dev_ns_f_pf,                    // in
-        Float3* dev_ns_F_pf)                      // out
+        Float3* dev_ns_F_pf)                    // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;

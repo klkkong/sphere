@@ -947,13 +947,18 @@ __host__ void DEM::startTime()
                 cudaThreadSynchronize();
                 checkForCudaErrorsIter("Post findInteractionForce", iter);
 
+                setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_p, ns.bc_bot, ns.bc_top);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_p)", iter);
+
                 // Apply fluid-particle interaction force to the fluid
                 applyInteractionForceToFluid<<<dimGridFluid, dimBlockFluid>>>(
                         dev_gridParticleIndex,
                         dev_cellStart,
                         dev_cellEnd,
                         dev_ns_f_pf,
-                        dev_ns_fi);
+                        dev_ns_F_pf);
                 cudaThreadSynchronize();
                 checkForCudaErrorsIter("Post applyInteractionForceToFluid",
                         iter);
@@ -1047,7 +1052,7 @@ __host__ void DEM::startTime()
                     dev_ns_v, ns.bc_bot, ns.bc_top);
                 cudaThreadSynchronize();
                 checkForCudaErrorsIter("Post setNSghostNodes(v)", iter);
-
+                
                 // Find the divergence of phi*vi*v, needed for predicting the
                 // fluid velocities
                 if (PROFILING == 1)
@@ -1080,7 +1085,7 @@ __host__ void DEM::startTime()
                         ns.bc_bot,
                         ns.bc_top,
                         ns.beta,
-                        dev_ns_fi,
+                        dev_ns_F_pf,
                         ns.ndem,
                         dev_ns_v_p_x,
                         dev_ns_v_p_y,
