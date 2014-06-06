@@ -3081,7 +3081,7 @@ __global__ void applyInteractionForceToFluid(
 
         __syncthreads();
 #ifdef CHECK_NS_FINITE
-        checkFiniteFloat3("fi", x, y, z, fi/(dx*dy*dz));
+        checkFiniteFloat3("F_pf", x, y, z, F_pf);
 #endif
         //printf("F_pf [%d,%d,%d] = %f,%f,%f\n", x,y,z, F_pf.x, F_pf.y, F_pf.z);
         dev_ns_F_pf[cellidx] = F_pf;
