@@ -61,21 +61,22 @@ void DEM::initNSmemDev(void)
     // size of scalar field
     unsigned int memSizeF = sizeof(Float)*NScells();
 
-    // size of velocity arrays in staggered grid discretization
-    unsigned int memSizeFvel = sizeof(Float)*NScellsVelocity();
+    // size of cell-face arrays in staggered grid discretization
+    unsigned int memSizeFface = sizeof(Float)*NScellsVelocity();
 
     cudaMalloc((void**)&dev_ns_p, memSizeF);     // hydraulic pressure
     cudaMalloc((void**)&dev_ns_v, memSizeF*3);   // cell hydraulic velocity
-    cudaMalloc((void**)&dev_ns_v_x, memSizeFvel);// velocity in stag. grid
-    cudaMalloc((void**)&dev_ns_v_y, memSizeFvel);// velocity in stag. grid
-    cudaMalloc((void**)&dev_ns_v_z, memSizeFvel);// velocity in stag. grid
+    cudaMalloc((void**)&dev_ns_v_x, memSizeFface);// velocity in stag. grid
+    cudaMalloc((void**)&dev_ns_v_y, memSizeFface);// velocity in stag. grid
+    cudaMalloc((void**)&dev_ns_v_z, memSizeFface);// velocity in stag. grid
     cudaMalloc((void**)&dev_ns_v_p, memSizeF*3); // predicted cell velocity
-    cudaMalloc((void**)&dev_ns_v_p_x, memSizeFvel); // pred. vel. in stag. grid
-    cudaMalloc((void**)&dev_ns_v_p_y, memSizeFvel); // pred. vel. in stag. grid
-    cudaMalloc((void**)&dev_ns_v_p_z, memSizeFvel); // pred. vel. in stag. grid
+    cudaMalloc((void**)&dev_ns_v_p_x, memSizeFface); // pred. vel. in stag. grid
+    cudaMalloc((void**)&dev_ns_v_p_y, memSizeFface); // pred. vel. in stag. grid
+    cudaMalloc((void**)&dev_ns_v_p_z, memSizeFface); // pred. vel. in stag. grid
     cudaMalloc((void**)&dev_ns_vp_avg, memSizeF*3); // avg. particle velocity
     cudaMalloc((void**)&dev_ns_d_avg, memSizeF); // avg. particle diameter
-    cudaMalloc((void**)&dev_ns_F_pf, memSizeF*3);  // interaction force
+    //cudaMalloc((void**)&dev_ns_F_pf, memSizeF*3);  // interaction force
+    cudaMalloc((void**)&dev_ns_F_pf, memSizeFface);  // interaction force
     cudaMalloc((void**)&dev_ns_phi, memSizeF);   // cell porosity
     cudaMalloc((void**)&dev_ns_dphi, memSizeF);  // cell porosity change
     //cudaMalloc((void**)&dev_ns_div_phi_v_v, memSizeF*3); // div(phi v v)
@@ -88,9 +89,9 @@ void DEM::initNSmemDev(void)
     cudaMalloc((void**)&dev_ns_f2, memSizeF*3);  // constant slope in forcing
     //cudaMalloc((void**)&dev_ns_tau, memSizeF*6); // stress tensor (symmetrical)
     //cudaMalloc((void**)&dev_ns_div_tau, memSizeF*3); // div(tau), cell center
-    cudaMalloc((void**)&dev_ns_div_tau_x, memSizeFvel); // div(tau), cell face
-    cudaMalloc((void**)&dev_ns_div_tau_y, memSizeFvel); // div(tau), cell face
-    cudaMalloc((void**)&dev_ns_div_tau_z, memSizeFvel); // div(tau), cell face
+    cudaMalloc((void**)&dev_ns_div_tau_x, memSizeFface); // div(tau), cell face
+    cudaMalloc((void**)&dev_ns_div_tau_y, memSizeFface); // div(tau), cell face
+    cudaMalloc((void**)&dev_ns_div_tau_z, memSizeFface); // div(tau), cell face
     cudaMalloc((void**)&dev_ns_div_phi_vi_v, memSizeF*3); // div(phi*vi*v)
     //cudaMalloc((void**)&dev_ns_div_phi_tau, memSizeF*3);  // div(phi*tau)
     cudaMalloc((void**)&dev_ns_f_pf, sizeof(Float3)*np); // particle fluid force
@@ -3079,11 +3080,11 @@ __global__ void applyInteractionForceToFluid(
 
         const Float3 F_pf = fi/(dx*dy*dz);
 
-        __syncthreads();
 #ifdef CHECK_NS_FINITE
         checkFiniteFloat3("F_pf", x, y, z, F_pf);
 #endif
         //printf("F_pf [%d,%d,%d] = %f,%f,%f\n", x,y,z, F_pf.x, F_pf.y, F_pf.z);
+        __syncthreads();
         dev_ns_F_pf[cellidx] = F_pf;
     }
 }
