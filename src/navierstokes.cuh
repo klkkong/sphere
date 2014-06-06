@@ -75,7 +75,7 @@ void DEM::initNSmemDev(void)
     cudaMalloc((void**)&dev_ns_v_p_z, memSizeFvel); // pred. vel. in stag. grid
     cudaMalloc((void**)&dev_ns_vp_avg, memSizeF*3); // avg. particle velocity
     cudaMalloc((void**)&dev_ns_d_avg, memSizeF); // avg. particle diameter
-    cudaMalloc((void**)&dev_ns_fi, memSizeF*3);  // interaction force
+    cudaMalloc((void**)&dev_ns_F_pf, memSizeF*3);  // interaction force
     cudaMalloc((void**)&dev_ns_phi, memSizeF);   // cell porosity
     cudaMalloc((void**)&dev_ns_dphi, memSizeF);  // cell porosity change
     //cudaMalloc((void**)&dev_ns_div_phi_v_v, memSizeF*3); // div(phi v v)
@@ -112,7 +112,7 @@ void DEM::freeNSmemDev()
     cudaFree(dev_ns_v_p_z);
     cudaFree(dev_ns_vp_avg);
     cudaFree(dev_ns_d_avg);
-    cudaFree(dev_ns_fi);
+    cudaFree(dev_ns_F_pf);
     cudaFree(dev_ns_phi);
     cudaFree(dev_ns_dphi);
     //cudaFree(dev_ns_div_phi_v_v);
@@ -2107,7 +2107,7 @@ __global__ void findPredNSvelocities(
         int     bc_bot,                 // in
         int     bc_top,                 // in
         Float   beta,                   // in
-        Float3* dev_ns_fi,              // in
+        Float3* dev_ns_F_pf,              // in
         unsigned int ndem,              // in
         Float*  dev_ns_v_p_x,           // out
         Float*  dev_ns_v_p_y,           // out
@@ -2177,10 +2177,10 @@ __global__ void findPredNSvelocities(
         // there is a fluid viscosity
         Float3 f_i_c, f_i_xn, f_i_yn, f_i_zn;
         if (devC_params.mu > 0.0) {
-            f_i_c  = dev_ns_fi[cellidx];
-            f_i_xn = dev_ns_fi[idx(x-1,y,z)];
-            f_i_yn = dev_ns_fi[idx(x,y-1,z)];
-            f_i_zn = dev_ns_fi[idx(x,y,z-1)];
+            f_i_c  = dev_ns_F_pf[cellidx];
+            f_i_xn = dev_ns_F_pf[idx(x-1,y,z)];
+            f_i_yn = dev_ns_F_pf[idx(x,y-1,z)];
+            f_i_zn = dev_ns_F_pf[idx(x,y,z-1)];
         } else {
             f_i_c  = MAKE_FLOAT3(0.0, 0.0, 0.0);
             f_i_xn = MAKE_FLOAT3(0.0, 0.0, 0.0);
@@ -3033,7 +3033,7 @@ __global__ void applyInteractionForceToFluid(
         unsigned int* dev_cellStart,            // in
         unsigned int* dev_cellEnd,              // in
         Float3* dev_ns_f_pf,                    // in
-        Float3* dev_ns_fi)                      // out
+        Float3* dev_ns_F_pf)                      // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -3084,7 +3084,7 @@ __global__ void applyInteractionForceToFluid(
         checkFiniteFloat3("fi", x, y, z, fi/(dx*dy*dz));
 #endif
         //printf("F_pf [%d,%d,%d] = %f,%f,%f\n", x,y,z, F_pf.x, F_pf.y, F_pf.z);
-        dev_ns_fi[cellidx] = F_pf;
+        dev_ns_F_pf[cellidx] = F_pf;
     }
 }
 
