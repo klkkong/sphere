@@ -182,6 +182,9 @@ class DEM {
         Float3* dev_ns_vp_avg;       // Average particle velocity in cell
         Float*  dev_ns_d_avg;        // Average particle diameter in cell
         Float3* dev_ns_F_pf;         // Interaction force on fluid
+        //Float*  dev_ns_F_pf_x;       // Interaction force on fluid
+        //Float*  dev_ns_F_pf_y;       // Interaction force on fluid
+        //Float*  dev_ns_F_pf_z;       // Interaction force on fluid
         Float*  dev_ns_phi;          // Cell porosity
         Float*  dev_ns_dphi;         // Cell porosity change
         //Float3* dev_ns_div_phi_v_v;  // Divegence used in velocity prediction

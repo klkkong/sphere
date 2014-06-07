@@ -2953,10 +2953,10 @@ __global__ void findInteractionForce(
 
         const Float v_x   = dev_ns_v_x[vidx(i_x,i_y,i_z)];
         const Float v_x_p = dev_ns_v_x[vidx(i_x+1,i_y,i_z)];
-        const Float v_y   = dev_ns_v_x[vidx(i_x,i_y,i_z)];
-        const Float v_y_p = dev_ns_v_x[vidx(i_x,i_y+1,i_z)];
-        const Float v_z   = dev_ns_v_x[vidx(i_x,i_y,i_z)];
-        const Float v_z_p = dev_ns_v_x[vidx(i_x,i_y,i_z+1)];
+        const Float v_y   = dev_ns_v_y[vidx(i_x,i_y,i_z)];
+        const Float v_y_p = dev_ns_v_y[vidx(i_x,i_y+1,i_z)];
+        const Float v_z   = dev_ns_v_z[vidx(i_x,i_y,i_z)];
+        const Float v_z_p = dev_ns_v_z[vidx(i_x,i_y,i_z+1)];
 
         const Float div_tau_x   = dev_ns_div_tau_x[vidx(i_x,i_y,i_z)];
         const Float div_tau_x_p = dev_ns_div_tau_x[vidx(i_x+1,i_y,i_z)];

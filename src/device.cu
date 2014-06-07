@@ -929,6 +929,11 @@ __host__ void DEM::startTime()
                 cudaThreadSynchronize();
                 checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_p)", iter);
 
+                setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_phi, ns.bc_bot, ns.bc_top);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_p)", iter);
+
                 // Per particle, find the fluid-particle interaction force f_pf
                 // and apply it to the particle
                 findInteractionForce<<<dimGrid, dimBlock>>>(
@@ -959,6 +964,9 @@ __host__ void DEM::startTime()
                         dev_cellEnd,
                         dev_ns_f_pf,
                         dev_ns_F_pf);
+                        //dev_ns_F_pf_x,
+                        //dev_ns_F_pf_y,
+                        //dev_ns_F_pf_z);
                 cudaThreadSynchronize();
                 checkForCudaErrorsIter("Post applyInteractionForceToFluid",
                         iter);
