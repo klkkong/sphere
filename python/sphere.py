@@ -306,7 +306,7 @@ class sim:
 
             # Smoothing parameter, should be in the range [0.0;1.0[.
             # 0.0 = no smoothing.
-            self.gamma = numpy.array(0.5)
+            self.gamma = numpy.array(0.0)
 
             # Under-relaxation parameter, should be in the range ]0.0;1.0].
             # 1.0 = no under-relaxation
@@ -2410,7 +2410,7 @@ class sim:
         self.free_slip_bot = numpy.ones(1, dtype=numpy.int32)
         self.free_slip_top = numpy.ones(1, dtype=numpy.int32)
 
-        self.gamma = numpy.array(0.5)
+        self.gamma = numpy.array(0.0)
         self.theta = numpy.array(1.0)
         self.beta = numpy.array(0.0)
         self.tolerance = numpy.array(1.0e-8)
@@ -3919,7 +3919,7 @@ class sim:
         parameter should be in the range [0.0;1.0[. The higher the value, the
         more averaging is introduced. A value of 0.0 disables all averaging.
 
-        The default and recommended value is 0.5.
+        The default and recommended value is 0.0.
 
         :param theta: The smoothing parameter value
         :type theta: float

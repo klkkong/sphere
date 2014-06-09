@@ -20,11 +20,10 @@ py = sphere.sim(sid = orig.sid, fluid = True)
 orig.bc_bot[0] = 1      # No-flow BC at bottom (Neumann)
 #orig.run(dry=True)
 orig.run(verbose=False)
-#orig.writeVTKall()
+orig.writeVTKall()
 py.readlast(verbose = False)
 ones = numpy.ones((orig.num))
 py.readlast(verbose = False)
-py.writeVTKall()
 compareNumpyArraysClose(ones, py.p_f, "Conservation of pressure:",
         tolerance = 1.0e-1)
 
