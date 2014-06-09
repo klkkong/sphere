@@ -24,7 +24,7 @@ orig.run(verbose=False)
 py.readlast(verbose = False)
 ones = numpy.ones((orig.num))
 py.readlast(verbose = False)
-#py.writeVTKall()
+py.writeVTKall()
 compareNumpyArraysClose(ones, py.p_f, "Conservation of pressure:",
         tolerance = 1.0e-1)
 

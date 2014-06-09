@@ -220,4 +220,4 @@ py.readlast(verbose = False)
     #raise Exception("Failed")
 
 '''
-#cleanup(orig)
+cleanup(orig)
