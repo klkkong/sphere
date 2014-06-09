@@ -3004,7 +3004,7 @@ __global__ void findInteractionForce(
         const Float3 f_pf = f_d + f_p + f_v;
 
 #ifdef CHECK_NS_FINITE
-        //*
+        /*
         printf("\nfindInteractionForce %d [%d,%d,%d]\n"
                "\tV_p = %f Re=%f Cd=%f chi=%f\n"
                "\tf_d = %+e %+e %+e\n"
