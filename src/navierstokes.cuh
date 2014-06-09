@@ -2139,8 +2139,8 @@ __global__ void findPredNSvelocities(
     const unsigned int cellidx = idx(x,y,z);
 
     // Check that we are not outside the fluid grid
-    if (x <= nx && y <= ny && z <= nz) {
-    //if (x < nx && y < ny && z < nz) {
+    //if (x <= nx && y <= ny && z <= nz) {
+    if (x < nx && y < ny && z < nz) {
 
         // Values that are needed for calculating the predicted velocity
         __syncthreads();
@@ -3005,7 +3005,7 @@ __global__ void findInteractionForce(
 
 #ifdef CHECK_NS_FINITE
         //*
-        printf("\n%d [%d,%d,%d]\n"
+        printf("\nfindInteractionForce %d [%d,%d,%d]\n"
                "\tV_p = %f Re=%f Cd=%f chi=%f\n"
                "\tf_d = %+e %+e %+e\n"
                "\tf_p = %+e %+e %+e\n"

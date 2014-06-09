@@ -970,6 +970,11 @@ __host__ void DEM::startTime()
                 cudaThreadSynchronize();
                 checkForCudaErrorsIter("Post applyInteractionForceToFluid",
                         iter);
+
+                setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_F_pf, ns.bc_bot, ns.bc_top);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post setNSghostNodes(F_pf)", iter);
             }
 #endif
 
@@ -1074,6 +1079,13 @@ __host__ void DEM::startTime()
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                             &t_findNSdivphiviv);
                 checkForCudaErrorsIter("Post findNSdivphiviv", iter);
+
+                // Set cell-center ghost nodes
+                setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
+                    dev_ns_div_phi_vi_v, ns.bc_bot, ns.bc_top);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post setNSghostNodes(div_phi_vi_v)",
+                                       iter);
 
                 // Predict the fluid velocities on the base of the old pressure
                 // field and ignoring the incompressibility constraint
