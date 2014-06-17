@@ -37,7 +37,6 @@ else:
 print('''# Neumann bottom, Dirichlet top BC.
 # Gravity, pressure gradients => transient flow''')
 orig = sphere.sim("neumann", fluid = True)
-cleanup(orig)
 orig.defaultParams(mu_s = 0.4, mu_d = 0.4)
 orig.defineWorldBoundaries([0.4, 0.4, 1], dx = 0.1)
 orig.initFluid(mu = 8.9e-4)

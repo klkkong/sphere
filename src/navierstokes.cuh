@@ -2184,7 +2184,7 @@ __global__ void findPredNSvelocities(
         // The particle-fluid interaction force should only be incoorporated if
         // there is a fluid viscosity
         Float3 f_i_c, f_i_xn, f_i_yn, f_i_zn;
-        if (devC_params.mu > 0.0) {
+        if (devC_params.mu > 0.0 && devC_np > 0) {
             f_i_c  = dev_ns_F_pf[cellidx];
             f_i_xn = dev_ns_F_pf[idx(x-1,y,z)];
             f_i_yn = dev_ns_F_pf[idx(x,y-1,z)];
