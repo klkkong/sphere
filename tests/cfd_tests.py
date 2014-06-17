@@ -28,13 +28,11 @@ py = sphere.sim(sid = orig.sid, fluid = True)
 
 ones = numpy.ones((orig.num))
 py.readlast(verbose = False)
-#py.writeVTKall()
 compareNumpyArrays(ones, py.p_f, "Conservation of pressure:")
 
 # Convergence rate (1/2)
 it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
 compare(it[:,1].sum(), 0.0, "Convergence rate (1/2):\t")
-
 
 # Add pressure gradient
 # This test passes with BETA=0.0 and tolerance=1.0e-9
@@ -43,7 +41,7 @@ orig.run(verbose=False)
 #orig.run(verbose=True)
 py.readlast(verbose = False)
 ideal_grad_p_z = numpy.linspace(orig.p_f[0,0,0], orig.p_f[0,0,-1], orig.num[2])
-#py.writeVTKall()
+orig.writeVTKall()
 compareNumpyArraysClose(numpy.zeros((1,orig.num[2])),\
         ideal_grad_p_z - py.p_f[0,0,:],\
         "Pressure gradient:\t", tolerance=1.0e-1)
@@ -63,6 +61,7 @@ if ((it[0:6,1] < 1000).all() and (it[6:,1] < 20).all()):
     print("Convergence rate (2/2):\t" + passed())
 else:
     print("Convergence rate (2/2):\t" + failed())
+
 '''
 # Long test
 # This test passes with BETA=0.0 and tolerance=1.0e-9

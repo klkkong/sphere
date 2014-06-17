@@ -34,6 +34,7 @@ else:
     print("Flow field:\t\t" + failed())
     raise Exception("Failed")
 
+"""
 print('''# Neumann bottom, Dirichlet top BC.
 # Gravity, pressure gradients => transient flow''')
 orig = sphere.sim("neumann", fluid = True)
@@ -62,3 +63,4 @@ else:
     raise Exception("Failed")
 
 #orig.cleanup()
+"""
