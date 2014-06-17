@@ -645,6 +645,7 @@ __global__ void setNSghostNodes(
 // Update a field in the ghost nodes from their parent cell values. The edge
 // (diagonal) cells are not written since they are not read.
 // Launch per face.
+// According to Griebel et al. 1998 "Numerical Simulation in Fluid Dynamics"
 template<typename T>
 __global__ void setNSghostNodesFace(
         T* dev_scalarfield_x,
@@ -671,7 +672,7 @@ __global__ void setNSghostNodesFace(
         const T val_y = dev_scalarfield_y[vidx(x,y,z)];
         const T val_z = dev_scalarfield_z[vidx(x,y,z)];
 
-        // x
+        // x (periodic)
         if (x == 0) {
             dev_scalarfield_x[vidx(nx,y,z)] = val_x;
             dev_scalarfield_y[vidx(nx,y,z)] = val_y;
@@ -686,7 +687,7 @@ __global__ void setNSghostNodesFace(
             dev_scalarfield_z[vidx(-1,y,z)] = val_z;
         }
 
-        // y
+        // y (periodic)
         if (y == 0) {
             dev_scalarfield_x[vidx(x,ny,z)] = val_x;
             dev_scalarfield_y[vidx(x,ny,z)] = val_y;
@@ -707,7 +708,7 @@ __global__ void setNSghostNodesFace(
             dev_scalarfield_y[vidx(x,y,-1)] = val_x;     // Dirichlet -z
             dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Dirichlet -z
         }
-        if (z == 1 && bc_bot == 1) {
+        if (z == 0 && bc_bot == 1) {
             dev_scalarfield_x[vidx(x,y,-1)] = val_x;     // Neumann -z
             dev_scalarfield_y[vidx(x,y,-1)] = val_y;     // Neumann -z
             dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Neumann -z
@@ -724,10 +725,11 @@ __global__ void setNSghostNodesFace(
         if (z == nz-1 && bc_top == 0) {
             dev_scalarfield_z[vidx(x,y,nz)] = val_z;     // Dirichlet +z
         }
-        if (z == nz-2 && bc_top == 1) {
+        if (z == nz-1 && bc_top == 1) {
             dev_scalarfield_x[vidx(x,y,nz)] = val_x;     // Neumann +z
             dev_scalarfield_y[vidx(x,y,nz)] = val_y;     // Neumann +z
             dev_scalarfield_z[vidx(x,y,nz)] = val_z;     // Neumann +z
+            dev_scalarfield_z[vidx(x,y,nz+1)] = val_z;     // Neumann +z
         }
         if (z == nz-1 && bc_top == 2) {
             dev_scalarfield_x[vidx(x,y,-1)] = val_x;     // Periodic +z
