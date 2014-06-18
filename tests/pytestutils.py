@@ -52,5 +52,11 @@ def compareNumpyArraysClose(first, second, string, tolerance=1e-5):
         print(string + passed())
     else :
         print(string + failed())
+        print(numpy.min(first.v_f))
+        print(numpy.mean(first.v_f))
+        print(numpy.max(first.v_f))
+        print(numpy.min(second.v_f))
+        print(numpy.mean(second.v_f))
+        print(numpy.max(second.v_f))
         raise Exception("Failed")
         return(1)
