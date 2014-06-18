@@ -1957,7 +1957,7 @@ class sim:
 
             # Find position in 3d mesh from linear index
             gridpos[0] = (i % (coarsegrid[0]))
-            gridpos[1] = numpy.floor(i/(coarsegrid[0])) % (coarsegrid[1])
+            gridpos[1] = numpy.floor(i/(coarsegrid[0]))%(coarsegrid[1]) # Thanks Horacio!
             gridpos[2] = numpy.floor(i/((coarsegrid[0])*(coarsegrid[1])))
 
             # Place particles in grid structure, and randomly adjust the
