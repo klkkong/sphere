@@ -3257,8 +3257,8 @@ __global__ void findFaceDivTau(
                     (v_z_zp - 2.0*v_z + v_z_zn)/(dz*dz));
 
         __syncthreads();
-        printf("div_tau [%d,%d,%d] = %f, %f, %f\n", x,y,z,
-                div_tau_x, div_tau_y, div_tau_z);
+        //printf("div_tau [%d,%d,%d] = %f, %f, %f\n", x,y,z,
+        //div_tau_x, div_tau_y, div_tau_z);
         dev_ns_div_tau_x[faceidx] = div_tau_x;
         dev_ns_div_tau_y[faceidx] = div_tau_y;
         dev_ns_div_tau_z[faceidx] = div_tau_z;
