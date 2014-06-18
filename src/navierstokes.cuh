@@ -2152,13 +2152,12 @@ __global__ void findPredNSvelocities(
                 dev_ns_v_z[fidx]);
 
         Float3 div_tau = MAKE_FLOAT3(0.0, 0.0, 0.0);
-        // TODO: enable when div_tau values are fixed to avoid uneccesary reads
-        //if (devC_params.mu > 0.0) {
+        if (devC_params.mu > 0.0) {
             div_tau = MAKE_FLOAT3(
                 dev_ns_div_tau_x[fidx],
                 dev_ns_div_tau_y[fidx],
                 dev_ns_div_tau_z[fidx]);
-            //}
+        }
 
         // cell center values
         const Float phi_xn    = dev_ns_phi[idx(x-1,y,z)];
