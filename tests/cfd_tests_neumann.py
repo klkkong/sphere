@@ -26,7 +26,7 @@ py.readlast(verbose = False)
 ones = numpy.ones((orig.num))
 py.readlast(verbose = False)
 compareNumpyArraysClose(ones, py.p_f, "Conservation of pressure:",
-        tolerance = 1.0e-3)
+        tolerance = 1.0e-5)
 
 # Fluid flow along z should be very small
 if ((numpy.abs(py.v_f[:,:,:,:]) < 1.0e-6).all()):

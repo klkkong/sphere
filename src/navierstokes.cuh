@@ -2270,7 +2270,6 @@ __global__ void findPredNSvelocities(
                "\tgrav     = %+e %+e %+e\n"
                "\tporos    = %+e %+e %+e\n"
                "\tadv      = %+e %+e %+e\n"
-               "\tdiv_tau  = %+e %+e %+e\n",
                x, y, z,
                v_p.x, v_p.y, v_p.z,
                pressure_term.x, pressure_term.y, pressure_term.z, 
@@ -2278,8 +2277,7 @@ __global__ void findPredNSvelocities(
                diffusion_term.x, diffusion_term.y, diffusion_term.z, 
                gravity_term.x, gravity_term.y, gravity_term.z, 
                porosity_term.x, porosity_term.y, porosity_term.z, 
-               advection_term.x, advection_term.y, advection_term.z,
-               div_tau.x, div_tau.y, div_tau.z);
+               advection_term.x, advection_term.y, advection_term.z);
 #endif
 
         // Enforce Neumann BC if specified
