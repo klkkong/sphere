@@ -14,7 +14,8 @@ orig = sphere.sim("neumann", fluid = True)
 cleanup(orig)
 orig.defaultParams(mu_s = 0.4, mu_d = 0.4)
 orig.defineWorldBoundaries([0.4, 0.4, 1], dx = 0.1)
-orig.initFluid(mu = 8.9e-4)
+#orig.initFluid(mu = 8.9e-4)
+orig.initFluid(mu = 0.0)
 orig.initTemporal(total = 0.5, file_dt = 0.05, dt = 1.0e-4)
 py = sphere.sim(sid = orig.sid, fluid = True)
 orig.bc_bot[0] = 1      # No-flow BC at bottom (Neumann)
@@ -25,13 +26,16 @@ py.readlast(verbose = False)
 ones = numpy.ones((orig.num))
 py.readlast(verbose = False)
 compareNumpyArraysClose(ones, py.p_f, "Conservation of pressure:",
-        tolerance = 1.0e-1)
+        tolerance = 1.0e-3)
 
 # Fluid flow along z should be very small
-if ((numpy.abs(py.v_f[:,:,:,2]) < 1.0e-4).all()):
+if ((numpy.abs(py.v_f[:,:,:,:]) < 1.0e-6).all()):
     print("Flow field:\t\t" + passed())
 else:
     print("Flow field:\t\t" + failed())
+    print(numpy.min(py.v_f))
+    print(numpy.mean(py.v_f))
+    print(numpy.max(py.v_f))
     raise Exception("Failed")
 
 print('''# Neumann bottom, Dirichlet top BC.
@@ -52,7 +56,7 @@ ideal_grad_p_z = numpy.linspace(
         orig.p_f[0,0,0] + orig.L[2]*orig.rho_f*numpy.abs(orig.g[2]),
         orig.p_f[0,0,-1], orig.num[2])
 compareNumpyArraysClose(ideal_grad_p_z, py.p_f[0,0,:],
-        "Pressure gradient:\t", tolerance=1.0e3)
+        "Pressure gradient:\t", tolerance=1.0e2)
 
 # Fluid flow along z should be very small
 if ((numpy.abs(py.v_f[:,:,:,2]) < 5.0e-2).all()):

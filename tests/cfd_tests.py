@@ -34,6 +34,16 @@ compareNumpyArrays(ones, py.p_f, "Conservation of pressure:")
 it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
 compare(it[:,1].sum(), 0.0, "Convergence rate (1/2):\t")
 
+# Fluid flow should be very small
+if ((numpy.abs(py.v_f[:,:,:,:]) < 1.0e-6).all()):
+    print("Flow field:\t\t" + passed())
+else:
+    print("Flow field:\t\t" + failed())
+    print(numpy.min(py.v_f))
+    print(numpy.mean(py.v_f))
+    print(numpy.max(py.v_f))
+    raise Exception("Failed")
+
 # Add pressure gradient
 # This test passes with BETA=0.0 and tolerance=1.0e-9
 orig.p_f[:,:,-1] = 1.1

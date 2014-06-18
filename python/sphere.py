@@ -1783,7 +1783,8 @@ class sim:
         self.num[2] = numpy.ceil((self.L[2]-self.origo[2])/cellsize_min)
 
         #if (self.num.any() < 4):
-        if (self.num[0] < 4 or self.num[1] < 4 or self.num[2] < 4):
+        #if (self.num[0] < 4 or self.num[1] < 4 or self.num[2] < 4):
+        if (self.num[0] < 3 or self.num[1] < 3 or self.num[2] < 3):
             raise Exception("Error: The grid must be at least 3 cells in each "
             + "direction\nGrid: x={}, y={}, z={}\n".format(\
                     self.num[0], self.num[1], self.num[2])
