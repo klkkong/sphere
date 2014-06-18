@@ -23,6 +23,3 @@ add_test(cfd_tests ${PYTHON_EXECUTABLE}
 
 add_test(cfd_tests_neumann ${PYTHON_EXECUTABLE} 
     ${CMAKE_CURRENT_BINARY_DIR}/cfd_tests_neumann.py)
-
-add_test(cfd_dirichlet_homogeneous ${PYTHON_EXECUTABLE} 
-    ${CMAKE_CURRENT_BINARY_DIR}/cfd_dirichlet_homogeneous.py)
