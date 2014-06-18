@@ -2115,7 +2115,7 @@ __global__ void findPredNSvelocities(
         int     bc_bot,                 // in
         int     bc_top,                 // in
         Float   beta,                   // in
-        Float3* dev_ns_F_pf,              // in
+        Float3* dev_ns_F_pf,            // in
         unsigned int ndem,              // in
         Float*  dev_ns_v_p_x,           // out
         Float*  dev_ns_v_p_y,           // out
@@ -2150,10 +2150,15 @@ __global__ void findPredNSvelocities(
                 dev_ns_v_x[fidx],
                 dev_ns_v_y[fidx],
                 dev_ns_v_z[fidx]);
-        const Float3 div_tau = MAKE_FLOAT3(
+
+        Float3 div_tau = MAKE_FLOAT3(0.0, 0.0, 0.0);
+        // TODO: enable when div_tau values are fixed to avoid uneccesary reads
+        //if (devC_params.mu > 0.0) {
+            div_tau = MAKE_FLOAT3(
                 dev_ns_div_tau_x[fidx],
                 dev_ns_div_tau_y[fidx],
                 dev_ns_div_tau_z[fidx]);
+            //}
 
         // cell center values
         const Float phi_xn    = dev_ns_phi[idx(x-1,y,z)];
@@ -2259,21 +2264,23 @@ __global__ void findPredNSvelocities(
 #ifdef REPORT_V_P_COMPONENTS
         // Report velocity components to stdout for debugging
         printf("\n[%d,%d,%d]"
-                "\tv_p      = %+e %+e %+e\n"
-                "\tpres     = %+e %+e %+e\n"
-                "\tinteract = %+e %+e %+e\n"
-                "\tdiff     = %+e %+e %+e\n"
-                "\tgrav     = %+e %+e %+e\n"
-                "\tporos    = %+e %+e %+e\n"
-                "\tadv      = %+e %+e %+e\n",
-                x, y, z,
-                v_p.x, v_p.y, v_p.z,
-                pressure_term.x, pressure_term.y, pressure_term.z, 
-                interaction_term.x, interaction_term.y, interaction_term.z, 
-                diffusion_term.x, diffusion_term.y, diffusion_term.z, 
-                gravity_term.x, gravity_term.y, gravity_term.z, 
-                porosity_term.x, porosity_term.y, porosity_term.z, 
-                advection_term.x, advection_term.y, advection_term.z);
+               "\tv_p      = %+e %+e %+e\n"
+               "\tpres     = %+e %+e %+e\n"
+               "\tinteract = %+e %+e %+e\n"
+               "\tdiff     = %+e %+e %+e\n"
+               "\tgrav     = %+e %+e %+e\n"
+               "\tporos    = %+e %+e %+e\n"
+               "\tadv      = %+e %+e %+e\n"
+               "\tdiv_tau  = %+e %+e %+e\n",
+               x, y, z,
+               v_p.x, v_p.y, v_p.z,
+               pressure_term.x, pressure_term.y, pressure_term.z, 
+               interaction_term.x, interaction_term.y, interaction_term.z, 
+               diffusion_term.x, diffusion_term.y, diffusion_term.z, 
+               gravity_term.x, gravity_term.y, gravity_term.z, 
+               porosity_term.x, porosity_term.y, porosity_term.z, 
+               advection_term.x, advection_term.y, advection_term.z,
+               div_tau.x, div_tau.y, div_tau.z);
 #endif
 
         // Enforce Neumann BC if specified
@@ -3250,8 +3257,8 @@ __global__ void findFaceDivTau(
                     (v_z_zp - 2.0*v_z + v_z_zn)/(dz*dz));
 
         __syncthreads();
-        //printf("div_tau [%d,%d,%d] = %f, %f, %f\n", x,y,z,
-                //div_tau_x, div_tau_y, div_tau_z);
+        printf("div_tau [%d,%d,%d] = %f, %f, %f\n", x,y,z,
+                div_tau_x, div_tau_y, div_tau_z);
         dev_ns_div_tau_x[faceidx] = div_tau_x;
         dev_ns_div_tau_y[faceidx] = div_tau_y;
         dev_ns_div_tau_z[faceidx] = div_tau_z;

@@ -6,7 +6,8 @@ orig = sphere.sim('cfd_simple', fluid=True)
 orig.cleanup()
 orig.defineWorldBoundaries([0.3, 0.3, 0.3], dx = 0.1)
 orig.initFluid(mu=0.0)
-orig.initTemporal(total = 0.5, file_dt = 0.05, dt = 1.0e-4)
+#orig.initTemporal(total = 0.5, file_dt = 0.05, dt = 1.0e-4)
+orig.initTemporal(total = 1.0e-3, file_dt = 1.0e-3, dt = 1.0e-3)
 #orig.bc_bot[0] = 1      # No-flow BC at bottom (Neumann)
 
 # Homogeneous pressure, no gravity

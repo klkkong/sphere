@@ -874,65 +874,65 @@ __host__ void DEM::startTime()
                     << std::endl;
                 exit(1);
             }*/
+            if (iter == 0) {
+                // set cell center ghost nodes
+                setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
+                    dev_ns_v, ns.bc_bot, ns.bc_top);
+
+                // find cell face velocities
+                interpolateCenterToFace
+                    <<<dimGridFluidFace, dimBlockFluidFace>>>(
+                        dev_ns_v,
+                        dev_ns_v_x,
+                        dev_ns_v_y,
+                        dev_ns_v_z);
+                cudaThreadSynchronize();
+                checkForCudaErrors("Post interpolateCenterToFace");
+            }
+
+            setNSghostNodesFace<Float>
+                <<<dimGridFluidFace, dimBlockFluidFace>>>(
+                    dev_ns_v_x,
+                    dev_ns_v_y,
+                    dev_ns_v_z,
+                    ns.bc_bot,
+                    ns.bc_top);
+            cudaThreadSynchronize();
+            checkForCudaErrorsIter("Post setNSghostNodesFace", iter);
+
+            findFaceDivTau<<<dimGridFluidFace, dimBlockFluidFace>>>(
+                dev_ns_v_x,
+                dev_ns_v_y,
+                dev_ns_v_z,
+                dev_ns_div_tau_x,
+                dev_ns_div_tau_y,
+                dev_ns_div_tau_z);
+            cudaThreadSynchronize();
+            checkForCudaErrorsIter("Post findFaceDivTau", iter);
+
+            setNSghostNodesFace<Float>
+                <<<dimGridFluidFace, dimBlockFluid>>>(
+                    dev_ns_div_tau_x,
+                    dev_ns_div_tau_y,
+                    dev_ns_div_tau_z,
+                    ns.bc_bot,
+                    ns.bc_top);
+            cudaThreadSynchronize();
+            checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_div_tau)",
+                                   iter);
+
+            setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                dev_ns_p, ns.bc_bot, ns.bc_top);
+            cudaThreadSynchronize();
+            checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_p)", iter);
+
+            setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                dev_ns_phi, ns.bc_bot, ns.bc_top);
+            cudaThreadSynchronize();
+            checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_p)", iter);
+
 
             if (np > 0) {
-
-                if (iter == 0) {
-                    // set cell center ghost nodes
-                    setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
-                            dev_ns_v, ns.bc_bot, ns.bc_top);
-
-                    // find cell face velocities
-                    interpolateCenterToFace
-                        <<<dimGridFluidFace, dimBlockFluidFace>>>(
-                            dev_ns_v,
-                            dev_ns_v_x,
-                            dev_ns_v_y,
-                            dev_ns_v_z);
-                    cudaThreadSynchronize();
-                    checkForCudaErrors("Post interpolateCenterToFace");
-                }
-
-                setNSghostNodesFace<Float>
-                    <<<dimGridFluidFace, dimBlockFluidFace>>>(
-                        dev_ns_v_x,
-                        dev_ns_v_y,
-                        dev_ns_v_z,
-                        ns.bc_bot,
-                        ns.bc_top);
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post setNSghostNodesFace", iter);
-
-                findFaceDivTau<<<dimGridFluidFace, dimBlockFluidFace>>>(
-                        dev_ns_v_x,
-                        dev_ns_v_y,
-                        dev_ns_v_z,
-                        dev_ns_div_tau_x,
-                        dev_ns_div_tau_y,
-                        dev_ns_div_tau_z);
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post findFaceDivTau", iter);
-
-                setNSghostNodesFace<Float>
-                    <<<dimGridFluidFace, dimBlockFluid>>>(
-                        dev_ns_div_tau_x,
-                        dev_ns_div_tau_y,
-                        dev_ns_div_tau_z,
-                        ns.bc_bot,
-                        ns.bc_top);
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_div_tau)",
-                        iter);
-
-                setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_p, ns.bc_bot, ns.bc_top);
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_p)", iter);
-
-                setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_phi, ns.bc_bot, ns.bc_top);
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_p)", iter);
 
                 // Per particle, find the fluid-particle interaction force f_pf
                 // and apply it to the particle
