@@ -87,7 +87,7 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         // velocity. In that case, zero the horizontal acceleration and disable
         // gravity to counteract segregation. Particles may move in the
         // z-dimension, to allow for dilation.
-        if (vel.w > 0.0001) {
+        if (vel.w > 0.0001 && vel.w < 10.0) {
 
             acc.x = 0.0;
             acc.y = 0.0;
@@ -95,6 +95,14 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
 
             // Zero the angular acceleration
             angacc = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
+        }
+
+        // 2d kinematic update by disabling linear acceleration along y and
+        // disabling angular acceleration by everything but y.
+        if (vel.w >= 10.0) {
+            acc.y = 0.0;
+            angacc.x = 0.0;
+            angacc.z = 0.0;
         }
 
         if (vel.w < -0.0001) {
