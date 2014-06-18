@@ -22,3 +22,4 @@ compareNumpyArraysClose(ones, py.p_f, "Conservation of pressure:",
         tolerance = 1.0e-5)
 compareNumpyArraysClose(zeros, py.v_f, "Flow field:              ",
         tolerance = 1.0e-5)
+orig.cleanup()
