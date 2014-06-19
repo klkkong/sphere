@@ -23,6 +23,9 @@ grid = numpy.array((
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         ))
 
@@ -63,7 +66,6 @@ sim.writeVTK()
 print(sim.np[0])
 
 
-'''
 ## Relaxation
 # Choose the tangential contact model
 # 1) Visco-frictional (somewhat incorrect, fast computations)
@@ -76,6 +78,7 @@ sim.contactmodel[0] = 2
 sim.g[1] = -9.81
 
 sim.periodicBoundariesX()
+sim.uniaxialStrainRate(wvel = 0.0)
 
 # Set duration of simulation, automatically determine timestep, etc.
 sim.initTemporal(total=3.0, file_dt = 0.1)
@@ -84,9 +87,7 @@ sim.zeroKinematics()
 sim.run(dry=True)
 sim.run()
 sim.writeVTKall()
-'''
 
-'''
 ## Shortening
 sim.readlast()
 sim.initTemporal(current=0.0, total=5.0, file_dt = 0.01)
@@ -98,4 +99,3 @@ sim.uniaxialStrainRate(wvel = compressional_strain*Lx/sim.time_total[0])
 sim.run(dry=True)
 sim.run()
 sim.writeVTKall()
-'''
