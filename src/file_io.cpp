@@ -8,6 +8,7 @@
 #include "constants.h"
 #include "sphere.h"
 
+
 // Get the address of the first byte of an object's representation
 // See Stroustrup (2008) p. 388
     template<class T>
@@ -91,6 +92,7 @@ void DEM::readbin(const char *target)
     k.angpos = new Float4[np];
     k.angvel = new Float4[np];
     k.torque = new Float4[np];
+    k.color  = new int[np];
 
     e.es_dot = new Float[np];
     e.es     = new Float[np];
@@ -295,11 +297,12 @@ void DEM::readbin(const char *target)
             cout << "Done" << std::endl;
     }
 
+    for (i = 0; i<np; ++i)
+        ifs.read(as_bytes(k.color[i]), sizeof(int));
+
     // Close file if it is still open
     if (ifs.is_open())
         ifs.close();
-
-
 }
 
 // Write DEM data to binary file
@@ -490,6 +493,9 @@ void DEM::writebin(const char *target)
             ofs.write(as_bytes(ns.maxiter), sizeof(unsigned int));
             ofs.write(as_bytes(ns.ndem), sizeof(unsigned int));
         }
+
+        for (i = 0; i<np; ++i)
+            ofs.write(as_bytes(k.color[i]), sizeof(int));
 
         // Close file if it is still open
         if (ofs.is_open())

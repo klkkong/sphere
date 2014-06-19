@@ -29,6 +29,7 @@ struct Kinematics {
     uint2  *bonds;          // Particle bond pairs
     Float4 *bonds_delta;    // Particle bond displacement
     Float4 *bonds_omega;    // Particle bond rotation
+    int    *color;          // Color index for visualization
 };
 
 // Structure containing individual particle energies

@@ -88,6 +88,7 @@ DEM::~DEM(void)
     delete[] k.angpos;
     delete[] k.angvel;
     delete[] k.torque;
+    delete[] k.color;
     delete[] e.es_dot;
     delete[] e.es;
     delete[] e.ev_dot;

@@ -12,7 +12,7 @@ numpy.seterr(all='warn', over='raise')
 
 # Sphere version number. This field should correspond to the value in
 # `../src/constants.h`.
-VERSION=1.01
+VERSION=1.02
 
 class sim:
     '''
@@ -324,6 +324,8 @@ class sim:
             # The number of DEM time steps to perform between CFD updates
             self.ndem = numpy.array(1)
 
+        # Particle color marker
+        self.color = numpy.zeros(self.np, dtype=numpy.int32)
 
     def __cmp__(self, other):
         '''
@@ -580,6 +582,10 @@ class sim:
                 print(83)
                 return 83
 
+        if ((self.color != other.color)).any():
+            print(90)
+            return 90
+        
         # All equal
         return 0
 
@@ -597,7 +603,8 @@ class sim:
             es = numpy.zeros(1),
             ev_dot = numpy.zeros(1),
             ev = numpy.zeros(1),
-            p = numpy.zeros(1)):
+            p = numpy.zeros(1),
+            color = 0):
         '''
         Add a single particle to the simulation object. The only required
         parameters are the position (x) and the radius (radius).
@@ -646,6 +653,7 @@ class sim:
         self.ev_dot = numpy.append(self.ev_dot, ev_dot)
         self.ev     = numpy.append(self.ev, ev)
         self.p      = numpy.append(self.p, p) 
+        self.color  = numpy.append(self.color, color)
 
     def deleteAllParticles(self):
         '''
@@ -666,6 +674,7 @@ class sim:
         self.ev_dot  = numpy.zeros(self.np, dtype=numpy.float64)
         self.ev      = numpy.zeros(self.np, dtype=numpy.float64)
         self.p       = numpy.zeros(self.np, dtype=numpy.float64)
+        self.color   = numpy.zeros(self.np, dtype=numpy.int32)
 
     def readbin(self, targetbin, verbose = True, bonds = True, devsmod = True,
             esysparticle = False):
@@ -907,6 +916,14 @@ class sim:
                 self.maxiter = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
                 if (self.version >= 1.01):
                     self.ndem = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
+                else:
+                    self.ndem = 1
+
+            if (self.version >= 1.02):
+                self.color =\
+                  numpy.fromfile(fh, dtype=numpy.int32, count=self.np)
+            else:
+                self.color = numpy.zeros(self.np, dtype=numpy.int32)
 
         finally:
             if fh is not None:
@@ -1053,6 +1070,8 @@ class sim:
                 fh.write(self.tolerance.astype(numpy.float64))
                 fh.write(self.maxiter.astype(numpy.uint32))
                 fh.write(self.ndem.astype(numpy.uint32))
+
+            fh.write(self.color.astype(numpy.int32))
 
         finally:
             if fh is not None:
@@ -2259,6 +2278,7 @@ class sim:
         self.angvel[I,2] = 0.0
         self.vel[I,0] = 0.0 # x-dim
         self.vel[I,1] = 0.0 # y-dim
+        self.color[I] = -1
 
         # Fix horizontal velocity to specific value of uppermost particles
         d_max_top = numpy.max(self.radius[numpy.nonzero(self.x[:,2] >
@@ -2270,6 +2290,7 @@ class sim:
         self.angvel[I,2] = 0.0
         self.vel[I,0] = (z_max-z_min)*shear_strain_rate
         self.vel[I,1] = 0.0 # y-dim
+        self.color[I] = -1
 
         # Set wall tangential viscosity to zero
         self.gamma_wt[0] = 0.0
@@ -2303,7 +2324,6 @@ class sim:
         :param dt: The computational time step length [s]
         :type total: float
         '''
-
 
         # Computational time step (O'Sullivan et al, 2003)
         #self.time_dt[0] = 0.17 * \
@@ -2570,7 +2590,6 @@ class sim:
 
         # Debonding distance
         self.db[0] = (1.0 + theta/2.0) * self.V_b**(1.0/3.0)
-
 
     def bond(self, i, j):
         '''
