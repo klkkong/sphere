@@ -1352,7 +1352,16 @@ class sim:
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
+            # Color
+            fh.write('        <DataArray type="Int32" Name="Color" '
+                    + 'format="ascii">\n')
+            fh.write('          ')
+            for i in range(self.np):
+                fh.write('{} '.format(self.color[i]))
+            fh.write('\n')
+            fh.write('        </DataArray>\n')
 
+            # Footer
             fh.write('      </PointData>\n')
             fh.write('      <Cells>\n')
             fh.write('        <DataArray type="Int32" Name="connectivity" '
