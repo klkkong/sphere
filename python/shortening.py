@@ -40,7 +40,7 @@ Lx = dx*nx
 Ly = dy*ny
 Lz = dz*nz
 
-sim = sphere.sim('shortening', nw=1)
+sim = sphere.sim('shortening', nw=0)
 
 # insert particles into each cube in 90 degree CCW rotated coordinate system
 # around y
@@ -67,34 +67,33 @@ print(sim.np[0])
 
 
 ## Relaxation
-# Choose the tangential contact model
-# 1) Visco-frictional (somewhat incorrect, fast computations)
-# 2) Elastic-viscous-frictional (more correct, slow computations in dense
-# packings)
-sim.contactmodel[0] = 2
 
 # Add gravitational acceleration
 # Flip geometry so the upper wall pushes downwards
+sim.g[0] = 0
 sim.g[1] = -9.81
+sim.g[2] = 0
 
 sim.periodicBoundariesX()
 sim.uniaxialStrainRate(wvel = 0.0)
 
 # Set duration of simulation, automatically determine timestep, etc.
-sim.initTemporal(total=3.0, file_dt = 0.1)
-
+sim.initTemporal(total=3.0, file_dt = 0.001)
 sim.zeroKinematics()
+
 sim.run(dry=True)
 sim.run()
 sim.writeVTKall()
 
+
 ## Shortening
+sim = sphere.sim('shortening', nw=1)
 sim.readlast()
 sim.initTemporal(current=0.0, total=5.0, file_dt = 0.01)
 
 # push down upper wall
 compressional_strain = 0.5
-sim.uniaxialStrainRate(wvel = compressional_strain*Lx/sim.time_total[0])
+sim.uniaxialStrainRate(wvel = -compressional_strain*Lx/sim.time_total[0])
 
 sim.run(dry=True)
 sim.run()
