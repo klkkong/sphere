@@ -384,7 +384,8 @@ __device__ void contactLinear(Float3* F, Float3* T,
     //f_n = -devC_params.k_n * delta * n_ab;
 
     // Normal force component: Elastic - viscous damping
-    f_n = (-devC_params.k_n * delta - devC_params.gamma_n * vel_n) * n;
+    //f_n = (-devC_params.k_n * delta - devC_params.gamma_n * vel_n) * n;
+    f_n = fmax(-devC_params.k_n * delta - devC_params.gamma_n * vel_n, 0.0) * n;
 
     // Store energy dissipated in normal viscous component
     // watt = gamma_n * vel_n * dx_n / dt
