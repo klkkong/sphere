@@ -2347,7 +2347,7 @@ class sim:
 
             # Radjaii et al 2011
             m_min = self.rho * 4.0/3.0*numpy.pi*r_min**3
-            k_max = numpy.max([self.k_n[:], self.k_t[:]]))
+            k_max = numpy.max([self.k_n[:], self.k_t[:]])
             self.time_dt[0] = epsilon/(numpy.sqrt(k_max/m_min))
 
             # Zhang and Campbell, 1992
