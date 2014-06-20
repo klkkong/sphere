@@ -665,11 +665,11 @@ class sim:
 
         self.np = self.np - 1
 
-        self.x      = numpy.delete(self.x, i)
+        self.x      = numpy.delete(self.x, i, axis=0)
         self.radius = numpy.delete(self.radius, i)
         self.vel    = numpy.delete(self.vel, i, axis=0)
         self.xysum  = numpy.delete(self.xysum, i, axis=0)
-        self.fixvel = numpy.delete(self.fixvel, fixvel)
+        self.fixvel = numpy.delete(self.fixvel, i)
         self.force  = numpy.delete(self.force, i, axis=0)
         self.angpos = numpy.delete(self.angpos, i, axis=0)
         self.angvel = numpy.delete(self.angvel, i, axis=0)
