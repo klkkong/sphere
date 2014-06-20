@@ -2664,6 +2664,48 @@ class sim:
         '''
         return w_devs[0] + w_devs_A*numpy.sin(2.0*numpy.pi*self.time_current)
 
+    def volume(self, idx):
+        '''
+        Returns the volume of a particle.
+
+        :param idx: Particle index
+        :type idx: int
+        :returns: The volume of the particle [m^3]
+        '''
+        return V_sphere(self.radius[idx])
+        
+    def mass(self, idx):
+        '''
+        Returns the mass of a particle.
+
+        :param idx: Particle index
+        :type idx: int
+        :returns: The mass of the particle [kg]
+        '''
+        return self.rho[0]*self.volume(idx)
+        
+    def kineticEnergy(self, idx):
+        '''
+        Returns the kinetic energy for a particle.
+
+        :param idx: Particle index
+        :type idx: int
+        :returns: The kinetic energy of the particle [J]
+        '''
+        return 0.5*self.mass(idx) \
+          *numpy.sqrt(numpy.dot(self.vel[idx,:], self.vel[idx,:]))**2
+
+    def totalKineticEnergy(self):
+        '''
+        Returns the total kinetic energy for all particles.
+
+        :returns: The kinetic energy of all particles [J]
+        '''
+        esum = 0.0
+        for i in range(self.np):
+            esum += kineticEnergy(i)
+        return esum
+
     def energy(self, method):
         '''
         Calculates the sum of the energy components of all particles.

@@ -309,6 +309,9 @@ __device__ void contactLinear(Float3* F, Float3* T,
     Float4 vel_b     = dev_vel[idx_b_orig];
     Float4 angvel4_b = dev_angvel[idx_b_orig];
 
+    //printf("\n[%d,%d] vel = [+%e +%e]",
+    //idx_a_orig, idx_b_orig, vel_a, vel_b);
+
     // Fetch previous sum of shear displacement for the contact pair
     Float4 delta_t0_4 = dev_delta_t[mempos];
 
