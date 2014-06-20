@@ -32,7 +32,7 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
 
     // Contact velocity is the sum of the linear and
     // rotational components
-    //Float3 vel = linvel + radius_a * cross(n, angvel) + wvel;
+    //Float3 vel = vel_linear + radius_a*cross(n, angvel) + wvel;
     Float3 vel = vel_linear + (radius_a + delta/2.0) * cross(n, angvel) + wvel;
 
     // Normal component of the contact velocity
@@ -42,18 +42,13 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
 
     // The tangential velocity is the contact velocity
     // with the normal component subtracted
-    //Float3 vel_t = vel - n * (dot(vel, n));
     const Float3 vel_t = vel - n * (dot(n, vel));
     const Float vel_t_length = length(vel_t);
 
-    // Calculate elastic normal component
-    //Float3 f_n = -devC_params.k_n * delta * n;
-
     // Normal force component: Elastic - viscous damping
-    //Float3 f_n = (-devC_params.k_n * delta - devC_params.gamma_wn * vel_n) * n;
-    //Float3 f_n = (-devC_params.k_n * delta + devC_params.gamma_wn * vel_n) * n;
     Float3 f_n = fmax(0.0, -devC_params.k_n*delta
                      - devC_params.gamma_wn*vel_n) * n;
+    const Float f_n_length = length(f_n); // Save length for later use
 
     // Print data for contact model validation
     /*printf("f_n_elast = %f\tgamma_wn = %f\tf_n_visc = %f\n",
@@ -64,14 +59,6 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
     // Store the energy lost by viscous damping. See derivation in
     // contactLinear()
     *ev_dot += devC_params.gamma_wn * vel_n * vel_n;
-
-    // Make sure the viscous damping doesn't exceed the elastic component,
-    // i.e. the damping factor doesn't exceed the critical damping:
-    // 2*sqrt(m*k_n)
-    if (dot(f_n, n) < 0.0)
-        f_n = MAKE_FLOAT3(0.0, 0.0, 0.0);
-
-    const Float f_n_length = length(f_n); // Save length for later use
 
     // Initialize vectors
     Float3 f_t = MAKE_FLOAT3(0.0, 0.0, 0.0);

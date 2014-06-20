@@ -73,8 +73,12 @@ orig.run(verbose=False)
 orig.readlast(verbose=False)
 Ekin_after = orig.energy('kin')
 Ev_after = orig.energy('visc_n')
+#print("Ekin_before = " + str(Ekin_before) + " J")
+#print("Ekin_after  = " + str(Ekin_after) + " J")
+pytestutils.test(Ekin_before > Ekin_after,
+        "Viscoelastic normal wall collision (1/2):")
 pytestutils.compareFloats(Ekin_before, Ekin_after+Ev_after,\
-        "Viscoelastic normal wall collision:", tolerance=0.03)
+        "Viscoelastic normal wall collision (2/2):", tolerance=0.05)
 
 # Oblique impact: Check for conservation of momentum (sum(v_i*m_i))
 orig = sphere.sim(np=1, sid='contactmodeltest')
