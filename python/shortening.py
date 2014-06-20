@@ -58,6 +58,10 @@ for z in range(nz):
                         cube.x[i,1] + y*dy ]
                 sim.addParticle(pos, radius=cube.radius[i], color=grid[z,y])
 
+# move to x=0
+min_x = numpy.min(sim.x[:,0] - sim.radius[:])
+sim.x[:,0] = sim.x[:,0] - min_x 
+
 # move to y=0
 min_y = numpy.min(sim.x[:,1] - sim.radius[:])
 sim.x[:,1] = sim.x[:,1] - min_y 
@@ -66,7 +70,8 @@ sim.x[:,1] = sim.x[:,1] - min_y
 min_z = numpy.min(sim.x[:,2] - sim.radius[:])
 sim.x[:,2] = sim.x[:,2] - min_z 
 
-sim.defineWorldBoundaries(L=[Lx, Lz*3, Ly])
+#sim.defineWorldBoundaries(L=[Lx, Lz*3, Ly])
+sim.defineWorldBoundaries(L=[numpy.max(sim.x[:,0] + sim.radius[:]), Lz*3, Ly])
 sim.k_t[0] = 2.0/3.0*sim.k_n[0]
 
 sim.cleanup()
@@ -82,10 +87,11 @@ sim.g[0] = 0
 sim.g[1] = -9.81
 sim.g[2] = 0
 
-sim.setDampingNormal(1.0e1)
+sim.setDampingNormal(5.0e1)
 sim.setDampingTangential(1.0e1)
 
-sim.periodicBoundariesX()
+#sim.periodicBoundariesX()
+sim.normalBoundariesXY()
 sim.uniaxialStrainRate(wvel = 0.0)
 
 # Set duration of simulation, automatically determine timestep, etc.

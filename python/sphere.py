@@ -76,7 +76,7 @@ class sim:
         self.num     = numpy.zeros(self.nd, dtype=numpy.uint32)
 
         # Whether to treat the lateral boundaries as periodic (1) or not (0)
-        self.periodic = numpy.ones(1, dtype=numpy.uint32)
+        self.periodic = numpy.zeros(1, dtype=numpy.uint32)
 
         ## Particle data
         # Particle position vectors [m]
