@@ -50,7 +50,9 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
 
     // Normal force component: Elastic - viscous damping
     //Float3 f_n = (-devC_params.k_n * delta - devC_params.gamma_wn * vel_n) * n;
-    Float3 f_n = (-devC_params.k_n * delta + devC_params.gamma_wn * vel_n) * n;
+    //Float3 f_n = (-devC_params.k_n * delta + devC_params.gamma_wn * vel_n) * n;
+    Float3 f_n = fmax(0.0, -devC_params.k_n*delta
+                     - devC_params.gamma_wn*vel_n) * n;
 
     // Print data for contact model validation
     /*printf("f_n_elast = %f\tgamma_wn = %f\tf_n_visc = %f\n",
