@@ -655,6 +655,32 @@ class sim:
         self.p      = numpy.append(self.p, p) 
         self.color  = numpy.append(self.color, color)
 
+    def deleteParticle(self, i):
+        '''
+        Delete particle with index ``i``.
+
+        :param i: Particle index to delete
+        :type i: int
+        '''
+
+        self.np = self.np - 1
+
+        self.x      = numpy.delete(self.x, i)
+        self.radius = numpy.delete(self.radius, i)
+        self.vel    = numpy.delete(self.vel, i, axis=0)
+        self.xysum  = numpy.delete(self.xysum, i, axis=0)
+        self.fixvel = numpy.delete(self.fixvel, fixvel)
+        self.force  = numpy.delete(self.force, i, axis=0)
+        self.angpos = numpy.delete(self.angpos, i, axis=0)
+        self.angvel = numpy.delete(self.angvel, i, axis=0)
+        self.torque = numpy.delete(self.torque, i, axis=0)
+        self.es_dot = numpy.delete(self.es_dot, i)
+        self.es     = numpy.delete(self.es, i)
+        self.ev_dot = numpy.delete(self.ev_dot, i)
+        self.ev     = numpy.delete(self.ev, i)
+        self.p      = numpy.delete(self.p, i)
+        self.color  = numpy.delete(self.color, i)
+
     def deleteAllParticles(self):
         '''
         Deletes all particles in the simulation object.
