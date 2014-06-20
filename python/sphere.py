@@ -2686,9 +2686,20 @@ class sim:
         '''
         return self.rho[0]*self.volume(idx)
         
+    def momentOfInertia(self, idx):
+        '''
+        Returns the moment of inertia of a particle.
+
+        :param idx: Particle index
+        :type idx: int
+        :returns: The moment of inertia [kg*m^2]
+        :return type: float
+        '''
+        return 2.0/5.0*self.mass(idx)*self.radius[idx]**2
+
     def kineticEnergy(self, idx):
         '''
-        Returns the kinetic energy for a particle.
+        Returns the (linear) kinetic energy for a particle.
 
         :param idx: Particle index
         :type idx: int
@@ -2700,7 +2711,7 @@ class sim:
 
     def totalKineticEnergy(self):
         '''
-        Returns the total kinetic energy for all particles.
+        Returns the total linear kinetic energy for all particles.
 
         :returns: The kinetic energy of all particles [J]
         '''
@@ -2709,9 +2720,32 @@ class sim:
             esum += self.kineticEnergy(i)
         return esum
 
+    def rotationalEnergy(self, idx):
+        '''
+        Returns the rotational energy for a particle.
+
+        :param idx: Particle index
+        :type idx: int
+        :returns: The rotational kinetic energy of the particle [J]
+        :return type: float
+        '''
+        return 0.5*self.momentOfInertia(idx) \
+          *numpy.sqrt(numpy.dot(self.angvel[idx,:], self.angvel[idx,:]))**2
+
+    def totalRotationalEnergy(self):
+        '''
+        Returns the total rotational kinetic energy for all particles.
+
+        :returns: The rotational energy of all particles [J]
+        '''
+        esum = 0.0
+        for i in range(self.np):
+            esum += self.rotationalEnergy(i)
+        return esum
+
     def viscousNormalEnergy(self, idx):
         '''
-        Returns the viscous absorbed energy for a particle in the
+        Returns the viscous dissipated energy for a particle in the
         normal component of its contacts.
 
         :param idx: Particle index
@@ -2723,15 +2757,38 @@ class sim:
         
     def totalViscousNormalEnergy(self):
         '''
-        Returns the total viscous absorbed energy for all particles
+        Returns the total viscous dissipated energy for all particles
         (normal component).
 
         :returns: The normal viscous energy of all particles [J]
-
+        :return type: float
         '''
         esum = 0.0
         for i in range(self.np):
             esum += self.viscousNormalEnergy(i)
+        return esum
+
+    def frictionalEnergy(self, idx):
+        '''
+        Returns the frictional dissipated energy for a particle.
+
+        :param idx: Particle index
+        :type idx: int
+        :returns: The frictional energy lost of the particle [J]
+        :return type: float
+        '''
+        return self.es[idx]
+        
+    def totalFrictionalEnergy(self):
+        '''
+        Returns the total frictional dissipated energy for all particles.
+
+        :returns: The total frictional energy lost of all particles [J]
+        :return type: float
+        '''
+        esum = 0.0
+        for i in range(self.np):
+            esum += self.frictionalEnergy(i)
         return esum
 
     def energy(self, method):

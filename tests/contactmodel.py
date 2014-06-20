@@ -133,4 +133,52 @@ pytestutils.compareFloats(orig.totalKineticEnergy(),
         "Viscoelastic normal collision (4/4):", tolerance=0.05)
 
 
-#orig.cleanup()
+
+## Oblique elastic collisions
+
+# Normal impact, low angle, no slip
+orig = sphere.sim(np=2, sid='contactmodeltest')
+after = sphere.sim(np=2, sid='contactmodeltest')
+sphere.cleanup(orig)
+#orig.radius[:] = [1.0, 2.0]
+orig.radius[:] = [1.0, 1.0]
+orig.x[0,:] = [5.0, 5.0, 2.0]
+orig.x[1,:] = [5.0, 5.0, 4.05]
+orig.vel[0,2] = 1
+orig.vel[0,0] = 1
+orig.mu_s[0] = 1e9 # no slip
+orig.mu_d[0] = 1e9 # no slip
+orig.defineWorldBoundaries(L=[10,10,10])
+orig.initTemporal(total = 0.1, file_dt = 0.01)
+
+orig.run(verbose=False)
+after.readlast(verbose=False)
+print(after.es)
+pytestutils.compareFloats(orig.totalKineticEnergy(),
+                          after.totalKineticEnergy()
+                          + after.totalRotationalEnergy(),\
+        "Oblique normal collision (1/4):", tolerance=0.05)
+
+# Normal impact, low angle, slip
+orig = sphere.sim(np=2, sid='contactmodeltest')
+after = sphere.sim(np=2, sid='contactmodeltest')
+sphere.cleanup(orig)
+#orig.radius[:] = [1.0, 2.0]
+orig.radius[:] = [1.0, 1.0]
+orig.x[0,:] = [5.0, 5.0, 2.0]
+orig.x[1,:] = [5.0, 5.0, 4.05]
+orig.vel[0,2] = 1
+orig.vel[0,0] = 1
+orig.mu_s[0] = 0.0
+orig.mu_d[0] = 0.0
+orig.defineWorldBoundaries(L=[10,10,10])
+orig.initTemporal(total = 0.1, file_dt = 0.01)
+
+orig.run(verbose=False)
+after.readlast(verbose=False)
+print(after.es)
+pytestutils.compareFloats(orig.totalKineticEnergy(),
+                          after.totalKineticEnergy()
+                          + after.totalRotationalEnergy(),\
+        "Oblique normal collision (2/4):", tolerance=0.05)
+
