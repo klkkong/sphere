@@ -2609,6 +2609,38 @@ class sim:
         # Debonding distance
         self.db[0] = (1.0 + theta/2.0) * self.V_b**(1.0/3.0)
 
+    def setDampingNormal(self, gamma):
+        '''
+        Set the dampening coefficient (gamma) in the normal direction of the
+        particle-particle contact model. The function will print the fraction
+        between the chosen damping and the critical damping value.
+
+        :param gamma: The viscous damping constant [N/(m/s)]
+        :type gamma: float
+
+        :see also:`func:setDampingTangential(gamma)`
+        '''
+        self.gamma_n[0] = gamma
+        gamma_crit = 2.0*numpy.sqrt(self.smallestMass() * self.k_n[0])
+        print('Info: The chosen normal damping is ' + str(gamma/gamma_crit)
+              + ' the critical damping value.')
+        
+    def setDampingTangential(self, gamma):
+        '''
+        Set the dampening coefficient (gamma) in the tangential direction of the
+        particle-particle contact model. The function will print the fraction
+        between the chosen damping and the critical damping value.
+
+        :param gamma: The viscous damping constant [N/(m/s)]
+        :type gamma: float
+
+        :see also:`func:setDampingNormal(gamma)`
+        '''
+        self.gamma_t[0] = gamma
+        gamma_crit = 2.0*numpy.sqrt(self.smallestMass() * self.k_t[0])
+        print('Info: The chosen tangential damping is ' + str(gamma/gamma_crit)
+              + ' the critical damping value.')
+        
     def bond(self, i, j):
         '''
         Create a bond between particles with index i and j
@@ -2685,6 +2717,28 @@ class sim:
         :return type: float
         '''
         return self.rho[0]*self.volume(idx)
+        
+    def smallestMass(self):
+        '''
+        Returns the mass of the leightest particle.
+
+        :param idx: Particle index
+        :type idx: int
+        :returns: The mass of the particle [kg]
+        :return type: float
+        '''
+        return V_sphere(numpy.min(self.radius))
+        
+    def largestMass(self):
+        '''
+        Returns the mass of the heaviest particle.
+
+        :param idx: Particle index
+        :type idx: int
+        :returns: The mass of the particle [kg]
+        :return type: float
+        '''
+        return V_sphere(numpy.max(self.radius))
         
     def momentOfInertia(self, idx):
         '''

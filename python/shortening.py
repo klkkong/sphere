@@ -82,13 +82,8 @@ sim.g[0] = 0
 sim.g[1] = -9.81
 sim.g[2] = 0
 
-sim.gamma_wn[0] = 1.0e4
-sim.mu_ws[0] = 0.0
-sim.mu_wd[0] = 0.0
-
-sim.gamma_n[0] = 1.0e2
-sim.mu_s[0] = 0.0
-sim.mu_d[0] = 0.0
+sim.setDampingNormal(1.0e4)
+sim.setDampingTangential(1.0e4)
 
 sim.periodicBoundariesX()
 sim.uniaxialStrainRate(wvel = 0.0)
@@ -102,7 +97,6 @@ sim.run()
 sim.writeVTKall()
 
 
-'''
 ## Shortening
 sim = sphere.sim('shortening-relaxation', nw=1)
 sim.readlast()
@@ -129,4 +123,3 @@ sim.uniaxialStrainRate(wvel = -compressional_strain*Lx/sim.time_total[0])
 sim.run(dry=True)
 sim.run()
 sim.writeVTKall()
-'''
