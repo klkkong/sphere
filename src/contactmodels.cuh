@@ -309,9 +309,6 @@ __device__ void contactLinear(Float3* F, Float3* T,
     Float4 vel_b     = dev_vel[idx_b_orig];
     Float4 angvel4_b = dev_angvel[idx_b_orig];
 
-    //printf("\n[%d,%d] vel = [+%e +%e]",
-    //idx_a_orig, idx_b_orig, vel_a, vel_b);
-
     // Fetch previous sum of shear displacement for the contact pair
     Float4 delta_t0_4 = dev_delta_t[mempos];
 
@@ -378,22 +375,17 @@ __device__ void contactLinear(Float3* F, Float3* T,
 
     // Normal force component: Elastic - viscous damping
     //f_n = (-devC_params.k_n * delta - devC_params.gamma_n * vel_n) * n;
-    f_n = fmax(-devC_params.k_n * delta - devC_params.gamma_n * vel_n, 0.0) * n;
+    f_n = fmax(0.0, -devC_params.k_n*delta + devC_params.gamma_n * vel_n) * n;
+    Float f_n_length = length(f_n);
 
     // Store energy dissipated in normal viscous component
     // watt = gamma_n * vel_n * dx_n / dt
     // watt = gamma_n * vel_n * vel_n * dt / dt
     // watt = gamma_n * vel_n * vel_n
     // watt = N*m/s = N*s/m * m/s * m/s * s / s
-    *ev_dot += devC_params.gamma_n * vel_n * vel_n;
+    *ev_dot += 0.5 * devC_params.gamma_n * vel_n * vel_n;
 
 
-    // Make sure the viscous damping doesn't exceed the elastic component,
-    // i.e. the damping factor doesn't exceed the critical damping, 2*sqrt(m*k_n)
-    if (dot(f_n, n) < 0.0f)
-        f_n = MAKE_FLOAT3(0.0f, 0.0f, 0.0f);
-
-    Float f_n_length = length(f_n);
 
     // Add max. capillary force
     f_c = -devC_params.kappa * sqrtf(radius_a * radius_b) * n;

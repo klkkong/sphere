@@ -67,6 +67,70 @@ pytestutils.compareFloats(orig.totalKineticEnergy(), after.totalKineticEnergy(),
         "Elastic normal collision (4/4):")
 
 
+## Linear viscous-elastic collisions
+
+# Normal impact: Check for conservation of momentum (sum(v_i*m_i))
+orig = sphere.sim(np=2, sid='contactmodeltest')
+after = sphere.sim(np=2, sid='contactmodeltest')
+sphere.cleanup(orig)
+orig.radius[:] = [1.0, 1.0]
+orig.x[0,:] = [5.0, 5.0, 2.0]
+orig.x[1,:] = [5.0, 5.0, 4.05]
+v_orig = 1
+orig.vel[0,2] = v_orig
+orig.defineWorldBoundaries(L=[10,10,10])
+orig.initTemporal(total = 0.1, file_dt = 0.01)
+orig.gamma_n[0] = 1.0e6
+
+orig.run(verbose=False)
+after.readlast(verbose=False)
+#print(orig.totalKineticEnergy())
+#print(after.totalKineticEnergy())
+#print(after.totalViscousNormalEnergy())
+pytestutils.test(orig.vel[0,2] > after.vel[1,2],\
+        "Viscoelastic normal collision (1/4):")
+pytestutils.compareFloats(orig.totalKineticEnergy(),
+                          after.totalKineticEnergy()
+                          + after.totalViscousNormalEnergy(),
+        "Viscoelastic normal collision (2/4):", tolerance=0.05)
+
+# Normal impact with different sizes: Check for conservation of momentum
+orig = sphere.sim(np=2, sid='contactmodeltest')
+after = sphere.sim(np=2, sid='contactmodeltest')
+sphere.cleanup(orig)
+orig.radius[:] = [2.0, 1.0]
+orig.x[0,:] = [5.0, 5.0, 2.0]
+orig.x[1,:] = [5.0, 5.0, 5.05]
+orig.vel[0,2] = 1.0
+orig.defineWorldBoundaries(L=[10,10,10])
+orig.initTemporal(total = 0.1, file_dt = 0.01)
+orig.gamma_n[0] = 1.0e6
+
+orig.run(verbose=False)
+after.readlast(verbose=False)
+pytestutils.compareFloats(orig.totalKineticEnergy(),
+                          after.totalKineticEnergy()
+                          + after.totalViscousNormalEnergy(),
+        "Viscoelastic normal collision (3/4):", tolerance=0.05)
+
+# Normal impact with different sizes: Check for conservation of momentum
+orig = sphere.sim(np=2, sid='contactmodeltest')
+after = sphere.sim(np=2, sid='contactmodeltest')
+sphere.cleanup(orig)
+orig.radius[:] = [1.0, 2.0]
+orig.x[0,:] = [5.0, 5.0, 2.0]
+orig.x[1,:] = [5.0, 5.0, 5.05]
+orig.vel[0,2] = 1.0
+orig.defineWorldBoundaries(L=[10,10,10])
+orig.initTemporal(total = 0.1, file_dt = 0.01)
+orig.gamma_n[0] = 1.0e6
+
+orig.run(verbose=False)
+after.readlast(verbose=False)
+pytestutils.compareFloats(orig.totalKineticEnergy(),
+                          after.totalKineticEnergy()
+                          + after.totalViscousNormalEnergy(),
+        "Viscoelastic normal collision (4/4):", tolerance=0.05)
 
 
 #orig.cleanup()
