@@ -37,7 +37,8 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
 
     // Normal component of the contact velocity
     //Float vel_n = dot(vel, n);
-    Float vel_n = -dot(vel, n);
+    //Float vel_n = -dot(vel, n);
+    Float vel_n = dot(vel_linear, n);
 
     // The tangential velocity is the contact velocity
     // with the normal component subtracted
@@ -52,7 +53,7 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
     //Float3 f_n = (-devC_params.k_n * delta - devC_params.gamma_wn * vel_n) * n;
     //Float3 f_n = (-devC_params.k_n * delta + devC_params.gamma_wn * vel_n) * n;
     Float3 f_n = fmax(0.0, -devC_params.k_n*delta
-                     + devC_params.gamma_wn*vel_n) * n;
+                     - devC_params.gamma_wn*vel_n) * n;
 
     // Print data for contact model validation
     /*printf("f_n_elast = %f\tgamma_wn = %f\tf_n_visc = %f\n",
