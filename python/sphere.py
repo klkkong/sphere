@@ -2703,7 +2703,7 @@ class sim:
         '''
         esum = 0.0
         for i in range(self.np):
-            esum += kineticEnergy(i)
+            esum += self.kineticEnergy(i)
         return esum
 
     def energy(self, method):
