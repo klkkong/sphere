@@ -3245,6 +3245,16 @@ class sim:
         '''
         return status(self.sid)
 
+    def momentum(self, idx):
+        '''
+        Returns the momentum (m*v) of a particle.
+
+        :param idx: The particle index
+        :type idx: int
+        :returns: The particle momentum [N*s]
+        '''
+        return self.rho*V_sphere(self.radius[idx])\
+          *numpy.linalg.norm(self.vel[idx,:])
 
     def totalMomentum(self):
         '''
@@ -3253,8 +3263,10 @@ class sim:
         :returns: The sum of particle momentums (m*v) [N*s]
         :return type: float
         '''
-        v_norm = vector_norm(self.vel)
-        return numpy.sum(V_sphere(self.radius))*self.rho*v_norm
+        m_sum = 0.0
+        for i in range(self.np):
+            m_sum += self.momentum(i)
+        return m_sum
 
     def sheardisp(self, graphics_format='pdf', zslices=32):
         '''
@@ -4772,21 +4784,6 @@ def cleanup(sim):
     subprocess.call("rm -f ../output/" + sim.sid + "-conv.png", shell=True)
     subprocess.call("rm -f ../output/" + sim.sid + "-conv.log", shell=True)
 
-
-def vector_norm(ndvector):
-    '''
-    Returns a 1D vector of normalized values. The input array should have
-    one row per particle, and three rows; one per Euclidean axis.
-
-    :returns: A value of the velocity magnutude per particle
-    :return type: numpy.array
-    '''
-
-    # Normalized velocities
-    v_norm = numpy.empty(ndvector.shape[0])
-    for i in range(ndvector.shape[0]):
-        v_norm[i] = numpy.sqrt(ndvector[i,:].dot(ndvector[i,:]))
-    return v_norm
 
 def V_sphere(r):
     '''
