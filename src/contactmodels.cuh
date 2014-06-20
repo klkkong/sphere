@@ -449,7 +449,7 @@ __device__ void contactLinear(Float3* F, Float3* T,
                         + devC_params.gamma_t * vel_t);
 
             // Store energy dissipated in tangential viscous component
-            *ev_dot += 0.5 * devC_params.gamma_t * vel_t * vel_t;
+            *ev_dot += 0.5 * devC_params.gamma_t * vel_t_length * vel_t_length;
 
             // Shear friction heat production rate: 
             // The energy lost from the tangential spring is dissipated as heat
