@@ -328,7 +328,7 @@ are returned.</p>
 
 <dl class="method">
 <dt id="sphere.sim.addParticle">
-<tt class="descname">addParticle</tt><big>(</big><em>x</em>, <em>radius</em>, <em>xysum=array([ 0.</em>, <em>0.])</em>, <em>vel=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>fixvel=array([ 0.])</em>, <em>force=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>angpos=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>angvel=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>torque=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>es_dot=array([ 0.])</em>, <em>es=array([ 0.])</em>, <em>ev_dot=array([ 0.])</em>, <em>ev=array([ 0.])</em>, <em>p=array([ 0.])</em><big>)</big><a class="headerlink" href="#sphere.sim.addParticle" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">addParticle</tt><big>(</big><em>x</em>, <em>radius</em>, <em>xysum=array([ 0.</em>, <em>0.])</em>, <em>vel=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>fixvel=array([ 0.])</em>, <em>force=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>angpos=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>angvel=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>torque=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>es_dot=array([ 0.])</em>, <em>es=array([ 0.])</em>, <em>ev_dot=array([ 0.])</em>, <em>ev=array([ 0.])</em>, <em>p=array([ 0.])</em>, <em>color=0</em><big>)</big><a class="headerlink" href="#sphere.sim.addParticle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a single particle to the simulation object. The only required
 parameters are the position (x) and the radius (radius).</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -587,6 +587,20 @@ won&#8217;t work. Default = [0.0, 0.0, 0.0].</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="sphere.sim.deleteParticle">
+<tt class="descname">deleteParticle</tt><big>(</big><em>i</em><big>)</big><a class="headerlink" href="#sphere.sim.deleteParticle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete particle with index <tt class="docutils literal"><span class="pre">i</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>i</strong> (<em>int</em>) &#8211; Particle index to delete</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="sphere.sim.disableFluidPressureModulation">
 <tt class="descname">disableFluidPressureModulation</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.disableFluidPressureModulation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the parameters for the sine wave modulating the fluid pressures
@@ -659,6 +673,24 @@ contact force magnitude, in ]0;1[</li>
 <li><strong>graphics_format</strong> (<em>str</em>) &#8211; Save the plot in this format</li>
 </ul>
 </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.frictionalEnergy">
+<tt class="descname">frictionalEnergy</tt><big>(</big><em>idx</em><big>)</big><a class="headerlink" href="#sphere.sim.frictionalEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the frictional dissipated energy for a particle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>idx</strong> (<em>int</em>) &#8211; Particle index</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The frictional energy lost of the particle [J]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
 </tbody>
 </table>
@@ -841,7 +873,7 @@ make space for their radii within the bounding box.</p>
 
 <dl class="method">
 <dt id="sphere.sim.initTemporal">
-<tt class="descname">initTemporal</tt><big>(</big><em>total</em>, <em>current=0.0</em>, <em>file_dt=0.05</em>, <em>step_count=0</em>, <em>dt=-1</em><big>)</big><a class="headerlink" href="#sphere.sim.initTemporal" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">initTemporal</tt><big>(</big><em>total</em>, <em>current=0.0</em>, <em>file_dt=0.05</em>, <em>step_count=0</em>, <em>dt=-1</em>, <em>epsilon=0.01</em><big>)</big><a class="headerlink" href="#sphere.sim.initTemporal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set temporal parameters for the simulation. <em>Important</em>: Particle radii,
 physical parameters, and the optional fluid grid need to be set prior to
 these if the computational time step (dt) isn&#8217;t set explicitly. If the
@@ -858,11 +890,102 @@ included.</p>
 <li><strong>current</strong> &#8211; The current time [s] (default = 0.0 s)</li>
 <li><strong>file_dt</strong> &#8211; The interval between output files [s] (default = 0.05 s)</li>
 <li><strong>dt</strong> &#8211; The computational time step length [s]</li>
+<li><strong>epsilon</strong> (<em>float</em>) &#8211; Time step multiplier (default = 0.01)</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Step_count :</th><td class="field-body"><p class="first last">The number of the first output file (default = 0)</p>
 </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.kineticEnergy">
+<tt class="descname">kineticEnergy</tt><big>(</big><em>idx</em><big>)</big><a class="headerlink" href="#sphere.sim.kineticEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the (linear) kinetic energy for a particle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>idx</strong> (<em>int</em>) &#8211; Particle index</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The kinetic energy of the particle [J]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.largestMass">
+<tt class="descname">largestMass</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.largestMass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the mass of the heaviest particle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>idx</strong> (<em>int</em>) &#8211; Particle index</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The mass of the particle [kg]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.mass">
+<tt class="descname">mass</tt><big>(</big><em>idx</em><big>)</big><a class="headerlink" href="#sphere.sim.mass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the mass of a particle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>idx</strong> (<em>int</em>) &#8211; Particle index</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The mass of the particle [kg]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.momentOfInertia">
+<tt class="descname">momentOfInertia</tt><big>(</big><em>idx</em><big>)</big><a class="headerlink" href="#sphere.sim.momentOfInertia" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the moment of inertia of a particle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>idx</strong> (<em>int</em>) &#8211; Particle index</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The moment of inertia [kg*m^2]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.momentum">
+<tt class="descname">momentum</tt><big>(</big><em>idx</em><big>)</big><a class="headerlink" href="#sphere.sim.momentum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the momentum (m*v) of a particle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>idx</strong> (<em>int</em>) &#8211; The particle index</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The particle momentum [N*s]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
 </tr>
 </tbody>
 </table>
@@ -1223,6 +1346,24 @@ tracer to this image format using Imagemagick</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="sphere.sim.rotationalEnergy">
+<tt class="descname">rotationalEnergy</tt><big>(</big><em>idx</em><big>)</big><a class="headerlink" href="#sphere.sim.rotationalEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the rotational energy for a particle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>idx</strong> (<em>int</em>) &#8211; Particle index</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The rotational kinetic energy of the particle [J]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="sphere.sim.run">
 <tt class="descname">run</tt><big>(</big><em>verbose=True</em>, <em>hideinputfile=False</em>, <em>dry=False</em>, <em>valgrind=False</em>, <em>cudamemcheck=False</em><big>)</big><a class="headerlink" href="#sphere.sim.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start <tt class="docutils literal"><span class="pre">sphere</span></tt> calculations on the <tt class="docutils literal"><span class="pre">sim</span></tt> object</p>
@@ -1282,6 +1423,40 @@ number of DEM time steps to be performed per CFD time step.</p>
 <p>Other solver parameter setting functions: <a class="reference internal" href="#sphere.sim.setGamma" title="sphere.sim.setGamma"><tt class="xref py py-func docutils literal"><span class="pre">setGamma()</span></tt></a>,
 <a class="reference internal" href="#sphere.sim.setTheta" title="sphere.sim.setTheta"><tt class="xref py py-func docutils literal"><span class="pre">setTheta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setBeta" title="sphere.sim.setBeta"><tt class="xref py py-func docutils literal"><span class="pre">setBeta()</span></tt></a>, <a class="reference internal" href="#sphere.sim.setTolerance" title="sphere.sim.setTolerance"><tt class="xref py py-func docutils literal"><span class="pre">setTolerance()</span></tt></a> and
 <a class="reference internal" href="#sphere.sim.setMaxIterations" title="sphere.sim.setMaxIterations"><tt class="xref py py-func docutils literal"><span class="pre">setMaxIterations()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setDampingNormal">
+<tt class="descname">setDampingNormal</tt><big>(</big><em>gamma</em><big>)</big><a class="headerlink" href="#sphere.sim.setDampingNormal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the dampening coefficient (gamma) in the normal direction of the
+particle-particle contact model. The function will print the fraction
+between the chosen damping and the critical damping value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>gamma</strong> (<em>float</em>) &#8211; The viscous damping constant [N/(m/s)]</td>
+</tr>
+</tbody>
+</table>
+<p>:see also:<cite>func:setDampingTangential(gamma)</cite></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setDampingTangential">
+<tt class="descname">setDampingTangential</tt><big>(</big><em>gamma</em><big>)</big><a class="headerlink" href="#sphere.sim.setDampingTangential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the dampening coefficient (gamma) in the tangential direction of the
+particle-particle contact model. The function will print the fraction
+between the chosen damping and the critical damping value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>gamma</strong> (<em>float</em>) &#8211; The viscous damping constant [N/(m/s)]</td>
+</tr>
+</tbody>
+</table>
+<p>:see also:<cite>func:setDampingNormal(gamma)</cite></p>
 </dd></dl>
 
 <dl class="method">
@@ -1349,7 +1524,7 @@ values. The epsilon (pressure) values are smoothed by including the
 average epsilon value of the six closest (face) neighbor cells. This
 parameter should be in the range [0.0;1.0[. The higher the value, the
 more averaging is introduced. A value of 0.0 disables all averaging.</p>
-<p>The default and recommended value is 0.5.</p>
+<p>The default and recommended value is 0.0.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1500,6 +1675,24 @@ file name &#8216;&lt;simulation id&gt;-sheardisp.&lt;graphics_format&gt;&#8217;.
 </dd></dl>
 
 <dl class="method">
+<dt id="sphere.sim.smallestMass">
+<tt class="descname">smallestMass</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.smallestMass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the mass of the leightest particle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>idx</strong> (<em>int</em>) &#8211; Particle index</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The mass of the particle [kg]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="sphere.sim.status">
 <tt class="descname">status</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.status" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the current simulation status by using the simulation id
@@ -1586,6 +1779,36 @@ folder</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="sphere.sim.totalFrictionalEnergy">
+<tt class="descname">totalFrictionalEnergy</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.totalFrictionalEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the total frictional dissipated energy for all particles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The total frictional energy lost of all particles [J]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.totalKineticEnergy">
+<tt class="descname">totalKineticEnergy</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.totalKineticEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the total linear kinetic energy for all particles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The kinetic energy of all particles [J]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="sphere.sim.totalMomentum">
 <tt class="descname">totalMomentum</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.totalMomentum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the sum of particle momentums.</p>
@@ -1594,6 +1817,36 @@ folder</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The sum of particle momentums (m*v) [N*s]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.totalRotationalEnergy">
+<tt class="descname">totalRotationalEnergy</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.totalRotationalEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the total rotational kinetic energy for all particles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The rotational energy of all particles [J]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.totalViscousEnergy">
+<tt class="descname">totalViscousEnergy</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.totalViscousEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the total viscous dissipated energy for all particles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The normal viscous energy lost by all particles [J]</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
@@ -1664,6 +1917,24 @@ rendered beforehand using func:<cite>render()</cite>.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="sphere.sim.viscousEnergy">
+<tt class="descname">viscousEnergy</tt><big>(</big><em>idx</em><big>)</big><a class="headerlink" href="#sphere.sim.viscousEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the viscous dissipated energy for a particle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>idx</strong> (<em>int</em>) &#8211; Particle index</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The energy lost by the particle by viscous dissipation [J]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="sphere.sim.visualize">
 <tt class="descname">visualize</tt><big>(</big><em>method='energy'</em>, <em>savefig=True</em>, <em>outformat='png'</em><big>)</big><a class="headerlink" href="#sphere.sim.visualize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visualize output from the simulation, where the temporal progress is
@@ -1698,6 +1969,24 @@ image format, or in text (&#8216;txt&#8217;).</li>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The void ratio, in [0:1]</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.volume">
+<tt class="descname">volume</tt><big>(</big><em>idx</em><big>)</big><a class="headerlink" href="#sphere.sim.volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the volume of a particle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>idx</strong> (<em>int</em>) &#8211; Particle index</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The volume of the particle [m^3]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
 </tbody>
 </table>
@@ -1798,7 +2087,7 @@ visualization through time by using the ParaView controls.</p>
 
 <dl class="method">
 <dt id="sphere.sim.writeVTKall">
-<tt class="descname">writeVTKall</tt><big>(</big><em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.sim.writeVTKall" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">writeVTKall</tt><big>(</big><em>cell_centered=True</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#sphere.sim.writeVTKall" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes a VTK file for each simulation output file with particle
 information and the fluid grid to the <tt class="docutils literal"><span class="pre">../output/</span></tt> folder by default.
 The file name will be in the format <tt class="docutils literal"><span class="pre">&lt;self.sid&gt;.vtu</span></tt> and
@@ -1957,23 +2246,6 @@ in any order.</li>
 </tbody>
 </table>
 <p>See also <tt class="xref py py-func docutils literal"><span class="pre">torqueScript()</span></tt></p>
-</dd></dl>
-
-<dl class="function">
-<dt id="sphere.vector_norm">
-<tt class="descclassname">sphere.</tt><tt class="descname">vector_norm</tt><big>(</big><em>ndvector</em><big>)</big><a class="headerlink" href="#sphere.vector_norm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a 1D vector of normalized values. The input array should have
-one row per particle, and three rows; one per Euclidean axis.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A value of the velocity magnutude per particle</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 <dl class="function">
