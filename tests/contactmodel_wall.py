@@ -21,7 +21,7 @@ orig.vel[0,2] = -0.1
 orig.defineWorldBoundaries(L=[10,10,10])
 orig.gamma_wn[0] = 0.0  # Disable wall viscosity
 orig.gamma_wt[0] = 0.0  # Disable wall viscosity
-orig.initTemporal(total = 0.3, file_dt = 0.01)
+orig.initTemporal(total = 1.0, file_dt = 0.01)
 #orig.time_dt = orig.time_dt*0.1
 moment_before = orig.totalKineticEnergy()
 orig.run(verbose=False)
@@ -66,7 +66,7 @@ orig.vel[0,2] = -0.1
 orig.defineWorldBoundaries(L=[10,10,10])
 orig.gamma_wn[0] = 1.0e6
 orig.gamma_wt[0] = 0.0
-orig.initTemporal(total = 0.3, file_dt = 0.01)
+orig.initTemporal(total = 1.0, file_dt = 0.01)
 Ekin_before = orig.energy('kin')
 orig.run(verbose=False)
 #orig.writeVTKall()
@@ -89,7 +89,7 @@ orig.vel[0,0] =  0.1
 orig.defineWorldBoundaries(L=[10,10,10])
 orig.gamma_wn[0] = 1.0e6
 orig.gamma_wt[0] = 1.0e6
-orig.initTemporal(total = 0.3, file_dt = 0.01)
+orig.initTemporal(total = 1.0, file_dt = 0.01)
 E_kin_before = orig.energy('kin')
 orig.run(verbose=False)
 #orig.writeVTKall()

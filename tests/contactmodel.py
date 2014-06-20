@@ -218,3 +218,5 @@ pytestutils.test(after.totalFrictionalEnergy() > 0.0,
                  "Oblique normal collision (8/8):")
 pytestutils.test(after.totalFrictionalEnergy() > 0.0,
                  "Oblique normal collision (8/8):")
+
+orig.cleanup()
