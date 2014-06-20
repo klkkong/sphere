@@ -153,11 +153,12 @@ orig.initTemporal(total = 0.1, file_dt = 0.01)
 
 orig.run(verbose=False)
 after.readlast(verbose=False)
-print(after.es)
+pytestutils.test((after.angvel[:,1] < 0.0).all(),
+                 "Oblique normal collision (1/5):")
 pytestutils.compareFloats(orig.totalKineticEnergy(),
                           after.totalKineticEnergy()
-                          + after.totalRotationalEnergy(),\
-        "Oblique normal collision (1/4):", tolerance=0.05)
+                          + after.totalRotationalEnergy(),
+                          "Oblique normal collision (2/5):", tolerance=0.05)
 
 # Normal impact, low angle, slip
 orig = sphere.sim(np=2, sid='contactmodeltest')
@@ -169,16 +170,19 @@ orig.x[0,:] = [5.0, 5.0, 2.0]
 orig.x[1,:] = [5.0, 5.0, 4.05]
 orig.vel[0,2] = 1
 orig.vel[0,0] = 1
-orig.mu_s[0] = 0.0
-orig.mu_d[0] = 0.0
+orig.mu_s[0] = 0.3
+orig.mu_d[0] = 0.3
 orig.defineWorldBoundaries(L=[10,10,10])
 orig.initTemporal(total = 0.1, file_dt = 0.01)
 
 orig.run(verbose=False)
 after.readlast(verbose=False)
-print(after.es)
 pytestutils.compareFloats(orig.totalKineticEnergy(),
                           after.totalKineticEnergy()
-                          + after.totalRotationalEnergy(),\
-        "Oblique normal collision (2/4):", tolerance=0.05)
-
+                          + after.totalRotationalEnergy()
+                          + after.totalFrictionalEnergy(),
+                          "Oblique normal collision (3/5):", tolerance=0.05)
+pytestutils.test((after.angvel[:,1] < 0.0).all(),
+                 "Oblique normal collision (4/5):")
+pytestutils.test(after.totalFrictionalEnergy() > 0.0,
+                 "Oblique normal collision (5/5):")

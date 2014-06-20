@@ -454,7 +454,7 @@ __device__ void contactLinear(Float3* F, Float3* T,
             // The energy lost from the tangential spring is dissipated as heat
             //*es_dot += -dot(vel_t_ab, f_t);
             //*es_dot += length(delta_t0 - delta_t) * devC_params.k_t / devC_dt;
-            *es_dot += length(length(f_t) * vel_t * devC_dt) / devC_dt; // Seen in ESyS-Particle
+            *es_dot += 0.5*length(length(f_t) * vel_t * devC_dt) / devC_dt; // Seen in ESyS-Particle
             //*es_dot += fabs(dot(delta_t0 - delta_t, f_t)) / devC_dt; 
 
         } //else { // Static case
