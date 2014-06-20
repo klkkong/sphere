@@ -34,6 +34,9 @@ init.defaultParams(gamma_n = 100.0, mu_s = 0.6, mu_d = 0.6)
 # Add gravity
 init.g[2] = -9.81
 
+# Periodic x and y boundaries
+init.periodicBoundariesXY()
+
 # Initialize positions in random grid (also sets world size)
 hcells = np**(1.0/3.0)
 init.initRandomGridPos(gridnum = numpy.array([hcells, hcells, 1e9]), periodic = 1, contactmodel = 2)
@@ -70,6 +73,9 @@ for devs in devslist:
     # Read last output file of initialization step
     lastf = status(sim_id + "-init")
     cons.readbin("../output/" + sim_id + "-init.output{:0=5}.bin".format(lastf), verbose=False)
+
+    # Periodic x and y boundaries
+    cons.periodicBoundariesXY()
 
     # Setup consolidation experiment
     cons.consolidate(deviatoric_stress = devs, periodic = init.periodic)
@@ -116,6 +122,9 @@ for devs in devslist:
     # Read last output file of initialization step
     lastf = status(sim_id + "-cons-devs{}".format(devs))
     shear.readbin("../output/" + sim_id + "-cons-devs{}.output{:0=5}.bin".format(devs, lastf), verbose = False)
+
+    # Periodic x and y boundaries
+    shear.periodicBoundariesXY()
 
     # Setup shear experiment
     shear.shear(shear_strain_rate = 0.05, periodic = init.periodic)

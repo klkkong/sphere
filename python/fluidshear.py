@@ -9,6 +9,7 @@ sid = 'fluidshear'
 sim = sphere.sim(sid + '-init', np = 24000, fluid = False)
 #sim.cleanup()
 sim.radius[:] = 0.05
+sim.periodicBoundariesXY()
 sim.initRandomGridPos(gridnum = [20, 20, 9000])
 sim.initTemporal(total = 10.0, file_dt = 0.05)
 sim.g[2] = -9.81

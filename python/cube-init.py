@@ -5,6 +5,8 @@ init = sphere.sim('cube-init', np=1e2)
 
 init.generateRadii(psd='uni', radius_mean=0.01, radius_variance=0.002)
 
+init.periodicBoundariesXY()
+
 # Initialize positions in random grid (also sets world size)
 init.initRandomGridPos(gridnum=(6, 6, 1e12))
 

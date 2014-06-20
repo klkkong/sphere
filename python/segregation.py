@@ -32,6 +32,8 @@ init.generateRadii(radius_mean = 0.08)
 # Use default params
 init.defaultParams(gamma_n = 100.0, mu_s = 0.4, mu_d = 0.4)
 
+init.periodicBoundariesXY()
+
 # Initialize positions in random grid (also sets world size)
 hcells = np**(1.0/3.0)*0.6
 init.initRandomGridPos(gridnum = numpy.array([hcells, hcells, 1e9]))
