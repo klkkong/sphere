@@ -385,8 +385,6 @@ __device__ void contactLinear(Float3* F, Float3* T,
     // watt = N*m/s = N*s/m * m/s * m/s * s / s
     *ev_dot += 0.5 * devC_params.gamma_n * vel_n * vel_n;
 
-
-
     // Add max. capillary force
     f_c = -devC_params.kappa * sqrtf(radius_a * radius_b) * n;
 
@@ -449,6 +447,9 @@ __device__ void contactLinear(Float3* F, Float3* T,
             delta_t = -1.0/devC_params.k_t
                 * (devC_params.mu_d * length(f_n-f_c) * t
                         + devC_params.gamma_t * vel_t);
+
+            // Store energy dissipated in tangential viscous component
+            *ev_dot += 0.5 * devC_params.gamma_t * vel_t * vel_t;
 
             // Shear friction heat production rate: 
             // The energy lost from the tangential spring is dissipated as heat
