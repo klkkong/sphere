@@ -2621,9 +2621,17 @@ class sim:
         :see also:`func:setDampingTangential(gamma)`
         '''
         self.gamma_n[0] = gamma
-        gamma_crit = 2.0*numpy.sqrt(self.smallestMass() * self.k_n[0])
-        print('Info: The chosen normal damping is ' + str(gamma/gamma_crit)
-              + ' the critical damping value.')
+        damping_ratio = gamma/(2.0*numpy.sqrt(self.smallestMass()*self.k_n[0]))
+        if (damping_ratio < 1.0):
+            print('Info: The system is under-dampened (ratio = '
+                  + str(damping_ratio)
+                  + ') in the normal component. This is ok.')
+        elif (damping_ratio > 1.0):
+            print('Warning: The system is over-dampened (ratio = '
+                  + str(damping_ratio) + ') in the normal component.')
+        else:
+            print('Warning: The system is critically dampened (ratio = '
+                  + str(damping_ratio) + ') in the normal component.')
         
     def setDampingTangential(self, gamma):
         '''
@@ -2637,9 +2645,17 @@ class sim:
         :see also:`func:setDampingNormal(gamma)`
         '''
         self.gamma_t[0] = gamma
-        gamma_crit = 2.0*numpy.sqrt(self.smallestMass() * self.k_t[0])
-        print('Info: The chosen tangential damping is ' + str(gamma/gamma_crit)
-              + ' the critical damping value.')
+        damping_ratio = gamma/(2.0*numpy.sqrt(self.smallestMass()*self.k_t[0]))
+        if (damping_ratio < 1.0):
+            print('Info: The system is under-dampened (ratio = '
+                  + str(damping_ratio)
+                  + ') in the tangential component. This is ok.')
+        elif (damping_ratio > 1.0):
+            print('Warning: The system is over-dampened (ratio = '
+                  + str(damping_ratio) + ') in the tangential component.')
+        else:
+            print('Warning: The system is critically dampened (ratio = '
+                  + str(damping_ratio) + ') in the tangential component.')
         
     def bond(self, i, j):
         '''

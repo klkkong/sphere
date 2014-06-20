@@ -82,8 +82,8 @@ sim.g[0] = 0
 sim.g[1] = -9.81
 sim.g[2] = 0
 
-sim.setDampingNormal(1.0e4)
-sim.setDampingTangential(1.0e4)
+sim.setDampingNormal(1.0e1)
+sim.setDampingTangential(1.0e1)
 
 sim.periodicBoundariesX()
 sim.uniaxialStrainRate(wvel = 0.0)
