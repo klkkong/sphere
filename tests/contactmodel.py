@@ -154,11 +154,11 @@ orig.initTemporal(total = 0.1, file_dt = 0.01)
 orig.run(verbose=False)
 after.readlast(verbose=False)
 pytestutils.test((after.angvel[:,1] < 0.0).all(),
-                 "Oblique normal collision (1/5):")
+                 "Oblique normal collision (1/8):")
 pytestutils.compareFloats(orig.totalKineticEnergy(),
                           after.totalKineticEnergy()
                           + after.totalRotationalEnergy(),
-                          "Oblique normal collision (2/5):", tolerance=0.05)
+                          "Oblique normal collision (2/8):", tolerance=0.05)
 
 # Normal impact, low angle, slip
 orig = sphere.sim(np=2, sid='contactmodeltest')
@@ -181,13 +181,13 @@ pytestutils.compareFloats(orig.totalKineticEnergy(),
                           after.totalKineticEnergy()
                           + after.totalRotationalEnergy()
                           + after.totalFrictionalEnergy(),
-                          "Oblique normal collision (3/5):", tolerance=0.05)
+                          "Oblique normal collision (3/8):", tolerance=0.05)
 pytestutils.test((after.angvel[:,1] < 0.0).all(),
-                 "Oblique normal collision (4/5):")
+                 "Oblique normal collision (4/8):")
 pytestutils.test(after.totalFrictionalEnergy() > 0.0,
-                 "Oblique normal collision (5/5):")
+                 "Oblique normal collision (5/8):")
 
-# Normal impact, low angle, slip
+# Normal impact, low angle, slip, viscous damping tangentially
 orig = sphere.sim(np=2, sid='contactmodeltest')
 after = sphere.sim(np=2, sid='contactmodeltest')
 sphere.cleanup(orig)
@@ -199,19 +199,22 @@ orig.vel[0,2] = 1
 orig.vel[0,0] = 1
 orig.mu_s[0] = 0.3
 orig.mu_d[0] = 0.3
-orig.gamma_t[0] = 1.0e6
+orig.gamma_t[0] = 1.0e3
 orig.defineWorldBoundaries(L=[10,10,10])
 orig.initTemporal(total = 0.1, file_dt = 0.01)
 
 orig.run(verbose=False)
 after.readlast(verbose=False)
-after.totalViscousEnergy()
+print(after.totalViscousEnergy())
 pytestutils.compareFloats(orig.totalKineticEnergy(),
                           after.totalKineticEnergy()
                           + after.totalRotationalEnergy()
-                          + after.totalFrictionalEnergy(),
-                          "Oblique normal collision (6/5):", tolerance=0.05)
+                          + after.totalFrictionalEnergy()
+                          + after.totalViscousEnergy(),
+                          "Oblique normal collision (6/8):", tolerance=0.05)
 pytestutils.test((after.angvel[:,1] < 0.0).all(),
-                 "Oblique normal collision (7/5):")
+                 "Oblique normal collision (7/8):")
 pytestutils.test(after.totalFrictionalEnergy() > 0.0,
-                 "Oblique normal collision (8/5):")
+                 "Oblique normal collision (8/8):")
+pytestutils.test(after.totalFrictionalEnergy() > 0.0,
+                 "Oblique normal collision (8/8):")

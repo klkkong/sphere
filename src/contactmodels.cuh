@@ -414,6 +414,9 @@ __device__ void contactLinear(Float3* F, Float3* T,
         // Add tangential displacement to total tangential displacement
         delta_t = delta_t0 + vel_t * devC_dt;
 
+        // Store energy dissipated in tangential viscous component
+        *ev_dot += 0.5 * devC_params.gamma_t * vel_t_length * vel_t_length;
+
         // If failure criterion is not met, contact is viscous-linear elastic.
         // If failure criterion is met, contact force is limited, 
         // resulting in a slip and energy dissipation
@@ -447,9 +450,6 @@ __device__ void contactLinear(Float3* F, Float3* T,
             delta_t = -1.0/devC_params.k_t
                 * (devC_params.mu_d * length(f_n-f_c) * t
                         + devC_params.gamma_t * vel_t);
-
-            // Store energy dissipated in tangential viscous component
-            *ev_dot += 0.5 * devC_params.gamma_t * vel_t_length * vel_t_length;
 
             // Shear friction heat production rate: 
             // The energy lost from the tangential spring is dissipated as heat
