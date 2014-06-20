@@ -3294,18 +3294,18 @@ class sim:
         :param idx: The particle index
         :type idx: int
         :returns: The particle momentum [N*s]
+        :return type: numpy.array
         '''
-        return self.rho*V_sphere(self.radius[idx])\
-          *numpy.linalg.norm(self.vel[idx,:])
+        return self.rho*V_sphere(self.radius[idx])*self.vel[idx,:]
 
     def totalMomentum(self):
         '''
         Returns the sum of particle momentums.
 
         :returns: The sum of particle momentums (m*v) [N*s]
-        :return type: float
+        :return type: numpy.array
         '''
-        m_sum = 0.0
+        m_sum = numpy.zeros(3)
         for i in range(self.np):
             m_sum += self.momentum(i)
         return m_sum

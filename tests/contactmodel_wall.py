@@ -23,13 +23,13 @@ orig.gamma_wn[0] = 0.0  # Disable wall viscosity
 orig.gamma_wt[0] = 0.0  # Disable wall viscosity
 orig.initTemporal(total = 1.0, file_dt = 0.01)
 #orig.time_dt = orig.time_dt*0.1
-moment_before = orig.totalMomentum()
+moment_before = orig.totalKineticEnergy()
 orig.run(verbose=False)
 #orig.writeVTKall()
 orig.readlast(verbose=False)
 pytestutils.compareFloats(orig.vel[0,2], 0.1,\
         "Elastic normal wall collision (1/2):")
-moment_after = orig.totalMomentum()
+moment_after = orig.totalKineticEnergy()
 #print(moment_before)
 #print(moment_after)
 #print("time step: " + str(orig.time_dt[0]))
@@ -47,11 +47,11 @@ orig.defineWorldBoundaries(L=[10,10,10])
 orig.gamma_wn[0] = 0.0  # Disable wall viscosity
 orig.gamma_wt[0] = 0.0  # Disable wall viscosity
 orig.initTemporal(total = 1.0, file_dt = 0.01)
-moment_before = orig.totalMomentum()
+moment_before = orig.totalKineticEnergy()
 orig.run(verbose=False)
 #orig.writeVTKall()
 orig.readlast(verbose=False)
-moment_after = orig.totalMomentum()
+moment_after = orig.totalKineticEnergy()
 pytestutils.compareFloats(moment_before, moment_after,\
         "       45 deg. wall collision:\t")
 
