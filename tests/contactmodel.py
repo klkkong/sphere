@@ -86,12 +86,12 @@ orig.run(verbose=False)
 after.readlast(verbose=False)
 #print(orig.totalKineticEnergy())
 #print(after.totalKineticEnergy())
-#print(after.totalViscousNormalEnergy())
+#print(after.totalViscousEnergy())
 pytestutils.test(orig.vel[0,2] > after.vel[1,2],\
         "Viscoelastic normal collision (1/4):")
 pytestutils.compareFloats(orig.totalKineticEnergy(),
                           after.totalKineticEnergy()
-                          + after.totalViscousNormalEnergy(),
+                          + after.totalViscousEnergy(),
         "Viscoelastic normal collision (2/4):", tolerance=0.05)
 
 # Normal impact with different sizes: Check for conservation of momentum
@@ -110,7 +110,7 @@ orig.run(verbose=False)
 after.readlast(verbose=False)
 pytestutils.compareFloats(orig.totalKineticEnergy(),
                           after.totalKineticEnergy()
-                          + after.totalViscousNormalEnergy(),
+                          + after.totalViscousEnergy(),
         "Viscoelastic normal collision (3/4):", tolerance=0.05)
 
 # Normal impact with different sizes: Check for conservation of momentum
@@ -129,7 +129,7 @@ orig.run(verbose=False)
 after.readlast(verbose=False)
 pytestutils.compareFloats(orig.totalKineticEnergy(),
                           after.totalKineticEnergy()
-                          + after.totalViscousNormalEnergy(),
+                          + after.totalViscousEnergy(),
         "Viscoelastic normal collision (4/4):", tolerance=0.05)
 
 
@@ -205,6 +205,7 @@ orig.initTemporal(total = 0.1, file_dt = 0.01)
 
 orig.run(verbose=False)
 after.readlast(verbose=False)
+after.totalViscousEnergy()
 pytestutils.compareFloats(orig.totalKineticEnergy(),
                           after.totalKineticEnergy()
                           + after.totalRotationalEnergy()
