@@ -2671,6 +2671,7 @@ class sim:
         :param idx: Particle index
         :type idx: int
         :returns: The volume of the particle [m^3]
+        :return type: float
         '''
         return V_sphere(self.radius[idx])
         
@@ -2681,6 +2682,7 @@ class sim:
         :param idx: Particle index
         :type idx: int
         :returns: The mass of the particle [kg]
+        :return type: float
         '''
         return self.rho[0]*self.volume(idx)
         
@@ -2691,6 +2693,7 @@ class sim:
         :param idx: Particle index
         :type idx: int
         :returns: The kinetic energy of the particle [J]
+        :return type: float
         '''
         return 0.5*self.mass(idx) \
           *numpy.sqrt(numpy.dot(self.vel[idx,:], self.vel[idx,:]))**2
@@ -2704,6 +2707,31 @@ class sim:
         esum = 0.0
         for i in range(self.np):
             esum += self.kineticEnergy(i)
+        return esum
+
+    def viscousNormalEnergy(self, idx):
+        '''
+        Returns the viscous absorbed energy for a particle in the
+        normal component of its contacts.
+
+        :param idx: Particle index
+        :type idx: int
+        :returns: The normal viscous energy of the particle [J]
+        :return type: float
+        '''
+        return self.ev[idx]
+        
+    def totalViscousNormalEnergy(self):
+        '''
+        Returns the total viscous absorbed energy for all particles
+        (normal component).
+
+        :returns: The normal viscous energy of all particles [J]
+
+        '''
+        esum = 0.0
+        for i in range(self.np):
+            esum += self.viscousNormalEnergy(i)
         return esum
 
     def energy(self, method):
