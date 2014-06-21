@@ -74,7 +74,7 @@ sim.x[:,2] = sim.x[:,2] - min_z
 sim.defineWorldBoundaries(L=[numpy.max(sim.x[:,0] + sim.radius[:]), Lz*3, Ly])
 sim.k_t[0] = 2.0/3.0*sim.k_n[0]
 
-sim.cleanup()
+#sim.cleanup()
 sim.writeVTK()
 print(sim.np[0])
 
