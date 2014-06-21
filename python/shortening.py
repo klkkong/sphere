@@ -129,8 +129,8 @@ color_z = numpy.arange(0.0, z_max, nz)
 
 # 1 or 3 in checkerboard
 for i in range(sim.np):
-    iy = numpy.floor((self.x[i,1] - y_min)/(y_max/color_ny))
-    iz = numpy.floor((self.x[i,2] - z_min)/(z_max/color_nz))
+    iy = numpy.floor((sim.x[i,1] - y_min)/(y_max/color_ny))
+    iz = numpy.floor((sim.x[i,2] - z_min)/(z_max/color_nz))
     sim.color[i] = (-1)**iy + (-1)**iz + 1
 
 sim.normalBoundariesXY()
