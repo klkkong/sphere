@@ -98,9 +98,9 @@ sim.uniaxialStrainRate(wvel = 0.0)
 sim.initTemporal(total=3.0, file_dt = 0.01)
 sim.zeroKinematics()
 
-sim.run(dry=True)
-sim.run()
-sim.writeVTKall()
+#sim.run(dry=True)
+#sim.run()
+#sim.writeVTKall()
 
 
 ## Shortening
@@ -112,12 +112,30 @@ sim.initTemporal(current=0.0, total=5.0, file_dt = 0.01)
 
 # set colors again
 color_ny = 6
+color_nz = 50
+y_min = numpy.min(sim.x[:,1])
 y_max = numpy.max(sim.x[:,1])
+z_min = numpy.min(sim.x[:,2])
+z_max = numpy.max(sim.x[:,2])
 color_dy = y_max/color_ny
+color_dz = z_max/color_nz
 color_y = numpy.arange(0.0, y_max, ny)
-for i in range(ny-1):
-    I = numpy.nonzero((sim.x[:,1] >= color_y[i]) & (sim.x[:,1] <= color_y[i+1]))
-    sim.color[I] = i%2 + 1
+color_z = numpy.arange(0.0, z_max, nz)
+
+# 1 or 2 in horizontal layers
+#for i in range(ny-1):
+    #I = numpy.nonzero((sim.x[:,1] >= color_y[i]) & (sim.x[:,1] <= color_y[i+1]))
+    #sim.color[I] = i%2 + 1
+
+# 1 or 3 in checkerboard
+for i in range(sim.np):
+    iy = numpy.floor((self.x[i,1] - y_min)/(y_max/color_ny))
+    iz = numpy.floor((self.x[i,2] - z_min)/(z_max/color_nz))
+    sim.color[i] = (-1)**iy + (-1)**iz + 1
+
+sim.normalBoundariesXY()
+sim.mu_ws[0] = 0.0
+sim.mu_wd[0] = 0.0
 
 sim.mu_s[0] = 0.5
 sim.mu_d[0] = 0.5
