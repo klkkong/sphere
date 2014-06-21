@@ -111,12 +111,12 @@ sim.cleanup()
 sim.initTemporal(current=0.0, total=5.0, file_dt = 0.01)
 
 # set colors again
-color_ny = 6
-color_nz = 50
 y_min = numpy.min(sim.x[:,1])
 y_max = numpy.max(sim.x[:,1])
 z_min = numpy.min(sim.x[:,2])
 z_max = numpy.max(sim.x[:,2])
+color_ny = 6
+color_nz = int((z_max - z_min)/(y_max - y_min)*color_ny)
 color_dy = y_max/color_ny
 color_dz = z_max/color_nz
 color_y = numpy.arange(0.0, y_max, ny)
