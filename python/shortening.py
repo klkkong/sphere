@@ -134,11 +134,19 @@ for i in range(sim.np):
     sim.color[i] = (-1)**iy + (-1)**iz + 1
 
 sim.normalBoundariesXY()
+sim.zeroKinematics()
+
+# Wall parameters
 sim.mu_ws[0] = 0.0
 sim.mu_wd[0] = 0.0
+sim.gamma_wn[0] = 0.0
+sim.gamma_wt[0] = 0.0
 
+# Particle parameters
 sim.mu_s[0] = 0.5
 sim.mu_d[0] = 0.5
+sim.gamma_n[0] = 0.0
+sim.gamma_t[0] = 0.0
 
 # push down upper wall
 compressional_strain = 0.5
