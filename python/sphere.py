@@ -12,7 +12,7 @@ numpy.seterr(all='warn', over='raise')
 
 # Sphere version number. This field should correspond to the value in
 # `../src/constants.h`.
-VERSION=1.02
+VERSION=1.03
 
 class sim:
     '''
@@ -777,8 +777,12 @@ class sim:
                 self.radius[i] =\
                         numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
-            self.xyzsum = numpy.fromfile(fh, dtype=numpy.float64,\
-                    count=self.np*3).reshape(self.np,3)
+            if (self.version >= 1.03):
+                self.xyzsum = numpy.fromfile(fh, dtype=numpy.float64,\
+                        count=self.np*3).reshape(self.np,3)
+            else:
+                self.xyzsum = numpy.fromfile(fh, dtype=numpy.float64,\
+                        count=self.np*2).reshape(self.np,2)
 
             for i in range(self.np):
                 self.vel[i,:] =\
