@@ -6,7 +6,13 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import subprocess
-import vtk
+try:
+    import vtk
+except ImportError:
+    print('Warning: Could not find "vtk" python module. VTK calls unavailable')
+    py_vtk = False
+else:
+    py_vtk = True
 
 numpy.seterr(all='warn', over='raise')
 
@@ -1158,6 +1164,8 @@ class sim:
         :param verbose: Show diagnostic information (default = True)
         :type verbose: bool
         '''
+        if py_vtk == False:
+            raise Exception('Error: vtk module not found.')
 
         lastfile = status(self.sid)
         sb = sim(fluid = self.fluid)
@@ -1218,6 +1226,8 @@ class sim:
         :param verbose: Show diagnostic information (default = True)
         :type verbose: bool
         '''
+        if py_vtk == False:
+            raise Exception('Error: vtk module not found.')
 
         fh = None
         try :
@@ -1475,6 +1485,8 @@ class sim:
         :param verbose: Show diagnostic information (default = True)
         :type verbose: bool
         '''
+        if py_vtk == False:
+            raise Exception('Error: vtk module not found.')
 
         filename = folder + '/fluid-' + self.sid + '.vti' # image grid
 
