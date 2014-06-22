@@ -108,7 +108,7 @@ sim = sphere.sim('shortening-relaxation', nw=1)
 sim.readlast()
 sim.sid = 'shortening'
 sim.cleanup()
-sim.initTemporal(current=0.0, total=5.0, file_dt = 0.01)
+sim.initTemporal(current=0.0, total=5.0, file_dt = 0.01, epsilon=0.07)
 
 # set colors again
 y_min = numpy.min(sim.x[:,1])
@@ -133,14 +133,20 @@ for i in range(sim.np):
     iz = numpy.floor((sim.x[i,2] - z_min)/(z_max/color_nz))
     sim.color[i] = (-1)**iy + (-1)**iz + 1
 
-sim.normalBoundariesXY()
+# fix lowest plane of particles
+I = numpy.nonzero(sim.x[:,1] < 1.5*numpy.mean(sim.radius))
+sim.fixvel[I] = 1
+sim.color[I] = 0
+
+#sim.normalBoundariesXY()
+sim.periodicBoundariesX()
 sim.zeroKinematics()
 
 # Wall parameters
-sim.mu_ws[0] = 0.0
-sim.mu_wd[0] = 0.0
-sim.gamma_wn[0] = 0.0
-sim.gamma_wt[0] = 0.0
+sim.mu_ws[0] = 0.5
+sim.mu_wd[0] = 0.5
+sim.gamma_wn[0] = 1.0e2
+sim.gamma_wt[0] = 1.0e2
 
 # Particle parameters
 sim.mu_s[0] = 0.5

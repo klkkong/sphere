@@ -2379,21 +2379,17 @@ class sim:
                 + "simulating particles may produce instabilities.")
         else:
             r_min = numpy.min(self.radius)
-
-            # Radjaii et al 2011
             m_min = self.rho * 4.0/3.0*numpy.pi*r_min**3
             k_max = numpy.max([self.k_n[:], self.k_t[:]])
+
+            # Radjaii et al 2011
             self.time_dt[0] = epsilon/(numpy.sqrt(k_max/m_min))
 
             # Zhang and Campbell, 1992
-            #self.time_dt[0] = 0.075 *\
-                    #math.sqrt((V_sphere(r_min) * self.rho[0]) \
-                    #/ numpy.amax([self.k_n[:], self.k_t[:]]) )
+            #self.time_dt[0] = 0.075*math.sqrt(m_min/k_max)
 
             # Computational time step (O'Sullivan et al, 2003)
-            #self.time_dt[0] = 0.17 * \
-                    #math.sqrt((4.0/3.0 * math.pi * r_min**3 * self.rho[0]) \
-                    #/ numpy.amax([self.k_n[:], self.k_t[:]]) )
+            #self.time_dt[0] = 0.17*math.sqrt(m_min/k_max)
 
         # Check numerical stability of the fluid phase, by criteria derived by
         # von Neumann stability analysis of the diffusion and advection terms
