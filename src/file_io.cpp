@@ -86,7 +86,7 @@ void DEM::readbin(const char *target)
         cout << "  Allocating host memory:                         ";
     // Allocate more host arrays
     k.x      = new Float4[np];
-    k.xysum  = new Float2[np];
+    k.xyzsum = new Float4[np];
     k.vel    = new Float4[np];
     k.force  = new Float4[np];
     k.angpos = new Float4[np];
@@ -120,8 +120,9 @@ void DEM::readbin(const char *target)
         ifs.read(as_bytes(k.x[i].w), sizeof(Float));
     }
     for (i = 0; i<np; ++i) {
-        ifs.read(as_bytes(k.xysum[i].x), sizeof(Float));
-        ifs.read(as_bytes(k.xysum[i].y), sizeof(Float));
+        ifs.read(as_bytes(k.xyzsum[i].x), sizeof(Float));
+        ifs.read(as_bytes(k.xyzsum[i].y), sizeof(Float));
+        ifs.read(as_bytes(k.xyzsum[i].z), sizeof(Float));
     }
     for (i = 0; i<np; ++i) {
         ifs.read(as_bytes(k.vel[i].x), sizeof(Float));
@@ -348,8 +349,9 @@ void DEM::writebin(const char *target)
             ofs.write(as_bytes(k.x[i].w), sizeof(Float));
         }
         for (i = 0; i<np; ++i) {
-            ofs.write(as_bytes(k.xysum[i].x), sizeof(Float));
-            ofs.write(as_bytes(k.xysum[i].y), sizeof(Float));
+            ofs.write(as_bytes(k.xyzsum[i].x), sizeof(Float));
+            ofs.write(as_bytes(k.xyzsum[i].y), sizeof(Float));
+            ofs.write(as_bytes(k.xyzsum[i].z), sizeof(Float));
         }
         for (i = 0; i<np; ++i) {
             ofs.write(as_bytes(k.vel[i].x), sizeof(Float));

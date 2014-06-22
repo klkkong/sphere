@@ -476,11 +476,11 @@ __host__ void DEM::render(
             unit = "rad/s";
 
         } else if (method == 4) { // Visualize xdisp
-            // Convert xysum to xsum
+            // Convert xyzsum to xsum
             linarr = new Float[np];
 #pragma omp parallel for if(np>100)
             for (i = 0; i<np; ++i) {
-                linarr[i] = k.xysum[i].x;
+                linarr[i] = k.xyzsum[i].x;
             }
             transfer = 1;
             desc = "X-axis displacement";

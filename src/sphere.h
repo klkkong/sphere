@@ -58,7 +58,7 @@ class DEM {
 
         // Particle kinematics arrays
         Float4        *dev_x;
-        Float2        *dev_xysum;
+        Float4        *dev_xyzsum;
         Float4        *dev_vel;
         Float4        *dev_vel0;
         Float4        *dev_acc;

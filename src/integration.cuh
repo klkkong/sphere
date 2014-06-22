@@ -17,7 +17,7 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         Float4* dev_force, Float4* dev_torque, Float4* dev_angpos, // Input
         Float4* dev_acc, Float4* dev_angacc,
         Float4* dev_vel0, Float4* dev_angvel0,
-        Float2* dev_xysum,
+        Float4* dev_xyzsum,
         unsigned int* dev_gridParticleIndex, // Input: Sorted-Unsorted key
         unsigned int iter)
 {
@@ -35,7 +35,7 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         const Float4 x        = dev_x_sorted[idx];
         const Float4 vel      = dev_vel_sorted[idx];
         const Float4 angvel   = dev_angvel_sorted[idx];
-        Float2 xysum = dev_xysum[orig_idx];
+        Float4 xyzsum = dev_xyzsum[orig_idx];
 
         // Get old accelerations for three-term Taylor expansion. These values
         // don't exist in the first time step
@@ -139,8 +139,9 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
 
         // Add horizontal-displacement for this time step to the sum of
         // horizontal displacements
-        xysum.x += vel.x*dt;
-        xysum.y += vel.y*dt;
+        xyzsum.x += vel.x*dt;
+        xyzsum.y += vel.y*dt;
+        xyzsum.z += vel.z*dt;
 #endif
 
 #ifdef TY2
@@ -168,8 +169,9 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
 
         // Add horizontal-displacement for this time step to the sum of
         // horizontal displacements
-        xysum.x += vel.x*dt + 0.5*acc.x*dt*dt;
-        xysum.y += vel.y*dt + 0.5*acc.y*dt*dt;
+        xyzsum.x += vel.x*dt + 0.5*acc.x*dt*dt;
+        xyzsum.y += vel.y*dt + 0.5*acc.y*dt*dt;
+        xyzsum.z += vel.z*dt + 0.5*acc.z*dt*dt;
 #endif
 
 #ifdef TY3
@@ -211,8 +213,9 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
 
         // Add horizontal-displacement for this time step to the sum of
         // horizontal displacements
-        xysum.x += vel.x*dt + 0.5*acc.x*dt*dt + 1.0/6.0*dacc_dt.x*dt*dt*dt;
-        xysum.y += vel.y*dt + 0.5*acc.y*dt*dt + 1.0/6.0*dacc_dt.y*dt*dt*dt;
+        xyzsum.x += vel.x*dt + 0.5*acc.x*dt*dt + 1.0/6.0*dacc_dt.x*dt*dt*dt;
+        xyzsum.y += vel.y*dt + 0.5*acc.y*dt*dt + 1.0/6.0*dacc_dt.y*dt*dt*dt;
+        xyzsum.z += vel.z*dt + 0.5*acc.z*dt*dt + 1.0/6.0*dacc_dt.z*dt*dt*dt;
 #endif
 
         // Move particles outside the domain across periodic boundaries
@@ -238,7 +241,7 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         __syncthreads();
 
         // Store data in global memory at original, pre-sort positions
-        dev_xysum[orig_idx]   = xysum;
+        dev_xyzsum[orig_idx]  = xyzsum;
         dev_acc[orig_idx]     = acc;
         dev_angacc[orig_idx]  = angacc;
         dev_angvel[orig_idx]  = angvel_new;

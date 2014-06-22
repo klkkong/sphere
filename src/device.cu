@@ -244,7 +244,7 @@ __host__ void DEM::allocateGlobalDeviceMemory(void)
 
     // Kinematics arrays
     cudaMalloc((void**)&dev_x, memSizeF4);
-    cudaMalloc((void**)&dev_xysum, memSizeF4);
+    cudaMalloc((void**)&dev_xyzsum, memSizeF4);
     cudaMalloc((void**)&dev_vel, memSizeF4);
     cudaMalloc((void**)&dev_vel0, memSizeF4);
     cudaMalloc((void**)&dev_acc, memSizeF4);
@@ -312,7 +312,7 @@ __host__ void DEM::freeGlobalDeviceMemory()
         printf("\nFreeing device memory:                           ");
     // Particle arrays
     cudaFree(dev_x);
-    cudaFree(dev_xysum);
+    cudaFree(dev_xyzsum);
     cudaFree(dev_vel);
     cudaFree(dev_vel0);
     cudaFree(dev_acc);
@@ -379,8 +379,8 @@ __host__ void DEM::transferToGlobalDeviceMemory(int statusmsg)
     // Kinematic particle values
     cudaMemcpy( dev_x,	       k.x,	   
             memSizeF4, cudaMemcpyHostToDevice);
-    cudaMemcpy( dev_xysum,    k.xysum,
-            sizeof(Float2)*np, cudaMemcpyHostToDevice);
+    cudaMemcpy( dev_xyzsum,    k.xyzsum,
+            memSizeF4, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_vel,      k.vel,
             memSizeF4, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_vel0,     k.vel,
@@ -459,8 +459,8 @@ __host__ void DEM::transferFromGlobalDeviceMemory()
     // Kinematic particle values
     cudaMemcpy( k.x, dev_x,
             memSizeF4, cudaMemcpyDeviceToHost);
-    cudaMemcpy( k.xysum, dev_xysum,
-            sizeof(Float2)*np, cudaMemcpyDeviceToHost);
+    cudaMemcpy( k.xyzsum, dev_xyzsum,
+            memSizeF4, cudaMemcpyDeviceToHost);
     cudaMemcpy( k.vel, dev_vel,
             memSizeF4, cudaMemcpyDeviceToHost);
     cudaMemcpy( k.acc, dev_acc,
@@ -1505,7 +1505,7 @@ __host__ void DEM::startTime()
                     dev_angacc,
                     dev_vel0,
                     dev_angvel0,
-                    dev_xysum,
+                    dev_xyzsum,
                     dev_gridParticleIndex,
                     iter);
             cudaThreadSynchronize();

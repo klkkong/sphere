@@ -42,7 +42,7 @@ if numpy.allclose(orig.x, cuda.x, 0.01):
     cuda.x = orig.x  # ignore small changes
 if numpy.max(numpy.abs(cuda.vel - orig.vel)) < 1.0e-5:
     cuda.vel = orig.vel  # ignore small changes
-    cuda.xysum = orig.xysum
+    cuda.xyzsum = orig.xyzsum
     cuda.force = orig.force
 compare(orig, cuda, "CUDA IO:  ")
 

@@ -82,7 +82,7 @@ DEM::~DEM(void)
     if (verbose == 1)
         std::cout << "Freeing host memory:                             ";
     delete[] k.x;
-    delete[] k.xysum;
+    delete[] k.xyzsum;
     delete[] k.vel;
     delete[] k.force;
     delete[] k.angpos;

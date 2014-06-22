@@ -86,7 +86,7 @@ class sim:
         self.radius  = numpy.ones(self.np, dtype=numpy.float64)
 
         # The sums of x and y movement [m]
-        self.xysum   = numpy.zeros((self.np, 2), dtype=numpy.float64)
+        self.xyzsum  = numpy.zeros((self.np, 3), dtype=numpy.float64)
 
         # The linear velocities [m/s]
         self.vel     = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
@@ -375,7 +375,7 @@ class sim:
         elif ((self.radius != other.radius).any()):
             print(15)
             return 15
-        elif ((self.xysum != other.xysum).any()):
+        elif ((self.xyzsum != other.xyzsum).any()):
             print(16)
             return 16
         elif ((self.vel != other.vel).any()):
@@ -592,7 +592,7 @@ class sim:
     def addParticle(self,
             x,
             radius,
-            xysum = numpy.zeros(2),
+            xyzsum = numpy.zeros(3),
             vel = numpy.zeros(3),
             fixvel = numpy.zeros(1),
             force = numpy.zeros(3),
@@ -642,7 +642,7 @@ class sim:
         self.x      = numpy.append(self.x, [x], axis=0)
         self.radius = numpy.append(self.radius, radius)
         self.vel    = numpy.append(self.vel, [vel], axis=0)
-        self.xysum  = numpy.append(self.xysum, [xysum], axis=0)
+        self.xyzsum = numpy.append(self.xyzsum, [xyzsum], axis=0)
         self.fixvel = numpy.append(self.fixvel, fixvel)
         self.force  = numpy.append(self.force, [force], axis=0)
         self.angpos = numpy.append(self.angpos, [angpos], axis=0)
@@ -668,7 +668,7 @@ class sim:
         self.x      = numpy.delete(self.x, i, axis=0)
         self.radius = numpy.delete(self.radius, i)
         self.vel    = numpy.delete(self.vel, i, axis=0)
-        self.xysum  = numpy.delete(self.xysum, i, axis=0)
+        self.xyzsum = numpy.delete(self.xyzsum, i, axis=0)
         self.fixvel = numpy.delete(self.fixvel, i)
         self.force  = numpy.delete(self.force, i, axis=0)
         self.angpos = numpy.delete(self.angpos, i, axis=0)
@@ -688,7 +688,7 @@ class sim:
         self.np[0]   = 0
         self.x       = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
         self.radius  = numpy.ones(self.np, dtype=numpy.float64)
-        self.xysum   = numpy.zeros((self.np, 2), dtype=numpy.float64)
+        self.xyzsum  = numpy.zeros((self.np, 3), dtype=numpy.float64)
         self.vel     = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
         self.fixvel  = numpy.zeros(self.np, dtype=numpy.float64)
         self.force   = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
@@ -755,7 +755,7 @@ class sim:
             # Allocate array memory for particles
             self.x       = numpy.empty((self.np, self.nd), dtype=numpy.float64)
             self.radius  = numpy.empty(self.np, dtype=numpy.float64)
-            self.xysum   = numpy.empty((self.np, 2), dtype=numpy.float64)
+            self.xyzsum  = numpy.empty((self.np, 3), dtype=numpy.float64)
             self.vel     = numpy.empty((self.np, self.nd), dtype=numpy.float64)
             self.fixvel  = numpy.empty(self.np, dtype=numpy.float64)
             self.es_dot  = numpy.empty(self.np, dtype=numpy.float64)
@@ -777,8 +777,8 @@ class sim:
                 self.radius[i] =\
                         numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
-            self.xysum = numpy.fromfile(fh, dtype=numpy.float64,\
-                    count=self.np*2).reshape(self.np,2)
+            self.xyzsum = numpy.fromfile(fh, dtype=numpy.float64,\
+                    count=self.np*3).reshape(self.np,3)
 
             for i in range(self.np):
                 self.vel[i,:] =\
@@ -1001,7 +1001,7 @@ class sim:
                 fh.write(self.radius[i].astype(numpy.float64))
 
             if (self.np[0] > 0):
-                fh.write(self.xysum.astype(numpy.float64))
+                fh.write(self.xyzsum.astype(numpy.float64))
 
             for i in range(self.np):
                 fh.write(self.vel[i,:].astype(numpy.float64))
@@ -1256,21 +1256,30 @@ class sim:
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
-            # xysum.x
+            # xyzsum.x
             fh.write('        <DataArray type="Float32" Name="Xdisplacement" '
                     + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} '.format(self.xysum[i,0]))
+                fh.write('{} '.format(self.xyzsum[i,0]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
-            # xysum.y
+            # xyzsum.y
             fh.write('        <DataArray type="Float32" Name="Ydisplacement" '
                     + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} '.format(self.xysum[i,1]))
+                fh.write('{} '.format(self.xyzsum[i,1]))
+            fh.write('\n')
+            fh.write('        </DataArray>\n')
+
+            # xyzsum.z
+            fh.write('        <DataArray type="Float32" Name="Zdisplacement" '
+                    + 'format="ascii">\n')
+            fh.write('          ')
+            for i in range(self.np):
+                fh.write('{} '.format(self.xyzsum[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
@@ -2128,8 +2137,8 @@ class sim:
                 .reshape(self.np, self.nd)
         self.es = numpy.zeros(self.np, dtype=numpy.float64)
         self.ev = numpy.zeros(self.np, dtype=numpy.float64)
-        self.xysum = numpy.zeros(self.np*2, dtype=numpy.float64)\
-                .reshape(self.np, 2)
+        self.xyzsum = numpy.zeros(self.np*3, dtype=numpy.float64)\
+                .reshape(self.np, 3)
 
     def adjustUpperWall(self, z_adjust = 1.1):
         '''
@@ -3520,14 +3529,14 @@ class sim:
             I = numpy.nonzero((self.x[:,2] > zlower) & (self.x[:,2] < zupper))
 
             # Save mean x displacement
-            xdisp[iz] = numpy.mean(self.xysum[I,0])
+            xdisp[iz] = numpy.mean(self.xyzsum[I,0])
 
             # Save x displacement standard deviation
-            err[iz] = numpy.std(self.xysum[I,0])
+            err[iz] = numpy.std(self.xyzsum[I,0])
 
         plt.figure(figsize=[4, 4])
         ax = plt.subplot(111)
-        ax.scatter(self.xysum[:,0], self.x[:,2], c='gray', marker='+')
+        ax.scatter(self.xyzsum[:,0], self.x[:,2], c='gray', marker='+')
         ax.errorbar(xdisp, zpos, xerr=err,
                     c='black', linestyle='-', linewidth=1.4)
         ax.set_xlabel("Horizontal particle displacement, [m]")

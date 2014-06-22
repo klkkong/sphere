@@ -15,7 +15,7 @@
 // Structure containing kinematic particle values
 struct Kinematics {
     Float4 *x;              // Positions + radii (w)
-    Float2 *xysum;          // Horizontal distance traveled
+    Float4 *xyzsum;         // Horizontal distance traveled
     Float4 *vel;            // Translational velocities + fixvels (w)
     Float4 *acc;            // Translational accelerations
     Float4 *force;          // Sums of forces
