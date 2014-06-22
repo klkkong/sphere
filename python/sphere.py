@@ -956,7 +956,7 @@ class sim:
                 self.color = numpy.zeros(self.np, dtype=numpy.int32)
 
         finally:
-            self.version = VERSION
+            self.version[0] = VERSION
             if fh is not None:
                 fh.close()
 
