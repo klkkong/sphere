@@ -1192,11 +1192,11 @@ class sim:
         session. The particles are visualized by selecting the imported data in
         the "Pipeline Browser". Afterwards, click the "Glyph" button in the
         "Common" toolbar, or go to the "Filters" menu, and press "Glyph" from
-        the "Common" list. Choose "Sphere" as the "Glyph Type", set "Radius" to
-        1.0, choose "scalar" as the "Scale Mode". Check the "Edit" checkbox, and
-        set the "Set Scale Factor" to 1.0. The field "Maximum Number of Points"
-        may be increased if the number of particles exceed the default value.
-        Finally press "Apply", and the particles will appear in the main window. 
+        the "Common" list. Choose "Sphere" as the "Glyph Type", choose "scalar"
+        as the "Scale Mode". Check the "Edit" checkbox, and set the "Set Scale
+        Factor" to 1.0. The field "Maximum Number of Points" may be increased if
+        the number of particles exceed the default value. Finally press "Apply",
+        and the particles will appear in the main window. 
 
         The sphere resolution may be adjusted ("Theta resolution", "Phi
         resolution") to increase the quality and the computational requirements
@@ -1245,14 +1245,14 @@ class sim:
             fh.write('      </Points>\n')
             
             ### Data attributes
-            fh.write('      <PointData Scalars="Radius" Vectors="vector">\n')
+            fh.write('      <PointData Scalars="Diameter" Vectors="vector">\n')
 
             # Radii
-            fh.write('        <DataArray type="Float32" Name="Radius" '
+            fh.write('        <DataArray type="Float32" Name="Diameter" '
                     + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} '.format(self.radius[i]))
+                fh.write('{} '.format(self.radius[i]*2.0))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
