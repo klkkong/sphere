@@ -156,7 +156,8 @@ sim.gamma_t[0] = 0.0
 
 # push down upper wall
 compressional_strain = 0.5
-sim.uniaxialStrainRate(wvel = -compressional_strain*Lz/sim.time_total[0])
+sim.uniaxialStrainRate(wvel =
+        -compressional_strain*(z_max - z_min)/sim.time_total[0])
 
 sim.run(dry=True)
 sim.run()
