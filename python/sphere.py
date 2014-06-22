@@ -1271,30 +1271,13 @@ class sim:
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
-            # xyzsum.x
-            fh.write('        <DataArray type="Float32" Name="Xdisplacement" '
-                    + 'format="ascii">\n')
+            # Displacements (xyzsum)
+            fh.write('        <DataArray type="Float32" Name="Displacement" '
+                    + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} '.format(self.xyzsum[i,0]))
-            fh.write('\n')
-            fh.write('        </DataArray>\n')
-
-            # xyzsum.y
-            fh.write('        <DataArray type="Float32" Name="Ydisplacement" '
-                    + 'format="ascii">\n')
-            fh.write('          ')
-            for i in range(self.np):
-                fh.write('{} '.format(self.xyzsum[i,1]))
-            fh.write('\n')
-            fh.write('        </DataArray>\n')
-
-            # xyzsum.z
-            fh.write('        <DataArray type="Float32" Name="Zdisplacement" '
-                    + 'format="ascii">\n')
-            fh.write('          ')
-            for i in range(self.np):
-                fh.write('{} '.format(self.xyzsum[i,2]))
+                fh.write('{} {} {} '.format(\
+                        self.xyzsum[i,0], self.xyzsum[i,1], self.xyzsum[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
