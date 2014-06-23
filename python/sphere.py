@@ -3088,7 +3088,7 @@ class sim:
         if (self.fluid == True):
             binary = "porousflow"
 
-        cmd = "cd ..; " + valgrindbin + cudamemchk + "./" + binary + " " \
+        cmd = "cd ..; time " + valgrindbin + cudamemchk + "./" + binary + " " \
                 + quiet + dryarg + "input/" + self.sid + ".bin " + stdout
         #print(cmd)
         status = subprocess.call(cmd, shell=True)

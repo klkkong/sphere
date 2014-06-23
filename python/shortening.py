@@ -135,18 +135,30 @@ for i in range(sim.np):
 
 # fix lowest plane of particles
 I = numpy.nonzero(sim.x[:,1] < 1.5*numpy.mean(sim.radius))
-sim.fixvel[I] = 1
+sim.fixvel[I] = -1
+sim.color[I] = 0
+
+# fix left-most plane of particles
+I = numpy.nonzero(sim.x[:,2] < 1.5*numpy.mean(sim.radius))
+sim.fixvel[I] = -1
+sim.color[I] = 0
+
+# fix right-most plane of particles
+I = numpy.nonzero(sim.x[:,2] > z_max - 1.5*numpy.mean(sim.radius))
+sim.fixvel[I] = -1
 sim.color[I] = 0
 
 #sim.normalBoundariesXY()
-sim.periodicBoundariesX()
+#sim.periodicBoundariesX()
 sim.zeroKinematics()
 
 # Wall parameters
 sim.mu_ws[0] = 0.5
 sim.mu_wd[0] = 0.5
-sim.gamma_wn[0] = 1.0e2
-sim.gamma_wt[0] = 1.0e2
+#sim.gamma_wn[0] = 1.0e2
+#sim.gamma_wt[0] = 1.0e2
+sim.gamma_wn[0] = 0.0
+sim.gamma_wt[0] = 0.0
 
 # Particle parameters
 sim.mu_s[0] = 0.5
@@ -156,8 +168,9 @@ sim.gamma_t[0] = 0.0
 
 # push down upper wall
 compressional_strain = 0.5
-sim.uniaxialStrainRate(wvel =
-        -compressional_strain*(z_max - z_min)/sim.time_total[0])
+wall_velocity = -compressional_strain*(z_max - z_min)/sim.time_total[0]
+sim.uniaxialStrainRate(wvel = wall_velocity)
+sim.vel[I,2] = wall_velocity
 
 sim.run(dry=True)
 sim.run()
