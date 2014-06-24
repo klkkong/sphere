@@ -137,16 +137,17 @@ for i in range(sim.np):
 I = numpy.nonzero(sim.x[:,1] < 1.5*numpy.mean(sim.radius))
 sim.fixvel[I] = -1
 sim.color[I] = 0
+sim.x[I,1] = 0.0 # move into center into lower wall to avoid stuck particles
 
 # fix left-most plane of particles
-I = numpy.nonzero(sim.x[:,2] < 1.5*numpy.mean(sim.radius))
-sim.fixvel[I] = -1
-sim.color[I] = 0
+#I = numpy.nonzero(sim.x[:,2] < 1.5*numpy.mean(sim.radius))
+#sim.fixvel[I] = -1
+#sim.color[I] = 0
 
 # fix right-most plane of particles
-I = numpy.nonzero(sim.x[:,2] > z_max - 1.5*numpy.mean(sim.radius))
-sim.fixvel[I] = -1
-sim.color[I] = 0
+#I = numpy.nonzero(sim.x[:,2] > z_max - 1.5*numpy.mean(sim.radius))
+#sim.fixvel[I] = -1
+#sim.color[I] = 0
 
 #sim.normalBoundariesXY()
 #sim.periodicBoundariesX()
@@ -170,7 +171,7 @@ sim.gamma_t[0] = 0.0
 compressional_strain = 0.5
 wall_velocity = -compressional_strain*(z_max - z_min)/sim.time_total[0]
 sim.uniaxialStrainRate(wvel = wall_velocity)
-sim.vel[I,2] = wall_velocity
+#sim.vel[I,2] = wall_velocity
 
 sim.run(dry=True)
 sim.run()

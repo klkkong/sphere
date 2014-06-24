@@ -300,7 +300,7 @@ class sim:
             self.p_mod_phi = numpy.zeros(1, dtype=numpy.float64) # Shift [rad]
 
             # Boundary conditions at the top and bottom of the fluid grid
-            # 0: Dirichlet, 1: Neumann
+            # 0: Dirichlet, 1: Neumann free slip, 2: Neumann no slip, 3: Periodic
             self.bc_bot = numpy.zeros(1, dtype=numpy.int32)
             self.bc_top = numpy.zeros(1, dtype=numpy.int32)
             # Free slip boundaries? 1: yes
@@ -2490,12 +2490,22 @@ class sim:
     def setFluidBottomNoFlow(self):
         '''
         Set the lower boundary of the fluid domain to follow the no-flow
-        (Neumann) boundary condition.
+        (Neumann) boundary condition with free slip parallel to the boundary.
 
         The default behavior for the boundary is fixed value (Dirichlet), see
         :func:`setFluidBottomFixedPressure()`.
         '''
         self.bc_bot[0] = 1
+
+    def setFluidBottomNoFlowNoSlip(self):
+        '''
+        Set the lower boundary of the fluid domain to follow the no-flow
+        (Neumann) boundary condition with no slip parallel to the boundary.
+
+        The default behavior for the boundary is fixed value (Dirichlet), see
+        :func:`setFluidBottomFixedPressure()`.
+        '''
+        self.bc_bot[0] = 2
 
     def setFluidBottomFixedPressure(self):
         '''
@@ -2510,12 +2520,22 @@ class sim:
     def setFluidTopNoFlow(self):
         '''
         Set the upper boundary of the fluid domain to follow the no-flow
-        (Neumann) boundary condition.
+        (Neumann) boundary condition with free slip parallel to the boundary.
 
         The default behavior for the boundary is fixed value (Dirichlet), see
         :func:`setFluidTopFixedPressure()`.
         '''
         self.bc_top[0] = 1
+
+    def setFluidTopNoFlowNoSlip(self):
+        '''
+        Set the upper boundary of the fluid domain to follow the no-flow
+        (Neumann) boundary condition with no slip parallel to the boundary.
+
+        The default behavior for the boundary is fixed value (Dirichlet), see
+        :func:`setFluidTopFixedPressure()`.
+        '''
+        self.bc_top[0] = 2
 
     def setFluidTopFixedPressure(self):
         '''

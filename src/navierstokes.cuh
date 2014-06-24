@@ -709,16 +709,27 @@ __global__ void setNSghostNodesFace(
             dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Dirichlet -z
         }
         if (z == 0 && bc_bot == 1) {
-            dev_scalarfield_x[vidx(x,y,-1)] = val_x;     // Neumann -z
-            dev_scalarfield_y[vidx(x,y,-1)] = val_y;     // Neumann -z
-            dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Neumann -z
+            //dev_scalarfield_x[vidx(x,y,-1)] = val_x;     // Neumann free slip -z
+            //dev_scalarfield_y[vidx(x,y,-1)] = val_y;     // Neumann free slip -z
+            //dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Neumann free slip -z
+            dev_scalarfield_x[vidx(x,y,-1)] = val_x;     // Neumann free slip -z
+            dev_scalarfield_y[vidx(x,y,-1)] = val_y;     // Neumann free slip -z
+            dev_scalarfield_z[vidx(x,y,-1)] = 0.0;     // Neumann free slip -z
         }
         if (z == 0 && bc_bot == 2) {
+            //dev_scalarfield_x[vidx(x,y,-1)] = val_x;     // Neumann no slip -z
+            //dev_scalarfield_y[vidx(x,y,-1)] = val_y;     // Neumann no slip -z
+            //dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Neumann no slip -z
+            dev_scalarfield_x[vidx(x,y,-1)] = -val_x;    // Neumann no slip -z
+            dev_scalarfield_y[vidx(x,y,-1)] = -val_y;    // Neumann no slip -z
+            dev_scalarfield_z[vidx(x,y,-1)] = 0.0;       // Neumann no slip -z
+        }
+        if (z == 0 && bc_bot == 3) {
             dev_scalarfield_x[vidx(x,y,nz)] = val_x;     // Periodic -z
             dev_scalarfield_y[vidx(x,y,nz)] = val_y;     // Periodic -z
             dev_scalarfield_z[vidx(x,y,nz)] = val_z;     // Periodic -z
         }
-        if (z == 1 && bc_bot == 2) {
+        if (z == 1 && bc_bot == 3) {
             dev_scalarfield_z[vidx(x,y,nz+1)] = val_z;   // Periodic -z
         }
 
@@ -726,12 +737,26 @@ __global__ void setNSghostNodesFace(
             dev_scalarfield_z[vidx(x,y,nz)] = val_z;     // Dirichlet +z
         }
         if (z == nz-1 && bc_top == 1) {
-            dev_scalarfield_x[vidx(x,y,nz)] = val_x;     // Neumann +z
-            dev_scalarfield_y[vidx(x,y,nz)] = val_y;     // Neumann +z
-            dev_scalarfield_z[vidx(x,y,nz)] = val_z;     // Neumann +z
-            dev_scalarfield_z[vidx(x,y,nz+1)] = val_z;     // Neumann +z
+            //dev_scalarfield_x[vidx(x,y,nz)] = val_x;     // Neumann free slip +z
+            //dev_scalarfield_y[vidx(x,y,nz)] = val_y;     // Neumann free slip +z
+            //dev_scalarfield_z[vidx(x,y,nz)] = val_z;     // Neumann free slip +z
+            //dev_scalarfield_z[vidx(x,y,nz+1)] = val_z;   // Neumann free slip +z
+            dev_scalarfield_x[vidx(x,y,nz)] = val_x;     // Neumann free slip +z
+            dev_scalarfield_y[vidx(x,y,nz)] = val_y;     // Neumann free slip +z
+            dev_scalarfield_z[vidx(x,y,nz)] = 0.0;     // Neumann free slip +z
+            dev_scalarfield_z[vidx(x,y,nz+1)] = 0.0;   // Neumann free slip +z
         }
         if (z == nz-1 && bc_top == 2) {
+            //dev_scalarfield_x[vidx(x,y,nz)] = val_x;     // Neumann no slip +z
+            //dev_scalarfield_y[vidx(x,y,nz)] = val_y;     // Neumann no slip +z
+            //dev_scalarfield_z[vidx(x,y,nz)] = val_z;     // Neumann no slip +z
+            //dev_scalarfield_z[vidx(x,y,nz+1)] = val_z;   // Neumann no slip +z
+            dev_scalarfield_x[vidx(x,y,nz)] = -val_x;    // Neumann no slip +z
+            dev_scalarfield_y[vidx(x,y,nz)] = -val_y;    // Neumann no slip +z
+            dev_scalarfield_z[vidx(x,y,nz)] = 0.0;       // Neumann no slip +z
+            dev_scalarfield_z[vidx(x,y,nz+1)] = 0.0;     // Neumann no slip +z
+        }
+        if (z == nz-1 && bc_top == 3) {
             dev_scalarfield_x[vidx(x,y,-1)] = val_x;     // Periodic +z
             dev_scalarfield_y[vidx(x,y,-1)] = val_y;     // Periodic +z
             dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Periodic +z
@@ -2284,20 +2309,6 @@ __global__ void findPredNSvelocities(
         if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
             v_p.z = v.z;
             //v_p.z = 0.0;
-
-        // Do not set components placed in ghost node cells
-        if (x == nx) {
-            v_p.y = 0.0;
-            v_p.z = 0.0;
-        }
-        if (y == ny) {
-            v_p.x = 0.0;
-            v_p.z = 0.0;
-        }
-        if (z == nz) {
-            v_p.x = 0.0;
-            v_p.y = 0.0;
-        }
 
         // Save the predicted velocity
         __syncthreads();
