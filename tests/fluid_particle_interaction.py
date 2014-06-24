@@ -8,6 +8,7 @@ sim.cleanup()
 sim.defineWorldBoundaries([1.0, 1.0, 1.0], dx = 0.1)
 sim.initFluid()
 sim.rho[0] = 1000.0 # particle density = fluid density
+sim.setDEMstepsPerCFDstep(100)
 
 
 # No gravity, pressure gradient enforced by Dirichlet boundaries.
