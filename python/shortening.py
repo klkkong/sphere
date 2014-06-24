@@ -108,7 +108,7 @@ sim = sphere.sim('shortening-relaxation', nw=1)
 sim.readlast()
 sim.sid = 'shortening'
 sim.cleanup()
-sim.initTemporal(current=0.0, total=5.0, file_dt = 0.01, epsilon=0.07)
+sim.initTemporal(current=0.0, total=20.0, file_dt = 0.01, epsilon=0.07)
 
 # set colors again
 y_min = numpy.min(sim.x[:,1])
