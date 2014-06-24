@@ -10,15 +10,15 @@ orig.initFluid(mu=8.9e-4) # inviscid "fluids" (mu=0) won't work!
 #orig.initTemporal(total = 0.5, file_dt = 0.05, dt = 1.0e-4)
 orig.initTemporal(total = 1.0e-0, file_dt = 1.0e-1, dt = 1.0e-3)
 orig.bc_bot[0] = 2 # No-flow, no slip BC at bottom (Neumann)
-orig.bc_top[0] = 1 # No-flow, free slip BC at top (Neumann)
+#orig.bc_top[0] = 1 # No-flow, free slip BC at top (Neumann)
 
 angle = 10.0 # slab inclination in degrees
 g_magnitude = 10.0
 orig.g[0] =  numpy.sin(numpy.radians(angle))*g_magnitude
 orig.g[2] = -numpy.cos(numpy.radians(angle))*g_magnitude
 
-tau_d = orig.g * orig.rho_f * orig.L[3] # analytical driving stress
-v_sur = tau_d * orig.L[3] / orig.mu     # analytical surface velocity
+tau_d = orig.g * orig.rho_f * orig.L[2] # analytical driving stress
+v_sur = tau_d * orig.L[2] / orig.mu     # analytical surface velocity
 
 # increase the max iterations for first step
 orig.setMaxIterations(1e5)
