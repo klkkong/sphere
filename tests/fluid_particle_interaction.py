@@ -17,7 +17,7 @@ print('# Test 1: Test pressure gradient force')
 sim.p_f[:,:,0]  = 10.0
 sim.p_f[:,:,-1] = 1.0
 sim.addParticle([0.5, 0.5, 0.5], 0.05)
-sim.initTemporal(total=0.1, file_dt=0.01)
+sim.initTemporal(total=0.01, file_dt=0.001)
 
 sim.run()
 #sim.writeVTKall()
@@ -32,8 +32,6 @@ test(sim.vel[0,2] > 0.0, 'Particle velocity:')
 print('# Test 2: Test fluid drag force')
 sim.initFluid()
 sim.zeroKinematics()
-sim.bc_bot[0] = 2   # no-slip
-sim.bc_top[0] = 2   # no-slip
 sim.g[0] = 10.0
 
 sim.deleteParticle(0)
@@ -41,16 +39,16 @@ sim.addParticle([0.5, 0.5, 0.75], 0.05)
 sim.addParticle([0.5, 0.5, 0.50], 0.05)
 sim.addParticle([0.5, 0.5, 0.25], 0.05)
 
-sim.initTemporal(total=0.1, file_dt=0.01)
+sim.initTemporal(total=0.0001, file_dt=0.00001)
 
 sim.run()
 #sim.writeVTKall()
 
 sim.readlast()
-test(sim.v_f[:,:,:,0] > 0.0, 'Fluid velocity:')
+test((sim.v_f[:,:,:,0] > 0.0).all(), 'Fluid velocity:')
 test(sim.vel[0,0] > 0.0, 'Particle 0 velocity:')
 test(sim.vel[1,0] > 0.0, 'Particle 1 velocity:')
 test(sim.vel[2,0] > 0.0, 'Particle 2 velocity:')
 
 
-#sim.cleanup()
+sim.cleanup()
