@@ -25,9 +25,9 @@ void DEM::initNSmem()
 
     ns.p     = new Float[ncells];     // hydraulic pressure
     ns.v     = new Float3[ncells];    // hydraulic velocity
-    //ns.v_x   = new Float[ncells_st];  // hydraulic velocity in staggered grid
-    //ns.v_y   = new Float[ncells_st];  // hydraulic velocity in staggered grid
-    //ns.v_z   = new Float[ncells_st];  // hydraulic velocity in staggered grid
+    ns.v_x   = new Float[ncells_st];  // hydraulic velocity in staggered grid
+    ns.v_y   = new Float[ncells_st];  // hydraulic velocity in staggered grid
+    ns.v_z   = new Float[ncells_st];  // hydraulic velocity in staggered grid
     //ns.v_p   = new Float3[ncells];    // predicted hydraulic velocity
     //ns.v_p_x = new Float[ncells_st];  // pred. hydraulic velocity in st. grid
     //ns.v_p_y = new Float[ncells_st];  // pred. hydraulic velocity in st. grid
@@ -61,9 +61,9 @@ void DEM::freeNSmem()
 {
     delete[] ns.p;
     delete[] ns.v;
-    //delete[] ns.v_x;
-    //delete[] ns.v_y;
-    //delete[] ns.v_z;
+    delete[] ns.v_x;
+    delete[] ns.v_y;
+    delete[] ns.v_z;
     //delete[] ns.v_p;
     //delete[] ns.v_p_x;
     //delete[] ns.v_p_y;

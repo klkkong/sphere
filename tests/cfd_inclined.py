@@ -9,7 +9,8 @@ orig.defineWorldBoundaries([0.3, 0.3, 0.3], dx = 0.06)
 orig.initFluid(mu=8.9e-4) # inviscid "fluids" (mu=0) won't work!
 #orig.initTemporal(total = 0.5, file_dt = 0.05, dt = 1.0e-4)
 orig.initTemporal(total = 1.0e-0, file_dt = 1.0e-1, dt = 1.0e-3)
-orig.bc_bot[0] = 2 # No-flow, no slip BC at bottom (Neumann)
+orig.bc_bot[0] = 1 # No-flow, free slip BC at bottom (Neumann)
+#orig.bc_bot[0] = 2 # No-flow, no slip BC at bottom (Neumann)
 #orig.bc_top[0] = 1 # No-flow, free slip BC at top (Neumann)
 
 angle = 10.0 # slab inclination in degrees

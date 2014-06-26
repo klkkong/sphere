@@ -108,7 +108,7 @@ sim = sphere.sim('shortening-relaxation', nw=1)
 sim.readlast()
 sim.sid = 'shortening'
 sim.cleanup()
-sim.initTemporal(current=0.0, total=20.0, file_dt = 0.01, epsilon=0.01)
+sim.initTemporal(current=0.0, total=20.0, file_dt = 0.01, epsilon=0.07)
 
 # set colors again
 y_min = numpy.min(sim.x[:,1])
@@ -165,8 +165,8 @@ sim.gamma_wt[0] = 0.0
 # Particle parameters
 sim.mu_s[0] = 0.5
 sim.mu_d[0] = 0.5
-sim.gamma_n[0] = 0.0
-sim.gamma_t[0] = 0.0
+sim.gamma_n[0] = 100.0
+sim.gamma_t[0] = 100.0
 
 # push down upper wall
 compressional_strain = 0.5

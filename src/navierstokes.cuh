@@ -177,6 +177,9 @@ void DEM::transferNSfromGlobalDeviceMemory(int statusmsg)
     cudaMemcpy(ns.p, dev_ns_p, memSizeF, cudaMemcpyDeviceToHost);
     checkForCudaErrors("In transferNSfromGlobalDeviceMemory, dev_ns_p", 0);
     cudaMemcpy(ns.v, dev_ns_v, memSizeF*3, cudaMemcpyDeviceToHost);
+    cudaMemcpy(ns.v_x, dev_ns_v_x, memSizeF, cudaMemcpyDeviceToHost);
+    cudaMemcpy(ns.v_y, dev_ns_v_y, memSizeF, cudaMemcpyDeviceToHost);
+    cudaMemcpy(ns.v_z, dev_ns_v_z, memSizeF, cudaMemcpyDeviceToHost);
     //cudaMemcpy(ns.v_p, dev_ns_v_p, memSizeF*3, cudaMemcpyDeviceToHost);
     cudaMemcpy(ns.phi, dev_ns_phi, memSizeF, cudaMemcpyDeviceToHost);
     cudaMemcpy(ns.dphi, dev_ns_dphi, memSizeF, cudaMemcpyDeviceToHost);
@@ -714,7 +717,7 @@ __global__ void setNSghostNodesFace(
             //dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Neumann free slip -z
             dev_scalarfield_x[vidx(x,y,-1)] = val_x;     // Neumann free slip -z
             dev_scalarfield_y[vidx(x,y,-1)] = val_y;     // Neumann free slip -z
-            dev_scalarfield_z[vidx(x,y,-1)] = 0.0;     // Neumann free slip -z
+            dev_scalarfield_z[vidx(x,y,-1)] = 0.0;       // Neumann free slip -z
         }
         if (z == 0 && bc_bot == 2) {
             //dev_scalarfield_x[vidx(x,y,-1)] = val_x;     // Neumann no slip -z
@@ -2285,8 +2288,23 @@ __global__ void findPredNSvelocities(
             + porosity_term
             + advection_term;
 
+        //// Neumann BCs
+
+        // Free slip
+        if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
+            v_p.z = v.z;
+
+        // No slip
+        if ((z == 0 && bc_bot == 2) || (z == nz-1 && bc_top == 2)) {
+            v_p.x = 0.0;
+            v_p.y = 0.0;
+            v_p.z = 0.0;
+        }
+
+
 #ifdef REPORT_V_P_COMPONENTS
         // Report velocity components to stdout for debugging
+        if (z==0)
         printf("\n[%d,%d,%d]"
                "\tv_p      = %+e %+e %+e\n"
                "\tpres     = %+e %+e %+e\n"
@@ -2294,7 +2312,7 @@ __global__ void findPredNSvelocities(
                "\tdiff     = %+e %+e %+e\n"
                "\tgrav     = %+e %+e %+e\n"
                "\tporos    = %+e %+e %+e\n"
-               "\tadv      = %+e %+e %+e\n"
+               "\tadv      = %+e %+e %+e\n",
                x, y, z,
                v_p.x, v_p.y, v_p.z,
                pressure_term.x, pressure_term.y, pressure_term.z, 
@@ -2304,11 +2322,6 @@ __global__ void findPredNSvelocities(
                porosity_term.x, porosity_term.y, porosity_term.z, 
                advection_term.x, advection_term.y, advection_term.z);
 #endif
-
-        // Enforce Neumann BC if specified
-        if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
-            v_p.z = v.z;
-            //v_p.z = 0.0;
 
         // Save the predicted velocity
         __syncthreads();

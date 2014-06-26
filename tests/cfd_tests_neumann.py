@@ -10,6 +10,7 @@ print('### CFD tests - Dirichlet/Neumann BCs ###')
 
 print('''# Neumann bottom, Dirichlet top BC.
 # No gravity, no pressure gradients => no flow''')
+'''
 orig = sphere.sim("neumann", fluid = True)
 cleanup(orig)
 orig.defaultParams(mu_s = 0.4, mu_d = 0.4)
@@ -37,6 +38,7 @@ else:
     print(numpy.mean(py.v_f))
     print(numpy.max(py.v_f))
     raise Exception("Failed")
+'''
 
 print('''# Neumann bottom, Dirichlet top BC.
 # Gravity, pressure gradients => transient flow''')
