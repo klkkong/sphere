@@ -19,7 +19,7 @@ sim.p_f[:,:,-1] = 1.0
 sim.addParticle([0.5, 0.5, 0.5], 0.05)
 sim.initTemporal(total=0.01, file_dt=0.001)
 
-sim.run()
+sim.run(verbose=False)
 #sim.writeVTKall()
 
 sim.readlast()
@@ -41,7 +41,7 @@ sim.addParticle([0.5, 0.5, 0.25], 0.05)
 
 sim.initTemporal(total=0.0001, file_dt=0.00001)
 
-sim.run()
+sim.run(verbose=False)
 #sim.writeVTKall()
 
 sim.readlast()
