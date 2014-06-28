@@ -2291,15 +2291,15 @@ __global__ void findPredNSvelocities(
         //// Neumann BCs
 
         // Free slip
-        if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
-            v_p.z = v.z;
+        /*if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
+          v_p.z = v.z;*/
 
         // No slip
-        if ((z == 0 && bc_bot == 2) || (z == nz-1 && bc_top == 2)) {
+        /*if ((z == 0 && bc_bot == 2) || (z == nz-1 && bc_top == 2)) {
             v_p.x = 0.0;
             v_p.y = 0.0;
             v_p.z = 0.0;
-        }
+            }*/
 
 
 #ifdef REPORT_V_P_COMPONENTS
@@ -2830,8 +2830,11 @@ __global__ void updateNSvelocity(
                     e_down);
         }*/
 
-        //if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
-            //v.z = 0.0;
+        if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
+            v.z = 0.0;
+
+        if ((z == 0 && bc_bot == 2) || (z == nz-1 && bc_top == 2))
+            v = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
         // Check the advection term using the Courant-Friedrichs-Lewy condition
         if (v.x*ndem*devC_dt/dx

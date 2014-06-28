@@ -471,9 +471,9 @@ void DEM::writebin(const char *target)
                         //ofs.write(as_bytes(ns.v[i].x), sizeof(Float));
                         //ofs.write(as_bytes(ns.v[i].y), sizeof(Float));
                         //ofs.write(as_bytes(ns.v[i].z), sizeof(Float));
-                        ofs.write(as_bytes(ns.v_x[i]), sizeof(Float));
-                        ofs.write(as_bytes(ns.v_y[i]), sizeof(Float));
-                        ofs.write(as_bytes(ns.v_z[i]), sizeof(Float));
+                        ofs.write(as_bytes(ns.v_x[vidx(x,y,z)]), sizeof(Float));
+                        ofs.write(as_bytes(ns.v_y[vidx(x,y,z)]), sizeof(Float));
+                        ofs.write(as_bytes(ns.v_z[vidx(x,y,z)]), sizeof(Float));
                         ofs.write(as_bytes(ns.p[i]), sizeof(Float));
                         ofs.write(as_bytes(ns.phi[i]), sizeof(Float));
                         ofs.write(as_bytes(ns.dphi[i]), sizeof(Float));

@@ -21,7 +21,7 @@ void DEM::initNSmem()
     ns.ny = grid.num[1];
     ns.nz = grid.num[2];
     unsigned int ncells = NScells();
-    //unsigned int ncells_st = NScellsVelocity();
+    unsigned int ncells_st = NScellsVelocity();
 
     ns.p     = new Float[ncells];     // hydraulic pressure
     ns.v     = new Float3[ncells];    // hydraulic velocity
