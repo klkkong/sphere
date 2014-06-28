@@ -468,12 +468,17 @@ void DEM::writebin(const char *target)
                 for (y=0; y<ns.ny; y++) {
                     for (x=0; x<ns.nx; x++) {
                         i = idx(x,y,z);
-                        //ofs.write(as_bytes(ns.v[i].x), sizeof(Float));
-                        //ofs.write(as_bytes(ns.v[i].y), sizeof(Float));
-                        //ofs.write(as_bytes(ns.v[i].z), sizeof(Float));
-                        ofs.write(as_bytes(ns.v_x[vidx(x,y,z)]), sizeof(Float));
-                        ofs.write(as_bytes(ns.v_y[vidx(x,y,z)]), sizeof(Float));
-                        ofs.write(as_bytes(ns.v_z[vidx(x,y,z)]), sizeof(Float));
+
+                        // Interpolated cell-center velocities
+                        ofs.write(as_bytes(ns.v[i].x), sizeof(Float));
+                        ofs.write(as_bytes(ns.v[i].y), sizeof(Float));
+                        ofs.write(as_bytes(ns.v[i].z), sizeof(Float));
+
+                        // Cell-face velocities
+                        //ofs.write(as_bytes(ns.v_x[vidx(x,y,z)]), sizeof(Float));
+                        //ofs.write(as_bytes(ns.v_y[vidx(x,y,z)]), sizeof(Float));
+                        //ofs.write(as_bytes(ns.v_z[vidx(x,y,z)]), sizeof(Float));
+
                         ofs.write(as_bytes(ns.p[i]), sizeof(Float));
                         ofs.write(as_bytes(ns.phi[i]), sizeof(Float));
                         ofs.write(as_bytes(ns.dphi[i]), sizeof(Float));
