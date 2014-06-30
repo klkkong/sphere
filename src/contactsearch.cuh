@@ -371,28 +371,29 @@ __global__ void topology(unsigned int* dev_cellStart,
 //   Collide with top- and bottom walls, save resulting force on upper wall.
 // Kernel is executed on device, and is callable from host only.
 // Function is called from mainGPU loop.
-__global__ void interact(unsigned int* dev_gridParticleIndex, // Input: Unsorted-sorted key
-        unsigned int* dev_cellStart,
-        unsigned int* dev_cellEnd,
-        Float4* dev_x,
-        Float4* dev_x_sorted,
-        Float4* dev_vel_sorted, 
-        Float4* dev_angvel_sorted,
-        Float4* dev_vel, 
-        Float4* dev_angvel,
-        Float4* dev_force, 
-        Float4* dev_torque,
-        Float* dev_es_dot, 
-        Float* dev_ev_dot, 
-        Float* dev_es, 
-        Float* dev_ev, 
-        Float* dev_p,
-        Float4* dev_walls_nx, 
-        Float4* dev_walls_mvfd, 
-        Float* dev_walls_force_pp, //uint4* dev_bonds_sorted,
-        unsigned int* dev_contacts, 
-        Float4* dev_distmod,
-        Float4* dev_delta_t)
+__global__ void interact(
+        unsigned int* dev_gridParticleIndex, // in
+        unsigned int* dev_cellStart,         // in
+        unsigned int* dev_cellEnd,           // in
+        Float4* dev_x,                       // in
+        Float4* dev_x_sorted,                // in
+        Float4* dev_vel_sorted,              // in
+        Float4* dev_angvel_sorted,           // in
+        Float4* dev_vel,                     // in
+        Float4* dev_angvel,                  // in
+        Float4* dev_force,         // out
+        Float4* dev_torque,        // out
+        Float* dev_es_dot,         // out
+        Float* dev_ev_dot,         // out
+        Float* dev_es,             // out
+        Float* dev_ev,             // out
+        Float* dev_p,              // out
+        Float4* dev_walls_nx,                // in
+        Float4* dev_walls_mvfd,              // in
+        Float* dev_walls_force_pp, // out
+        unsigned int* dev_contacts,          // in
+        Float4* dev_distmod,                 // in
+        Float4* dev_delta_t)                 // in
 {
     // Thread index equals index of particle A
     unsigned int idx_a = blockIdx.x * blockDim.x + threadIdx.x;
