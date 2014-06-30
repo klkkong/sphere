@@ -381,19 +381,19 @@ __global__ void interact(
         Float4* dev_angvel_sorted,           // in
         Float4* dev_vel,                     // in
         Float4* dev_angvel,                  // in
-        Float4* dev_force,         // out
-        Float4* dev_torque,        // out
-        Float* dev_es_dot,         // out
-        Float* dev_ev_dot,         // out
-        Float* dev_es,             // out
-        Float* dev_ev,             // out
-        Float* dev_p,              // out
+        Float4* dev_force,          // out
+        Float4* dev_torque,         // out
+        Float* dev_es_dot,          // out
+        Float* dev_ev_dot,          // out
+        Float* dev_es,              // out
+        Float* dev_ev,              // out
+        Float* dev_p,               // out
         Float4* dev_walls_nx,                // in
         Float4* dev_walls_mvfd,              // in
-        Float* dev_walls_force_pp, // out
-        unsigned int* dev_contacts,          // in
+        Float* dev_walls_force_pp,  // out
+        unsigned int* dev_contacts, // out
         Float4* dev_distmod,                 // in
-        Float4* dev_delta_t)                 // in
+        Float4* dev_delta_t)        // out
 {
     // Thread index equals index of particle A
     unsigned int idx_a = blockIdx.x * blockDim.x + threadIdx.x;
@@ -491,7 +491,7 @@ __global__ void interact(
                 if (idx_b_orig != (unsigned int)devC_np) {
 
                     // Read inter-particle distance correction vector
-                    distmod    = dev_distmod[mempos];
+                    distmod = dev_distmod[mempos];
 
                     // Read particle b position and radius
                     x_b = dev_x[idx_b_orig];
@@ -506,7 +506,7 @@ __global__ void interact(
                     delta_n = x_ab_length - (radius_a + radius_b);
 
                     // Process collision if the particles are overlapping
-                    if (delta_n < 0.0f) {
+                    if (delta_n < 0.0) {
                         if (devC_params.contactmodel == 2) {
                             contactLinear(&F, &T, &es_dot, &ev_dot, &p, 
                                     idx_a_orig,
