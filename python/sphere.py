@@ -9,7 +9,8 @@ import subprocess
 try:
     import vtk
 except ImportError:
-    print('Warning: Could not find "vtk" python module. VTK calls unavailable')
+    print('Warning: Could not find "vtk" python module. ' +
+          'Fluid VTK calls will be unavailable')
     py_vtk = False
 else:
     py_vtk = True
@@ -1164,9 +1165,6 @@ class sim:
         :param verbose: Show diagnostic information (default = True)
         :type verbose: bool
         '''
-        if py_vtk == False:
-            raise Exception('Error: vtk module not found.')
-
         lastfile = status(self.sid)
         sb = sim(fluid = self.fluid)
         for i in range(lastfile+1):
@@ -1226,8 +1224,6 @@ class sim:
         :param verbose: Show diagnostic information (default = True)
         :type verbose: bool
         '''
-        if py_vtk == False:
-            raise Exception('Error: vtk module not found.')
 
         fh = None
         try :
@@ -1469,7 +1465,8 @@ class sim:
         :type verbose: bool
         '''
         if py_vtk == False:
-            raise Exception('Error: vtk module not found.')
+            print('Error: vtk module not found, cannot writeFluidVTK.')
+            return
 
         filename = folder + '/fluid-' + self.sid + '.vti' # image grid
 
