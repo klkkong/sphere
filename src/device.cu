@@ -67,6 +67,7 @@ __host__ void DEM::initializeGPU(void)
 
     // Register number of devices
     cudaGetDeviceCount(&deviceCount);
+    ndevices = deviceCount; // store in DEM class
 
     if (deviceCount == 0) {
         std::cerr << "\nERROR: No CUDA-enabled devices availible. Bye."
@@ -84,7 +85,7 @@ __host__ void DEM::initializeGPU(void)
     // Loop through GPU's and choose the one with the most CUDA cores
     int ncudacores;
     int max_ncudacores = 0;
-    for (int d=0; d<deviceCount; d++) {
+    for (int d=0; d<ndevices; d++) {
         cudaGetDeviceProperties(&prop, d);
         cudaDriverGetVersion(&cudaDriverVersion);
         cudaRuntimeGetVersion(&cudaRuntimeVersion);
@@ -107,6 +108,7 @@ __host__ void DEM::initializeGPU(void)
         }
     }
 
+    device = cudadevice; // store in DEM class
     cout << " Using CUDA device ID " << cudadevice << " with "
          << max_ncudacores << " cores." << std::endl;
 
@@ -140,7 +142,6 @@ __global__ void checkConstantValues(int* dev_equal,
         Grid* dev_grid,
         Params* dev_params)
 {
-
     // Values ok (0)
     *dev_equal = 0;
 
@@ -157,7 +158,6 @@ __global__ void checkConstantValues(int* dev_equal,
             dev_grid->num[2] != devC_grid.num[2] ||
             dev_grid->periodic != devC_grid.periodic)
         *dev_equal = 1; // Not ok
-
 
     else if (dev_params->g[0] != devC_params.g[0] ||
             dev_params->g[1] != devC_params.g[1] ||
@@ -188,8 +188,6 @@ __global__ void checkConstantValues(int* dev_equal,
 // values in constant memory.
 __host__ void DEM::checkConstantMemory()
 {
-
-
     // Allocate space in global device memory
     Grid* dev_grid;
     Params* dev_params;
@@ -217,7 +215,6 @@ __host__ void DEM::checkConstantMemory()
     cudaFree(dev_params);
     cudaFree(dev_equal);
 
-
     // Are the values equal?
     if (*equal != 0) {
         std::cerr << "Error! The values in constant memory do not "
@@ -238,25 +235,24 @@ __host__ void DEM::transferToConstantDeviceMemory()
     if (verbose == 1)
         cout << "  Transfering data to constant device memory:     ";
 
-    /*// Reference by string deprecated in cuda 5.0
-    cudaMemcpyToSymbol("devC_nd", &nd, sizeof(nd));
-    cudaMemcpyToSymbol("devC_np", &np, sizeof(np));
-    cudaMemcpyToSymbol("devC_nw", &walls.nw, sizeof(unsigned int));
-    cudaMemcpyToSymbol("devC_nc", &NC, sizeof(int));
-    cudaMemcpyToSymbol("devC_dt", &time.dt, sizeof(Float));*/
-    cudaMemcpyToSymbol(devC_nd, &nd, sizeof(nd));
-    cudaMemcpyToSymbol(devC_np, &np, sizeof(np));
-    cudaMemcpyToSymbol(devC_nw, &walls.nw, sizeof(unsigned int));
-    cudaMemcpyToSymbol(devC_nc, &NC, sizeof(int));
-    cudaMemcpyToSymbol(devC_dt, &time.dt, sizeof(Float));
-    cudaMemcpyToSymbol(devC_grid, &grid, sizeof(Grid));
-    cudaMemcpyToSymbol(devC_params, &params, sizeof(Params));
+    for (int d=0; d<ndevices; d++) {
+        cudaSetDevice(d);
+        cudaMemcpyToSymbol(devC_nd, &nd, sizeof(nd));
+        cudaMemcpyToSymbol(devC_np, &np, sizeof(np));
+        cudaMemcpyToSymbol(devC_nw, &walls.nw, sizeof(unsigned int));
+        cudaMemcpyToSymbol(devC_nc, &NC, sizeof(int));
+        cudaMemcpyToSymbol(devC_dt, &time.dt, sizeof(Float));
+        cudaMemcpyToSymbol(devC_grid, &grid, sizeof(Grid));
+        cudaMemcpyToSymbol(devC_params, &params, sizeof(Params));
+    }
+    cudaSetDevice(device);
 
     checkForCudaErrors("After transferring to device constant memory");
 
     if (verbose == 1)
         cout << "Done\n";
 
+    // only for device with most CUDA cores
     checkConstantMemory();
 }
 
@@ -295,7 +291,7 @@ __host__ void DEM::allocateGlobalDeviceMemory(void)
 
     // Particle contact bookkeeping arrays
     cudaMalloc((void**)&dev_contacts,
-            sizeof(unsigned int)*np*NC); // Max NC contacts per particle
+               sizeof(unsigned int)*np*NC);
     cudaMalloc((void**)&dev_distmod, memSizeF4*NC);
     cudaMalloc((void**)&dev_delta_t, memSizeF4*NC);
     cudaMalloc((void**)&dev_bonds, sizeof(uint2)*params.nb0);
@@ -317,10 +313,10 @@ __host__ void DEM::allocateGlobalDeviceMemory(void)
     // Cell-related arrays
     cudaMalloc((void**)&dev_gridParticleCellID, sizeof(unsigned int)*np);
     cudaMalloc((void**)&dev_gridParticleIndex, sizeof(unsigned int)*np);
-    cudaMalloc((void**)&dev_cellStart, 
-            sizeof(unsigned int)*grid.num[0]*grid.num[1]*grid.num[2]);
-    cudaMalloc((void**)&dev_cellEnd,
-            sizeof(unsigned int)*grid.num[0]*grid.num[1]*grid.num[2]);
+    cudaMalloc((void**)&dev_cellStart, sizeof(unsigned int)
+               *grid.num[0]*grid.num[1]*grid.num[2]);
+    cudaMalloc((void**)&dev_cellEnd, sizeof(unsigned int)
+               *grid.num[0]*grid.num[1]*grid.num[2]);
 
     // Host contact bookkeeping arrays
     k.contacts = new unsigned int[np*NC];
@@ -348,6 +344,7 @@ __host__ void DEM::freeGlobalDeviceMemory()
 {
     if (verbose == 1)
         printf("\nFreeing device memory:                           ");
+
     // Particle arrays
     cudaFree(dev_x);
     cudaFree(dev_xyzsum);
@@ -416,59 +413,59 @@ __host__ void DEM::transferToGlobalDeviceMemory(int statusmsg)
 
     // Kinematic particle values
     cudaMemcpy( dev_x,	       k.x,	   
-            memSizeF4, cudaMemcpyHostToDevice);
+                memSizeF4, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_xyzsum,    k.xyzsum,
-            memSizeF4, cudaMemcpyHostToDevice);
+                memSizeF4, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_vel,      k.vel,
-            memSizeF4, cudaMemcpyHostToDevice);
+                memSizeF4, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_vel0,     k.vel,
-            memSizeF4, cudaMemcpyHostToDevice);
+                memSizeF4, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_acc,      k.acc, 
-            memSizeF4, cudaMemcpyHostToDevice);
+                memSizeF4, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_force,    k.force,
-            memSizeF4, cudaMemcpyHostToDevice);
+                memSizeF4, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_angpos,   k.angpos,
-            memSizeF4, cudaMemcpyHostToDevice);
+                memSizeF4, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_angvel,   k.angvel,
-            memSizeF4, cudaMemcpyHostToDevice);
+                memSizeF4, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_angvel0,  k.angvel,
-            memSizeF4, cudaMemcpyHostToDevice);
+                memSizeF4, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_angacc,   k.angacc,
-            memSizeF4, cudaMemcpyHostToDevice);
+                memSizeF4, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_torque,   k.torque,
-            memSizeF4, cudaMemcpyHostToDevice);
+                memSizeF4, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_contacts, k.contacts,
-            sizeof(unsigned int)*np*NC, cudaMemcpyHostToDevice);
+                sizeof(unsigned int)*np*NC, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_distmod, k.distmod,
-            memSizeF4*NC, cudaMemcpyHostToDevice);
+                memSizeF4*NC, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_delta_t, k.delta_t,
-            memSizeF4*NC, cudaMemcpyHostToDevice);
+                memSizeF4*NC, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_bonds, k.bonds,
-            sizeof(uint2)*params.nb0, cudaMemcpyHostToDevice);
+                sizeof(uint2)*params.nb0, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_bonds_delta, k.bonds_delta,
-            sizeof(Float4)*params.nb0, cudaMemcpyHostToDevice);
+                sizeof(Float4)*params.nb0, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_bonds_omega, k.bonds_omega,
-            sizeof(Float4)*params.nb0, cudaMemcpyHostToDevice);
+                sizeof(Float4)*params.nb0, cudaMemcpyHostToDevice);
 
     // Individual particle energy values
     cudaMemcpy( dev_es_dot, e.es_dot,
-            memSizeF, cudaMemcpyHostToDevice);
+                memSizeF, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_es,     e.es,
-            memSizeF, cudaMemcpyHostToDevice);
+                memSizeF, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_ev_dot, e.ev_dot,
-            memSizeF, cudaMemcpyHostToDevice);
+                memSizeF, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_ev,     e.ev,
-            memSizeF, cudaMemcpyHostToDevice);
+                memSizeF, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_p, e.p,
-            memSizeF, cudaMemcpyHostToDevice);
+                memSizeF, cudaMemcpyHostToDevice);
 
     // Wall parameters
     cudaMemcpy( dev_walls_wmode, walls.wmode,
-            sizeof(int)*walls.nw, cudaMemcpyHostToDevice);
+                sizeof(int)*walls.nw, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_walls_nx,    walls.nx,
-            sizeof(Float4)*walls.nw, cudaMemcpyHostToDevice);
+                sizeof(Float4)*walls.nw, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_walls_mvfd,  walls.mvfd,
-            sizeof(Float4)*walls.nw, cudaMemcpyHostToDevice);
+                sizeof(Float4)*walls.nw, cudaMemcpyHostToDevice);
 
     // Fluid arrays
     if (navierstokes == 1) {

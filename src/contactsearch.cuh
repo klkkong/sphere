@@ -485,8 +485,6 @@ __global__ void interact(
                 mempos = (unsigned int)(idx_a_orig * devC_nc + i);
                 __syncthreads();
                 idx_b_orig = dev_contacts[mempos];
-                //radius_b   = distmod.w;
-
 
                 if (idx_b_orig != (unsigned int)devC_np) {
 

@@ -53,6 +53,9 @@ class DEM {
         unsigned int width;
         unsigned int height;
 
+        int ndevices;  // number of CUDA GPUs
+        int device;    // primary GPU
+
 
         // DEVICE ARRAYS
 
