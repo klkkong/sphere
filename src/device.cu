@@ -235,8 +235,8 @@ __host__ void DEM::transferToConstantDeviceMemory()
     if (verbose == 1)
         cout << "  Transfering data to constant device memory:     ";
 
-    for (int d=0; d<ndevices; d++) {
-        cudaSetDevice(d);
+    /*for (int d=0; d<ndevices; d++) {
+      cudaSetDevice(d);*/
         cudaMemcpyToSymbol(devC_nd, &nd, sizeof(nd));
         cudaMemcpyToSymbol(devC_np, &np, sizeof(np));
         cudaMemcpyToSymbol(devC_nw, &walls.nw, sizeof(unsigned int));
@@ -244,8 +244,8 @@ __host__ void DEM::transferToConstantDeviceMemory()
         cudaMemcpyToSymbol(devC_dt, &time.dt, sizeof(Float));
         cudaMemcpyToSymbol(devC_grid, &grid, sizeof(Grid));
         cudaMemcpyToSymbol(devC_params, &params, sizeof(Params));
-    }
-    cudaSetDevice(device);
+        /*}
+          cudaSetDevice(device);*/
 
     checkForCudaErrors("After transferring to device constant memory");
 
