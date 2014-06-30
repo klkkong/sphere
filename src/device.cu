@@ -89,7 +89,8 @@ __host__ void DEM::initializeGPU(void)
         cudaDriverGetVersion(&cudaDriverVersion);
         cudaRuntimeGetVersion(&cudaRuntimeVersion);
 
-        ncudacores = prop.multiProcessorCount*cudaCoresPerSM(prop.major, prop.minor);
+        ncudacores = prop.multiProcessorCount
+            *cudaCoresPerSM(prop.major, prop.minor);
         if (ncudacores > max_ncudacores) {
             max_ncudacores = ncudacores;
             cudadevice = d;
@@ -106,10 +107,12 @@ __host__ void DEM::initializeGPU(void)
         }
     }
 
-    // Comment following line when using a system only containing exclusive mode
-    // GPUs
-    cout << "  Using CUDA device ID " << cudadevice << '.' << std::endl;
-    cudaChooseDevice(&cudadevice, &prop); 
+    cout << " Using CUDA device ID " << cudadevice << " with "
+         << max_ncudacores << " cores." << std::endl;
+
+    // Comment following line when using a system only containing
+    // exclusive mode GPUs
+    cudaChooseDevice(&cudadevice, &prop);
 
     checkForCudaErrors("While initializing CUDA device");
 }
