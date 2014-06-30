@@ -25,6 +25,29 @@
 #include "raytracer.cuh"
 #include "navierstokes.cuh"
 
+// Returns the number of cores per streaming multiprocessor, which is
+// a function of the device compute capability
+int cudaCoresPerSM(int major, int minor)
+{
+    if (major == 1)
+        return 8;
+    else if (major == 2 && minor == 0)
+        return 32;
+    else if (major == 2 && minor == 1)
+        return 48;
+    else if (major == 3 && minor == 0)
+        return 192;
+    else if (major == 3 && minor == 5)
+        return 192;
+    else if (major == 5 && minor == 0)
+        return 128;
+    else
+        printf("Error in cudaCoresPerSM",
+               "Device compute capability value (%d.%d) not recognized.",
+               major, minor);
+    return -1;
+}
+
 // Wrapper function for initializing the CUDA components.
 // Called from main.cpp
 __host__ void DEM::initializeGPU(void)
@@ -58,22 +81,34 @@ __host__ void DEM::initializeGPU(void)
                 << " CUDA compatible devices.\n";
     }
 
-    cudaGetDeviceProperties(&prop, cudadevice);
-    cudaDriverGetVersion(&cudaDriverVersion);
-    cudaRuntimeGetVersion(&cudaRuntimeVersion);
+    // Loop through GPU's and choose the one with the most CUDA cores
+    int ncudacores;
+    int max_ncudacores = 0;
+    for (int d=0; d<deviceCount; d++) {
+        cudaGetDeviceProperties(&prop, d);
+        cudaDriverGetVersion(&cudaDriverVersion);
+        cudaRuntimeGetVersion(&cudaRuntimeVersion);
 
-    if (verbose == 1) {
-        cout << "  Using CUDA device ID: " << cudadevice << "\n";
-        cout << "  - Name: " <<  prop.name << ", compute capability: " 
-            << prop.major << "." << prop.minor << ".\n";
-        cout << "  - CUDA Driver version: " << cudaDriverVersion/1000 
-            << "." <<  cudaDriverVersion%100 
-            << ", runtime version " << cudaRuntimeVersion/1000 << "." 
-            << cudaRuntimeVersion%100 << std::endl;
+        ncudacores = prop.multiProcessorCount*cudaCoresPerSM(prop.major, prop.minor);
+        if (ncudacores > max_ncudacores) {
+            max_ncudacores = ncudacores;
+            cudadevice = d;
+        }
+
+        if (verbose == 1) {
+            cout << "  CUDA device ID: " << d << "\n";
+            cout << "  - Name: " <<  prop.name << ", compute capability: " 
+                << prop.major << "." << prop.minor << ".\n";
+            cout << "  - CUDA Driver version: " << cudaDriverVersion/1000 
+                << "." <<  cudaDriverVersion%100 
+                << ", runtime version " << cudaRuntimeVersion/1000 << "." 
+                << cudaRuntimeVersion%100 << std::endl;
+        }
     }
 
     // Comment following line when using a system only containing exclusive mode
     // GPUs
+    cout << "  Using CUDA device ID " << cudadevice << '.' << std::endl;
     cudaChooseDevice(&cudadevice, &prop); 
 
     checkForCudaErrors("While initializing CUDA device");
