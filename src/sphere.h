@@ -53,8 +53,10 @@ class DEM {
         unsigned int width;
         unsigned int height;
 
-        int ndevices;  // number of CUDA GPUs
-        int device;    // primary GPU
+        // Device management
+        int ndevices;     // number of CUDA GPUs
+        int device;       // primary GPU
+        int* domain_size; // elements per GPU
 
 
         // DEVICE ARRAYS
@@ -137,6 +139,10 @@ class DEM {
         void allocateGlobalDeviceMemory();
         void rt_allocateGlobalDeviceMemory();
 
+        // Allocate global memory on helper devices
+        void allocateHelperDeviceMemory();
+        void freeHelperDeviceMemory();
+
         // Free dynamically allocated global device memory
         void freeGlobalDeviceMemory();
         void rt_freeGlobalDeviceMemory();
@@ -207,6 +213,33 @@ class DEM {
         Float*  dev_ns_div_tau_y;    // div(tau) on y-face
         Float*  dev_ns_div_tau_z;    // div(tau) on z-face
         Float3* dev_ns_f_pf;         // Interaction force on particles
+
+        // Helper device arrays, input
+        unsigned int** hdev_gridParticleIndex;
+        unsigned int** hdev_gridCellStart;
+        unsigned int** hdev_gridCellEnd;
+        Float4** hdev_x;
+        Float4** hdev_x_sorted;
+        Float4** hdev_vel;
+        Float4** hdev_vel_sorted;
+        Float4** hdev_angvel;
+        Float4** hdev_angvel_sorted;
+        Float4** hdev_walls_nx;
+        Float4** hdev_walls_mvfd;
+        Float4** hdev_distmod;
+
+        // Helper device arrays, output
+        Float4** hdev_force;
+        Float4** hdev_torque;
+        Float4** hdev_delta_t;
+        Float** hdev_es_dot;
+        Float** hdev_es;
+        Float** hdev_ev_dot;
+        Float** hdev_ev;
+        Float** hdev_p;
+        Float** hdev_walls_force_pp;
+        unsigned int** hdev_contacts;
+
 
         //// Navier Stokes functions
 

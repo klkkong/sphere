@@ -340,6 +340,119 @@ __host__ void DEM::allocateGlobalDeviceMemory(void)
         std::cout << "Done" << std::endl;
 }
 
+// Allocate global memory on other devices required for "interact" function.
+// The values of domain_size[ndevices] must be set beforehand.
+__host__ void DEM::allocateHelperDeviceMemory(void)
+{
+    // Particle memory size
+    unsigned int memSizeF4 = sizeof(Float4) * np;
+
+    // Initialize pointers to per-GPU arrays
+    hdev_gridParticleIndex = (unsigned**)malloc(ndevices*sizeof(unsigned*));
+    hdev_gridCellStart     = (unsigned**)malloc(ndevices*sizeof(unsigned*));
+    hdev_gridCellEnd       = (unsigned**)malloc(ndevices*sizeof(unsigned*));
+    hdev_x                 = (Float4**)malloc(ndevices*sizeof(Float4*));
+    hdev_x_sorted          = (Float4**)malloc(ndevices*sizeof(Float4*));
+    hdev_vel               = (Float4**)malloc(ndevices*sizeof(Float4*));
+    hdev_vel_sorted        = (Float4**)malloc(ndevices*sizeof(Float4*));
+    hdev_angvel            = (Float4**)malloc(ndevices*sizeof(Float4*));
+    hdev_angvel_sorted     = (Float4**)malloc(ndevices*sizeof(Float4*));
+    hdev_walls_nx          = (Float4**)malloc(ndevices*sizeof(Float4*));
+    hdev_walls_mvfd        = (Float4**)malloc(ndevices*sizeof(Float4*));
+    hdev_distmod           = (Float4**)malloc(ndevices*sizeof(Float4*));
+
+    hdev_force             = (Float4**)malloc(ndevices*sizeof(Float4*));
+    hdev_torque            = (Float4**)malloc(ndevices*sizeof(Float4*));
+    hdev_delta_t           = (Float4**)malloc(ndevices*sizeof(Float4*));
+    hdev_es_dot            = (Float**)malloc(ndevices*sizeof(Float*));
+    hdev_es                = (Float**)malloc(ndevices*sizeof(Float*));
+    hdev_ev_dot            = (Float**)malloc(ndevices*sizeof(Float*));
+    hdev_ev                = (Float**)malloc(ndevices*sizeof(Float*));
+    hdev_p                 = (Float**)malloc(ndevices*sizeof(Float*));
+    hdev_walls_force_pp    = (Float**)malloc(ndevices*sizeof(Float*));
+    hdev_contacts          = (unsigned**)malloc(ndevices*sizeof(unsigned*));
+
+    for (int d=0; d<ndevices; d++) {
+
+        // do not allocate memory on primary GPU
+        if (d == device)
+            continue;
+
+        cudaSetDevice(d);
+
+        // allocate space for full input arrays for interact()
+        cudaMalloc((void**)&hdev_gridParticleIndex[d], sizeof(unsigned int)*np);
+        cudaMalloc((void**)&hdev_gridCellStart[d], sizeof(unsigned int)
+                   *grid.num[0]*grid.num[1]*grid.num[2]);
+        cudaMalloc((void**)&hdev_gridCellEnd[d], sizeof(unsigned int)
+                   *grid.num[0]*grid.num[1]*grid.num[2]);
+        cudaMalloc((void**)&hdev_x[d], memSizeF4);
+        cudaMalloc((void**)&hdev_x_sorted[d], memSizeF4);
+        cudaMalloc((void**)&hdev_vel[d], memSizeF4);
+        cudaMalloc((void**)&hdev_vel_sorted[d], memSizeF4);
+        cudaMalloc((void**)&hdev_angvel[d], memSizeF4);
+        cudaMalloc((void**)&hdev_angvel_sorted[d], memSizeF4);
+        cudaMalloc((void**)&hdev_walls_nx[d], sizeof(Float4)*walls.nw);
+        cudaMalloc((void**)&hdev_walls_mvfd[d], sizeof(Float4)*walls.nw);
+        cudaMalloc((void**)&hdev_distmod[d], memSizeF4*NC);
+
+        // allocate space for partial output arrays for interact()
+        cudaMalloc((void**)&hdev_force[d], sizeof(Float4)*domain_size[d]);
+        cudaMalloc((void**)&hdev_torque[d], sizeof(Float4)*domain_size[d]);
+        cudaMalloc((void**)&hdev_es_dot[d], sizeof(Float)*domain_size[d]);
+        cudaMalloc((void**)&hdev_ev_dot[d], sizeof(Float)*domain_size[d]);
+        cudaMalloc((void**)&hdev_es[d], sizeof(Float)*domain_size[d]);
+        cudaMalloc((void**)&hdev_ev[d], sizeof(Float)*domain_size[d]);
+        cudaMalloc((void**)&hdev_p[d], sizeof(Float)*domain_size[d]);
+        cudaMalloc((void**)&hdev_walls_force_pp[d],
+                   sizeof(Float)*domain_size[d]*walls.nw);
+        cudaMalloc((void**)&hdev_contacts[d],
+                   sizeof(unsigned)*domain_size[d]*NC);
+        cudaMalloc((void**)&hdev_delta_t[d], sizeof(Float4)*domain_size[d]*NC);
+
+        checkForCudaErrors("During allocateGlobalDeviceMemoryOtherDevices");
+    }
+    cudaSetDevice(device); // select main GPU
+}
+
+__host__ void DEM::freeHelperDeviceMemory()
+{
+    for (int d=0; d<ndevices; d++) {
+
+        // do not allocate memory on primary GPU
+        if (d == device)
+            continue;
+
+        cudaSetDevice(d);
+
+        cudaFree(hdev_gridParticleIndex[d]);
+        cudaFree(hdev_gridCellStart[d]);
+        cudaFree(hdev_gridCellEnd[d]);
+        cudaFree(hdev_x[d]);
+        cudaFree(hdev_vel[d]);
+        cudaFree(hdev_vel_sorted[d]);
+        cudaFree(hdev_angvel[d]);
+        cudaFree(hdev_angvel_sorted[d]);
+        cudaFree(hdev_walls_nx[d]);
+        cudaFree(hdev_walls_mvfd[d]);
+        cudaFree(hdev_distmod[d]);
+
+        cudaFree(hdev_force[d]);
+        cudaFree(hdev_torque[d]);
+        cudaFree(hdev_es_dot[d]);
+        cudaFree(hdev_ev_dot[d]);
+        cudaFree(hdev_es[d]);
+        cudaFree(hdev_ev[d]);
+        cudaFree(hdev_p[d]);
+        cudaFree(hdev_walls_force_pp[d]);
+        cudaFree(hdev_contacts[d]);
+        cudaFree(hdev_delta_t[d]);
+
+        checkForCudaErrors("During helper device cudaFree calls");
+    }
+    cudaSetDevice(device); // select primary GPU
+}
+
 __host__ void DEM::freeGlobalDeviceMemory()
 {
     if (verbose == 1)
