@@ -34,4 +34,4 @@ for dp in [4.0e3, 10.0e3]:
 
     sim.run(dry=True)
     sim.run()
-    sim.writeVTKall()
+    #sim.writeVTKall()
