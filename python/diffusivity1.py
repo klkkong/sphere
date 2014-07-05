@@ -4,7 +4,7 @@ import numpy
 
 for sigma0 in [10.0e3, 20.0e3]:
 
-    sim = sphere.sim('diffusivity-cons-relax')
+    sim = sphere.sim('diffusivity-relax')
     sim.readlast()
 
     sim.sid = 'diffusivity-sigma0=' + str(sigma0)
@@ -33,6 +33,7 @@ for sigma0 in [10.0e3, 20.0e3]:
     sim.setFluidBottomNoFlow()
     sim.setFluidTopFixedPressure()
     sim.setDEMstepsPerCFDstep(10)
+    sim.setMaxIterations(2e5)
     sim.initTemporal(total = 5.0, file_dt = 0.01, epsilon=0.07)
     sim.run(dry=True)
     sim.run()
