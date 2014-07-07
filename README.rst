@@ -28,6 +28,9 @@ implicitly called when calling the ``run`` member function.
 2014-03-25: Fluid phase in ``master`` branch simulated by the full Navier-Stokes
 equations.
 
+2014-07-05: Fluid phase now discretized on a staggered grid which increases
+accuracy and stability.
+
 Documentation
 -------------
 See the separate documentation for general reference and installation
