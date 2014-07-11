@@ -29,7 +29,7 @@ for dp in [1.0e3, 2.0e3, 4.0e3, 10.0e3, 20.0e3, 40.0e3, 80.0e3]:
     sim.setFluidTopFixedPressure()
     sim.setFluidBottomFixedPressure()
     sim.p_f[:,:,-1] = p_top
-    sim.setDEMstepsPerCFDstep(10)
+    #sim.setDEMstepsPerCFDstep(10)
     sim.initTemporal(total = 2.0, file_dt = 0.01, epsilon=0.07)
 
     sim.run(dry=True)
