@@ -32,7 +32,7 @@ for sigma0 in [40.0e3, 60.0e3]:
     sim.initFluid(mu = 17.87e-4, p = 1.0e5, hydrostatic = True)
     sim.setFluidBottomNoFlow()
     sim.setFluidTopFixedPressure()
-    #sim.setDEMstepsPerCFDstep(10)
+    sim.setDEMstepsPerCFDstep(10)
     sim.setMaxIterations(2e5)
     sim.initTemporal(total = 5.0, file_dt = 0.01, epsilon=0.07)
     sim.run(dry=True)

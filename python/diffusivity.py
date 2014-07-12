@@ -74,7 +74,7 @@ sim.initFluid(mu = 17.87e-4, p = 1.0e5, hydrostatic = True)  # mu = water at 0 d
 sim.setFluidBottomNoFlow()
 sim.setFluidTopFixedPressure()
 #sim.setDEMstepsPerCFDstep(100)
-#sim.setDEMstepsPerCFDstep(10)
+sim.setDEMstepsPerCFDstep(10)
 sim.initTemporal(total = 5.0, file_dt = 0.01, epsilon=0.07)
 sim.run(dry=True)
 sim.run()
