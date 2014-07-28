@@ -3063,7 +3063,7 @@ class sim:
         return numpy.array(porosity), numpy.array(depth)
 
     def run(self, verbose=True, hideinputfile=False, dry=False, valgrind=False,
-            cudamemcheck=False):
+            cudamemcheck=False, exclusive_mode=False):
         '''
         Start ``sphere`` calculations on the ``sim`` object
 
@@ -3082,6 +3082,8 @@ class sim:
             check for device memory leaks and errors. This causes a significant
             increase in computational time.
         :type cudamemcheck: bool
+        :param exclusive_mode: The system GPUs are running in exclusive mode.
+        :type exclusive_mode: bool
         '''
 
         self.writebin(verbose=False)
@@ -3090,6 +3092,7 @@ class sim:
         stdout = ""
         dryarg = ""
         fluidarg = ""
+        exclusivearg = ""
         valgrindbin = ""
         cudamemchk = ""
         binary = "sphere"
@@ -3105,9 +3108,12 @@ class sim:
             cudamemchk = "cuda-memcheck --leak-check full "
         if (self.fluid == True):
             fluidarg = "--fluid "
+        if (exclusive_mode == True):
+            exclusivearg = "--exclusive "
 
         cmd = "cd ..; " + valgrindbin + cudamemchk + "./" + binary + " " \
-                + quiet + dryarg + fluidarg + "input/" + self.sid + ".bin " + stdout
+                + quiet + dryarg + fluidarg + exclusivearg + \
+                "input/" + self.sid + ".bin " + stdout
         #print(cmd)
         status = subprocess.call(cmd, shell=True)
 
