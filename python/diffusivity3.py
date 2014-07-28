@@ -36,7 +36,7 @@ for sigma0 in [80.0e3, 120.0e3]:
     sim.setMaxIterations(2e5)
     sim.initTemporal(total = 5.0, file_dt = 0.01, epsilon=0.07)
     sim.run(dry=True)
-    sim.run()
+    sim.run(exclusive_mode=True)
     #sim.writeVTKall()
     sim.visualize('walls')
     sim.visualize('fluid-pressure')

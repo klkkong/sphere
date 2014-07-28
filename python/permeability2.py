@@ -33,5 +33,5 @@ for dp in [4.0e3, 10.0e3]:
     sim.initTemporal(total = 2.0, file_dt = 0.01, epsilon=0.07)
 
     sim.run(dry=True)
-    sim.run()
+    sim.run(exclusive_mode=True)
     #sim.writeVTKall()
