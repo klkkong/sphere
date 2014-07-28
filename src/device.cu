@@ -136,7 +136,8 @@ __host__ void DEM::initializeGPU(void)
         }
     }
 
-    cudaChooseDevice(&device, &prop);
+    // The value of device is now 0 or larger
+    cudaSetDevice(device);
 
     checkForCudaErrors("While initializing CUDA device");
 }
