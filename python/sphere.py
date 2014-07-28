@@ -972,6 +972,9 @@ class sim:
                     self.c_phi = numpy.fromfile(fh, dtype=numpy.float64, count=1)
                     self.c_grad_p =\
                       numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                else:
+                    self.c_phi = numpy.array(1.0)
+                    self.c_grad_p = numpy.array(1.0)
 
             if (self.version >= 1.02):
                 self.color =\
