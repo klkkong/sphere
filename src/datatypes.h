@@ -121,14 +121,14 @@ struct NavierStokes {
     //Float*  v_p_x;       // Predicted fluid velocity in staggered grid
     //Float*  v_p_y;       // Predicted fluid velocity in staggered grid
     //Float*  v_p_z;       // Predicted fluid velocity in staggered grid
-    Float*  phi;         // Cell porosity
-    Float*  dphi;        // Cell porosity change
-    Float*  norm;        // Normalized residual of epsilon updates
-    Float*  epsilon;     // Iterative solution parameter
-    Float*  epsilon_new; // Updated value of iterative solution parameter
-    Float   p_mod_A;     // Pressure modulation amplitude at top
-    Float   p_mod_f;     // Pressure modulation frequency at top
-    Float   p_mod_phi;   // Pressure modulation phase at top
+    Float*  phi;            // Cell porosity
+    Float*  dphi;           // Cell porosity change
+    Float*  norm;           // Normalized residual of epsilon updates
+    Float*  epsilon;        // Iterative solution parameter
+    Float*  epsilon_new;    // Updated value of iterative solution parameter
+    Float   p_mod_A;        // Pressure modulation amplitude at top
+    Float   p_mod_f;        // Pressure modulation frequency at top
+    Float   p_mod_phi;      // Pressure modulation phase at top
     int     bc_bot;         // 0: Dirichlet, 1: Neumann
     int     bc_top;         // 0: Dirichlet, 1: Neumann
     int     free_slip_bot;  // 0: no, 1: yes
@@ -139,6 +139,8 @@ struct NavierStokes {
     Float   tolerance;      // Solver parameter: Max residual tolerance
     unsigned int maxiter;   // Solver parameter: Max iterations to perform
     unsigned int ndem;      // Solver parameter: DEM time steps per CFD step
+    Float   c_phi;          // Porosity scaling coefficient
+    Float   c_grad_p;       // Fluid pressure gradient scaling coefficient
 };
 
 // Image structure

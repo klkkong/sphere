@@ -1031,7 +1031,8 @@ __host__ void DEM::startTime()
                         dev_ns_vp_avg,
                         dev_ns_d_avg,
                         iter,
-                        np);
+                        np,
+                        ns.c_phi);
             cudaThreadSynchronize();
             if (PROFILING == 1)
                 stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
@@ -1278,6 +1279,7 @@ __host__ void DEM::startTime()
                         ns.beta,
                         dev_ns_F_pf,
                         ns.ndem,
+                        ns.c_grad_p,
                         dev_ns_v_p_x,
                         dev_ns_v_p_y,
                         dev_ns_v_p_z);
@@ -1641,6 +1643,7 @@ __host__ void DEM::startTime()
                         ns.bc_bot,
                         ns.bc_top,
                         ns.ndem,
+                        ns.c_grad_p,
                         dev_ns_v_x,
                         dev_ns_v_y,
                         dev_ns_v_z);

@@ -331,6 +331,12 @@ class sim:
             # The number of DEM time steps to perform between CFD updates
             self.ndem = numpy.array(1)
 
+            # Porosity scaling factor
+            self.c_phi = numpy.ones(1, dtype=numpy.float64)
+
+            # Permeability scaling factor
+            self.c_grad_p = numpy.ones(1, dtype=numpy.float64)
+
         # Particle color marker
         self.color = numpy.zeros(self.np, dtype=numpy.int32)
 
@@ -588,6 +594,12 @@ class sim:
             elif (self.ndem != other.ndem):
                 print(83)
                 return 83
+            elif (self.c_phi != other.c_phi):
+                print(84)
+                return(84)
+            elif (self.c_grad_p != other.c_grad_p):
+                print(85)
+                return(85)
 
         if ((self.color != other.color)).any():
             print(90)
@@ -956,6 +968,11 @@ class sim:
                 else:
                     self.ndem = 1
 
+                if (self.version >= 1.04):
+                    self.c_phi = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    self.c_grad_p =\
+                      numpy.fromfile(fh, dtype=numpy.float64, count=1)
+
             if (self.version >= 1.02):
                 self.color =\
                   numpy.fromfile(fh, dtype=numpy.int32, count=self.np)
@@ -1108,6 +1125,9 @@ class sim:
                 fh.write(self.tolerance.astype(numpy.float64))
                 fh.write(self.maxiter.astype(numpy.uint32))
                 fh.write(self.ndem.astype(numpy.uint32))
+
+                fh.write(self.c_phi.astype(numpy.float64))
+                fh.write(self.c_grad_p.astype(numpy.float64))
 
             fh.write(self.color.astype(numpy.int32))
 
@@ -2483,6 +2503,9 @@ class sim:
         self.tolerance = numpy.array(1.0e-8)
         self.maxiter = numpy.array(1e4)
         self.ndem = numpy.array(1)
+
+        self.c_phi = numpy.array(1.0)
+        self.c_grad_p = numpy.array(1.0)
 
     def setFluidBottomNoFlow(self):
         '''

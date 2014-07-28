@@ -1003,7 +1003,8 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
         Float3* dev_ns_vp_avg,
         Float*  dev_ns_d_avg,
         const unsigned int iteration,
-        const unsigned int np)
+        const unsigned int np,
+        const Float c_phi)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -1161,8 +1162,8 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
             __syncthreads();
             //phi = 0.5; dphi = 0.0; // disable porosity effects
             const unsigned int cellidx = idx(x,y,z);
-            dev_ns_phi[cellidx]  = phi;
-            dev_ns_dphi[cellidx] = dphi;
+            dev_ns_phi[cellidx]  = phi*c_phi;
+            dev_ns_dphi[cellidx] = dphi*c_phi;
             dev_ns_vp_avg[cellidx] = v_avg;
             dev_ns_d_avg[cellidx]  = d_avg;
 
@@ -2145,6 +2146,7 @@ __global__ void findPredNSvelocities(
         Float   beta,                   // in
         Float3* dev_ns_F_pf,            // in
         unsigned int ndem,              // in
+        Float   c_grad_p,               // in
         Float*  dev_ns_v_p_x,           // out
         Float*  dev_ns_v_p_y,           // out
         Float*  dev_ns_v_p_z)           // out
@@ -2248,7 +2250,7 @@ __global__ void findPredNSvelocities(
             const Float3 grad_p = MAKE_FLOAT3(
                     (p - p_xn)/dx,
                     (p - p_yn)/dy,
-                    (p - p_zn)/dz);
+                    (p - p_zn)/dz) * c_grad_p;
 #ifdef SET_1
             pressure_term = -beta*dt/(rho*phi)*grad_p;
 #endif
@@ -2754,6 +2756,7 @@ __global__ void updateNSvelocity(
         int    bc_bot,          // in
         int    bc_top,          // in
         unsigned int ndem,      // in
+        Float  c_grad_p,        // in
         Float* dev_ns_v_x,      // out
         Float* dev_ns_v_y,      // out
         Float* dev_ns_v_z)      // out
@@ -2806,7 +2809,7 @@ __global__ void updateNSvelocity(
         const Float3 grad_epsilon = MAKE_FLOAT3(
                 (epsilon_c - epsilon_xn)/dx,
                 (epsilon_c - epsilon_yn)/dy,
-                (epsilon_c - epsilon_zn)/dz);
+                (epsilon_c - epsilon_zn)/dz) * c_grad_p;
 
         // Find new velocity
 #ifdef SET_1

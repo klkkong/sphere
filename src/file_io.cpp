@@ -294,6 +294,9 @@ void DEM::readbin(const char *target)
         ifs.read(as_bytes(ns.maxiter), sizeof(unsigned int));
         ifs.read(as_bytes(ns.ndem), sizeof(unsigned int));
 
+        ifs.read(as_bytes(ns.c_phi), sizeof(Float));
+        ifs.read(as_bytes(ns.c_grad_p), sizeof(Float));
+
         if (verbose == 1)
             cout << "Done" << std::endl;
     }
@@ -502,6 +505,9 @@ void DEM::writebin(const char *target)
             ofs.write(as_bytes(ns.tolerance), sizeof(Float));
             ofs.write(as_bytes(ns.maxiter), sizeof(unsigned int));
             ofs.write(as_bytes(ns.ndem), sizeof(unsigned int));
+
+            ofs.write(as_bytes(ns.c_phi), sizeof(Float));
+            ofs.write(as_bytes(ns.c_grad_p), sizeof(Float));
         }
 
         for (i = 0; i<np; ++i)
