@@ -3089,6 +3089,7 @@ class sim:
         quiet = ""
         stdout = ""
         dryarg = ""
+        fluidarg = ""
         valgrindbin = ""
         cudamemchk = ""
         binary = "sphere"
