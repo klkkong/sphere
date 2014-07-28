@@ -108,7 +108,7 @@ int main(const int argc, const char *argv[])
             fluid = 1;
 
         else if (argvi == "-e" || argvi == "--exclusive")
-            exlusive_mode = 1;
+            exclusive_mode = 1;
 
         else if (argvi == "-m" || argvi == "--method") {
 
