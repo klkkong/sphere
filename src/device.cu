@@ -112,8 +112,10 @@ __host__ void DEM::initializeGPU(void)
 
     // Only call cudaChooseDevice if the exlusive mode flag isn't set
     if (exclusive_mode != 1) {
-        cout << " Using CUDA device ID " << cudadevice << " with "
-             << max_ncudacores << " cores." << std::endl;
+        if (verbose == 1) {
+            cout << " Using CUDA device ID " << cudadevice << " with "
+                 << max_ncudacores << " cores." << std::endl;
+        }
         cudaChooseDevice(&cudadevice, &prop);
     }
 
