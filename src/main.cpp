@@ -108,6 +108,11 @@ int main(const int argc, const char *argv[])
 
         else if (argvi == "-d") {
             device = atoi(argv[i+1]);
+            if (device < -1) {
+                std::cerr << "Error: The device id must be 0 or larger."
+                          << std::endl;
+                exit(1);
+            }
             i++; // skip ahead
         }
 
@@ -163,7 +168,7 @@ int main(const int argc, const char *argv[])
 
                 // Create DEM class, read data from input binary, check values,
                 // init cuda, transfer const mem
-                DEM dem(argvi, verbose, checkVals, dry, 1, 1, fluid, exclusive_mode);
+                DEM dem(argvi, verbose, checkVals, dry, 1, 1, fluid, device);
                 // Render image if requested
                 if (render == 1)
                     dem.render(method, max_val, lower_cutoff);
@@ -175,7 +180,7 @@ int main(const int argc, const char *argv[])
             } else { 
                 
                 // Do not transfer to const. mem after the first file
-                DEM dem(argvi, verbose, checkVals, dry, 1, 0, fluid, exclusive_mode);
+                DEM dem(argvi, verbose, checkVals, dry, 1, 0, fluid, device);
 
                 // Render image if requested
                 if (render == 1)
