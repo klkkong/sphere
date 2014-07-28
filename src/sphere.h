@@ -57,7 +57,6 @@ class DEM {
         int ndevices;     // number of CUDA GPUs
         int device;       // primary GPU
         int* domain_size; // elements per GPU
-        int exclusive_mode; // devices are running in exclusive mode (1)
 
 
         // DEVICE ARRAYS

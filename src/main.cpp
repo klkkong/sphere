@@ -37,7 +37,7 @@ int main(const int argc, const char *argv[])
     float max_val = 0.0f;     // max value of colorbar
     float lower_cutoff = 0.0f;// lower cutoff, particles below won't be rendered
     int fluid = 0;
-    int exclusive_mode = 0;   // system GPUs are running on exclusive mode
+    int device = -1; // -1 run on device with most cores, 0+ run on specified device
 
     // Process input parameters
     int i;
@@ -53,8 +53,7 @@ int main(const int argc, const char *argv[])
                 "-h, --help\t\tprint help\n"
                 "-V, --version\t\tprint version information and exit\n"
                 "-q, --quiet\t\tsuppress status messages to stdout\n"
-                "-e, --exclusive\t\tset this flag for systems containing\n"
-                "               \t\tonly exclusive-mode GPUs\n"
+                "-d <device>\t\texecute on device with specified id\n"
                 "-n, --dry\t\tshow key experiment parameters and quit\n"
                 "-f, --fluid\t\tsimulate fluid between particles\n"
                 "-r, --render\t\trender input files to images instead of\n"
@@ -107,8 +106,10 @@ int main(const int argc, const char *argv[])
         else if (argvi == "-f" || argvi == "--fluid")
             fluid = 1;
 
-        else if (argvi == "-e" || argvi == "--exclusive")
-            exclusive_mode = 1;
+        else if (argvi == "-d") {
+            device = atoi(argv[i+1]);
+            i++; // skip ahead
+        }
 
         else if (argvi == "-m" || argvi == "--method") {
 
@@ -145,7 +146,7 @@ int main(const int argc, const char *argv[])
                     i += 2; // skip ahead
                 }
             } else {
-                i += 1;
+                i++;
             }
         }
 

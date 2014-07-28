@@ -83,41 +83,55 @@ __host__ void DEM::initializeGPU(void)
     }
 
     // Loop through GPU's and choose the one with the most CUDA cores
-    int ncudacores;
-    int max_ncudacores = 0;
-    for (int d=0; d<ndevices; d++) {
-        cudaGetDeviceProperties(&prop, d);
+    if (device == -1) {
+        int ncudacores;
+        int max_ncudacores = 0;
+        for (int d=0; d<ndevices; d++) {
+            cudaGetDeviceProperties(&prop, d);
+            cudaDriverGetVersion(&cudaDriverVersion);
+            cudaRuntimeGetVersion(&cudaRuntimeVersion);
+
+            ncudacores = prop.multiProcessorCount
+                *cudaCoresPerSM(prop.major, prop.minor);
+            if (ncudacores > max_ncudacores) {
+                max_ncudacores = ncudacores;
+                cudadevice = d;
+            }
+
+            if (verbose == 1) {
+                cout << "  CUDA device ID: " << d << "\n";
+                cout << "  - Name: " <<  prop.name << ", compute capability: " 
+                     << prop.major << "." << prop.minor << ".\n";
+                cout << "  - CUDA Driver version: " << cudaDriverVersion/1000 
+                     << "." <<  cudaDriverVersion%100 
+                     << ", runtime version " << cudaRuntimeVersion/1000 << "." 
+                     << cudaRuntimeVersion%100 << std::endl;
+            }
+        }
+
+        device = cudadevice; // store in DEM class
+    } else {
+
+        cudaGetDeviceProperties(&prop, device);
         cudaDriverGetVersion(&cudaDriverVersion);
         cudaRuntimeGetVersion(&cudaRuntimeVersion);
 
-        ncudacores = prop.multiProcessorCount
+        int ncudacores = prop.multiProcessorCount
             *cudaCoresPerSM(prop.major, prop.minor);
-        if (ncudacores > max_ncudacores) {
-            max_ncudacores = ncudacores;
-            cudadevice = d;
-        }
 
         if (verbose == 1) {
-            cout << "  CUDA device ID: " << d << "\n";
+            cout << "  CUDA device ID: " << device << "\n";
             cout << "  - Name: " <<  prop.name << ", compute capability: " 
-                << prop.major << "." << prop.minor << ".\n";
+                 << prop.major << "." << prop.minor << ".\n";
             cout << "  - CUDA Driver version: " << cudaDriverVersion/1000 
-                << "." <<  cudaDriverVersion%100 
-                << ", runtime version " << cudaRuntimeVersion/1000 << "." 
-                << cudaRuntimeVersion%100 << std::endl;
+                 << "." <<  cudaDriverVersion%100 
+                 << ", runtime version " << cudaRuntimeVersion/1000 << "." 
+                 << cudaRuntimeVersion%100
+                 << "\n  - " << ncudacores << " CUDA cores" << std::endl;
         }
     }
 
-    device = cudadevice; // store in DEM class
-
-    // Only call cudaChooseDevice if the exlusive mode flag isn't set
-    if (exclusive_mode != 1) {
-        if (verbose == 1) {
-            cout << " Using CUDA device ID " << cudadevice << " with "
-                 << max_ncudacores << " cores." << std::endl;
-        }
-        cudaChooseDevice(&cudadevice, &prop);
-    }
+    cudaChooseDevice(&device, &prop);
 
     checkForCudaErrors("While initializing CUDA device");
 }

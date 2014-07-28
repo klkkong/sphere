@@ -20,8 +20,8 @@ DEM::DEM(const std::string inputbin,
          const int initCuda,
          const int transferConstMem,
          const int fluidFlow,
-         const int exclusive)
-: verbose(verbosity), navierstokes(fluidFlow), exclusive_mode(exclusive)
+         const int device)
+: verbose(verbosity), navierstokes(fluidFlow), device(device)
 {
     using std::cout;
     using std::cerr;

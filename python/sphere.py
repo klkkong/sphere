@@ -3063,7 +3063,7 @@ class sim:
         return numpy.array(porosity), numpy.array(depth)
 
     def run(self, verbose=True, hideinputfile=False, dry=False, valgrind=False,
-            cudamemcheck=False, exclusive_mode=False):
+            cudamemcheck=False, device=-1):
         '''
         Start ``sphere`` calculations on the ``sim`` object
 
@@ -3082,8 +3082,10 @@ class sim:
             check for device memory leaks and errors. This causes a significant
             increase in computational time.
         :type cudamemcheck: bool
-        :param exclusive_mode: The system GPUs are running in exclusive mode.
-        :type exclusive_mode: bool
+        :param device: Specify the GPU device to execute the program on.
+            If not specified, sphere will use the device with the most CUDA cores.
+            To see a list of devices, run ``nvidia-smi`` in the system shell.
+        :type device: int
         '''
 
         self.writebin(verbose=False)
@@ -3092,7 +3094,7 @@ class sim:
         stdout = ""
         dryarg = ""
         fluidarg = ""
-        exclusivearg = ""
+        devicearg = ""
         valgrindbin = ""
         cudamemchk = ""
         binary = "sphere"
@@ -3108,11 +3110,11 @@ class sim:
             cudamemchk = "cuda-memcheck --leak-check full "
         if (self.fluid == True):
             fluidarg = "--fluid "
-        if (exclusive_mode == True):
-            exclusivearg = "--exclusive "
+        if (device != -1):
+            devicearg = "-d " + str(device) + " "
 
         cmd = "cd ..; " + valgrindbin + cudamemchk + "./" + binary + " " \
-                + quiet + dryarg + fluidarg + exclusivearg + \
+                + quiet + dryarg + fluidarg + devicearg + \
                 "input/" + self.sid + ".bin " + stdout
         #print(cmd)
         status = subprocess.call(cmd, shell=True)
