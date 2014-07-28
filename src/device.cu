@@ -109,12 +109,13 @@ __host__ void DEM::initializeGPU(void)
     }
 
     device = cudadevice; // store in DEM class
-    cout << " Using CUDA device ID " << cudadevice << " with "
-         << max_ncudacores << " cores." << std::endl;
 
-    // Comment following line when using a system only containing
-    // exclusive mode GPUs
-    cudaChooseDevice(&cudadevice, &prop);
+    // Only call cudaChooseDevice if the exlusive mode flag isn't set
+    if (exclusive_mode != 1) {
+        cout << " Using CUDA device ID " << cudadevice << " with "
+             << max_ncudacores << " cores." << std::endl;
+        cudaChooseDevice(&cudadevice, &prop);
+    }
 
     checkForCudaErrors("While initializing CUDA device");
 }

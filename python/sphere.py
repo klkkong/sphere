@@ -3103,10 +3103,10 @@ class sim:
         if (cudamemcheck == True):
             cudamemchk = "cuda-memcheck --leak-check full "
         if (self.fluid == True):
-            binary = "porousflow"
+            fluidarg = "--fluid "
 
         cmd = "cd ..; " + valgrindbin + cudamemchk + "./" + binary + " " \
-                + quiet + dryarg + "input/" + self.sid + ".bin " + stdout
+                + quiet + dryarg + fluidarg + "input/" + self.sid + ".bin " + stdout
         #print(cmd)
         status = subprocess.call(cmd, shell=True)
 

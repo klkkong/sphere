@@ -57,6 +57,7 @@ class DEM {
         int ndevices;     // number of CUDA GPUs
         int device;       // primary GPU
         int* domain_size; // elements per GPU
+        int exlusive_mode; // devices are running in exclusive mode (1)
 
 
         // DEVICE ARRAYS
@@ -296,7 +297,8 @@ class DEM {
                 const int dry = 0,
                 const int initCuda = 1,
                 const int transferConstMem = 1,
-                const int darcyflow = 0);
+                const int fluidFlow = 0,
+                const int exclusive = 0);
 
         // Destructor
         ~DEM(void);

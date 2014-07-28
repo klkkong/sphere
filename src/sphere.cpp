@@ -14,13 +14,14 @@
 // Constructor: Reads an input binary, and optionally checks
 // and reports the values
 DEM::DEM(const std::string inputbin, 
-        const int verbosity,
-        const int checkVals,
-        const int dry,
-        const int initCuda,
-        const int transferConstMem,
-        const int porousflow)
-: verbose(verbosity), navierstokes(porousflow)
+         const int verbosity,
+         const int checkVals,
+         const int dry,
+         const int initCuda,
+         const int transferConstMem,
+         const int fluidFlow,
+         const int exlusive)
+: verbose(verbosity), navierstokes(fluidFlow), exlusive_mode(exlusive)
 {
     using std::cout;
     using std::cerr;

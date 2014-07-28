@@ -30,8 +30,6 @@ CUDA_ADD_EXECUTABLE(../porosity
 CUDA_ADD_EXECUTABLE(../forcechains
     forcechains.cpp file_io.cpp sphere.cpp device.cu utility.cu utility.cpp
     navierstokes.cpp)
-CUDA_ADD_EXECUTABLE(../porousflow
-    porousflow.cpp navierstokes.cpp file_io.cpp sphere.cpp device.cu utility.cpp utility.cu)
 
 #ADD_EXECUTABLE(unittests boost-unit-tests.cpp sphere.cpp)
 #TARGET_LINK_LIBRARIES(unittests

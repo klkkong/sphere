@@ -36,6 +36,8 @@ int main(const int argc, const char *argv[])
     int nfiles = 0; // number of input files
     float max_val = 0.0f;     // max value of colorbar
     float lower_cutoff = 0.0f;// lower cutoff, particles below won't be rendered
+    int fluid = 0;
+    int exclusive_mode = 0;   // system GPUs are running on exclusive mode
 
     // Process input parameters
     int i;
@@ -54,6 +56,7 @@ int main(const int argc, const char *argv[])
                 "-e, --exclusive\t\tset this flag for systems containing\n"
                 "               \t\tonly exclusive-mode GPUs\n"
                 "-n, --dry\t\tshow key experiment parameters and quit\n"
+                "-f, --fluid\t\tsimulate fluid between particles\n"
                 "-r, --render\t\trender input files to images instead of\n"
                 "            \t\tsimulating the temporal evolution\n"
                 "-dc, --dont-check\tdon't check values before running\n" 
@@ -100,6 +103,12 @@ int main(const int argc, const char *argv[])
 
         else if (argvi == "-dc" || argvi == "--dont-check")
             checkVals = 0;
+
+        else if (argvi == "-f" || argvi == "--fluid")
+            fluid = 1;
+
+        else if (argvi == "-e" || argvi == "--exclusive")
+            exlusive_mode = 1;
 
         else if (argvi == "-m" || argvi == "--method") {
 
@@ -153,7 +162,7 @@ int main(const int argc, const char *argv[])
 
                 // Create DEM class, read data from input binary, check values,
                 // init cuda, transfer const mem
-                DEM dem(argvi, verbose, checkVals, dry, 1, 1);
+                DEM dem(argvi, verbose, checkVals, dry, 1, 1, fluid, exclusive_mode);
                 // Render image if requested
                 if (render == 1)
                     dem.render(method, max_val, lower_cutoff);
@@ -165,7 +174,7 @@ int main(const int argc, const char *argv[])
             } else { 
                 
                 // Do not transfer to const. mem after the first file
-                DEM dem(argvi, verbose, checkVals, dry, 1, 0);
+                DEM dem(argvi, verbose, checkVals, dry, 1, 0, fluid, exclusive_mode);
 
                 // Render image if requested
                 if (render == 1)
