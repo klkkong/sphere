@@ -37,7 +37,7 @@ WORKDIR=$ORIGDIR
 cd $WORKDIR
 nvidia-smi
 rm CMakeCache.txt
-cmake . && make && make test
+cmake . && make
 cd python
 python diffusivity1.py &
 python diffusivity2.py &
