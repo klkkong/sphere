@@ -11,7 +11,7 @@ See `LICENSE.txt <LICENSE.txt>`_ for more information.
 Important release notes
 -----------------------
 2014-07-28: Fluid flow is no longer simulated in a separate program. Use
-``sphere`` with the command line argument ``-f`` instead.
+``sphere`` with the command line argument ``-f`` or ``--fluid`` instead.
 
 2014-07-05: Fluid phase now discretized on a staggered grid which increases
 accuracy and stability.
