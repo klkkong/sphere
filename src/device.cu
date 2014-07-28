@@ -110,6 +110,11 @@ __host__ void DEM::initializeGPU(void)
         }
 
         device = cudadevice; // store in DEM class
+        if (verbose == 1) {
+            cout << "  Using CUDA device ID " << device << " with "
+                 << max_ncudacores << " cores." << std::endl;
+        }
+
     } else {
 
         cudaGetDeviceProperties(&prop, device);

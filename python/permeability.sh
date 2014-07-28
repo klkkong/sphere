@@ -39,8 +39,8 @@ nvidia-smi
 rm CMakeCache.txt
 cmake . && make && make test
 cd python
-python permeability1.py &
-python permeability2.py &
+#python permeability1.py &
+#python permeability2.py &
 python permeability3.py &
 wait
 
