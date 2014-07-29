@@ -690,6 +690,84 @@ __global__ void setNSghostNodesFace(
             dev_scalarfield_z[vidx(-1,y,z)] = val_z;
         }
 
+        // z ghost nodes at x = -1 and z = nz,
+        // equal to the ghost node at x = nx-1 and z = nz
+        if (z == nz-1 && x == nx-1 && bc_top == 0) // Dirichlet +z
+            dev_scalarfield_z[vidx(-1,y,nz)] = val_z;
+
+        if (z == nz-1 && x == nx-1 && (bc_top == 1 || bc_top == 2)) //Neumann +z
+            dev_scalarfield_z[vidx(-1,y,nz)] = 0.0;
+
+        if (z == 0 && x == nx-1 && bc_top == 3) // Periodic +z
+            dev_scalarfield_z[vidx(-1,y,nz)] = val_z;
+
+        // z ghost nodes at y = -1 and z = nz,
+        // equal to the ghost node at y = ny-1 and z = nz
+        if (z == nz-1 && y == ny-1 && bc_top == 0) // Dirichlet +z
+            dev_scalarfield_z[vidx(x,-1,nz)] = val_z;
+
+        if (z == nz-1 && y == ny-1 && (bc_top == 1 || bc_top == 2)) //Neumann +z
+            dev_scalarfield_z[vidx(x,-1,nz)] = 0.0;
+
+        if (z == 0 && y == ny-1 && bc_top == 3) // Periodic +z
+            dev_scalarfield_z[vidx(x,-1,nz)] = val_z;
+
+
+        // x ghost nodes at x = nx and z = -1,
+        // equal to the ghost nodes at x = 0 and z = -1
+        // Dirichlet, Neumann free slip or periodic -z
+        if (z == 0 && x == 0 && (bc_bot == 0 || bc_bot == 1 || bc_bot == 3))
+            dev_scalarfield_x[vidx(nx,y,-1)] = val_x;
+
+        if (z == 0 && x == 0 && bc_bot == 2) // Neumann no slip -z
+            dev_scalarfield_x[vidx(nx,y,-1)] = -val_x;
+
+        // y ghost nodes at y = ny and z = -1,
+        // equal to the ghost node at x = 0 and z = -1
+        // Dirichlet, Neumann free slip or periodic -z
+        if (z == 0 && y == 0 && (bc_bot == 0 || bc_bot == 1 || bc_bot == 3))
+            dev_scalarfield_y[vidx(x,ny,-1)] = val_y;
+
+        if (z == 0 && y == 0 && bc_bot == 2) // Neumann no slip -z
+            dev_scalarfield_y[vidx(x,ny,-1)] = -val_y;
+
+
+        // z ghost nodes at x = nx and z = nz
+        // equal to the ghost node at x = 0 and z = nz
+        if (z == nz-1 && x == 0 && (bc_top == 0 || bc_top == 3)) // D. or p. +z
+            dev_scalarfield_z[vidx(nx,y,nz)] = val_z;
+
+        if (z == nz-1 && x == 0 && (bc_top == 1 || bc_top == 2)) // N. +z
+            dev_scalarfield_z[vidx(nx,y,nz)] = 0.0;
+
+        // z ghost nodes at y = ny and z = nz
+        // equal to the ghost node at y = 0 and z = nz
+        if (z == nz-1 && y == 0 && (bc_top == 0 || bc_top == 3)) // D. or p. +z
+            dev_scalarfield_z[vidx(x,ny,nz)] = val_z;
+
+        if (z == nz-1 && y == 0 && (bc_top == 1 || bc_top == 2)) // N. +z
+            dev_scalarfield_z[vidx(x,ny,nz)] = 0.0;
+
+
+        // x ghost nodes at x = nx and z = nz,
+        // equal to the ghost nodes at x = 0 and z = nz
+        // Dirichlet, Neumann free slip or periodic -z
+        if (z == nz-1 && x == 0 && (bc_bot == 0 || bc_bot == 1 || bc_bot == 3))
+            dev_scalarfield_x[vidx(nx,y,nz)] = val_x;
+
+        if (z == nz-1 && x == 0 && bc_bot == 2) // Neumann no slip -z
+            dev_scalarfield_x[vidx(nx,y,nz)] = -val_x;
+
+        // y ghost nodes at y = ny and z = nz,
+        // equal to the ghost nodes at y = 0 and z = nz
+        // Dirichlet, Neumann free slip or periodic -z
+        if (z == nz-1 && y == 0 && (bc_bot == 0 || bc_bot == 1 || bc_bot == 3))
+            dev_scalarfield_y[vidx(x,ny,nz)] = val_y;
+
+        if (z == nz-1 && y == 0 && bc_bot == 2) // Neumann no slip -z
+            dev_scalarfield_y[vidx(x,ny,nz)] = -val_y;
+
+
         // y (periodic)
         if (y == 0) {
             dev_scalarfield_x[vidx(x,ny,z)] = val_x;
@@ -712,9 +790,9 @@ __global__ void setNSghostNodesFace(
             dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Dirichlet -z
         }
         if (z == 0 && bc_bot == 1) {
-            //dev_scalarfield_x[vidx(x,y,-1)] = val_x;     // Neumann free slip -z
-            //dev_scalarfield_y[vidx(x,y,-1)] = val_y;     // Neumann free slip -z
-            //dev_scalarfield_z[vidx(x,y,-1)] = val_z;     // Neumann free slip -z
+            //dev_scalarfield_x[vidx(x,y,-1)] = val_x;   // Neumann free slip -z
+            //dev_scalarfield_y[vidx(x,y,-1)] = val_y;   // Neumann free slip -z
+            //dev_scalarfield_z[vidx(x,y,-1)] = val_z;   // Neumann free slip -z
             dev_scalarfield_x[vidx(x,y,-1)] = val_x;     // Neumann free slip -z
             dev_scalarfield_y[vidx(x,y,-1)] = val_y;     // Neumann free slip -z
             dev_scalarfield_z[vidx(x,y,-1)] = 0.0;       // Neumann free slip -z
@@ -740,10 +818,10 @@ __global__ void setNSghostNodesFace(
             dev_scalarfield_z[vidx(x,y,nz)] = val_z;     // Dirichlet +z
         }
         if (z == nz-1 && bc_top == 1) {
-            //dev_scalarfield_x[vidx(x,y,nz)] = val_x;     // Neumann free slip +z
-            //dev_scalarfield_y[vidx(x,y,nz)] = val_y;     // Neumann free slip +z
-            //dev_scalarfield_z[vidx(x,y,nz)] = val_z;     // Neumann free slip +z
-            //dev_scalarfield_z[vidx(x,y,nz+1)] = val_z;   // Neumann free slip +z
+            //dev_scalarfield_x[vidx(x,y,nz)] = val_x;   // Neumann free slip +z
+            //dev_scalarfield_y[vidx(x,y,nz)] = val_y;   // Neumann free slip +z
+            //dev_scalarfield_z[vidx(x,y,nz)] = val_z;   // Neumann free slip +z
+            //dev_scalarfield_z[vidx(x,y,nz+1)] = val_z; // Neumann free slip +z
             dev_scalarfield_x[vidx(x,y,nz)] = val_x;     // Neumann free slip +z
             dev_scalarfield_y[vidx(x,y,nz)] = val_y;     // Neumann free slip +z
             dev_scalarfield_z[vidx(x,y,nz)] = 0.0;     // Neumann free slip +z
