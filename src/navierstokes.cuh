@@ -751,7 +751,7 @@ __global__ void setNSghostNodesFace(
 
         // x ghost nodes at x = nx and z = nz,
         // equal to the ghost nodes at x = 0 and z = nz
-        // Dirichlet, Neumann free slip or periodic -z
+        // Dirichlet, Neumann free slip or periodic +z
         if (z == nz-1 && x == 0 && (bc_bot == 0 || bc_bot == 1 || bc_bot == 3))
             dev_scalarfield_x[vidx(nx,y,nz)] = val_x;
 
@@ -760,7 +760,7 @@ __global__ void setNSghostNodesFace(
 
         // y ghost nodes at y = ny and z = nz,
         // equal to the ghost nodes at y = 0 and z = nz
-        // Dirichlet, Neumann free slip or periodic -z
+        // Dirichlet, Neumann free slip or periodic +z
         if (z == nz-1 && y == 0 && (bc_bot == 0 || bc_bot == 1 || bc_bot == 3))
             dev_scalarfield_y[vidx(x,ny,nz)] = val_y;
 
