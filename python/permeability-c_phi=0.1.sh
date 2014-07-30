@@ -1,5 +1,5 @@
 #!/bin/sh
-#PBS -N permeability
+#PBS -N permeability-c_phi=0.1
 #PBS -l nodes=1:ppn=3
 #PBS -l walltime=1920:00:00
 #PBS -q qfermi
