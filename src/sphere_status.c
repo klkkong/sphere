@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
                         != NULL) {
                 
                     *dotpos = '\0';
-                    sprintf(outstring, "%-45s ", namelist[i]->d_name);
+                    sprintf(outstring, "%-54s ", namelist[i]->d_name);
                     for (p = outstring; *p != '\0'; p++)
                         if (*p == ' ') *p = '.';
                     printf("  %s", outstring);
