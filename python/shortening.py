@@ -146,7 +146,7 @@ sim.color[I] = 0
 
 # fix right-most plane of particles
 I = numpy.nonzero((sim.x[:,2] > z_max - 1.5*numpy.mean(sim.radius)) &
-        (sim.x[:,1] > 4.0*numpy.mean(sim.radius)))
+        (sim.x[:,1] > 10.0*numpy.mean(sim.radius)))
 sim.fixvel[I] = -1
 sim.color[I] = 0
 
