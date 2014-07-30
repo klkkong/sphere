@@ -973,8 +973,8 @@ class sim:
                     self.c_grad_p =\
                       numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 else:
-                    self.c_phi = numpy.array(1.0)
-                    self.c_grad_p = numpy.array(1.0)
+                    self.c_phi = numpy.ones(1, dtype=numpy.float64)
+                    self.c_grad_p = numpy.ones(1, dtype=numpy.float64)
 
             if (self.version >= 1.02):
                 self.color =\
@@ -2507,8 +2507,8 @@ class sim:
         self.maxiter = numpy.array(1e4)
         self.ndem = numpy.array(1)
 
-        self.c_phi = numpy.array(1.0)
-        self.c_grad_p = numpy.array(1.0)
+        self.c_phi = numpy.ones(1, dtype=numpy.float64)
+        self.c_grad_p = numpy.ones(1, dtype=numpy.float64)
 
     def setFluidBottomNoFlow(self):
         '''
