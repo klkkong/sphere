@@ -12,16 +12,14 @@ for dp_str in sys.argv[4:]:
     device = int(sys.argv[1])
     c_phi = float(sys.argv[2])
     c_grad_p = float(sys.argv[3])
-    print('permeability-dp=' + str(dp) + '-c_phi=' + str(c_phi) + \
-            '-c_grad_p=' + str(c_grad_p))
 
-    '''
     # Read initial configuration
     sim = sphere.sim('diffusivity-relax')
     sim.readlast()
 
     sim.sid = 'permeability-dp=' + str(dp) + '-c_phi=' + str(c_phi) + \
             '-c_grad_p=' + str(c_grad_p)
+    print(sim.sid)
     sim.cleanup()
 
     sim.g[2] = 0.0
@@ -50,4 +48,3 @@ for dp_str in sys.argv[4:]:
     sim.run(dry=True)
     sim.run(device=device)
     #sim.writeVTKall()
-    '''
