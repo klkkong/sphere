@@ -4,14 +4,24 @@ import numpy
 import sys
 
 # launch with:
-# $ python permeability-starter <DEVICE> <C_PHI> <DP_LOW> <DP_HIGH>
+# $ python permeability-starter <DEVICE> <C_PHI> <C_GRAD_P> <DP_1, DP_2, ...>
 
-for dp in [float(sys.argv[3]), float(sys.argv[4])]:
+for dp_str in sys.argv[4:]:
+
+    dp = float(dp_str)
+    device = int(sys.argv[1])
+    c_phi = float(sys.argv[2])
+    c_grad_p = float(sys.argv[3])
+    print('permeability-dp=' + str(dp) + '-c_phi=' + str(c_phi) + \
+            '-c_grad_p=' + str(c_grad_p))
+
+    '''
     # Read initial configuration
     sim = sphere.sim('diffusivity-relax')
     sim.readlast()
 
-    sim.sid = 'permeability-dp=' + str(dp)
+    sim.sid = 'permeability-dp=' + str(dp) + '-c_phi=' + str(c_phi) + \
+            '-c_grad_p=' + str(c_grad_p)
     sim.cleanup()
 
     sim.g[2] = 0.0
@@ -34,8 +44,10 @@ for dp in [float(sys.argv[3]), float(sys.argv[4])]:
     sim.p_f[:,:,-1] = p_top
     sim.setDEMstepsPerCFDstep(10)
     sim.initTemporal(total = 2.0, file_dt = 0.01, epsilon=0.07)
-    sim.c_phi[0] = float(sys.argv[2])
+    sim.c_phi[0] = c_phi
+    sim.c_grad_p[0] = c_grad_p
 
     sim.run(dry=True)
-    sim.run(device=int(sys.argv[1]))
+    sim.run(device=device)
     #sim.writeVTKall()
+    '''
