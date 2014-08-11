@@ -1252,7 +1252,7 @@ class sim:
         try :
             targetbin = folder + '/' + self.sid + '.vtu' # unstructured grid
             if (verbose == True):
-                print('Output file: {0}'.format(targetbin))
+                print('Output file: ' + targetbin)
 
             fh = open(targetbin, 'w')
 
@@ -1263,8 +1263,8 @@ class sim:
             fh.write('<VTKFile type="UnstructuredGrid" version="0.1" '
                     + 'byte_order="LittleEndian">\n') # VTK header
             fh.write('  <UnstructuredGrid>\n')
-            fh.write('    <Piece NumberOfPoints="{}" '.format(self.np[0])
-                    + 'NumberOfCells="0">\n')
+            fh.write('    <Piece NumberOfPoints="{}" %d NumberOfCells="0">\n' \
+                     % (self.np[0]))
 
             # Coordinates for each point (positions)
             fh.write('      <Points>\n')
@@ -1272,8 +1272,7 @@ class sim:
                     + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} {} {} '.format(\
-                        self.x[i,0], self.x[i,1], self.x[i,2]))
+                fh.write('%f %f %f' % (self.x[i,0], self.x[i,1], self.x[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
             fh.write('      </Points>\n')
@@ -1286,7 +1285,7 @@ class sim:
                     + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} '.format(self.radius[i]*2.0))
+                fh.write('%f ' % (self.radius[i]*2.0))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
@@ -1295,8 +1294,8 @@ class sim:
                     + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} {} {} '.format(\
-                        self.xyzsum[i,0], self.xyzsum[i,1], self.xyzsum[i,2]))
+                fh.write('%f %f %f ' % \
+                         (self.xyzsum[i,0], self.xyzsum[i,1], self.xyzsum[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
@@ -1305,8 +1304,8 @@ class sim:
                     + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} {} {} '.format(\
-                        self.vel[i,0], self.vel[i,1], self.vel[i,2]))
+                fh.write('%f %f %f ' % \
+                         (self.vel[i,0], self.vel[i,1], self.vel[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
@@ -1315,7 +1314,7 @@ class sim:
                     + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} '.format(self.fixvel[i]))
+                fh.write('%f ' % (self.fixvel[i]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
@@ -1324,8 +1323,8 @@ class sim:
                     + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} {} {} '.format(\
-                        self.force[i,0], self.force[i,1], self.force[i,2]))
+                fh.write('%f %f %f ' % \
+                        (self.force[i,0], self.force[i,1], self.force[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
@@ -1334,8 +1333,8 @@ class sim:
                     + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} {} {} '.format(\
-                        self.angpos[i,0], self.angpos[i,1], self.angpos[i,2]))
+                fh.write('%f %f %f ' % \
+                        (self.angpos[i,0], self.angpos[i,1], self.angpos[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
@@ -1344,8 +1343,8 @@ class sim:
                     + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} {} {} '.format(\
-                        self.angvel[i,0], self.angvel[i,1], self.angvel[i,2]))
+                fh.write('%f %f %f ' % \
+                        (self.angvel[i,0], self.angvel[i,1], self.angvel[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
@@ -1354,8 +1353,8 @@ class sim:
                     + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} {} {} '.format(\
-                        self.torque[i,0], self.torque[i,1], self.torque[i,2]))
+                fh.write('%f %f %f ' % \
+                        (self.torque[i,0], self.torque[i,1], self.torque[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
@@ -1364,7 +1363,7 @@ class sim:
                     + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} '.format(self.es_dot[i]))
+                fh.write('%f ' % (self.es_dot[i]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
@@ -1373,7 +1372,7 @@ class sim:
                     + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} '.format(self.es[i]))
+                fh.write('%f ' % (self.es[i]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
@@ -1382,7 +1381,7 @@ class sim:
                     + 'Name="ViscousEnergyRate" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} '.format(self.ev_dot[i]))
+                fh.write('%f ' % (self.ev_dot[i]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
@@ -1391,7 +1390,7 @@ class sim:
                     + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} '.format(self.ev[i]))
+                fh.write('%f ' % (self.ev[i]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
@@ -1400,7 +1399,7 @@ class sim:
                     + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} '.format(self.p[i]))
+                fh.write('%f ' % (self.p[i]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
@@ -1409,7 +1408,7 @@ class sim:
                     + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('{} '.format(self.color[i]))
+                fh.write('%f ' % (self.color[i]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
@@ -1570,7 +1569,7 @@ class sim:
         writer.SetInput(grid)
         writer.Update()
         if (verbose == True):
-            print('Output file: {0}'.format(filename))
+            print('Output file: ' + filename)
 
 
     def readfirst(self, verbose=True):
@@ -1585,7 +1584,7 @@ class sim:
         :func:`readstep`.
         '''
 
-        fn = "../output/{0}.output00000.bin".format(self.sid)
+        fn = '../output/' + self.sid + '.output00000.bin'
         self.readbin(fn, verbose)
 
     def readsecond(self, verbose=True):
@@ -1599,7 +1598,7 @@ class sim:
         See also :func:`readbin()`, :func:`readfirst()`, :func:`readlast()`,
         and :func:`readstep`.
         '''
-        fn = "../output/{0}.output00001.bin".format(self.sid)
+        fn = '../output/' + self.sid + '.output00001.bin'
         self.readbin(fn, verbose)
 
     def readstep(self, step, verbose=True):
