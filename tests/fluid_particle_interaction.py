@@ -50,5 +50,4 @@ test(sim.vel[0,0] > 0.0, 'Particle 0 velocity:')
 test(sim.vel[1,0] > 0.0, 'Particle 1 velocity:')
 test(sim.vel[2,0] > 0.0, 'Particle 2 velocity:')
 
-
-sim.cleanup()
+#sim.cleanup()

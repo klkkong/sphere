@@ -11,15 +11,23 @@
 
 // Second order integration scheme based on Taylor expansion of particle kinematics. 
 // Kernel executed on device, and callable from host only.
-__global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
-        Float4* dev_angvel_sorted,
-        Float4* dev_x, Float4* dev_vel, Float4* dev_angvel, // Output
-        Float4* dev_force, Float4* dev_torque, Float4* dev_angpos, // Input
-        Float4* dev_acc, Float4* dev_angacc,
-        Float4* dev_vel0, Float4* dev_angvel0,
-        Float4* dev_xyzsum,
-        unsigned int* dev_gridParticleIndex, // Input: Sorted-Unsorted key
-        unsigned int iter)
+__global__ void integrate(
+    const Float4* __restrict__ dev_x_sorted,
+    const Float4* __restrict__ dev_vel_sorted,
+    const Float4* __restrict__ dev_angvel_sorted,
+    Float4* __restrict__ dev_x,
+    Float4* __restrict__ dev_vel,
+    Float4* __restrict__ dev_angvel,
+    const Float4* __restrict__ dev_force,
+    const Float4* __restrict__ dev_torque,
+    Float4* __restrict__ dev_angpos,
+    Float4* __restrict__ dev_acc,
+    Float4* __restrict__ dev_angacc,
+    Float4* __restrict__ dev_vel0,
+    Float4* __restrict__ dev_angvel0,
+    Float4* __restrict__ dev_xyzsum,
+    const unsigned int* __restrict__ dev_gridParticleIndex,
+    const unsigned int iter)
 {
     unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x; // Thread id
 
@@ -59,13 +67,13 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         // Coherent read from constant memory to registers
         const Float dt = devC_dt;
         const Float3 origo = MAKE_FLOAT3(
-                devC_grid.origo[0],
-                devC_grid.origo[1],
-                devC_grid.origo[2]); 
+            devC_grid.origo[0],
+            devC_grid.origo[1],
+            devC_grid.origo[2]); 
         const Float3 L = MAKE_FLOAT3(
-                devC_grid.L[0],
-                devC_grid.L[1],
-                devC_grid.L[2]);
+            devC_grid.L[0],
+            devC_grid.L[1],
+            devC_grid.L[2]);
 
         // Particle mass
         Float m = 4.0/3.0 * PI * radius*radius*radius * devC_params.rho;
@@ -179,14 +187,14 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
         // Truncation error O(dt^4) for positions, O(dt^3) for velocities
         // Approximate acceleration change by backwards difference:
         const Float3 dacc_dt = MAKE_FLOAT3(
-                (acc.x - acc0.x)/dt,
-                (acc.y - acc0.y)/dt,
-                (acc.z - acc0.z)/dt);
+            (acc.x - acc0.x)/dt,
+            (acc.y - acc0.y)/dt,
+            (acc.z - acc0.z)/dt);
 
         const Float3 dangacc_dt = MAKE_FLOAT3(
-                (angacc.x - angacc0.x)/dt,
-                (angacc.y - angacc0.y)/dt,
-                (angacc.z - angacc0.z)/dt);
+            (angacc.x - angacc0.x)/dt,
+            (angacc.y - angacc0.y)/dt,
+            (angacc.z - angacc0.z)/dt);
 
         x_new.x = x.x + vel.x*dt + 0.5*acc.x*dt*dt + 1.0/6.0*dacc_dt.x*dt*dt*dt;
         x_new.y = x.y + vel.y*dt + 0.5*acc.y*dt*dt + 1.0/6.0*dacc_dt.y*dt*dt*dt;
@@ -253,7 +261,9 @@ __global__ void integrate(Float4* dev_x_sorted, Float4* dev_vel_sorted, // Input
 
 
 // Reduce wall force contributions from particles to a single value per wall
-__global__ void summation(Float* in, Float *out)
+__global__ void summation(
+    const Float* __restrict__ in,
+    Float* __restrict__ out)
 {
     __shared__ Float cache[256];
     unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -287,14 +297,14 @@ __global__ void summation(Float* in, Float *out)
 
 // Update wall positions
 __global__ void integrateWalls(
-        Float4* dev_walls_nx,
-        Float4* dev_walls_mvfd,
-        int* dev_walls_wmode,
-        Float* dev_walls_force_partial,
-        Float* dev_walls_acc,
-        unsigned int blocksPerGrid,
-        Float t_current,
-        unsigned int iter)
+    Float4* __restrict__ dev_walls_nx,
+    Float4* __restrict__ dev_walls_mvfd,
+    const int* __restrict__ dev_walls_wmode,
+    const Float* __restrict__ dev_walls_force_partial,
+    Float* __restrict__ dev_walls_acc,
+    const unsigned int blocksPerGrid,
+    const Float t_current,
+    const unsigned int iter)
 {
     unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x; // Thread id
 

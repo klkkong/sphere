@@ -6,14 +6,14 @@
 
 // Check bond pair list, apply linear contact model to pairs
 __global__ void bondsLinear(
-        uint2*  dev_bonds,
-        Float4* dev_bonds_delta, // Contact displacement
-        Float4* dev_bonds_omega, // Contact rotational displacement
-        Float4* dev_x,
-        Float4* dev_vel,
-        Float4* dev_angvel,
-        Float4* dev_force,
-        Float4* dev_torque)
+    uint2* __restrict__ dev_bonds,
+    Float4* __restrict__ dev_bonds_delta, // Contact displacement
+    Float4* __restrict__ dev_bonds_omega, // Contact rotational displacement
+    const Float4* __restrict__ dev_x,
+    const Float4* __restrict__ dev_vel,
+    const Float4* __restrict__ dev_angvel,
+    Float4* __restrict__ dev_force,
+    Float4* __restrict__ dev_torque)
 {
     // Find thread index
     unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -35,16 +35,16 @@ __global__ void bondsLinear(
             // Convert tangential vectors to Float3's
             // Uncorrected tangential component of displacement
             Float3 delta0_t = MAKE_FLOAT3(
-                    delta0_4.x,
-                    delta0_4.y,
-                    delta0_4.z);
+                delta0_4.x,
+                delta0_4.y,
+                delta0_4.z);
             const Float delta0_n = delta0_4.w;
 
             // Uncorrected tangential component of rotation
             Float3 omega0_t = MAKE_FLOAT3(
-                    omega0_4.x,
-                    omega0_4.y,
-                    omega0_4.z);
+                omega0_4.x,
+                omega0_4.y,
+                omega0_4.z);
             const Float omega0_n = omega0_4.w;
 
             // Read particle data
@@ -76,9 +76,9 @@ __global__ void bondsLinear(
 
             // Inter-particle vector
             const Float3 x = MAKE_FLOAT3(
-                    x_i.x - x_j.x,
-                    x_i.y - x_j.y,
-                    x_i.z - x_j.z);
+                x_i.x - x_j.x,
+                x_i.y - x_j.y,
+                x_i.z - x_j.z);
             const Float x_length = length(x);
 
             // Find overlap (negative value if overlapping)
@@ -96,13 +96,13 @@ __global__ void bondsLinear(
 
             // Contact displacement, Luding 2008 eq. 10
             const Float3 ddelta = (
-                    MAKE_FLOAT3(
-                        vel_i.x - vel_j.x,
-                        vel_i.y - vel_j.y,
-                        vel_i.z - vel_j.z) 
-                    + (x_i.w + overlap/2.0) * cross(n, angvel_i)
-                    + (x_j.w + overlap/2.0) * cross(n, angvel_j)
-                    ) * devC_dt;
+                MAKE_FLOAT3(
+                    vel_i.x - vel_j.x,
+                    vel_i.y - vel_j.y,
+                    vel_i.z - vel_j.z) 
+                + (x_i.w + overlap/2.0) * cross(n, angvel_i)
+                + (x_j.w + overlap/2.0) * cross(n, angvel_j)
+                ) * devC_dt;
 
             // Normal component of the displacement increment
             //const Float ddelta_n = dot(ddelta, n);
@@ -141,9 +141,9 @@ __global__ void bondsLinear(
 
             // Contact rotational velocity
             Float3 domega = MAKE_FLOAT3(
-                    angvel_j.x - angvel_i.x,
-                    angvel_j.y - angvel_i.y,
-                    angvel_j.z - angvel_i.z) * devC_dt;
+                angvel_j.x - angvel_i.x,
+                angvel_j.y - angvel_i.y,
+                angvel_j.z - angvel_i.z) * devC_dt;
             /*const Float3 domega = MAKE_FLOAT3(
               angvel_i.x - angvel_j.x,
               angvel_i.y - angvel_j.y,
@@ -232,89 +232,16 @@ __global__ void bondsLinear(
     }
 }
 
-// Linear-elastic bond: Attractive force with normal- and shear components
-// acting upon particle A in a bonded particle pair
-__device__ void bondLinear_old(Float3* N, Float3* T, Float* es_dot, Float* p,
-        unsigned int idx_a, unsigned int idx_b, 
-        Float4* dev_x_sorted, Float4* dev_vel_sorted, 
-        Float4* dev_angvel_sorted,
-        Float radius_a, Float radius_b, 
-        Float3 x_ab, Float x_ab_length, 
-        Float delta_ab) 
-{
-
-    // If particles are not overlapping, apply bond force
-    if (delta_ab > 0.0f) {
-
-        // Allocate variables and fetch missing time=t values for particle A and B
-        Float4 vel_a     = dev_vel_sorted[idx_a];
-        Float4 vel_b     = dev_vel_sorted[idx_b];
-        Float4 angvel4_a = dev_angvel_sorted[idx_a];
-        Float4 angvel4_b = dev_angvel_sorted[idx_b];
-
-        // Convert to Float3's
-        Float3 angvel_a = MAKE_FLOAT3(angvel4_a.x, angvel4_a.y, angvel4_a.z);
-        Float3 angvel_b = MAKE_FLOAT3(angvel4_b.x, angvel4_b.y, angvel4_b.z);
-
-        // Normal vector of contact
-        Float3 n_ab = x_ab/x_ab_length;
-
-        // Relative contact interface velocity, w/o rolling
-        Float3 vel_ab_linear = MAKE_FLOAT3(vel_a.x - vel_b.x, 
-                vel_a.y - vel_b.y, 
-                vel_a.z - vel_b.z);
-
-        // Relative contact interface velocity of particle surfaces at
-        // the contact, with rolling (Hinrichsen and Wolf 2004, eq. 13.10)
-        Float3 vel_ab = vel_ab_linear
-            + radius_a * cross(n_ab, angvel_a)
-            + radius_b * cross(n_ab, angvel_b);
-
-        // Relative contact interface rolling velocity
-        //Float3 angvel_ab = angvel_a - angvel_b;
-        //Float  angvel_ab_length = length(angvel_ab);
-
-        // Normal component of the relative contact interface velocity
-        //Float vel_n_ab = dot(vel_ab_linear, n_ab);
-
-        // Tangential component of the relative contact interface velocity
-        // Hinrichsen and Wolf 2004, eq. 13.9
-        Float3 vel_t_ab = vel_ab - (n_ab * dot(vel_ab, n_ab));
-        //Float  vel_t_ab_length = length(vel_t_ab);
-
-        Float3 f_n = MAKE_FLOAT3(0.0f, 0.0f, 0.0f);
-        Float3 f_t = MAKE_FLOAT3(0.0f, 0.0f, 0.0f);
-
-        // Mean radius
-        Float R_bar = (radius_a + radius_b)/2.0f;
-
-        // Normal force component: Elastic
-        f_n = devC_params.k_n * delta_ab * n_ab;
-
-        if (length(vel_t_ab) > 0.f) {
-            // Shear force component: Viscous
-            f_t = -1.0f * devC_params.gamma_t * vel_t_ab;
-
-            // Shear friction production rate [W]
-            //*es_dot += -dot(vel_t_ab, f_t);
-        }
-
-        // Add force components from this bond to total force for particle
-        *N += f_n + f_t;
-        *T += -R_bar * cross(n_ab, f_t);
-
-        // Pressure excerted onto the particle from this bond
-        *p += length(f_n) / (4.0f * PI * radius_a*radius_a);
-
-    }
-} // End of bondLinear()
-
 
 // Capillary cohesion after Richefeu et al. (2006)
-__device__ void capillaryCohesion_exp(Float3* N, Float radius_a, 
-        Float radius_b, Float delta_ab,
-        Float3 x_ab, Float x_ab_length, 
-        Float kappa)
+__device__ void capillaryCohesion_exp(
+    Float3* N,
+    const Float radius_a, 
+    const Float radius_b,
+    const Float delta_ab,
+    const Float3 x_ab,
+    const Float x_ab_length, 
+    const Float kappa)
 {
 
     // Normal vector 

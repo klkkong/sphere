@@ -25,34 +25,34 @@ __inline__ __device__ Float hmean(Float a, Float b) {
 
 // Helper functions for checking whether a value is NaN or Inf
 __device__ int checkFiniteFloat(
-        const char* desc,
-        const unsigned int x,
-        const unsigned int y,
-        const unsigned int z,
-        const Float s)
+    const char* desc,
+    const unsigned int x,
+    const unsigned int y,
+    const unsigned int z,
+    const Float s)
 {
-        __syncthreads();
-        if (!isfinite(s)) {
-            printf("\n[%d,%d,%d]: Error: %s = %f\n", x, y, z, desc, s);
-            return 1;
-        }
-        return 0;
+    __syncthreads();
+    if (!isfinite(s)) {
+        printf("\n[%d,%d,%d]: Error: %s = %f\n", x, y, z, desc, s);
+        return 1;
+    }
+    return 0;
 }
 
 __device__ int checkFiniteFloat3(
-        const char* desc,
-        const unsigned int x,
-        const unsigned int y,
-        const unsigned int z,
-        const Float3 v)
+    const char* desc,
+    const unsigned int x,
+    const unsigned int y,
+    const unsigned int z,
+    const Float3 v)
 {
-        __syncthreads();
-        if (!isfinite(v.x) || !isfinite(v.y)  || !isfinite(v.z)) {
-            printf("\n[%d,%d,%d]: Error: %s = %f, %f, %f\n",
-                    x, y, z, desc, v.x, v.y, v.z);
-            return 1;
-        }
-        return 0;
+    __syncthreads();
+    if (!isfinite(v.x) || !isfinite(v.y)  || !isfinite(v.z)) {
+        printf("\n[%d,%d,%d]: Error: %s = %f, %f, %f\n",
+               x, y, z, desc, v.x, v.y, v.z);
+        return 1;
+    }
+    return 0;
 }
 
 // Initialize memory
@@ -143,10 +143,10 @@ void DEM::freeNSmemDev()
 void DEM::transferNStoGlobalDeviceMemory(int statusmsg)
 {
     checkForCudaErrors("Before attempting cudaMemcpy in "
-            "transferNStoGlobalDeviceMemory");
+                       "transferNStoGlobalDeviceMemory");
 
     //if (verbose == 1 && statusmsg == 1)
-        //std::cout << "  Transfering fluid data to the device:           ";
+    //std::cout << "  Transfering fluid data to the device:           ";
 
     // memory size for a scalar field
     unsigned int memSizeF  = sizeof(Float)*NScells();
@@ -162,7 +162,7 @@ void DEM::transferNStoGlobalDeviceMemory(int statusmsg)
 
     checkForCudaErrors("End of transferNStoGlobalDeviceMemory");
     //if (verbose == 1 && statusmsg == 1)
-        //std::cout << "Done" << std::endl;
+    //std::cout << "Done" << std::endl;
 }
 
 // Transfer from device
@@ -194,7 +194,7 @@ void DEM::transferNSfromGlobalDeviceMemory(int statusmsg)
 void DEM::transferNSnormFromGlobalDeviceMemory()
 {
     cudaMemcpy(ns.norm, dev_ns_norm, sizeof(Float)*NScells(),
-            cudaMemcpyDeviceToHost);
+               cudaMemcpyDeviceToHost);
     checkForCudaErrors("End of transferNSnormFromGlobalDeviceMemory");
 }
 
@@ -202,7 +202,7 @@ void DEM::transferNSnormFromGlobalDeviceMemory()
 void DEM::transferNSepsilonFromGlobalDeviceMemory()
 {
     cudaMemcpy(ns.epsilon, dev_ns_epsilon, sizeof(Float)*NScells(),
-            cudaMemcpyDeviceToHost);
+               cudaMemcpyDeviceToHost);
     checkForCudaErrors("End of transferNSepsilonFromGlobalDeviceMemory");
 }
 
@@ -210,13 +210,13 @@ void DEM::transferNSepsilonFromGlobalDeviceMemory()
 void DEM::transferNSepsilonNewFromGlobalDeviceMemory()
 {
     cudaMemcpy(ns.epsilon_new, dev_ns_epsilon_new, sizeof(Float)*NScells(),
-            cudaMemcpyDeviceToHost);
+               cudaMemcpyDeviceToHost);
     checkForCudaErrors("End of transferNSepsilonFromGlobalDeviceMemory");
 }
 
 // Get linear index from 3D grid position
 __inline__ __device__ unsigned int idx(
-        const int x, const int y, const int z)
+    const int x, const int y, const int z)
 {
     // without ghost nodes
     //return x + dev_grid.num[0]*y + dev_grid.num[0]*dev_grid.num[1]*z;
@@ -229,11 +229,11 @@ __inline__ __device__ unsigned int idx(
 
 // Get linear index of velocity node from 3D grid position in staggered grid
 __inline__ __device__ unsigned int vidx(
-        const int x, const int y, const int z)
+    const int x, const int y, const int z)
 {
     // without ghost nodes
     //return x + (devC_grid.num[0]+1)*y
-        //+ (devC_grid.num[0]+1)*(devC_grid.num[1]+1)*z;
+    //+ (devC_grid.num[0]+1)*(devC_grid.num[1]+1)*z;
 
     // with ghost nodes
     // the ghost nodes are placed at x,y,z = -1 and WIDTH+1
@@ -246,10 +246,10 @@ __inline__ __device__ unsigned int vidx(
 // dev_ns_v or dev_ns_v_p array. This function does not set the averaged
 // velocity values in the ghost node cells.
 __global__ void findNSavgVel(
-        Float3* dev_ns_v,    // out
-        Float*  dev_ns_v_x,  // in
-        Float*  dev_ns_v_y,  // in
-        Float*  dev_ns_v_z)  // in
+    Float3* __restrict__ dev_ns_v,    // out
+    const Float* __restrict__ dev_ns_v_x,  // in
+    const Float* __restrict__ dev_ns_v_y,  // in
+    const Float* __restrict__ dev_ns_v_z)  // in
 {
 
     // 3D thread index
@@ -272,9 +272,9 @@ __global__ void findNSavgVel(
 
         // Find average velocity using arithmetic means
         const Float3 v_bar = MAKE_FLOAT3(
-                amean(v_xn, v_xp),
-                amean(v_yn, v_yp),
-                amean(v_zn, v_zp));
+            amean(v_xn, v_xp),
+            amean(v_yn, v_yp),
+            amean(v_zn, v_zp));
 
         // Save value
         __syncthreads();
@@ -287,10 +287,10 @@ __global__ void findNSavgVel(
 // or dev_ns_v_p array. Make sure that the averaged velocity ghost nodes are set
 // beforehand.
 __global__ void findNScellFaceVel(
-        Float3* dev_ns_v,    // in
-        Float*  dev_ns_v_x,  // out
-        Float*  dev_ns_v_y,  // out
-        Float*  dev_ns_v_z)  // out
+    const Float3* __restrict__ dev_ns_v,    // in
+    Float* __restrict__ dev_ns_v_x,  // out
+    Float* __restrict__ dev_ns_v_y,  // out
+    Float* __restrict__ dev_ns_v_z)  // out
 {
 
     // 3D thread index
@@ -340,7 +340,9 @@ __global__ void findNScellFaceVel(
 
 
 // Set the initial guess of the values of epsilon.
-__global__ void setNSepsilonInterior(Float* dev_ns_epsilon, Float value)
+__global__ void setNSepsilonInterior(
+    Float* __restrict__ dev_ns_epsilon,
+    const Float value)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -349,7 +351,7 @@ __global__ void setNSepsilonInterior(Float* dev_ns_epsilon, Float value)
 
     // check that we are not outside the fluid grid
     if (x < devC_grid.num[0] && y < devC_grid.num[1] &&
-            z > 0 && z < devC_grid.num[2]-1) {
+        z > 0 && z < devC_grid.num[2]-1) {
         __syncthreads();
         const unsigned int cellidx = idx(x,y,z);
         dev_ns_epsilon[cellidx] = value;
@@ -358,7 +360,7 @@ __global__ void setNSepsilonInterior(Float* dev_ns_epsilon, Float value)
 
 // The normalized residuals are given an initial value of 0, since the values at
 // the Dirichlet boundaries aren't written during the iterations.
-__global__ void setNSnormZero(Float* dev_ns_norm)
+__global__ void setNSnormZero(Float* __restrict__ dev_ns_norm)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -380,9 +382,9 @@ __global__ void setNSnormZero(Float* dev_ns_norm)
 // the Dirichlet boundary condition: the new value should be identical to the
 // old value, i.e. the temporal gradient is 0
 __global__ void setNSepsilonBottom(
-        Float* dev_ns_epsilon,
-        Float* dev_ns_epsilon_new,
-        const Float value)
+    Float* __restrict__ dev_ns_epsilon,
+    Float* __restrict__ dev_ns_epsilon_new,
+    const Float value)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -408,9 +410,9 @@ __global__ void setNSepsilonBottom(
 // the Dirichlet boundary condition: the new value should be identical to the
 // old value, i.e. the temporal gradient is 0
 __global__ void setNSepsilonTop(
-        Float* dev_ns_epsilon,
-        Float* dev_ns_epsilon_new,
-        const Float value)
+    Float* __restrict__ dev_ns_epsilon,
+    Float* __restrict__ dev_ns_epsilon_new,
+    const Float value)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -419,7 +421,7 @@ __global__ void setNSepsilonTop(
 
     // check that we are not outside the fluid grid, and at the upper z boundary
     if (x < devC_grid.num[0] && y < devC_grid.num[1] &&
-            z == devC_grid.num[2]-1) {
+        z == devC_grid.num[2]-1) {
 
         __syncthreads();
         const unsigned int cellidx = idx(x,y,z);
@@ -428,11 +430,14 @@ __global__ void setNSepsilonTop(
     }
 }
 __device__ void copyNSvalsDev(
-        unsigned int read, unsigned int write,
-        Float* dev_ns_p,
-        Float3* dev_ns_v, Float3* dev_ns_v_p,
-        Float* dev_ns_phi, Float* dev_ns_dphi,
-        Float* dev_ns_epsilon)
+    const unsigned int read,
+    const unsigned int write,
+    Float*  __restrict__ dev_ns_p,
+    Float3* __restrict__ dev_ns_v,
+    Float3* __restrict__ dev_ns_v_p,
+    Float*  __restrict__ dev_ns_phi,
+    Float*  __restrict__ dev_ns_dphi,
+    Float*  __restrict__ dev_ns_epsilon)
 {
     // Coalesced read
     const Float  p       = dev_ns_p[read];
@@ -457,10 +462,12 @@ __device__ void copyNSvalsDev(
 // are not written since they are not read. Launch this kernel for all cells in
 // the grid
 __global__ void setNSghostNodesDev(
-        Float* dev_ns_p,
-        Float3* dev_ns_v, Float3* dev_ns_v_p,
-        Float* dev_ns_phi, Float* dev_ns_dphi,
-        Float* dev_ns_epsilon)
+    Float*  __restrict__ dev_ns_p,
+    Float3* __restrict__ dev_ns_v,
+    Float3* __restrict__ dev_ns_v_p,
+    Float*  __restrict__ dev_ns_phi,
+    Float*  __restrict__ dev_ns_dphi,
+    Float*  __restrict__ dev_ns_epsilon)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -484,72 +491,72 @@ __global__ void setNSghostNodesDev(
         if (x == 0) {
             writeidx = idx(nx,y,z);
             copyNSvalsDev(cellidx, writeidx,
-                    dev_ns_p,
-                    dev_ns_v, dev_ns_v_p,
-                    dev_ns_phi, dev_ns_dphi,
-                    dev_ns_epsilon);
+                          dev_ns_p,
+                          dev_ns_v, dev_ns_v_p,
+                          dev_ns_phi, dev_ns_dphi,
+                          dev_ns_epsilon);
         }
         if (x == nx-1) {
             writeidx = idx(-1,y,z);
             copyNSvalsDev(cellidx, writeidx,
-                    dev_ns_p,
-                    dev_ns_v, dev_ns_v_p,
-                    dev_ns_phi, dev_ns_dphi,
-                    dev_ns_epsilon);
+                          dev_ns_p,
+                          dev_ns_v, dev_ns_v_p,
+                          dev_ns_phi, dev_ns_dphi,
+                          dev_ns_epsilon);
         }
 
         if (y == 0) {
             writeidx = idx(x,ny,z);
             copyNSvalsDev(cellidx, writeidx,
-                    dev_ns_p,
-                    dev_ns_v, dev_ns_v_p,
-                    dev_ns_phi, dev_ns_dphi,
-                    dev_ns_epsilon);
+                          dev_ns_p,
+                          dev_ns_v, dev_ns_v_p,
+                          dev_ns_phi, dev_ns_dphi,
+                          dev_ns_epsilon);
         }
         if (y == ny-1) {
             writeidx = idx(x,-1,z);
             copyNSvalsDev(cellidx, writeidx,
-                    dev_ns_p,
-                    dev_ns_v, dev_ns_v_p,
-                    dev_ns_phi, dev_ns_dphi,
-                    dev_ns_epsilon);
+                          dev_ns_p,
+                          dev_ns_v, dev_ns_v_p,
+                          dev_ns_phi, dev_ns_dphi,
+                          dev_ns_epsilon);
         }
 
         // Z boundaries fixed
         if (z == 0) {
             writeidx = idx(x,y,-1);
             copyNSvalsDev(cellidx, writeidx,
-                    dev_ns_p,
-                    dev_ns_v, dev_ns_v_p,
-                    dev_ns_phi, dev_ns_dphi,
-                    dev_ns_epsilon);
+                          dev_ns_p,
+                          dev_ns_v, dev_ns_v_p,
+                          dev_ns_phi, dev_ns_dphi,
+                          dev_ns_epsilon);
         }
         if (z == nz-1) {
             writeidx = idx(x,y,nz);
             copyNSvalsDev(cellidx, writeidx,
-                    dev_ns_p,
-                    dev_ns_v, dev_ns_v_p,
-                    dev_ns_phi, dev_ns_dphi,
-                    dev_ns_epsilon);
+                          dev_ns_p,
+                          dev_ns_v, dev_ns_v_p,
+                          dev_ns_phi, dev_ns_dphi,
+                          dev_ns_epsilon);
         }
 
         // Z boundaries periodic
         /*if (z == 0) {
-            writeidx = idx(x,y,nz);
-            copyNSvalsDev(cellidx, writeidx,
-                    dev_ns_p,
-                    dev_ns_v, dev_ns_v_p,
-                    dev_ns_phi, dev_ns_dphi,
-                    dev_ns_epsilon);
-        }
-        if (z == nz-1) {
-            writeidx = idx(x,y,-1);
-            copyNSvalsDev(cellidx, writeidx,
-                    dev_ns_p,
-                    dev_ns_v, dev_ns_v_p,
-                    dev_ns_phi, dev_ns_dphi,
-                    dev_ns_epsilon);
-        }*/
+          writeidx = idx(x,y,nz);
+          copyNSvalsDev(cellidx, writeidx,
+          dev_ns_p,
+          dev_ns_v, dev_ns_v_p,
+          dev_ns_phi, dev_ns_dphi,
+          dev_ns_epsilon);
+          }
+          if (z == nz-1) {
+          writeidx = idx(x,y,-1);
+          copyNSvalsDev(cellidx, writeidx,
+          dev_ns_p,
+          dev_ns_v, dev_ns_v_p,
+          dev_ns_phi, dev_ns_dphi,
+          dev_ns_epsilon);
+          }*/
     }
 }
 
@@ -557,7 +564,7 @@ __global__ void setNSghostNodesDev(
 // (diagonal) cells are not written since they are not read. Launch this kernel
 // for all cells in the grid usind setNSghostNodes<datatype><<<.. , ..>>>( .. );
 template<typename T>
-__global__ void setNSghostNodes(T* dev_scalarfield)
+__global__ void setNSghostNodes(T* __restrict__ dev_scalarfield)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -586,10 +593,10 @@ __global__ void setNSghostNodes(T* dev_scalarfield)
 
         if (z == 0)
             dev_scalarfield[idx(x,y,-1)] = val;     // Dirichlet
-            //dev_scalarfield[idx(x,y,nz)] = val;    // Periodic -z
+        //dev_scalarfield[idx(x,y,nz)] = val;    // Periodic -z
         if (z == nz-1)
             dev_scalarfield[idx(x,y,nz)] = val;     // Dirichlet
-            //dev_scalarfield[idx(x,y,-1)] = val;    // Periodic +z
+        //dev_scalarfield[idx(x,y,-1)] = val;    // Periodic +z
     }
 }
 
@@ -597,9 +604,9 @@ __global__ void setNSghostNodes(T* dev_scalarfield)
 // (diagonal) cells are not written since they are not read.
 template<typename T>
 __global__ void setNSghostNodes(
-        T* dev_scalarfield,
-        int bc_bot,
-        int bc_top)
+    T* __restrict__ dev_scalarfield,
+    const int bc_bot,
+    const int bc_top)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -651,11 +658,11 @@ __global__ void setNSghostNodes(
 // According to Griebel et al. 1998 "Numerical Simulation in Fluid Dynamics"
 template<typename T>
 __global__ void setNSghostNodesFace(
-        T* dev_scalarfield_x,
-        T* dev_scalarfield_y,
-        T* dev_scalarfield_z,
-        int bc_bot,
-        int bc_top)
+    T* __restrict__ dev_scalarfield_x,
+    T* __restrict__ dev_scalarfield_y,
+    T* __restrict__ dev_scalarfield_z,
+    const int bc_bot,
+    const int bc_top)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -849,9 +856,9 @@ __global__ void setNSghostNodesFace(
 // The edge (diagonal) cells are not written since they are not read. Launch
 // this kernel for all cells in the grid.
 __global__ void setNSghostNodes_tau(
-        Float* dev_ns_tau,
-        int bc_bot,
-        int bc_top)
+    Float* __restrict__ dev_ns_tau,
+    const int bc_bot,
+    const int bc_top)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -981,108 +988,108 @@ __global__ void setNSghostNodes_tau(
 // The edge (diagonal) cells are not written since they are not read. Launch
 // this kernel for all cells in the grid.
 /*
-__global__ void setNSghostNodesForcing(
-        Float*  dev_ns_f1,
-        Float3* dev_ns_f2,
-        Float*  dev_ns_f,
-        unsigned int nijac)
+  __global__ void setNSghostNodesForcing(
+  Float*  dev_ns_f1,
+  Float3* dev_ns_f2,
+  Float*  dev_ns_f,
+  unsigned int nijac)
 
-{
-    // 3D thread index
-    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
-    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
-    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+  {
+  // 3D thread index
+  const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+  const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+  const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
 
-    // Grid dimensions
-    const unsigned int nx = devC_grid.num[0];
-    const unsigned int ny = devC_grid.num[1];
-    const unsigned int nz = devC_grid.num[2];
+  // Grid dimensions
+  const unsigned int nx = devC_grid.num[0];
+  const unsigned int ny = devC_grid.num[1];
+  const unsigned int nz = devC_grid.num[2];
 
-    // 1D thread index
-    unsigned int cellidx = idx(x,y,z);
+  // 1D thread index
+  unsigned int cellidx = idx(x,y,z);
 
-    // check that we are not outside the fluid grid
-    if (x < nx && y < ny && z < nz) {
+  // check that we are not outside the fluid grid
+  if (x < nx && y < ny && z < nz) {
 
-        __syncthreads();
-        const Float f  = dev_ns_f[cellidx];
-        Float  f1;
-        Float3 f2;
+  __syncthreads();
+  const Float f  = dev_ns_f[cellidx];
+  Float  f1;
+  Float3 f2;
 
-        if (nijac == 0) {
-            __syncthreads();
-            f1 = dev_ns_f1[cellidx];
-            f2 = dev_ns_f2[cellidx];
-        }
+  if (nijac == 0) {
+  __syncthreads();
+  f1 = dev_ns_f1[cellidx];
+  f2 = dev_ns_f2[cellidx];
+  }
 
-        if (x == 0) {
-            cellidx = idx(nx,y,z);
-            dev_ns_f[cellidx] = f;
-            if (nijac == 0) {
-                dev_ns_f1[cellidx] = f1;
-                dev_ns_f2[cellidx] = f2;
-            }
-        }
-        if (x == nx-1) {
-            cellidx = idx(-1,y,z);
-            dev_ns_f[cellidx] = f;
-            if (nijac == 0) {
-                dev_ns_f1[cellidx] = f1;
-                dev_ns_f2[cellidx] = f2;
-            }
-        }
+  if (x == 0) {
+  cellidx = idx(nx,y,z);
+  dev_ns_f[cellidx] = f;
+  if (nijac == 0) {
+  dev_ns_f1[cellidx] = f1;
+  dev_ns_f2[cellidx] = f2;
+  }
+  }
+  if (x == nx-1) {
+  cellidx = idx(-1,y,z);
+  dev_ns_f[cellidx] = f;
+  if (nijac == 0) {
+  dev_ns_f1[cellidx] = f1;
+  dev_ns_f2[cellidx] = f2;
+  }
+  }
 
-        if (y == 0) {
-            cellidx = idx(x,ny,z);
-            dev_ns_f[cellidx] = f;
-            if (nijac == 0) {
-                dev_ns_f1[cellidx] = f1;
-                dev_ns_f2[cellidx] = f2;
-            }
-        }
-        if (y == ny-1) {
-            cellidx = idx(x,-1,z);
-            dev_ns_f[cellidx] = f;
-            if (nijac == 0) {
-                dev_ns_f1[cellidx] = f1;
-                dev_ns_f2[cellidx] = f2;
-            }
-        }
+  if (y == 0) {
+  cellidx = idx(x,ny,z);
+  dev_ns_f[cellidx] = f;
+  if (nijac == 0) {
+  dev_ns_f1[cellidx] = f1;
+  dev_ns_f2[cellidx] = f2;
+  }
+  }
+  if (y == ny-1) {
+  cellidx = idx(x,-1,z);
+  dev_ns_f[cellidx] = f;
+  if (nijac == 0) {
+  dev_ns_f1[cellidx] = f1;
+  dev_ns_f2[cellidx] = f2;
+  }
+  }
 
-        if (z == 0) {
-            cellidx = idx(x,y,nz);
-            dev_ns_f[cellidx] = f;
-            if (nijac == 0) {
-                dev_ns_f1[cellidx] = f1;
-                dev_ns_f2[cellidx] = f2;
-            }
-        }
-        if (z == nz-1) {
-            cellidx = idx(x,y,-1);
-            dev_ns_f[cellidx] = f;
-            if (nijac == 0) {
-                dev_ns_f1[cellidx] = f1;
-                dev_ns_f2[cellidx] = f2;
-            }
-        }
-    }
-}
+  if (z == 0) {
+  cellidx = idx(x,y,nz);
+  dev_ns_f[cellidx] = f;
+  if (nijac == 0) {
+  dev_ns_f1[cellidx] = f1;
+  dev_ns_f2[cellidx] = f2;
+  }
+  }
+  if (z == nz-1) {
+  cellidx = idx(x,y,-1);
+  dev_ns_f[cellidx] = f;
+  if (nijac == 0) {
+  dev_ns_f1[cellidx] = f1;
+  dev_ns_f2[cellidx] = f2;
+  }
+  }
+  }
+  }
 */
 
 // Find the porosity in each cell on the base of a sphere, centered at the cell
 // center. 
 __global__ void findPorositiesVelocitiesDiametersSpherical(
-        const unsigned int* dev_cellStart,
-        const unsigned int* dev_cellEnd,
-        const Float4* dev_x_sorted,
-        const Float4* dev_vel_sorted,
-        Float*  dev_ns_phi,
-        Float*  dev_ns_dphi,
-        Float3* dev_ns_vp_avg,
-        Float*  dev_ns_d_avg,
-        const unsigned int iteration,
-        const unsigned int np,
-        const Float c_phi)
+    const unsigned int* __restrict__ dev_cellStart,
+    const unsigned int* __restrict__ dev_cellEnd,
+    const Float4* __restrict__ dev_x_sorted,
+    const Float4* __restrict__ dev_vel_sorted,
+    Float*  __restrict__ dev_ns_phi,
+    Float*  __restrict__ dev_ns_dphi,
+    Float3* __restrict__ dev_ns_vp_avg,
+    Float*  __restrict__ dev_ns_d_avg,
+    const unsigned int iteration,
+    const unsigned int np,
+    const Float c_phi)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -1114,9 +1121,9 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
 
             // Cell sphere center position
             const Float3 X = MAKE_FLOAT3(
-                    x*dx + 0.5*dx,
-                    y*dy + 0.5*dy,
-                    z*dz + 0.5*dz);
+                x*dx + 0.5*dx,
+                y*dy + 0.5*dy,
+                z*dz + 0.5*dz);
 
             Float d, r;
             Float phi = 1.00;
@@ -1143,12 +1150,12 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
 
             // Iterate over 27 neighbor cells, R = cell width
             /*for (int z_dim=-1; z_dim<2; ++z_dim) { // z-axis
-                for (int y_dim=-1; y_dim<2; ++y_dim) { // y-axis
-                    for (int x_dim=-1; x_dim<2; ++x_dim) { // x-axis*/
+              for (int y_dim=-1; y_dim<2; ++y_dim) { // y-axis
+              for (int x_dim=-1; x_dim<2; ++x_dim) { // x-axis*/
 
             // Iterate over 27 neighbor cells, R = 2*cell width
             for (int z_dim=-2; z_dim<3; ++z_dim) { // z-axis
-            //for (int z_dim=-1; z_dim<2; ++z_dim) { // z-axis
+                //for (int z_dim=-1; z_dim<2; ++z_dim) { // z-axis
                 for (int y_dim=-2; y_dim<3; ++y_dim) { // y-axis
                     for (int x_dim=-2; x_dim<3; ++x_dim) { // x-axis
 
@@ -1186,9 +1193,9 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
 
                                     // Find center distance
                                     dist = MAKE_FLOAT3(
-                                            X.x - xr.x, 
-                                            X.y - xr.y,
-                                            X.z - xr.z);
+                                        X.x - xr.x, 
+                                        X.y - xr.y,
+                                        X.z - xr.z);
                                     dist += distmod;
                                     d = length(dist);
 
@@ -1196,10 +1203,10 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
                                     if ((R - r) < d && d < (R + r)) {
                                         void_volume -=
                                             1.0/(12.0*d) * (
-                                                    M_PI*(R + r - d)*(R + r - d)
-                                                    *(d*d + 2.0*d*r - 3.0*r*r
-                                                        + 2.0*d*R + 6.0*r*R
-                                                        - 3.0*R*R) );
+                                                M_PI*(R + r - d)*(R + r - d)
+                                                *(d*d + 2.0*d*r - 3.0*r*r
+                                                  + 2.0*d*R + 6.0*r*R
+                                                  - 3.0*R*R) );
                                         v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
                                         d_avg += 2.0*r;
                                         n++;
@@ -1259,8 +1266,8 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
             //Float phi = 0.5;
             //Float dphi = 0.0;
             //if (iteration == 20 && x == nx/2 && y == ny/2 && z == nz/2) {
-                //phi = 0.4;
-                //dphi = 0.1;
+            //phi = 0.4;
+            //dphi = 0.1;
             //}
             //dev_ns_phi[cellidx]  = phi;
             //dev_ns_dphi[cellidx] = dphi;
@@ -1276,17 +1283,17 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
 // Find the porosity in each cell on the base of a sphere, centered at the cell
 // center. 
 __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
-        const unsigned int* dev_cellStart,
-        const unsigned int* dev_cellEnd,
-        const Float4* dev_x_sorted,
-        const Float4* dev_vel_sorted,
-        Float*  dev_ns_phi,
-        Float*  dev_ns_dphi,
-        Float3* dev_ns_vp_avg,
-        Float*  dev_ns_d_avg,
-        const unsigned int iteration,
-        const unsigned int ndem,
-        const unsigned int np)
+    const unsigned int* __restrict__ dev_cellStart,
+    const unsigned int* __restrict__ dev_cellEnd,
+    const Float4* __restrict__ dev_x_sorted,
+    const Float4* __restrict__ dev_vel_sorted,
+    Float*  __restrict__ dev_ns_phi,
+    Float*  __restrict__ dev_ns_dphi,
+    Float3* __restrict__ dev_ns_vp_avg,
+    Float*  __restrict__ dev_ns_d_avg,
+    const unsigned int iteration,
+    const unsigned int ndem,
+    const unsigned int np)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -1304,7 +1311,7 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
     const Float dz = devC_grid.L[2]/nz;
 
     // Cell sphere radius
-    const Float R = fmin(dx, fmin(dy,dz));       // diameter = 2*cell width
+    const Float R = fmin(dx, fmin(dy,dz));  // diameter = 2*cell width
 
     Float4 xr;  // particle pos. and radius
 
@@ -1315,9 +1322,9 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
 
             // Cell sphere center position
             const Float3 X = MAKE_FLOAT3(
-                    x*dx + 0.5*dx,
-                    y*dy + 0.5*dy,
-                    z*dz + 0.5*dz);
+                x*dx + 0.5*dx,
+                y*dy + 0.5*dy,
+                z*dz + 0.5*dz);
 
             Float d, r;
             Float phi = 1.00;
@@ -1396,9 +1403,9 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
 
                                     // Find center distance and normal vector
                                     x_p = MAKE_FLOAT3(
-                                            xr.x - X.x,
-                                            xr.y - X.y,
-                                            xr.z - X.z);
+                                        xr.x - X.x,
+                                        xr.y - X.y,
+                                        xr.z - X.z);
                                     d = length(x_p);
                                     n_p = x_p/d;
                                     q = d/R;
@@ -1438,8 +1445,8 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
             phi = phi_0 + dphi/(ndem*devC_dt);
 
             //if (dot_epsilon_kk != 0.0)
-                //printf("%d,%d,%d\tdot_epsilon_kk = %f\tdphi = %f\tphi = %f\n",
-                        //x,y,z, dot_epsilon_kk, dphi, phi);
+            //printf("%d,%d,%d\tdot_epsilon_kk = %f\tdphi = %f\tphi = %f\n",
+            //x,y,z, dot_epsilon_kk, dphi, phi);
 
             // Make sure that the porosity is in the interval [0.0;1.0]
             phi = fmin(1.00, fmax(0.00, phi));
@@ -1484,11 +1491,11 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
 
 // Modulate the hydraulic pressure at the upper boundary
 __global__ void setUpperPressureNS(
-        Float* dev_ns_p,
-        Float* dev_ns_epsilon,
-        Float* dev_ns_epsilon_new,
-        Float  beta,
-        const Float new_pressure)
+    Float* __restrict__ dev_ns_p,
+    Float* __restrict__ dev_ns_epsilon,
+    Float* __restrict__ dev_ns_epsilon_new,
+    const Float  beta,
+    const Float new_pressure)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -1497,8 +1504,8 @@ __global__ void setUpperPressureNS(
     
     // check that the thread is located at the top boundary
     if (x < devC_grid.num[0] &&
-            y < devC_grid.num[1] &&
-            z == devC_grid.num[2]-1) {
+        y < devC_grid.num[1] &&
+        z == devC_grid.num[2]-1) {
 
         const unsigned int cellidx = idx(x,y,z);
 
@@ -1524,13 +1531,13 @@ __global__ void setUpperPressureNS(
 // Find the gradient in a cell in a homogeneous, cubic 3D scalar field using
 // finite central differences
 __device__ Float3 gradient(
-        const Float* dev_scalarfield,
-        const unsigned int x,
-        const unsigned int y,
-        const unsigned int z,
-        const Float dx,
-        const Float dy,
-        const Float dz)
+    const Float* __restrict__ dev_scalarfield,
+    const unsigned int x,
+    const unsigned int y,
+    const unsigned int z,
+    const Float dx,
+    const Float dy,
+    const Float dz)
 {
     // Read 6 neighbor cells
     __syncthreads();
@@ -1544,26 +1551,26 @@ __device__ Float3 gradient(
 
     //__syncthreads();
     //if (p != 0.0)
-        //printf("p[%d,%d,%d] =\t%f\n", x,y,z, p);
+    //printf("p[%d,%d,%d] =\t%f\n", x,y,z, p);
 
     // Calculate central-difference gradients
     return MAKE_FLOAT3(
-            (xp - xn)/(2.0*dx),
-            (yp - yn)/(2.0*dy),
-            (zp - zn)/(2.0*dz));
+        (xp - xn)/(2.0*dx),
+        (yp - yn)/(2.0*dy),
+        (zp - zn)/(2.0*dz));
 }
 
 // Find the divergence in a cell in a homogeneous, cubic, 3D vector field
 __device__ Float divergence(
-        const Float* dev_vectorfield_x,
-        const Float* dev_vectorfield_y,
-        const Float* dev_vectorfield_z,
-        const unsigned int x,
-        const unsigned int y,
-        const unsigned int z,
-        const Float dx,
-        const Float dy,
-        const Float dz)
+    const Float* __restrict__ dev_vectorfield_x,
+    const Float* __restrict__ dev_vectorfield_y,
+    const Float* __restrict__ dev_vectorfield_z,
+    const unsigned int x,
+    const unsigned int y,
+    const unsigned int z,
+    const Float dx,
+    const Float dy,
+    const Float dz)
 {
     // Read 6 cell-face values
     __syncthreads();
@@ -1583,13 +1590,13 @@ __device__ Float divergence(
 
 // Find the divergence of a tensor field
 __device__ Float3 divergence_tensor(
-        Float*  dev_tensorfield,
-        const unsigned int x,
-        const unsigned int y,
-        const unsigned int z,
-        const Float dx,
-        const Float dy,
-        const Float dz)
+    const Float* __restrict__ dev_tensorfield,
+    const unsigned int x,
+    const unsigned int y,
+    const unsigned int z,
+    const Float dx,
+    const Float dy,
+    const Float dz)
 {
     __syncthreads();
 
@@ -1638,18 +1645,18 @@ __device__ Float3 divergence_tensor(
 
     // Calculate div(phi*tau)
     const Float3 div_tensor = MAKE_FLOAT3(
-            // x
-            (t_xx_xp - t_xx_xn)/dx +
-            (t_xy_yp - t_xy_yn)/dy +
-            (t_xz_zp - t_xz_zn)/dz,
-            // y
-            (t_xy_xp - t_xy_xn)/dx +
-            (t_yy_yp - t_yy_yn)/dy +
-            (t_yz_zp - t_yz_zn)/dz,
-            // z
-            (t_xz_xp - t_xz_xn)/dx +
-            (t_yz_yp - t_yz_yn)/dy +
-            (t_zz_zp - t_zz_zn)/dz);
+        // x
+        (t_xx_xp - t_xx_xn)/dx +
+        (t_xy_yp - t_xy_yn)/dy +
+        (t_xz_zp - t_xz_zn)/dz,
+        // y
+        (t_xy_xp - t_xy_xn)/dx +
+        (t_yy_yp - t_yy_yn)/dy +
+        (t_yz_zp - t_yz_zn)/dz,
+        // z
+        (t_xz_xp - t_xz_xn)/dx +
+        (t_yz_yp - t_yz_yn)/dy +
+        (t_zz_zp - t_zz_zn)/dz);
 
 #ifdef CHECK_NS_FINITE
     (void)checkFiniteFloat3("div_tensor", x, y, z, div_tensor);
@@ -1661,8 +1668,8 @@ __device__ Float3 divergence_tensor(
 // Find the spatial gradient in e.g. pressures per cell
 // using first order central differences
 __global__ void findNSgradientsDev(
-        Float* dev_scalarfield,     // in
-        Float3* dev_vectorfield)    // out
+    const Float* __restrict__ dev_scalarfield,     // in
+    Float3* __restrict__ dev_vectorfield)    // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -1699,8 +1706,8 @@ __global__ void findNSgradientsDev(
 
 // Find the outer product of v v
 __global__ void findvvOuterProdNS(
-        Float3* dev_ns_v,       // in
-        Float*  dev_ns_v_prod)  // out
+    const Float3* __restrict__ dev_ns_v,       // in
+    Float*  __restrict__ dev_ns_v_prod)  // out
 {
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
     const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
@@ -1750,8 +1757,8 @@ __global__ void findvvOuterProdNS(
 // Find the fluid stress tensor. It is symmetrical, and can thus be saved in 6
 // values in 3D.
 __global__ void findNSstressTensor(
-        Float3* dev_ns_v,       // in
-        Float*  dev_ns_tau)     // out
+    const Float3* __restrict__ dev_ns_v,       // in
+    Float* __restrict__ dev_ns_tau)     // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -1809,15 +1816,15 @@ __global__ void findNSstressTensor(
             devC_params.mu*((zp.y - zn.y)/(2.0*dz) + (yp.z - yn.z)/(2.0*dy));
 
         /*
-        if (x == 0 && y == 0 && z == 0)
-            printf("mu = %f\n", mu);
-        if (tau_xz > 1.0e-6)
-            printf("%d,%d,%d\ttau_xx = %f\n", x,y,z, tau_xx);
-        if (tau_yz > 1.0e-6)
-            printf("%d,%d,%d\ttau_yy = %f\n", x,y,z, tau_yy);
-        if (tau_zz > 1.0e-6)
-            printf("%d,%d,%d\ttau_zz = %f\n", x,y,z, tau_zz);
-            */
+          if (x == 0 && y == 0 && z == 0)
+          printf("mu = %f\n", mu);
+          if (tau_xz > 1.0e-6)
+          printf("%d,%d,%d\ttau_xx = %f\n", x,y,z, tau_xx);
+          if (tau_yz > 1.0e-6)
+          printf("%d,%d,%d\ttau_yy = %f\n", x,y,z, tau_yy);
+          if (tau_zz > 1.0e-6)
+          printf("%d,%d,%d\ttau_zz = %f\n", x,y,z, tau_zz);
+        */
 
         // Store values in global memory
         __syncthreads();
@@ -1842,9 +1849,9 @@ __global__ void findNSstressTensor(
 
 // Find the divergence of phi*v*v
 __global__ void findNSdivphiviv(
-        Float*  dev_ns_phi,          // in
-        Float3* dev_ns_v,            // in
-        Float3* dev_ns_div_phi_vi_v) // out
+    const Float*  __restrict__ dev_ns_phi,          // in
+    const Float3* __restrict__ dev_ns_v,            // in
+    Float3* __restrict__ dev_ns_div_phi_vi_v) // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -1888,58 +1895,58 @@ __global__ void findNSdivphiviv(
         // Calculate upwind coefficients
         //*
         const Float3 a = MAKE_FLOAT3(
-                copysign(1.0, v.x),
-                copysign(1.0, v.y),
-                copysign(1.0, v.z));
+            copysign(1.0, v.x),
+            copysign(1.0, v.y),
+            copysign(1.0, v.z));
 
         // Calculate the divergence based on the upwind differences (Griebel et
         // al. 1998, eq. 3.9)
         const Float3 div_uw = MAKE_FLOAT3(
-                // x
-                ((1.0 + a.x)*(phi*v.x*v.x - phi_xn*v_xn.x*v_xn.x) +
-                (1.0 - a.x)*(phi_xp*v_xp.x*v_xp.x - phi*v.x*v.x))/(2.0*dx) +
+            // x
+            ((1.0 + a.x)*(phi*v.x*v.x - phi_xn*v_xn.x*v_xn.x) +
+             (1.0 - a.x)*(phi_xp*v_xp.x*v_xp.x - phi*v.x*v.x))/(2.0*dx) +
 
-                ((1.0 + a.y)*(phi*v.x*v.y - phi_yn*v_yn.x*v_yn.y) +
-                (1.0 - a.y)*(phi_yp*v_yp.x*v_yp.y - phi*v.x*v.y))/(2.0*dy) +
+            ((1.0 + a.y)*(phi*v.x*v.y - phi_yn*v_yn.x*v_yn.y) +
+             (1.0 - a.y)*(phi_yp*v_yp.x*v_yp.y - phi*v.x*v.y))/(2.0*dy) +
 
-                ((1.0 + a.z)*(phi*v.x*v.z - phi_zn*v_zn.x*v_zn.z) +
-                (1.0 - a.z)*(phi_zp*v_zp.x*v_zp.z - phi*v.x*v.z))/(2.0*dz),
+            ((1.0 + a.z)*(phi*v.x*v.z - phi_zn*v_zn.x*v_zn.z) +
+             (1.0 - a.z)*(phi_zp*v_zp.x*v_zp.z - phi*v.x*v.z))/(2.0*dz),
 
-                // y
-                ((1.0 + a.x)*(phi*v.y*v.x - phi_xn*v_xn.y*v_xn.x) +
-                (1.0 - a.x)*(phi_xp*v_xp.y*v_xp.x - phi*v.y*v.x))/(2.0*dx) +
+            // y
+            ((1.0 + a.x)*(phi*v.y*v.x - phi_xn*v_xn.y*v_xn.x) +
+             (1.0 - a.x)*(phi_xp*v_xp.y*v_xp.x - phi*v.y*v.x))/(2.0*dx) +
 
-                ((1.0 + a.y)*(phi*v.y*v.y - phi_yn*v_yn.y*v_yn.y) +
-                (1.0 - a.y)*(phi_yp*v_yp.y*v_yp.y - phi*v.y*v.y))/(2.0*dy) +
+            ((1.0 + a.y)*(phi*v.y*v.y - phi_yn*v_yn.y*v_yn.y) +
+             (1.0 - a.y)*(phi_yp*v_yp.y*v_yp.y - phi*v.y*v.y))/(2.0*dy) +
 
-                ((1.0 + a.z)*(phi*v.y*v.z - phi_zn*v_zn.y*v_zn.z) +
-                (1.0 - a.z)*(phi_zp*v_zp.y*v_zp.z - phi*v.y*v.z))/(2.0*dz),
+            ((1.0 + a.z)*(phi*v.y*v.z - phi_zn*v_zn.y*v_zn.z) +
+             (1.0 - a.z)*(phi_zp*v_zp.y*v_zp.z - phi*v.y*v.z))/(2.0*dz),
 
-                // z
-                ((1.0 + a.x)*(phi*v.z*v.x - phi_xn*v_xn.z*v_xn.x) +
-                (1.0 - a.x)*(phi_xp*v_xp.z*v_xp.x - phi*v.z*v.x))/(2.0*dx) +
+            // z
+            ((1.0 + a.x)*(phi*v.z*v.x - phi_xn*v_xn.z*v_xn.x) +
+             (1.0 - a.x)*(phi_xp*v_xp.z*v_xp.x - phi*v.z*v.x))/(2.0*dx) +
 
-                ((1.0 + a.y)*(phi*v.z*v.y - phi_yn*v_yn.z*v_yn.y) +
-                (1.0 - a.y)*(phi_yp*v_yp.z*v_yp.y - phi*v.z*v.y))/(2.0*dy) +
+            ((1.0 + a.y)*(phi*v.z*v.y - phi_yn*v_yn.z*v_yn.y) +
+             (1.0 - a.y)*(phi_yp*v_yp.z*v_yp.y - phi*v.z*v.y))/(2.0*dy) +
 
-                ((1.0 + a.z)*(phi*v.z*v.z - phi_zn*v_zn.z*v_zn.z) +
-                (1.0 - a.z)*(phi_zp*v_zp.z*v_zp.z - phi*v.z*v.z))/(2.0*dz));
+            ((1.0 + a.z)*(phi*v.z*v.z - phi_zn*v_zn.z*v_zn.z) +
+             (1.0 - a.z)*(phi_zp*v_zp.z*v_zp.z - phi*v.z*v.z))/(2.0*dz));
 
 
         // Calculate the divergence based on the central-difference gradients
         const Float3 div_cd = MAKE_FLOAT3(
-                // x
-                (phi_xp*v_xp.x*v_xp.x - phi_xn*v_xn.x*v_xn.x)/(2.0*dx) +
-                (phi_yp*v_yp.x*v_yp.y - phi_yn*v_yn.x*v_yn.y)/(2.0*dy) +
-                (phi_zp*v_zp.x*v_zp.z - phi_zn*v_zn.x*v_zn.z)/(2.0*dz),
-                // y
-                (phi_xp*v_xp.y*v_xp.x - phi_xn*v_xn.y*v_xn.x)/(2.0*dx) +
-                (phi_yp*v_yp.y*v_yp.y - phi_yn*v_yn.y*v_yn.y)/(2.0*dy) +
-                (phi_zp*v_zp.y*v_zp.z - phi_zn*v_zn.y*v_zn.z)/(2.0*dz),
-                // z
-                (phi_xp*v_xp.z*v_xp.x - phi_xn*v_xn.z*v_xn.x)/(2.0*dx) +
-                (phi_yp*v_yp.z*v_yp.y - phi_yn*v_yn.z*v_yn.y)/(2.0*dy) +
-                (phi_zp*v_zp.z*v_zp.z - phi_zn*v_zn.z*v_zn.z)/(2.0*dz));
+            // x
+            (phi_xp*v_xp.x*v_xp.x - phi_xn*v_xn.x*v_xn.x)/(2.0*dx) +
+            (phi_yp*v_yp.x*v_yp.y - phi_yn*v_yn.x*v_yn.y)/(2.0*dy) +
+            (phi_zp*v_zp.x*v_zp.z - phi_zn*v_zn.x*v_zn.z)/(2.0*dz),
+            // y
+            (phi_xp*v_xp.y*v_xp.x - phi_xn*v_xn.y*v_xn.x)/(2.0*dx) +
+            (phi_yp*v_yp.y*v_yp.y - phi_yn*v_yn.y*v_yn.y)/(2.0*dy) +
+            (phi_zp*v_zp.y*v_zp.z - phi_zn*v_zn.y*v_zn.z)/(2.0*dz),
+            // z
+            (phi_xp*v_xp.z*v_xp.x - phi_xn*v_xn.z*v_xn.x)/(2.0*dx) +
+            (phi_yp*v_yp.z*v_yp.y - phi_yn*v_yn.z*v_yn.y)/(2.0*dy) +
+            (phi_zp*v_zp.z*v_zp.z - phi_zn*v_zn.z*v_zn.z)/(2.0*dz));
 
         // Weighting parameter
         const Float tau = 0.5;
@@ -1951,26 +1958,26 @@ __global__ void findNSdivphiviv(
         /*
         // Calculate the divergence: div(phi*v_i*v)
         const Float3 div_phi_vi_v = MAKE_FLOAT3(
-                // x
-                (phi_xp*v_xp.x*v_xp.x - phi_xn*v_xn.x*v_xn.x)/(2.0*dx) +
-                (phi_yp*v_yp.x*v_yp.y - phi_yn*v_yn.x*v_yn.y)/(2.0*dy) +
-                (phi_zp*v_zp.x*v_zp.z - phi_zn*v_zn.x*v_zn.z)/(2.0*dz),
-                // y
-                (phi_xp*v_xp.y*v_xp.x - phi_xn*v_xn.y*v_xn.x)/(2.0*dx) +
-                (phi_yp*v_yp.y*v_yp.y - phi_yn*v_yn.y*v_yn.y)/(2.0*dy) +
-                (phi_zp*v_zp.y*v_zp.z - phi_zn*v_zn.y*v_zn.z)/(2.0*dz),
-                // z
-                (phi_xp*v_xp.z*v_xp.x - phi_xn*v_xn.z*v_xn.x)/(2.0*dx) +
-                (phi_yp*v_yp.z*v_yp.y - phi_yn*v_yn.z*v_yn.y)/(2.0*dy) +
-                (phi_zp*v_zp.z*v_zp.z - phi_zn*v_zn.z*v_zn.z)/(2.0*dz));
-                // */
+        // x
+        (phi_xp*v_xp.x*v_xp.x - phi_xn*v_xn.x*v_xn.x)/(2.0*dx) +
+        (phi_yp*v_yp.x*v_yp.y - phi_yn*v_yn.x*v_yn.y)/(2.0*dy) +
+        (phi_zp*v_zp.x*v_zp.z - phi_zn*v_zn.x*v_zn.z)/(2.0*dz),
+        // y
+        (phi_xp*v_xp.y*v_xp.x - phi_xn*v_xn.y*v_xn.x)/(2.0*dx) +
+        (phi_yp*v_yp.y*v_yp.y - phi_yn*v_yn.y*v_yn.y)/(2.0*dy) +
+        (phi_zp*v_zp.y*v_zp.z - phi_zn*v_zn.y*v_zn.z)/(2.0*dz),
+        // z
+        (phi_xp*v_xp.z*v_xp.x - phi_xn*v_xn.z*v_xn.x)/(2.0*dx) +
+        (phi_yp*v_yp.z*v_yp.y - phi_yn*v_yn.z*v_yn.y)/(2.0*dy) +
+        (phi_zp*v_zp.z*v_zp.z - phi_zn*v_zn.z*v_zn.z)/(2.0*dz));
+        // */
 
         // Write divergence
         __syncthreads();
         dev_ns_div_phi_vi_v[cellidx] = div_phi_vi_v;
 
         //printf("div(phi*v*v) [%d,%d,%d] = %f, %f, %f\n", x,y,z,
-                //div_phi_vi_v.x, div_phi_vi_v.y, div_phi_vi_v.z);
+        //div_phi_vi_v.x, div_phi_vi_v.y, div_phi_vi_v.z);
 
 #ifdef CHECK_NS_FINITE
         (void)checkFiniteFloat3("div_phi_vi_v", x, y, z, div_phi_vi_v);
@@ -1979,8 +1986,8 @@ __global__ void findNSdivphiviv(
 }
 
 __global__ void findNSdivtau(
-        Float*  dev_ns_tau,      // in
-        Float3* dev_ns_div_tau)  // out
+    const Float* __restrict__ dev_ns_tau,      // in
+    Float3* __restrict__ dev_ns_div_tau)  // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -2015,9 +2022,9 @@ __global__ void findNSdivtau(
 
 // Find the divergence of phi*tau
 __global__ void findNSdivphitau(
-        Float*  dev_ns_phi,          // in
-        Float*  dev_ns_tau,          // in
-        Float3* dev_ns_div_phi_tau)  // out
+    const Float* __restrict__ dev_ns_phi,          // in
+    const Float* __restrict__ dev_ns_tau,          // in
+    Float3* __restrict__ dev_ns_div_phi_tau)  // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -2094,18 +2101,18 @@ __global__ void findNSdivphitau(
 
         // Calculate div(phi*tau)
         const Float3 div_phi_tau = MAKE_FLOAT3(
-                // x
-                (phi_xp*tau_xx_xp - phi_xn*tau_xx_xn)/dx +
-                (phi_yp*tau_xy_yp - phi_yn*tau_xy_yn)/dy +
-                (phi_zp*tau_xz_zp - phi_zn*tau_xz_zn)/dz,
-                // y
-                (phi_xp*tau_xy_xp - phi_xn*tau_xy_xn)/dx +
-                (phi_yp*tau_yy_yp - phi_yn*tau_yy_yn)/dy +
-                (phi_zp*tau_yz_zp - phi_zn*tau_yz_zn)/dz,
-                // z
-                (phi_xp*tau_xz_xp - phi_xn*tau_xz_xn)/dx +
-                (phi_yp*tau_yz_yp - phi_yn*tau_yz_yn)/dy +
-                (phi_zp*tau_zz_zp - phi_zn*tau_zz_zn)/dz);
+            // x
+            (phi_xp*tau_xx_xp - phi_xn*tau_xx_xn)/dx +
+            (phi_yp*tau_xy_yp - phi_yn*tau_xy_yn)/dy +
+            (phi_zp*tau_xz_zp - phi_zn*tau_xz_zn)/dz,
+            // y
+            (phi_xp*tau_xy_xp - phi_xn*tau_xy_xn)/dx +
+            (phi_yp*tau_yy_yp - phi_yn*tau_yy_yn)/dy +
+            (phi_zp*tau_yz_zp - phi_zn*tau_yz_zn)/dz,
+            // z
+            (phi_xp*tau_xz_xp - phi_xn*tau_xz_xn)/dx +
+            (phi_yp*tau_yz_yp - phi_yn*tau_yz_yn)/dy +
+            (phi_zp*tau_zz_zp - phi_zn*tau_zz_zn)/dz);
 
         // Write divergence
         __syncthreads();
@@ -2120,9 +2127,9 @@ __global__ void findNSdivphitau(
 // Find the divergence of phi v v
 // Unused
 __global__ void findNSdivphivv(
-        Float*  dev_ns_v_prod, // in
-        Float*  dev_ns_phi,    // in
-        Float3* dev_ns_div_phi_v_v) // out
+    const Float* __restrict__ dev_ns_v_prod, // in
+    const Float* __restrict__ dev_ns_phi,    // in
+    Float3* __restrict__ dev_ns_div_phi_v_v) // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -2174,24 +2181,24 @@ __global__ void findNSdivphivv(
         // The symmetry described in findvvOuterProdNS is used
         __syncthreads();
         const Float3 div = MAKE_FLOAT3(
-                ((dev_ns_v_prod[idx(x+1,y,z)*6]*phi_xp
-                  - dev_ns_v_prod[idx(x-1,y,z)*6]*phi_xn)/(2.0*dx) +
-                 (dev_ns_v_prod[idx(x,y+1,z)*6+1]*phi_yp
-                  - dev_ns_v_prod[idx(x,y-1,z)*6+1]*phi_yn)/(2.0*dy) +
-                 (dev_ns_v_prod[idx(x,y,z+1)*6+2]*phi_zp
-                  - dev_ns_v_prod[idx(x,y,z-1)*6+2]*phi_zn)/(2.0*dz)),
-                ((dev_ns_v_prod[idx(x+1,y,z)*6+1]*phi_xp
-                  - dev_ns_v_prod[idx(x-1,y,z)*6+1]*phi_xn)/(2.0*dx) +
-                 (dev_ns_v_prod[idx(x,y+1,z)*6+3]*phi_yp
-                  - dev_ns_v_prod[idx(x,y-1,z)*6+3]*phi_yn)/(2.0*dy) +
-                 (dev_ns_v_prod[idx(x,y,z+1)*6+4]*phi_zp
-                  - dev_ns_v_prod[idx(x,y,z-1)*6+4]*phi_zn)/(2.0*dz)),
-                ((dev_ns_v_prod[idx(x+1,y,z)*6+2]*phi_xp
-                  - dev_ns_v_prod[idx(x-1,y,z)*6+2]*phi_xn)/(2.0*dx) +
-                 (dev_ns_v_prod[idx(x,y+1,z)*6+4]*phi_yp
-                  - dev_ns_v_prod[idx(x,y-1,z)*6+4]*phi_yn)/(2.0*dy) +
-                 (dev_ns_v_prod[idx(x,y,z+1)*6+5]*phi_zp
-                  - dev_ns_v_prod[idx(x,y,z-1)*6+5]*phi_zn)/(2.0*dz)) );
+            ((dev_ns_v_prod[idx(x+1,y,z)*6]*phi_xp
+              - dev_ns_v_prod[idx(x-1,y,z)*6]*phi_xn)/(2.0*dx) +
+             (dev_ns_v_prod[idx(x,y+1,z)*6+1]*phi_yp
+              - dev_ns_v_prod[idx(x,y-1,z)*6+1]*phi_yn)/(2.0*dy) +
+             (dev_ns_v_prod[idx(x,y,z+1)*6+2]*phi_zp
+              - dev_ns_v_prod[idx(x,y,z-1)*6+2]*phi_zn)/(2.0*dz)),
+            ((dev_ns_v_prod[idx(x+1,y,z)*6+1]*phi_xp
+              - dev_ns_v_prod[idx(x-1,y,z)*6+1]*phi_xn)/(2.0*dx) +
+             (dev_ns_v_prod[idx(x,y+1,z)*6+3]*phi_yp
+              - dev_ns_v_prod[idx(x,y-1,z)*6+3]*phi_yn)/(2.0*dy) +
+             (dev_ns_v_prod[idx(x,y,z+1)*6+4]*phi_zp
+              - dev_ns_v_prod[idx(x,y,z-1)*6+4]*phi_zn)/(2.0*dz)),
+            ((dev_ns_v_prod[idx(x+1,y,z)*6+2]*phi_xp
+              - dev_ns_v_prod[idx(x-1,y,z)*6+2]*phi_xn)/(2.0*dx) +
+             (dev_ns_v_prod[idx(x,y+1,z)*6+4]*phi_yp
+              - dev_ns_v_prod[idx(x,y-1,z)*6+4]*phi_yn)/(2.0*dy) +
+             (dev_ns_v_prod[idx(x,y,z+1)*6+5]*phi_zp
+              - dev_ns_v_prod[idx(x,y,z-1)*6+5]*phi_zn)/(2.0*dz)) );
 
         //printf("div[%d,%d,%d] = %f\t%f\t%f\n", x, y, z, div.x, div.y, div.z);
 
@@ -2209,25 +2216,25 @@ __global__ void findNSdivphivv(
 // Find predicted fluid velocity
 // Launch per face.
 __global__ void findPredNSvelocities(
-        Float*  dev_ns_p,               // in
-        Float*  dev_ns_v_x,             // in
-        Float*  dev_ns_v_y,             // in
-        Float*  dev_ns_v_z,             // in
-        Float*  dev_ns_phi,             // in
-        Float*  dev_ns_dphi,            // in
-        Float*  dev_ns_div_tau_x,       // in
-        Float*  dev_ns_div_tau_y,       // in
-        Float*  dev_ns_div_tau_z,       // in
-        Float3* dev_ns_div_phi_vi_v,    // in
-        int     bc_bot,                 // in
-        int     bc_top,                 // in
-        Float   beta,                   // in
-        Float3* dev_ns_F_pf,            // in
-        unsigned int ndem,              // in
-        Float   c_grad_p,               // in
-        Float*  dev_ns_v_p_x,           // out
-        Float*  dev_ns_v_p_y,           // out
-        Float*  dev_ns_v_p_z)           // out
+    const Float*  __restrict__ dev_ns_p,               // in
+    const Float*  __restrict__ dev_ns_v_x,             // in
+    const Float*  __restrict__ dev_ns_v_y,             // in
+    const Float*  __restrict__ dev_ns_v_z,             // in
+    const Float*  __restrict__ dev_ns_phi,             // in
+    const Float*  __restrict__ dev_ns_dphi,            // in
+    const Float*  __restrict__ dev_ns_div_tau_x,       // in
+    const Float*  __restrict__ dev_ns_div_tau_y,       // in
+    const Float*  __restrict__ dev_ns_div_tau_z,       // in
+    const Float3* __restrict__ dev_ns_div_phi_vi_v,    // in
+    const int     bc_bot,                 // in
+    const int     bc_top,                 // in
+    const Float   beta,                   // in
+    const Float3* __restrict__ dev_ns_F_pf,            // in
+    const unsigned int ndem,              // in
+    const Float   __restrict__ c_grad_p,               // in
+    Float* __restrict__ dev_ns_v_p_x,           // out
+    Float* __restrict__ dev_ns_v_p_y,           // out
+    Float* __restrict__ dev_ns_v_p_z)           // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -2255,9 +2262,9 @@ __global__ void findPredNSvelocities(
         // Values that are needed for calculating the predicted velocity
         __syncthreads();
         const Float3 v = MAKE_FLOAT3(
-                dev_ns_v_x[fidx],
-                dev_ns_v_y[fidx],
-                dev_ns_v_z[fidx]);
+            dev_ns_v_x[fidx],
+            dev_ns_v_y[fidx],
+            dev_ns_v_z[fidx]);
 
         Float3 div_tau = MAKE_FLOAT3(0.0, 0.0, 0.0);
         if (devC_params.mu > 0.0) {
@@ -2285,13 +2292,13 @@ __global__ void findPredNSvelocities(
 
         // component-wise average values
         const Float3 phi = MAKE_FLOAT3(
-                amean(phi_c, phi_xn),
-                amean(phi_c, phi_yn),
-                amean(phi_c, phi_zn));
+            amean(phi_c, phi_xn),
+            amean(phi_c, phi_yn),
+            amean(phi_c, phi_zn));
         const Float3 dphi = MAKE_FLOAT3(
-                amean(dphi_c, dphi_xn),
-                amean(dphi_c, dphi_yn),
-                amean(dphi_c, dphi_zn));
+            amean(dphi_c, dphi_xn),
+            amean(dphi_c, dphi_yn),
+            amean(dphi_c, dphi_zn));
 
         // The particle-fluid interaction force should only be incoorporated if
         // there is a fluid viscosity
@@ -2308,9 +2315,9 @@ __global__ void findPredNSvelocities(
             f_i_zn = MAKE_FLOAT3(0.0, 0.0, 0.0);
         }
         const Float3 f_i = MAKE_FLOAT3(
-                amean(f_i_c.x, f_i_xn.x),
-                amean(f_i_c.y, f_i_yn.y),
-                amean(f_i_c.z, f_i_zn.z));
+            amean(f_i_c.x, f_i_xn.x),
+            amean(f_i_c.y, f_i_yn.y),
+            amean(f_i_c.z, f_i_zn.z));
 
         const Float dt = ndem*devC_dt;
         const Float rho = devC_params.rho_f;
@@ -2326,9 +2333,9 @@ __global__ void findPredNSvelocities(
             const Float p_yn = dev_ns_p[idx(x,y-1,z)];
             const Float p_zn = dev_ns_p[idx(x,y,z-1)];
             const Float3 grad_p = MAKE_FLOAT3(
-                    (p - p_xn)/dx,
-                    (p - p_yn)/dy,
-                    (p - p_zn)/dz) * c_grad_p;
+                (p - p_xn)/dx,
+                (p - p_yn)/dy,
+                (p - p_zn)/dz) * c_grad_p;
 #ifdef SET_1
             pressure_term = -beta*dt/(rho*phi)*grad_p;
 #endif
@@ -2338,16 +2345,16 @@ __global__ void findPredNSvelocities(
         }
 
         const Float3 div_phi_vi_v = MAKE_FLOAT3(
-                amean(div_phi_vi_v_xn.x, div_phi_vi_v_c.x),
-                amean(div_phi_vi_v_yn.x, div_phi_vi_v_c.y),
-                amean(div_phi_vi_v_zn.x, div_phi_vi_v_c.z));
+            amean(div_phi_vi_v_xn.x, div_phi_vi_v_c.x),
+            amean(div_phi_vi_v_yn.x, div_phi_vi_v_c.y),
+            amean(div_phi_vi_v_zn.x, div_phi_vi_v_c.z));
 
         // Determine the predicted velocity
 #ifdef SET_1
         const Float3 interaction_term = -dt/(rho*phi)*f_i;
         const Float3 diffusion_term = dt/(rho*phi)*div_tau;
         const Float3 gravity_term = MAKE_FLOAT3(
-                    devC_params.g[0], devC_params.g[1], devC_params.g[2])*dt;
+            devC_params.g[0], devC_params.g[1], devC_params.g[2])*dt;
         const Float3 porosity_term = -1.0*v*dphi/phi;
         const Float3 advection_term = -1.0*div_phi_vi_v*dt/phi;
 #endif
@@ -2355,7 +2362,7 @@ __global__ void findPredNSvelocities(
         const Float3 interaction_term = -dt/(rho*phi)*f_i;
         const Float3 diffusion_term = dt/rho*div_tau;
         const Float3 gravity_term = MAKE_FLOAT3(
-                devC_params.g[0], devC_params.g[1], devC_params.g[2])*dt;
+            devC_params.g[0], devC_params.g[1], devC_params.g[2])*dt;
         const Float3 porosity_term = -1.0*v*dphi/phi;
         const Float3 advection_term = -1.0*div_phi_vi_v*dt/phi;
 #endif
@@ -2376,31 +2383,31 @@ __global__ void findPredNSvelocities(
 
         // No slip
         /*if ((z == 0 && bc_bot == 2) || (z == nz-1 && bc_top == 2)) {
-            v_p.x = 0.0;
-            v_p.y = 0.0;
-            v_p.z = 0.0;
-            }*/
+          v_p.x = 0.0;
+          v_p.y = 0.0;
+          v_p.z = 0.0;
+          }*/
 
 
 #ifdef REPORT_V_P_COMPONENTS
         // Report velocity components to stdout for debugging
         if (z==0)
-        printf("\n[%d,%d,%d]"
-               "\tv_p      = %+e %+e %+e\n"
-               "\tpres     = %+e %+e %+e\n"
-               "\tinteract = %+e %+e %+e\n"
-               "\tdiff     = %+e %+e %+e\n"
-               "\tgrav     = %+e %+e %+e\n"
-               "\tporos    = %+e %+e %+e\n"
-               "\tadv      = %+e %+e %+e\n",
-               x, y, z,
-               v_p.x, v_p.y, v_p.z,
-               pressure_term.x, pressure_term.y, pressure_term.z, 
-               interaction_term.x, interaction_term.y, interaction_term.z, 
-               diffusion_term.x, diffusion_term.y, diffusion_term.z, 
-               gravity_term.x, gravity_term.y, gravity_term.z, 
-               porosity_term.x, porosity_term.y, porosity_term.z, 
-               advection_term.x, advection_term.y, advection_term.z);
+            printf("\n[%d,%d,%d]"
+                   "\tv_p      = %+e %+e %+e\n"
+                   "\tpres     = %+e %+e %+e\n"
+                   "\tinteract = %+e %+e %+e\n"
+                   "\tdiff     = %+e %+e %+e\n"
+                   "\tgrav     = %+e %+e %+e\n"
+                   "\tporos    = %+e %+e %+e\n"
+                   "\tadv      = %+e %+e %+e\n",
+                   x, y, z,
+                   v_p.x, v_p.y, v_p.z,
+                   pressure_term.x, pressure_term.y, pressure_term.z, 
+                   interaction_term.x, interaction_term.y, interaction_term.z, 
+                   diffusion_term.x, diffusion_term.y, diffusion_term.z, 
+                   gravity_term.x, gravity_term.y, gravity_term.z, 
+                   porosity_term.x, porosity_term.y, porosity_term.z, 
+                   advection_term.x, advection_term.y, advection_term.z);
 #endif
 
         // Save the predicted velocity
@@ -2421,18 +2428,18 @@ __global__ void findPredNSvelocities(
 // At each iteration, the value of the forcing function is found as:
 //   f = f1 - f2 dot grad(epsilon)
 __global__ void findNSforcing(
-        Float*  dev_ns_epsilon,     // in
-        Float*  dev_ns_phi,         // in
-        Float*  dev_ns_dphi,        // in
-        Float3* dev_ns_v_p,         // in
-        Float*  dev_ns_v_p_x,       // in
-        Float*  dev_ns_v_p_y,       // in
-        Float*  dev_ns_v_p_z,       // in
-        unsigned int nijac,         // in
-        unsigned int ndem,          // in
-        Float*  dev_ns_f1,          // out
-        Float3* dev_ns_f2,          // out
-        Float*  dev_ns_f)           // out
+    const Float*  __restrict__ dev_ns_epsilon,     // in
+    const Float*  __restrict__ dev_ns_phi,         // in
+    const Float*  __restrict__ dev_ns_dphi,        // in
+    const Float3* __restrict__ dev_ns_v_p,         // in
+    const Float*  __restrict__ dev_ns_v_p_x,       // in
+    const Float*  __restrict__ dev_ns_v_p_y,       // in
+    const Float*  __restrict__ dev_ns_v_p_z,       // in
+    const unsigned int nijac,                      // in
+    const unsigned int ndem,                       // in
+    Float*  __restrict__ dev_ns_f1,                // out
+    Float3* __restrict__ dev_ns_f2,                // out
+    Float*  __restrict__ dev_ns_f)                 // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -2472,7 +2479,7 @@ __global__ void findNSforcing(
             // Calculate derivatives
             const Float  div_v_p
                 = divergence(dev_ns_v_p_x, dev_ns_v_p_y, dev_ns_v_p_z,
-                        x, y, z, dx, dy, dz);
+                             x, y, z, dx, dy, dz);
             const Float3 grad_phi
                 = gradient(dev_ns_phi, x, y, z, dx, dy, dz);
 
@@ -2497,7 +2504,7 @@ __global__ void findNSforcing(
 #ifdef REPORT_FORCING_TERMS
             // Report values terms in the forcing function for debugging
             printf("[%d,%d,%d]\tt1 = %f\tt2 = %f\tt4 = %f\n",
-                    x,y,z, t1, t2, t4);
+                   x,y,z, t1, t2, t4);
 #endif
 
             // Save values
@@ -2524,7 +2531,7 @@ __global__ void findNSforcing(
         const Float t3 = -dot(f2, grad_epsilon);
         if (z >= nz-3)
             printf("[%d,%d,%d]\tf = %f\tf1 = %f\tt3 = %f\n",
-                    x,y,z, f, f1, t3);
+                   x,y,z, f, f1, t3);
 #endif
 
         // Save forcing function value
@@ -2542,10 +2549,10 @@ __global__ void findNSforcing(
 // non-smoothed and smoothed values.
 template<typename T>
 __global__ void smoothing(
-        T* dev_arr,
-        const Float gamma,
-        const unsigned int bc_bot,
-        const unsigned int bc_top)
+    T* __restrict__ dev_arr,
+    const Float gamma,
+    const unsigned int bc_bot,
+    const unsigned int bc_top)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -2602,13 +2609,13 @@ __global__ void smoothing(
 
 // Perform a single Jacobi iteration
 __global__ void jacobiIterationNS(
-        const Float* dev_ns_epsilon,
-        Float* dev_ns_epsilon_new,
-        Float* dev_ns_norm,
-        const Float* dev_ns_f,
-        const int bc_bot,
-        const int bc_top,
-        const Float theta)
+    const Float* __restrict__ dev_ns_epsilon,
+    Float* __restrict__ dev_ns_epsilon_new,
+    Float* __restrict__ dev_ns_norm,
+    const Float* __restrict__ dev_ns_f,
+    const int bc_bot,
+    const int bc_top,
+    const Float theta)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -2672,9 +2679,9 @@ __global__ void jacobiIterationNS(
         const Float dzdz = dz*dz;
         Float e_new
             = (-dxdx*dydy*dzdz*f
-                    + dydy*dzdz*(e_xn + e_xp)
-                    + dxdx*dzdz*(e_yn + e_yp)
-                    + dxdx*dydy*(e_zn + e_zp))
+               + dydy*dzdz*(e_xn + e_xp)
+               + dxdx*dzdz*(e_yn + e_yp)
+               + dxdx*dydy*(e_zn + e_zp))
             /(2.0*(dxdx*dydy + dxdx*dzdz + dydy*dzdz));
 
         // New value of epsilon in 1D update
@@ -2682,7 +2689,7 @@ __global__ void jacobiIterationNS(
 
         // Print values for debugging
         /*printf("[%d,%d,%d]\t e = %f\tf = %f\te_new = %f\n",
-                x,y,z, e, f, e_new);*/
+          x,y,z, e, f, e_new);*/
 
         const Float res_norm = (e_new - e)*(e_new - e)/(e_new*e_new + 1.0e-16);
         const Float e_relax = e*(1.0-theta) + e_new*theta;
@@ -2697,7 +2704,7 @@ __global__ void jacobiIterationNS(
         //(void)checkFiniteFloat("res_norm", x, y, z, res_norm);
         if (checkFiniteFloat("res_norm", x, y, z, res_norm)) {
             printf("[%d,%d,%d]\t e = %f\tf = %f\te_new = %f\tres_norm = %f\n",
-                    x,y,z, e, f, e_new, res_norm);
+                   x,y,z, e, f, e_new, res_norm);
         }
 #endif
     }
@@ -2706,8 +2713,8 @@ __global__ void jacobiIterationNS(
 // Copy all values from one array to the other
 template<typename T>
 __global__ void copyValues(
-        T* dev_read,
-        T* dev_write)
+    const T* __restrict__ dev_read,
+    T* __restrict__ dev_write)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -2717,10 +2724,10 @@ __global__ void copyValues(
     // Internal nodes only
     if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
 
-    // Internal nodes + ghost nodes
-    /*if (x <= devC_grid.num[0]+1 &&
-            y <= devC_grid.num[1]+1 &&
-            z <= devC_grid.num[2]+1) {*/
+        // Internal nodes + ghost nodes
+        /*if (x <= devC_grid.num[0]+1 &&
+          y <= devC_grid.num[1]+1 &&
+          z <= devC_grid.num[2]+1) {*/
 
         const unsigned int cellidx = idx(x,y,z); // without ghost nodes
         //const unsigned int cellidx = idx(x-1,y-1,z-1); // with ghost nodes
@@ -2730,7 +2737,7 @@ __global__ void copyValues(
         const T val = dev_read[cellidx];
 
         //if (z == devC_grid.num[2]-1)
-            //printf("[%d,%d,%d] = %f\n", x, y, z, val);
+        //printf("[%d,%d,%d] = %f\n", x, y, z, val);
 
         // Write
         __syncthreads();
@@ -2740,11 +2747,11 @@ __global__ void copyValues(
 
 // Find and store the normalized residuals
 __global__ void findNormalizedResiduals(
-        Float* dev_ns_epsilon_old,
-        Float* dev_ns_epsilon,
-        Float* dev_ns_norm,
-        const unsigned int bc_bot,
-        const unsigned int bc_top)
+    const Float* __restrict__ dev_ns_epsilon_old,
+    const Float* __restrict__ dev_ns_epsilon,
+    Float* __restrict__ dev_ns_norm,
+    const unsigned int bc_bot,
+    const unsigned int bc_top)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -2791,9 +2798,9 @@ __global__ void findNormalizedResiduals(
 
 // Computes the new velocity and pressure using the corrector
 __global__ void updateNSpressure(
-        Float* dev_ns_epsilon,  // in
-        Float  beta,            // in
-        Float* dev_ns_p)        // out
+    const Float* __restrict__ dev_ns_epsilon,  // in
+    const Float  __restrict__ beta,            // in
+    Float* __restrict__ dev_ns_p)              // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -2825,19 +2832,19 @@ __global__ void updateNSpressure(
 }
 
 __global__ void updateNSvelocity(
-        Float* dev_ns_v_p_x,    // in
-        Float* dev_ns_v_p_y,    // in
-        Float* dev_ns_v_p_z,    // in
-        Float* dev_ns_phi,      // in
-        Float* dev_ns_epsilon,  // in
-        Float  beta,            // in
-        int    bc_bot,          // in
-        int    bc_top,          // in
-        unsigned int ndem,      // in
-        Float  c_grad_p,        // in
-        Float* dev_ns_v_x,      // out
-        Float* dev_ns_v_y,      // out
-        Float* dev_ns_v_z)      // out
+    const Float* __restrict__ dev_ns_v_p_x,    // in
+    const Float* __restrict__ dev_ns_v_p_y,    // in
+    const Float* __restrict__ dev_ns_v_p_z,    // in
+    const Float* __restrict__ dev_ns_phi,      // in
+    const Float* __restrict__ dev_ns_epsilon,  // in
+    const Float  beta,            // in
+    const int    bc_bot,          // in
+    const int    bc_top,          // in
+    const unsigned int ndem,      // in
+    const Float  c_grad_p,        // in
+    Float* __restrict__ dev_ns_v_x,      // out
+    Float* __restrict__ dev_ns_v_y,      // out
+    Float* __restrict__ dev_ns_v_z)      // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -2879,15 +2886,15 @@ __global__ void updateNSvelocity(
         const Float phi_zn = dev_ns_phi[idx(x,y,z-1)];
 
         const Float3 phi = MAKE_FLOAT3(
-                amean(phi_c, phi_xn),
-                amean(phi_c, phi_yn),
-                amean(phi_c, phi_zn));
+            amean(phi_c, phi_xn),
+            amean(phi_c, phi_yn),
+            amean(phi_c, phi_zn));
 
         // Find corrector gradient
         const Float3 grad_epsilon = MAKE_FLOAT3(
-                (epsilon_c - epsilon_xn)/dx,
-                (epsilon_c - epsilon_yn)/dy,
-                (epsilon_c - epsilon_zn)/dz) * c_grad_p;
+            (epsilon_c - epsilon_xn)/dx,
+            (epsilon_c - epsilon_yn)/dy,
+            (epsilon_c - epsilon_zn)/dz) * c_grad_p;
 
         // Find new velocity
 #ifdef SET_1
@@ -2900,16 +2907,16 @@ __global__ void updateNSvelocity(
 
         // Print values for debugging
         /* if (z == 0) {
-            Float e_up = dev_ns_epsilon[idx(x,y,z+1)];
-            Float e_down = dev_ns_epsilon[idx(x,y,z-1)];
-            printf("[%d,%d,%d]\tgrad_e = %f,%f,%f\te_up = %f\te_down = %f\n",
-                    x,y,z,
-                    grad_epsilon.x,
-                    grad_epsilon.y,
-                    grad_epsilon.z,
-                    e_up,
-                    e_down);
-        }*/
+           Float e_up = dev_ns_epsilon[idx(x,y,z+1)];
+           Float e_down = dev_ns_epsilon[idx(x,y,z-1)];
+           printf("[%d,%d,%d]\tgrad_e = %f,%f,%f\te_up = %f\te_down = %f\n",
+           x,y,z,
+           grad_epsilon.x,
+           grad_epsilon.y,
+           grad_epsilon.z,
+           e_up,
+           e_down);
+           }*/
 
         if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
             v.z = 0.0;
@@ -2919,11 +2926,11 @@ __global__ void updateNSvelocity(
 
         // Check the advection term using the Courant-Friedrichs-Lewy condition
         if (v.x*ndem*devC_dt/dx
-                + v.y*ndem*devC_dt/dy
-                + v.z*ndem*devC_dt/dz > 1.0) {
+            + v.y*ndem*devC_dt/dy
+            + v.z*ndem*devC_dt/dz > 1.0) {
             printf("[%d,%d,%d] Warning: Advection term in fluid may be "
-                    "unstable (CFL condition), v = %f,%f,%f\n",
-                    x,y,z, v.x, v.y, v.z);
+                   "unstable (CFL condition), v = %f,%f,%f\n",
+                   x,y,z, v.x, v.y, v.z);
         }
 
         // Write new values
@@ -2941,12 +2948,12 @@ __global__ void updateNSvelocity(
 // Find the average particle diameter and velocity for each CFD cell.
 // UNUSED: The values are estimated in the porosity estimation function instead
 __global__ void findAvgParticleVelocityDiameter(
-        unsigned int* dev_cellStart, // in
-        unsigned int* dev_cellEnd,   // in
-        Float4* dev_vel_sorted,      // in
-        Float4* dev_x_sorted,        // in
-        Float3* dev_ns_vp_avg,       // out
-        Float*  dev_ns_d_avg)        // out
+    const unsigned int* __restrict__ dev_cellStart, // in
+    const unsigned int* __restrict__ dev_cellEnd,   // in
+    const Float4* __restrict__ dev_vel_sorted,      // in
+    const Float4* __restrict__ dev_x_sorted,        // in
+    Float3* dev_ns_vp_avg,       // out
+    Float*  dev_ns_d_avg)        // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -3023,18 +3030,18 @@ __device__ Float dragCoefficient(Float re)
 // Find particle-fluid interaction force as outlined by Zhou et al. 2010, and
 // originally by Gidaspow 1992.
 __global__ void findInteractionForce(
-        Float4* dev_x,           // in
-        Float4* dev_vel,         // in
-        Float*  dev_ns_phi,      // in
-        Float*  dev_ns_p,        // in
-        Float*  dev_ns_v_x,      // in
-        Float*  dev_ns_v_y,      // in
-        Float*  dev_ns_v_z,      // in
-        Float*  dev_ns_div_tau_x,// in
-        Float*  dev_ns_div_tau_y,// in
-        Float*  dev_ns_div_tau_z,// in
-        Float3* dev_ns_f_pf,     // out
-        Float4* dev_force)       // out
+    const Float4* __restrict__ dev_x,           // in
+    const Float4* __restrict__ dev_vel,         // in
+    const Float*  __restrict__ dev_ns_phi,      // in
+    const Float*  __restrict__ dev_ns_p,        // in
+    const Float*  __restrict__ dev_ns_v_x,      // in
+    const Float*  __restrict__ dev_ns_v_y,      // in
+    const Float*  __restrict__ dev_ns_v_z,      // in
+    const Float*  __restrict__ dev_ns_div_tau_x,// in
+    const Float*  __restrict__ dev_ns_div_tau_y,// in
+    const Float*  __restrict__ dev_ns_div_tau_z,// in
+    Float3* __restrict__ dev_ns_f_pf,     // out
+    Float4* __restrict__ dev_force)       // out
 {
     unsigned int i = threadIdx.x + blockIdx.x*blockDim.x; // Particle index
 
@@ -3080,14 +3087,14 @@ __global__ void findInteractionForce(
         const Float div_tau_z_p = dev_ns_div_tau_z[vidx(i_x,i_y,i_z+1)];
 
         const Float3 v_f = MAKE_FLOAT3(
-                amean(v_x, v_x_p),
-                amean(v_y, v_y_p),
-                amean(v_z, v_z_p));
+            amean(v_x, v_x_p),
+            amean(v_y, v_y_p),
+            amean(v_z, v_z_p));
 
         const Float3 div_tau = MAKE_FLOAT3(
-                amean(div_tau_x, div_tau_x_p),
-                amean(div_tau_y, div_tau_y_p),
-                amean(div_tau_z, div_tau_z_p));
+            amean(div_tau_x, div_tau_x_p),
+            amean(div_tau_y, div_tau_y_p),
+            amean(div_tau_z, div_tau_z_p));
 
         const Float3 v_rel = v_f - v_p;
         const Float  v_rel_length = length(v_rel);
@@ -3119,15 +3126,15 @@ __global__ void findInteractionForce(
 
 #ifdef CHECK_NS_FINITE
         /*
-        printf("\nfindInteractionForce %d [%d,%d,%d]\n"
-               "\tV_p = %f Re=%f Cd=%f chi=%f\n"
-               "\tf_d = %+e %+e %+e\n"
-               "\tf_p = %+e %+e %+e\n"
-               "\tf_v = %+e %+e %+e\n",
-                i, i_x, i_y, i_z, V_p, Re, Cd, chi,
-                f_d.x, f_d.y, f_d.z,
-                f_p.x, f_p.y, f_p.z,
-                f_v.x, f_v.y, f_v.z);// */
+          printf("\nfindInteractionForce %d [%d,%d,%d]\n"
+          "\tV_p = %f Re=%f Cd=%f chi=%f\n"
+          "\tf_d = %+e %+e %+e\n"
+          "\tf_p = %+e %+e %+e\n"
+          "\tf_v = %+e %+e %+e\n",
+          i, i_x, i_y, i_z, V_p, Re, Cd, chi,
+          f_d.x, f_d.y, f_d.z,
+          f_p.x, f_p.y, f_p.z,
+          f_v.x, f_v.y, f_v.z);// */
         checkFiniteFloat3("f_d", i_x, i_y, i_z, f_d);
         checkFiniteFloat3("f_p", i_x, i_y, i_z, f_p);
         checkFiniteFloat3("f_v", i_x, i_y, i_z, f_v);
@@ -3149,11 +3156,11 @@ __global__ void findInteractionForce(
 // Apply the fluid-particle interaction force to the fluid cell based on the
 // interaction forces from each particle in it
 __global__ void applyInteractionForceToFluid(
-        unsigned int* dev_gridParticleIndex,    // in
-        unsigned int* dev_cellStart,            // in
-        unsigned int* dev_cellEnd,              // in
-        Float3* dev_ns_f_pf,                    // in
-        Float3* dev_ns_F_pf)                    // out
+    const unsigned int* __restrict__ dev_gridParticleIndex,    // in
+    const unsigned int* __restrict__ dev_cellStart,            // in
+    const unsigned int* __restrict__ dev_cellEnd,              // in
+    const Float3* __restrict__ dev_ns_f_pf,                    // in
+    Float3* __restrict__ dev_ns_F_pf)                    // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -3212,10 +3219,10 @@ __global__ void applyInteractionForceToFluid(
 // Launch per cell face node.
 // Cell center ghost nodes must be set prior to call.
 __global__ void interpolateCenterToFace(
-        Float3* dev_in,
-        Float*  dev_out_x,
-        Float*  dev_out_y,
-        Float*  dev_out_z)
+    const Float3* __restrict__ dev_in,
+    Float* __restrict__ dev_out_x,
+    Float* __restrict__ dev_out_y,
+    Float* __restrict__ dev_out_z)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -3224,8 +3231,8 @@ __global__ void interpolateCenterToFace(
 
     // Check that we are not outside the fluid grid
     if (x <= devC_grid.num[0]
-            && y <= devC_grid.num[1]
-            && z <= devC_grid.num[2]) {
+        && y <= devC_grid.num[1]
+        && z <= devC_grid.num[2]) {
 
         const unsigned int faceidx = vidx(x,y,z);
 
@@ -3249,10 +3256,10 @@ __global__ void interpolateCenterToFace(
 
 // Launch per cell center node
 __global__ void interpolateFaceToCenter(
-        Float*  dev_in_x,
-        Float*  dev_in_y,
-        Float*  dev_in_z,
-        Float3* dev_out)
+    Float*  dev_in_x,
+    Float*  dev_in_y,
+    Float*  dev_in_z,
+    Float3* dev_out)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -3277,9 +3284,9 @@ __global__ void interpolateFaceToCenter(
         const Float z_p = dev_in_z[vidx(x,y,z+1)];
 
         const Float3 val = MAKE_FLOAT3(
-                amean(x_n, x_p),
-                amean(y_n, y_p),
-                amean(z_n, z_p));
+            amean(x_n, x_p),
+            amean(y_n, y_p),
+            amean(z_n, z_p));
 
         __syncthreads();
         //printf("[%d,%d,%d] = %f, %f, %f\n", x,y,z, val.x, val.y, val.z);
@@ -3292,12 +3299,12 @@ __global__ void interpolateFaceToCenter(
 // Warning: The grid-corner values will be invalid, along with the non-normal
 // components of the ghost nodes
 __global__ void findFaceDivTau(
-        Float* dev_ns_v_x,
-        Float* dev_ns_v_y,
-        Float* dev_ns_v_z,
-        Float* dev_ns_div_tau_x,
-        Float* dev_ns_div_tau_y,
-        Float* dev_ns_div_tau_z)
+    const Float* __restrict__ dev_ns_v_x,
+    const Float* __restrict__ dev_ns_v_y,
+    const Float* __restrict__ dev_ns_v_z,
+    Float* __restrict__ dev_ns_div_tau_x,
+    Float* __restrict__ dev_ns_div_tau_y,
+    Float* __restrict__ dev_ns_div_tau_z)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -3347,19 +3354,19 @@ __global__ void findFaceDivTau(
 
         const Float div_tau_x =
             devC_params.mu*(
-                    (v_x_xp - 2.0*v_x + v_x_xn)/(dx*dx) +
-                    (v_x_yp - 2.0*v_x + v_x_yn)/(dy*dy) +
-                    (v_x_zp - 2.0*v_x + v_x_zn)/(dz*dz));
+                (v_x_xp - 2.0*v_x + v_x_xn)/(dx*dx) +
+                (v_x_yp - 2.0*v_x + v_x_yn)/(dy*dy) +
+                (v_x_zp - 2.0*v_x + v_x_zn)/(dz*dz));
         const Float div_tau_y =
             devC_params.mu*(
-                    (v_y_xp - 2.0*v_y + v_y_xn)/(dx*dx) +
-                    (v_y_yp - 2.0*v_y + v_y_yn)/(dy*dy) +
-                    (v_y_zp - 2.0*v_y + v_y_zn)/(dz*dz));
+                (v_y_xp - 2.0*v_y + v_y_xn)/(dx*dx) +
+                (v_y_yp - 2.0*v_y + v_y_yn)/(dy*dy) +
+                (v_y_zp - 2.0*v_y + v_y_zn)/(dz*dz));
         const Float div_tau_z =
             devC_params.mu*(
-                    (v_z_xp - 2.0*v_z + v_z_xn)/(dx*dx) +
-                    (v_z_yp - 2.0*v_z + v_z_yn)/(dy*dy) +
-                    (v_z_zp - 2.0*v_z + v_z_zn)/(dz*dz));
+                (v_z_xp - 2.0*v_z + v_z_xn)/(dx*dx) +
+                (v_z_yp - 2.0*v_z + v_z_yn)/(dy*dy) +
+                (v_z_zp - 2.0*v_z + v_z_zn)/(dz*dz));
 
         __syncthreads();
         //printf("div_tau [%d,%d,%d] = %f, %f, %f\n", x,y,z,

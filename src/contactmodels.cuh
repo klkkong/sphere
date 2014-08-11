@@ -7,11 +7,19 @@
 
 // Linear viscoelastic contact model for particle-wall interactions
 // with tangential friction and rolling resistance
-__device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
-        Float* ev_dot, Float* p,
-        unsigned int idx_a, Float radius_a,
-        Float4* dev_vel_sorted, Float4* dev_angvel_sorted,
-        Float3 n, Float delta, Float wvel)
+__device__ Float contactLinear_wall(
+    Float3* F,
+    Float3* T,
+    Float* es_dot,
+    Float* ev_dot,
+    Float* p,
+    const unsigned int idx_a,
+    const Float radius_a,
+    const Float4* __restrict__ dev_vel_sorted,
+    const Float4* __restrict__ dev_angvel_sorted,
+    const Float3 n,
+    const Float delta,
+    const Float wvel)
 {
     // Fetch particle velocities from global memory
     Float4 vel_tmp = dev_vel_sorted[idx_a];
@@ -19,13 +27,13 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
 
     // Convert velocities to three-component vectors
     Float3 vel_linear = MAKE_FLOAT3(
-            vel_tmp.x,
-            vel_tmp.y,
-            vel_tmp.z);
+        vel_tmp.x,
+        vel_tmp.y,
+        vel_tmp.z);
     Float3 angvel = MAKE_FLOAT3(
-            angvel_tmp.x,
-            angvel_tmp.y,
-            angvel_tmp.z);
+        angvel_tmp.x,
+        angvel_tmp.y,
+        angvel_tmp.z);
 
     // Store the length of the angular velocity for later use
     Float angvel_length = length(angvel);
@@ -47,7 +55,7 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
 
     // Normal force component: Elastic - viscous damping
     Float3 f_n = fmax(0.0, -devC_params.k_n*delta
-                     - devC_params.gamma_wn*vel_n) * n;
+                      - devC_params.gamma_wn*vel_n) * n;
     const Float f_n_length = length(f_n); // Save length for later use
 
     // Store the energy lost by viscous damping. See derivation in
@@ -103,14 +111,22 @@ __device__ Float contactLinear_wall(Float3* F, Float3* T, Float* es_dot,
 
 // Linear vicoelastic contact model for particle-particle interactions
 // with tangential friction and rolling resistance
-__device__ void contactLinearViscous(Float3* F, Float3* T, 
-        Float* es_dot, Float* ev_dot, Float* p,
-        unsigned int idx_a, unsigned int idx_b, 
-        Float4* dev_vel_sorted, 
-        Float4* dev_angvel_sorted,
-        Float radius_a, Float radius_b, 
-        Float3 x_ab, Float x_ab_length, 
-        Float delta_ab, Float kappa) 
+__device__ void contactLinearViscous(
+    Float3* F,
+    Float3* T, 
+    Float* es_dot,
+    Float* ev_dot,
+    Float* p,
+    const unsigned int idx_a,
+    const unsigned int idx_b, 
+    const Float4* __restrict__ dev_vel_sorted, 
+    const Float4* __restrict__ dev_angvel_sorted,
+    const Float radius_a,
+    const Float radius_b, 
+    const Float3 x_ab,
+    const Float x_ab_length, 
+    const Float delta_ab,
+    const Float kappa) 
 {
 
     // Allocate variables and fetch missing time=t values for particle A and B
@@ -131,8 +147,8 @@ __device__ void contactLinearViscous(Float3* F, Float3* T,
 
     // Relative contact interface velocity, w/o rolling
     Float3 vel_ab_linear = MAKE_FLOAT3(vel_a.x - vel_b.x, 
-            vel_a.y - vel_b.y, 
-            vel_a.z - vel_b.z);
+                                       vel_a.y - vel_b.y, 
+                                       vel_a.z - vel_b.z);
 
     // Relative contact interface velocity of particle surfaces at
     // the contact, with rolling (Hinrichsen and Wolf 2004, eq. 13.10)
@@ -209,18 +225,25 @@ __device__ void contactLinearViscous(Float3* F, Float3* T,
 
 
 // Linear elastic contact model for particle-particle interactions
-__device__ void contactLinear(Float3* F, Float3* T, 
-        Float* es_dot, Float* ev_dot, Float* p,
-        unsigned int idx_a_orig,
-        unsigned int idx_b_orig, 
-        Float4  vel_a, 
-        Float4* dev_vel,
-        Float3  angvel_a,
-        Float4* dev_angvel,
-        Float radius_a, Float radius_b, 
-        Float3 x, Float x_length, 
-        Float delta, Float4* dev_delta_t,
-        unsigned int mempos) 
+__device__ void contactLinear(
+    Float3* F,
+    Float3* T, 
+    Float* es_dot,
+    Float* ev_dot,
+    Float* p,
+    const unsigned int idx_a_orig,
+    const unsigned int idx_b_orig, 
+    const Float4  vel_a, 
+    const Float4* __restrict__ dev_vel,
+    const Float3  angvel_a,
+    const Float4* __restrict__ dev_angvel,
+    const Float radius_a,
+    const Float radius_b, 
+    const Float3 x,
+    const Float x_length, 
+    const Float delta,
+    Float4* __restrict__ dev_delta_t,
+    const unsigned int mempos) 
 {
 
     // Allocate variables and fetch missing time=t values for particle A and B
@@ -231,15 +254,15 @@ __device__ void contactLinear(Float3* F, Float3* T,
     Float4 delta_t0_4 = dev_delta_t[mempos];
 
     Float3 delta_t0_uncor = MAKE_FLOAT3(
-            delta_t0_4.x,
-            delta_t0_4.y,
-            delta_t0_4.z);
+        delta_t0_4.x,
+        delta_t0_4.y,
+        delta_t0_4.z);
 
     // Convert to Float3
     Float3 angvel_b = MAKE_FLOAT3(
-            angvel4_b.x,
-            angvel4_b.y,
-            angvel4_b.z);
+        angvel4_b.x,
+        angvel4_b.y,
+        angvel4_b.z);
 
     // Force between grain pair decomposed into normal- and tangential part
     Float3 f_n, f_t, f_c;
@@ -249,9 +272,9 @@ __device__ void contactLinear(Float3* F, Float3* T,
 
     // Relative contact interface velocity, w/o rolling
     Float3 vel_linear = MAKE_FLOAT3(
-            vel_a.x - vel_b.x, 
-            vel_a.y - vel_b.y, 
-            vel_a.z - vel_b.z);
+        vel_a.x - vel_b.x, 
+        vel_a.y - vel_b.y, 
+        vel_a.z - vel_b.z);
 
     // Relative contact interface velocity of particle surfaces at
     // the contact, with rolling (Hinrichsen and Wolf 2004, eq. 13.10,
@@ -335,7 +358,7 @@ __device__ void contactLinear(Float3* F, Float3* T,
             // 2008)
             delta_t = -1.0/devC_params.k_t
                 * (devC_params.mu_d * length(f_n-f_c) * t
-                        + devC_params.gamma_t * vel_t);
+                   + devC_params.gamma_t * vel_t);
 
             // Shear friction heat production rate: 
             // The energy lost from the tangential spring is dissipated as heat
@@ -357,10 +380,10 @@ __device__ void contactLinear(Float3* F, Float3* T,
 
     // Store sum of tangential displacements
     dev_delta_t[mempos] = MAKE_FLOAT4(
-            delta_t.x,
-            delta_t.y,
-            delta_t.z,
-            0.0f);
+        delta_t.x,
+        delta_t.y,
+        delta_t.z,
+        0.0f);
 
 } // End of contactLinear()
 
@@ -368,18 +391,25 @@ __device__ void contactLinear(Float3* F, Float3* T,
 // Non-linear contact model for particle-particle interactions
 // Based on Hertzian and Mindlin contact theories (e.g. Hertz, 1882, Mindlin and 
 // Deresiewicz, 1953, Johnson, 1985). See Yohannes et al 2012 for example.
-__device__ void contactHertz(Float3* F, Float3* T, 
-        Float* es_dot, Float* ev_dot, Float* p,
-        unsigned int idx_a_orig,
-        unsigned int idx_b_orig, 
-        Float4  vel_a, 
-        Float4* dev_vel,
-        Float3  angvel_a,
-        Float4* dev_angvel,
-        Float radius_a, Float radius_b, 
-        Float3 x_ab, Float x_ab_length, 
-        Float delta_ab, Float4* dev_delta_t,
-        unsigned int mempos) 
+__device__ void contactHertz(
+    Float3* F,
+    Float3* T, 
+    Float* es_dot,
+    Float* ev_dot,
+    Float* p,
+    const unsigned int idx_a_orig,
+    const unsigned int idx_b_orig, 
+    const Float4  vel_a, 
+    const Float4* __restrict__ dev_vel,
+    const Float3  angvel_a,
+    const Float4* __restrict__ dev_angvel,
+    const Float radius_a,
+    const Float radius_b, 
+    const Float3 x_ab,
+    const Float x_ab_length, 
+    const Float delta_ab,
+    Float4* __restrict__ dev_delta_t,
+    const unsigned int mempos) 
 {
 
     // Allocate variables and fetch missing time=t values for particle A and B
@@ -390,8 +420,8 @@ __device__ void contactHertz(Float3* F, Float3* T,
     Float4 delta_t0_4 = dev_delta_t[mempos];
 
     Float3 delta_t0_uncor = MAKE_FLOAT3(delta_t0_4.x,
-            delta_t0_4.y,
-            delta_t0_4.z);
+                                        delta_t0_4.y,
+                                        delta_t0_4.z);
 
     // Convert to Float3
     Float3 angvel_b = MAKE_FLOAT3(angvel4_b.x, angvel4_b.y, angvel4_b.z);
@@ -404,8 +434,8 @@ __device__ void contactHertz(Float3* F, Float3* T,
 
     // Relative contact interface velocity, w/o rolling
     Float3 vel_ab_linear = MAKE_FLOAT3(vel_a.x - vel_b.x, 
-            vel_a.y - vel_b.y, 
-            vel_a.z - vel_b.z);
+                                       vel_a.y - vel_b.y, 
+                                       vel_a.z - vel_b.z);
 
     // Relative contact interface velocity of particle surfaces at
     // the contact, with rolling (Hinrichsen and Wolf 2004, eq. 13.10)
@@ -435,7 +465,7 @@ __device__ void contactHertz(Float3* F, Float3* T,
 
     // Normal force component
     f_n = (-devC_params.k_n * powf(delta_ab, 3.0f/2.0f)  
-            -devC_params.gamma_n * powf(delta_ab, 1.0f/4.0f) * vel_n_ab)
+           -devC_params.gamma_n * powf(delta_ab, 1.0f/4.0f) * vel_n_ab)
         * n_ab;
 
     // Store energy dissipated in normal viscous component
@@ -517,9 +547,9 @@ __device__ void contactHertz(Float3* F, Float3* T,
         // New rolling resistance model
         /*T_res = -1.0f * fmin(devC_params.gamma_r * R_bar * angvel_ab_length,
           devC_params.mu_r * R_bar * f_n_length)
-         * angvel_ab/angvel_ab_length;*/
+          * angvel_ab/angvel_ab_length;*/
         T_res = -1.0f * fmin(devC_params.gamma_r * radius_a * angvel_ab_length,
-                devC_params.mu_r * radius_a * f_n_length)
+                             devC_params.mu_r * radius_a * f_n_length)
             * angvel_ab/angvel_ab_length;
     }
 

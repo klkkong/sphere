@@ -6,12 +6,14 @@
 //#include "cuPrintf.cu"
 
 // Template for discarding the last term in four-component vector structs
-__device__ __inline__ float3 f4_to_f3(float4 in) {
+__device__ __inline__ float3 f4_to_f3(const float4 in) {
     return make_float3(in.x, in.y, in.z);
 }
 
 // Kernel for initializing image data
-__global__ void imageInit(unsigned char* dev_img, unsigned int pixels)
+__global__ void imageInit(
+    unsigned char* __restrict__ dev_img,
+    const unsigned int pixels)
 {
     // Compute pixel position from threadIdx/blockIdx
     unsigned int mempos = threadIdx.x + blockIdx.x * blockDim.x;
@@ -24,11 +26,12 @@ __global__ void imageInit(unsigned char* dev_img, unsigned int pixels)
 }
 
 // Calculate ray origins and directions
-__global__ void rayInitPerspective(float4* dev_ray_origo, 
-        float4* dev_ray_direction, 
-        float4 eye, 
-        unsigned int width,
-        unsigned int height)
+__global__ void rayInitPerspective(
+    float4* __restrict__ dev_ray_origo, 
+    float4* __restrict__ dev_ray_direction, 
+    const float4 eye, 
+    const unsigned int width,
+    const unsigned int height)
 {
     // Compute pixel position from threadIdx/blockIdx
     unsigned int mempos = threadIdx.x + blockIdx.x * blockDim.x;
@@ -47,15 +50,17 @@ __global__ void rayInitPerspective(float4* dev_ray_origo,
 
     // Write ray origo and direction to global memory
     dev_ray_origo[mempos]     = make_float4(devC_eye, 0.0f);
-    dev_ray_direction[mempos] = make_float4(-devC_d*devC_w + p_u*devC_u + p_v*devC_v, 0.0f);
+    dev_ray_direction[mempos] =
+        make_float4(-devC_d*devC_w + p_u*devC_u + p_v*devC_v, 0.0f);
 }
 
 // Check wether the pixel's viewing ray intersects with the spheres,
 // and shade the pixel correspondingly
-__global__ void rayIntersectSpheres(float4* dev_ray_origo, 
-        float4* dev_ray_direction,
-        Float4* dev_x, 
-        unsigned char* dev_img)
+__global__ void rayIntersectSpheres(
+    const float4* __restrict__ dev_ray_origo, 
+    const float4* __restrict__ dev_ray_direction,
+    const Float4* __restrict__ dev_x, 
+    unsigned char* __restrict__ dev_img)
 {
     // Compute pixel position from threadIdx/blockIdx
     unsigned int mempos = threadIdx.x + blockIdx.x * blockDim.x;
@@ -67,7 +72,8 @@ __global__ void rayIntersectSpheres(float4* dev_ray_origo,
     float3 d = f4_to_f3(dev_ray_direction[mempos]);
     //float  step = length(d);
 
-    // Distance, in ray steps, between object and eye initialized with a large value
+    // Distance, in ray steps, between object and eye initialized with
+    // a large value
     float tdist = 1e10f;
 
     // Surface normal at closest sphere intersection
@@ -86,8 +92,6 @@ __global__ void rayIntersectSpheres(float4* dev_ray_origo,
         float3 c = make_float3(x.x, x.y, x.z);
         float  R = x.w;
 
-        //cuPrintf("particle %d at: %f, %f, %f, radius: %f\n", i, c.x, c.y, c.z, R);
-
         // Calculate the discriminant: d = B^2 - 4AC
         float Delta = (2.0f*dot(d,(e-c)))*(2.0f*dot(d,(e-c)))  // B^2
             - 4.0f*dot(d,d)	// -4*A
@@ -98,8 +102,10 @@ __global__ void rayIntersectSpheres(float4* dev_ray_origo,
         if (Delta > 0.0f) { 
 
             // Calculate roots, Shirley 2009 p. 77
-            float t_minus = ((dot(-d,(e-c)) - sqrt( dot(d,(e-c))*dot(d,(e-c)) - dot(d,d)
-                            * (dot((e-c),(e-c)) - R*R) ) ) / dot(d,d));
+            float t_minus = ((dot(-d,(e-c))
+                              - sqrt( dot(d,(e-c))*dot(d,(e-c))
+                                      - dot(d,d)*(dot((e-c),(e-c)) - R*R)))
+                             / dot(d,d));
 
             // Check wether intersection is closer than previous values
             if (fabs(t_minus) < tdist) {
@@ -137,14 +143,15 @@ __global__ void rayIntersectSpheres(float4* dev_ray_origo,
 
 // Check wether the pixel's viewing ray intersects with the spheres,
 // and shade the pixel correspondingly using a colormap
-__global__ void rayIntersectSpheresColormap(float4* dev_ray_origo, 
-        float4* dev_ray_direction,
-        Float4* dev_x, 
-        Float4* dev_vel,
-        Float*  dev_linarr,
-        float max_val,
-        float lower_cutoff,
-        unsigned char* dev_img)
+__global__ void rayIntersectSpheresColormap(
+    const float4* __restrict__ dev_ray_origo, 
+    const float4* __restrict__ dev_ray_direction,
+    const Float4* __restrict__ dev_x, 
+    const Float4* __restrict__ dev_vel,
+    const Float*  __restrict__ dev_linarr,
+    const float max_val,
+    const float lower_cutoff,
+    unsigned char* __restrict__ dev_img)
 {
     // Compute pixel position from threadIdx/blockIdx
     unsigned int mempos = threadIdx.x + blockIdx.x * blockDim.x;
@@ -155,7 +162,8 @@ __global__ void rayIntersectSpheresColormap(float4* dev_ray_origo,
     float3 e = f4_to_f3(dev_ray_origo[mempos]);
     float3 d = f4_to_f3(dev_ray_direction[mempos]);
 
-    // Distance, in ray steps, between object and eye initialized with a large value
+    // Distance, in ray steps, between object and eye initialized with
+    // a large value
     float tdist = 1e10f;
 
     // Surface normal at closest sphere intersection
@@ -181,8 +189,6 @@ __global__ void rayIntersectSpheresColormap(float4* dev_ray_origo,
             - 4.0f*dot(d,d)	// -4*A
             * (dot((e-c),(e-c)) - R*R);  // C
 
-
-
         // If the determinant is positive, there are two solutions
         // One where the line enters the sphere, and one where it exits
         if (lower_cutoff > 0.0) {
@@ -198,8 +204,10 @@ __global__ void rayIntersectSpheresColormap(float4* dev_ray_origo,
             if (Delta > 0.0f && val > lower_cutoff && fixvel == 0.f) {
 
                 // Calculate roots, Shirley 2009 p. 77
-                float t_minus = ((dot(-d,(e-c)) - sqrt( dot(d,(e-c))*dot(d,(e-c)) - dot(d,d)
-                                * (dot((e-c),(e-c)) - R*R) ) ) / dot(d,d));
+                float t_minus =
+                    ((dot(-d,(e-c)) - sqrt(dot(d,(e-c))*dot(d,(e-c))
+                                           - dot(d,d)*(dot((e-c),(e-c)) - R*R)))
+                     / dot(d,d));
 
                 // Check wether intersection is closer than previous values
                 if (fabs(t_minus) < tdist) {
@@ -217,8 +225,10 @@ __global__ void rayIntersectSpheresColormap(float4* dev_ray_origo,
             if (Delta > 0.0f) {
 
                 // Calculate roots, Shirley 2009 p. 77
-                float t_minus = ((dot(-d,(e-c)) - sqrt( dot(d,(e-c))*dot(d,(e-c)) - dot(d,d)
-                                * (dot((e-c),(e-c)) - R*R) ) ) / dot(d,d));
+                float t_minus =
+                    ((dot(-d,(e-c)) - sqrt(dot(d,(e-c))*dot(d,(e-c))
+                                           - dot(d,d)*(dot((e-c),(e-c)) - R*R)))
+                     / dot(d,d));
 
                 // Check wether intersection is closer than previous values
                 if (fabs(t_minus) < tdist) {
@@ -269,25 +279,28 @@ __global__ void rayIntersectSpheresColormap(float4* dev_ray_origo,
 
         // Write shading model values to pixel color channels
         dev_img[mempos*4]     = (unsigned char) ((k_d * I_d * dotprod 
-                    + k_a * I_a)*redv);
+                                                  + k_a * I_a)*redv);
         dev_img[mempos*4 + 1] = (unsigned char) ((k_d * I_d * dotprod
-                    + k_a * I_a)*greenv);
+                                                  + k_a * I_a)*greenv);
         dev_img[mempos*4 + 2] = (unsigned char) ((k_d * I_d * dotprod
-                    + k_a * I_a)*bluev);
+                                                  + k_a * I_a)*bluev);
     }
 }
 
 
 __host__ void DEM::cameraInit(
-        const float3 eye,
-        const float3 lookat, 
-        const float imgw,
-        const float focalLength)
+    const float3 eye,
+    const float3 lookat, 
+    const float imgw,
+    const float focalLength)
 {
     float hw_ratio = height/width;
 
     // Image dimensions in world space (l, r, b, t)
-    float4 imgplane = make_float4(-0.5f*imgw, 0.5f*imgw, -0.5f*imgw*hw_ratio, 0.5f*imgw*hw_ratio);
+    float4 imgplane = make_float4(
+        -0.5f*imgw, 0.5f*imgw,
+        -0.5f*imgw*hw_ratio,
+        0.5f*imgw*hw_ratio);
 
     // The view vector
     float3 view = eye - lookat;
@@ -309,15 +322,6 @@ __host__ void DEM::cameraInit(
     if (verbose == 1)
         std::cout << "  Transfering camera values to constant memory: ";
 
-    /* Reference by string removed in cuda 5.0
-    cudaMemcpyToSymbol("devC_u", &u, sizeof(u));
-    cudaMemcpyToSymbol("devC_v", &v, sizeof(v));
-    cudaMemcpyToSymbol("devC_w", &w, sizeof(w));
-    cudaMemcpyToSymbol("devC_eye", &eye, sizeof(eye));
-    cudaMemcpyToSymbol("devC_imgplane", &imgplane, sizeof(imgplane));
-    cudaMemcpyToSymbol("devC_d", &d, sizeof(d));
-    cudaMemcpyToSymbol("devC_light", &light, sizeof(light));
-    cudaMemcpyToSymbol("devC_pixels", &pixels, sizeof(pixels));*/
     cudaMemcpyToSymbol(devC_u, &u, sizeof(u));
     cudaMemcpyToSymbol(devC_v, &v, sizeof(v));
     cudaMemcpyToSymbol(devC_w, &w, sizeof(w));
@@ -333,7 +337,7 @@ __host__ void DEM::cameraInit(
 }
 
 // Allocate global device memory
-__host__ void DEM::rt_allocateGlobalDeviceMemory(void)
+__host__ void DEM::rt_allocateGlobalDeviceMemory()
 {
     if (verbose == 1)
         std::cout << "  Allocating device memory: ";
@@ -347,7 +351,7 @@ __host__ void DEM::rt_allocateGlobalDeviceMemory(void)
 
 
 // Free dynamically allocated device memory
-__host__ void DEM::rt_freeGlobalDeviceMemory(void)
+__host__ void DEM::rt_freeGlobalDeviceMemory()
 {
     if (verbose == 1)
         std::cout << "  Freeing device memory: ";
@@ -360,11 +364,12 @@ __host__ void DEM::rt_freeGlobalDeviceMemory(void)
 }
 
 // Transfer image data from device to host
-__host__ void DEM::rt_transferFromGlobalDeviceMemory(void)
+__host__ void DEM::rt_transferFromGlobalDeviceMemory()
 {
     if (verbose == 1)
         std::cout << "  Transfering image data: device -> host: ";
-    cudaMemcpy(img, dev_img, width*height*4*sizeof(unsigned char), cudaMemcpyDeviceToHost);
+    cudaMemcpy(img, dev_img, width*height*4*sizeof(unsigned char),
+               cudaMemcpyDeviceToHost);
     if (verbose == 1)
         std::cout << "Done" << std::endl;
     checkForCudaErrors("During rt_transferFromGlobalDeviceMemory()");
@@ -372,24 +377,13 @@ __host__ void DEM::rt_transferFromGlobalDeviceMemory(void)
 
 // Wrapper for the rt kernel
 __host__ void DEM::render(
-        const int method,
-        const float maxval,
-        const float lower_cutoff,
-        const float focalLength,
-        const unsigned int img_width,
-        const unsigned int img_height)
-    /*float4* p, unsigned int np,
-      rgba* img, unsigned int width, unsigned int height,
-      f3 origo, f3 L, f3 eye, f3 lookat, float imgw,
-      int visualize, float max_val,
-      float* fixvel,
-      float* xsum,
-      float* pres,
-      float* es_dot,
-      float* es,
-      float* vel)*/
+    const int method,
+    const float maxval,
+    const float lower_cutoff,
+    const float focalLength,
+    const unsigned int img_width,
+    const unsigned int img_height)
 {
-    // Namespace directives
     using std::cout;
     using std::cerr;
     using std::endl;
@@ -418,15 +412,15 @@ __host__ void DEM::render(
     // Look at the centre of the mean positions
     float3 lookat = make_float3(maxpos.x, maxpos.y, maxpos.z) / 2.0f; 
     float3 eye = make_float3(
-            grid.L[0] * 2.3f,
-            grid.L[1] * -5.0f,
-            grid.L[2] * 1.3f);
+        grid.L[0] * 2.3f,
+        grid.L[1] * -5.0f,
+        grid.L[2] * 1.3f);
     cameraInit(eye, lookat, imgw, focalLength);
 
     // Construct rays for perspective projection
     rayInitPerspective<<< blocksPerGrid, threadsPerBlock >>>(
-            dev_ray_origo, dev_ray_direction, 
-            make_float4(eye.x, eye.y, eye.z, 0.0f), width, height);
+        dev_ray_origo, dev_ray_direction, 
+        make_float4(eye.x, eye.y, eye.z, 0.0f), width, height);
     cudaThreadSynchronize();
 
     Float* linarr;     // Linear array to use for color visualization
@@ -440,8 +434,8 @@ __host__ void DEM::render(
     // Visualize spheres without color scale overlay
     if (method == 0) {
         rayIntersectSpheres<<< blocksPerGrid, threadsPerBlock >>>(
-                dev_ray_origo, dev_ray_direction,
-                dev_x, dev_img);
+            dev_ray_origo, dev_ray_direction,
+            dev_x, dev_img);
     } else {
 
         if (method == 1) { // Visualize pressure
@@ -455,8 +449,8 @@ __host__ void DEM::render(
 #pragma omp parallel for if(np>100)
             for (i = 0; i<np; ++i) {
                 linarr[i] = sqrt(k.vel[i].x*k.vel[i].x 
-                        + k.vel[i].y*k.vel[i].y 
-                        + k.vel[i].z*k.vel[i].z);
+                                 + k.vel[i].y*k.vel[i].y 
+                                 + k.vel[i].z*k.vel[i].z);
             }
             transfer = 1;
             desc = "Linear velocity";
@@ -468,8 +462,8 @@ __host__ void DEM::render(
 #pragma omp parallel for if(np>100)
             for (i = 0; i<np; ++i) {
                 linarr[i] = sqrt(k.angvel[i].x*k.angvel[i].x
-                        + k.angvel[i].y*k.angvel[i].y 
-                        + k.angvel[i].z*k.angvel[i].z);
+                                 + k.angvel[i].y*k.angvel[i].y 
+                                 + k.angvel[i].z*k.angvel[i].z);
             }
             transfer = 1;
             desc = "Angular velocity";
@@ -492,8 +486,8 @@ __host__ void DEM::render(
 #pragma omp parallel for if(np>100)
             for (i = 0; i<np; ++i) {
                 linarr[i] = sqrt(k.angpos[i].x*k.angpos[i].x
-                        + k.angpos[i].y*k.angpos[i].y 
-                        + k.angpos[i].z*k.angpos[i].z);
+                                 + k.angpos[i].y*k.angpos[i].y 
+                                 + k.angpos[i].z*k.angpos[i].z);
             }
             transfer = 1;
             desc = "Angular positions";
@@ -504,23 +498,24 @@ __host__ void DEM::render(
         // Report color visualization method and color map range
         if (verbose == 1) {
             cout << "  " << desc << " color map range: [0, " 
-                << maxval << "] " << unit << endl;
+                 << maxval << "] " << unit << endl;
         }
 
         // Copy linarr to dev_linarr if required
         if (transfer == 1) {
             cudaMalloc((void**)&dev_linarr, np*sizeof(Float));
             checkForCudaErrors("Error during cudaMalloc of linear array");
-            cudaMemcpy(dev_linarr, linarr, np*sizeof(Float), cudaMemcpyHostToDevice);
+            cudaMemcpy(dev_linarr, linarr, np*sizeof(Float),
+                       cudaMemcpyHostToDevice);
             checkForCudaErrors("Error during cudaMemcpy of linear array");
         }
 
         // Start raytracing kernel
         rayIntersectSpheresColormap<<< blocksPerGrid, threadsPerBlock >>>(
-                dev_ray_origo, dev_ray_direction,
-                dev_x, dev_vel,
-                dev_linarr, maxval, lower_cutoff,
-                dev_img);
+            dev_ray_origo, dev_ray_direction,
+            dev_x, dev_vel,
+            dev_linarr, maxval, lower_cutoff,
+            dev_img);
 
     }
 
