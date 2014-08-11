@@ -466,15 +466,15 @@ __global__ void interact(
         //uint4 bonds = dev_bonds_sorted[idx_a];
 
         // Initiate shear friction loss rate at 0.0
-        Float es_dot = 0.0f; 
-        Float ev_dot = 0.0f;
+        Float es_dot = 0.0; 
+        Float ev_dot = 0.0;
 
         // Initiate pressure on particle at 0.0
-        Float p = 0.0f;
+        Float p = 0.0;
 
         // Allocate memory for temporal force/torque vector values
-        Float3 F = MAKE_FLOAT3(0.0f, 0.0f, 0.0f);
-        Float3 T = MAKE_FLOAT3(0.0f, 0.0f, 0.0f);
+        Float3 F = MAKE_FLOAT3(0.0, 0.0, 0.0);
+        Float3 T = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
         // Apply linear elastic, frictional contact model to registered contacts
         if (devC_params.contactmodel == 2 || devC_params.contactmodel == 3) {
@@ -484,7 +484,8 @@ __global__ void interact(
             Float4 x_b, distmod;
             Float4 vel_a     = dev_vel_sorted[idx_a];
             Float4 angvel4_a = dev_angvel_sorted[idx_a];
-            Float3 angvel_a  = MAKE_FLOAT3(angvel4_a.x, angvel4_a.y, angvel4_a.z);
+            Float3 angvel_a  = MAKE_FLOAT3(
+                angvel4_a.x, angvel4_a.y, angvel4_a.z);
 
             // Loop over all possible contacts, and remove contacts
             // that no longer are valid (delta_n > 0.0)
@@ -608,8 +609,9 @@ __global__ void interact(
         w_n = MAKE_FLOAT3(w_0_nx.x, w_0_nx.y, w_0_nx.z);
         if (delta_w < 0.0f) {
             w_0_force = contactLinear_wall(&F, &T, &es_dot, &ev_dot, &p, idx_a,
-                                           radius_a, dev_vel_sorted, dev_angvel_sorted, w_n, delta_w,
-                                           w_0_mvfd.y);
+                                           radius_a, dev_vel_sorted,
+                                           dev_angvel_sorted, w_n,
+                                           delta_w, w_0_mvfd.y);
         }
 
         // Lower wall (force on wall not stored)
@@ -617,8 +619,9 @@ __global__ void interact(
         w_n = MAKE_FLOAT3(0.0f, 0.0f, 1.0f);
         if (delta_w < 0.0f) {
             (void)contactLinear_wall(&F, &T, &es_dot, &ev_dot, &p, idx_a,
-                                     radius_a, dev_vel_sorted, dev_angvel_sorted,
-                                     w_n, delta_w, 0.0f);
+                                     radius_a, dev_vel_sorted,
+                                     dev_angvel_sorted, w_n, delta_w,
+                                     0.0);
         }
 
 
@@ -629,7 +632,9 @@ __global__ void interact(
             w_n = MAKE_FLOAT3(w_1_nx.x, w_1_nx.y, w_1_nx.z);
             if (delta_w < 0.0f) {
                 w_1_force = contactLinear_wall(&F, &T, &es_dot, &ev_dot, &p,
-                                               idx_a, radius_a, dev_vel_sorted, dev_angvel_sorted, w_n,
+                                               idx_a, radius_a,
+                                               dev_vel_sorted,
+                                               dev_angvel_sorted, w_n,
                                                delta_w, w_1_mvfd.y);
             }
 
@@ -638,7 +643,9 @@ __global__ void interact(
             w_n = MAKE_FLOAT3(w_2_nx.x, w_2_nx.y, w_2_nx.z);
             if (delta_w < 0.0f) {
                 w_2_force = contactLinear_wall(&F, &T, &es_dot, &ev_dot, &p,
-                                               idx_a, radius_a, dev_vel_sorted, dev_angvel_sorted, w_n,
+                                               idx_a, radius_a,
+                                               dev_vel_sorted,
+                                               dev_angvel_sorted, w_n,
                                                delta_w, w_2_mvfd.y);
             }
 
@@ -647,7 +654,9 @@ __global__ void interact(
             w_n = MAKE_FLOAT3(w_3_nx.x, w_3_nx.y, w_3_nx.z);
             if (delta_w < 0.0f) {
                 w_3_force = contactLinear_wall(&F, &T, &es_dot, &ev_dot, &p,
-                                               idx_a, radius_a, dev_vel_sorted, dev_angvel_sorted, w_n,
+                                               idx_a, radius_a,
+                                               dev_vel_sorted,
+                                               dev_angvel_sorted, w_n,
                                                delta_w, w_3_mvfd.y);
             }
 
@@ -656,7 +665,9 @@ __global__ void interact(
             w_n = MAKE_FLOAT3(w_4_nx.x, w_4_nx.y, w_4_nx.z);
             if (delta_w < 0.0f) {
                 w_4_force = contactLinear_wall(&F, &T, &es_dot, &ev_dot, &p,
-                                               idx_a, radius_a, dev_vel_sorted, dev_angvel_sorted, w_n,
+                                               idx_a, radius_a,
+                                               dev_vel_sorted,
+                                               dev_angvel_sorted, w_n,
                                                delta_w, w_4_mvfd.y);
             }
 
@@ -667,7 +678,9 @@ __global__ void interact(
             w_n = MAKE_FLOAT3(w_3_nx.x, w_3_nx.y, w_3_nx.z);
             if (delta_w < 0.0f) {
                 w_3_force = contactLinear_wall(&F, &T, &es_dot, &ev_dot, &p,
-                                               idx_a, radius_a, dev_vel_sorted, dev_angvel_sorted, w_n,
+                                               idx_a, radius_a,
+                                               dev_vel_sorted,
+                                               dev_angvel_sorted, w_n,
                                                delta_w, w_3_mvfd.y);
             }
 
@@ -676,7 +689,9 @@ __global__ void interact(
             w_n = MAKE_FLOAT3(w_4_nx.x, w_4_nx.y, w_4_nx.z);
             if (delta_w < 0.0f) {
                 w_4_force = contactLinear_wall(&F, &T, &es_dot, &ev_dot, &p,
-                                               idx_a, radius_a, dev_vel_sorted, dev_angvel_sorted, w_n,
+                                               idx_a, radius_a,
+                                               dev_vel_sorted,
+                                               dev_angvel_sorted, w_n,
                                                delta_w, w_4_mvfd.y);
             }
         }
