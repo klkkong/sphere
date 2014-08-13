@@ -20,7 +20,7 @@ c_grad_p = numpy.empty_like(K)
 i = 0
 
 for sid in sids:
-    pc = PermeabilityCalc(sid)
+    pc = PermeabilityCalc(sid, plot_evolution=False)
     K[i] = pc.conductivity()
     c_grad_p[i] = pc.c_grad_p()
     i += 1

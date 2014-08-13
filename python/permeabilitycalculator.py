@@ -7,14 +7,15 @@ import matplotlib.pyplot as plt
 class PermeabilityCalc:
     ''' Darcy's law: Q = -k*A/mu * dP '''
 
-    def __init__(self, sid):
+    def __init__(self, sid, plot_evolution=True):
         self.sid = sid
         self.readfile()
         self.findPermeability()
         self.findConductivity()
         self.findMeanPorosity()
         self.printResults()
-        self.plotEvolution()
+        if plot_evolution:
+            self.plotEvolution()
 
     def readfile(self):
         self.sim = sphere.sim(self.sid, fluid=True)
