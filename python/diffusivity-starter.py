@@ -39,13 +39,20 @@ for sigma0_str in sys.argv[4:]:
     sim.cleanup()
     sim.adjustUpperWall()
     sim.zeroKinematics()
+
     sim.consolidate(normal_stress = 10.0e3)
+
     sim.initFluid(mu = 17.87e-4, p = 1.0e5, hydrostatic = True)
     sim.setFluidBottomNoFlow()
     sim.setFluidTopFixedPressure()
     sim.setDEMstepsPerCFDstep(10)
     sim.setMaxIterations(2e5)
     sim.initTemporal(total = 5.0, file_dt = 0.01, epsilon=0.07)
+
+    # Fix lowermost particles
+    I = numpy.nonzero(sim.x[:,2] < 1.5*dz)
+    sim.fixvel[I] = 1
+    
     sim.run(dry=True)
     sim.run(device=0)
     #sim.writeVTKall()

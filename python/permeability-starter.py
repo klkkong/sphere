@@ -37,6 +37,10 @@ for dp_str in sys.argv[4:]:
         z = dz*iz
         sim.p_f[:,:,iz] = p_bottom + dp/sim.L[2] * z
 
+    # Fix lowermost particles
+    I = numpy.nonzero(sim.x[:,2] < 1.5*dz)
+    sim.fixvel[I] = 1
+    
     sim.setFluidTopFixedPressure()
     sim.setFluidBottomFixedPressure()
     sim.p_f[:,:,-1] = p_top
