@@ -1,5 +1,5 @@
 #!/bin/sh
-#PBS -N k-c_grad_p-large
+#PBS -N k-c_grad_p-medium
 #PBS -l nodes=1:ppn=3
 #PBS -l walltime=1920:00:00
 #PBS -q qfermi
