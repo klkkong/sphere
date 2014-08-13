@@ -161,7 +161,9 @@ class PermeabilityCalc:
         plt.legend()
         plt.grid()
 
-        plt.savefig(self.sid + '-permeability.' + outformat)
+        filename = self.sid + '-permeability.' + outformat)
+        plt.savefig(filename)
+        print('Figure saved as "' + filename + '"')
         plt.show()
         
 # Simulation ID
