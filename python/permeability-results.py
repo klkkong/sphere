@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 from permeabilitycalculator import *
 
 sids = [
-    'permeability-dp=1000.0',
     'permeability-dp=1000.0-c_phi=1.0-c_grad_p=0.01',
     'permeability-dp=1000.0-c_phi=1.0-c_grad_p=0.5',
+    'permeability-dp=1000.0',
     'permeability-dp=20000.0-c_phi=1.0-c_grad_p=0.01',
     'permeability-dp=20000.0-c_phi=1.0-c_grad_p=0.1',
     'permeability-dp=20000.0-c_phi=1.0-c_grad_p=0.5',
@@ -28,6 +28,6 @@ for sid in sids:
 fig = plt.figure()
 plt.xlabel('Pressure gradient coefficient $c$ [-]')
 plt.ylabel('Hydraulic conductivity $K$ [m/s]')
-plt.plot(c_grad_p, K)
+plt.plot(c_grad_p, K, '+')
 plt.grid()
 plt.savefig('c_grad_p-vs-K.png')

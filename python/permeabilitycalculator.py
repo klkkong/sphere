@@ -37,7 +37,7 @@ class PermeabilityCalc:
         self.K = -self.Q * self.dL / (self.A * self.dP)
 
     def conductivity(self):
-        return self.K[0]
+        return self.K[2]
 
     def c_grad_p(self):
         return self.sim.c_grad_p[0]
