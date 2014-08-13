@@ -13,6 +13,8 @@ class PermeabilityCalc:
         self.findPermeability()
         self.findConductivity()
         self.findMeanPorosity()
+        self.printResults()
+        self.plotEvolution()
 
     def readfile(self):
         self.sim = sphere.sim(self.sid, fluid=True)
@@ -171,8 +173,3 @@ class PermeabilityCalc:
         plt.savefig(filename)
         print('Figure saved as "' + filename + '"')
         plt.show()
-        
-# Simulation ID
-pc = PermeabilityCalc('permeability-dp=1000.0')
-pc.printResults()
-pc.plotEvolution()
