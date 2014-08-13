@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from permeability-calculator import *
+from permeabilitycalculator import *
         
 pc = PermeabilityCalc('permeability-dp=1000.0')
 pc = PermeabilityCalc('permeability-dp=1000.0-c_phi=1.0-c_grad_p=0.01')
