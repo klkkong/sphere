@@ -16,7 +16,7 @@ for sigma0_str in sys.argv[4:]:
     sim = sphere.sim('diffusivity-relax')
     sim.readlast()
 
-    sim.sid = 'permeability-dp=' + str(dp) + '-c_phi=' + str(c_phi) + \
+    sim.sid = 'diffusivity-sigma0=' + str(sigma0) + '-c_phi=' + str(c_phi) + \
             '-c_grad_p=' + str(c_grad_p)
     print(sim.sid)
 
