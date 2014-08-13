@@ -1408,7 +1408,7 @@ class sim:
                     + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('%f ' % (self.color[i]))
+                fh.write('%d ' % (self.color[i]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
