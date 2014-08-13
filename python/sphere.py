@@ -1263,7 +1263,7 @@ class sim:
             fh.write('<VTKFile type="UnstructuredGrid" version="0.1" '
                     + 'byte_order="LittleEndian">\n') # VTK header
             fh.write('  <UnstructuredGrid>\n')
-            fh.write('    <Piece NumberOfPoints="{}" %d NumberOfCells="0">\n' \
+            fh.write('    <Piece NumberOfPoints="%d" NumberOfCells="0">\n' \
                      % (self.np[0]))
 
             # Coordinates for each point (positions)
