@@ -36,6 +36,12 @@ class PermeabilityCalc:
         #self.K = self.k/self.sim.mu # m/s
         self.K = -self.Q * self.dL / (self.A * self.dP)
 
+    def conductivity(self):
+        return self.K[0]
+
+    def c_grad_p(self):
+        return self.sim.c_grad_p[0]
+
     def findMeanPorosity(self):
         ''' calculate mean porosity in cells beneath the top wall '''
 
