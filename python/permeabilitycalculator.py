@@ -108,7 +108,7 @@ class PermeabilityCalc:
 
     def printResults(self):
         print('\n### Permeability resuts for "' + self.sid + '" ###')
-        print('Pressure gradient: dP = ' + str(self.dPdL) + ' Pa/m')
+        print('Pressure gradient: dPdL = ' + str(self.dPdL) + ' Pa/m')
         print('Flux: Q = ' + str(self.Q) + ' m^3/s')
         print('Intrinsic permeability: k = ' + str(self.k) + ' m^2')
         print('Saturated hydraulic conductivity: K = ' + str(self.K) + ' m/s')

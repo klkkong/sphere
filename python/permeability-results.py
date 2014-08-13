@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import numpy
-import matplotlib.pyplot as plt
+import sphere
 from permeabilitycalculator import *
+import matplotlib.pyplot as plt
 
 sids = [
     'permeability-dp=1000.0-c_phi=1.0-c_grad_p=0.01',
@@ -25,6 +26,12 @@ for sid in sids:
     c_grad_p[i] = pc.c_grad_p()
     i += 1
         
+
+# produce VTK files
+for sid in sids:
+    sim = sphere.sim(sid, fluid=True)
+    sim.writeVTKall()
+
 fig = plt.figure()
 plt.xlabel('Pressure gradient coefficient $c$ [-]')
 plt.ylabel('Hydraulic conductivity $K$ [m/s]')
