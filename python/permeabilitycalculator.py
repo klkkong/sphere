@@ -178,4 +178,3 @@ class PermeabilityCalc:
         filename = self.sid + '-permeability.' + outformat
         plt.savefig(filename)
         print('Figure saved as "' + filename + '"')
-        plt.show()
