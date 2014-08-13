@@ -23,11 +23,16 @@ class PermeabilityCalc:
         self.findCrossSectionalArea()
         self.findCrossSectionalFlux()
         self.findPressureGradient()
-        self.k = -self.Q*self.sim.mu/(self.A*self.dP) # m^2
+        self.k = -self.Q*self.sim.mu/(self.A*self.dPdL) # m^2
 
     def findConductivity(self):
         # hydraulic conductivity
-        self.K = self.k/self.sim.mu # m/s
+        self.findCellSpacing()
+        self.findCrossSectionalArea()
+        self.findCrossSectionalFlux()
+        self.findPressureGradient()
+        #self.K = self.k/self.sim.mu # m/s
+        self.K = -self.Q * self.dL / (self.A * self.dP)
 
     def findMeanPorosity(self):
         ''' calculate mean porosity in cells beneath the top wall '''
@@ -88,11 +93,13 @@ class PermeabilityCalc:
             numpy.mean(self.sim.p_f[-1,:,:]) - numpy.mean(self.sim.p_f[0,:,:]),
             numpy.mean(self.sim.p_f[:,-1,:]) - numpy.mean(self.sim.p_f[:,0,:]),
             numpy.mean(self.sim.p_f[:,:,-1]) - numpy.mean(self.sim.p_f[:,:,0])
-            ])/self.sim.L
+            ])
+        self.dL = self.sim.L
+        self.dPdL = self.dP/self.dL
 
     def printResults(self):
         print('\n### Permeability resuts for "' + self.sid + '" ###')
-        print('Pressure gradient: dP = ' + str(self.dP) + ' Pa/m')
+        print('Pressure gradient: dP = ' + str(self.dPdL) + ' Pa/m')
         print('Flux: Q = ' + str(self.Q) + ' m^3/s')
         print('Intrinsic permeability: k = ' + str(self.k) + ' m^2')
         print('Saturated hydraulic conductivity: K = ' + str(self.K) + ' m/s')
