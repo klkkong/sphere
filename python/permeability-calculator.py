@@ -99,67 +99,66 @@ class PermeabilityCalc:
         print('Mean porosity: phi_bar = ' + str(self.phi_bar) + '\n')
 
     def plotEvolution(self, axis=2, outformat='png'):
-        ''' Plot temporal evolution of parameters on the selected axis '''
-        t = numpy.linspace(0.0, self.sim.time_total, self.sim.status())
-        Q = numpy.empty((self.sim.status(), 3))
-        phi_bar = numpy.empty(self.sim.status())
-        k = numpy.empty((self.sim.status(), 3))
-        K = numpy.empty((self.sim.status(), 3))
+        '''
+        Plot temporal evolution of parameters on the selected axis.
+        Note that the first 5 output files are ignored.
+        '''
+        skipsteps = 5
+        nsteps = self.sim.status() - skipsteps
+        self.t_series = numpy.empty(nsteps)
+        self.Q_series = numpy.empty((nsteps, 3))
+        self.phi_bar_series = numpy.empty(nsteps)
+        self.k_series = numpy.empty((nsteps, 3))
+        self.K_series = numpy.empty((nsteps, 3))
 
-        print('Reading ' + str(self.sim.status()) + ' output files... '),
+        print('Reading ' + str(nsteps) + ' output files... '),
         sys.stdout.flush()
-        for i in numpy.arange(1, self.sim.status()):
+        for i in numpy.arange(skipsteps, self.sim.status()):
             self.sim.readstep(i, verbose=False)
 
-            t[i] = self.sim.time_current[0]
+            self.t_series[i-skipsteps] = self.sim.time_current[0]
 
             self.findCrossSectionalFlux()
-            Q[i,:] = self.Q
+            self.Q_series[i-skipsteps,:] = self.Q
 
             self.findMeanPorosity()
-            phi_bar[i] = self.phi_bar
+            self.phi_bar_series[i-skipsteps] = self.phi_bar
 
             self.findPermeability()
-            k[i,:] = self.k
+            self.k_series[i-skipsteps,:] = self.k
 
             self.findConductivity()
-            K[i,:] = self.K
+            self.K_series[i-skipsteps,:] = self.K
         print('Done')
 
         fig = plt.figure()
 
-        plt.subplot(1,4,1)
+        plt.subplot(2,2,1)
         plt.xlabel('Time $t$ [s]')
         plt.ylabel('Flux $Q$ [m^3/s]')
-        plt.plot(t, Q[:,0], label='$x$')
-        plt.plot(t, Q[:,1], label='$y$')
-        plt.plot(t, Q[:,2], label='$z$')
-        plt.legend()
+        plt.plot(self.t_series, self.Q_series[:,axis])
+        #plt.legend()
         plt.grid()
 
-        plt.subplot(1,4,2)
+        plt.subplot(2,2,2)
         plt.xlabel('Time $t$ [s]')
         plt.ylabel('Porosity $\phi$ [-]')
-        plt.plot(t, phi_bar)
+        plt.plot(self.t_series, self.phi_bar_series)
         plt.grid()
 
-        plt.subplot(1,4,3)
+        plt.subplot(2,2,3)
         plt.xlabel('Time $t$ [s]')
         plt.ylabel('Permeability $k$ [m^2]')
-        plt.plot(t, k[:,0], label='$x$')
-        plt.plot(t, k[:,1], label='$y$')
-        plt.plot(t, k[:,2], label='$z$')
-        plt.legend()
+        plt.plot(self.t_series, self.k_series[:,axis])
         plt.grid()
 
-        plt.subplot(1,4,4)
+        plt.subplot(2,2,4)
         plt.xlabel('Time $t$ [s]')
         plt.ylabel('Conductivity $K$ [m/s]')
-        plt.plot(t, K[:,0], label='$x$')
-        plt.plot(t, K[:,1], label='$y$')
-        plt.plot(t, K[:,2], label='$z$')
-        plt.legend()
+        plt.plot(self.t_series, self.K_series[:,axis])
         plt.grid()
+
+        fig.tight_layout()
 
         filename = self.sid + '-permeability.' + outformat
         plt.savefig(filename)
