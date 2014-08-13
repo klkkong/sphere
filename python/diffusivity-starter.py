@@ -50,6 +50,7 @@ for sigma0_str in sys.argv[4:]:
     sim.initTemporal(total = 5.0, file_dt = 0.01, epsilon=0.07)
 
     # Fix lowermost particles
+    dz = sim.L[2]/sim.num[2]
     I = numpy.nonzero(sim.x[:,2] < 1.5*dz)
     sim.fixvel[I] = 1
     
