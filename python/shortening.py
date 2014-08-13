@@ -165,8 +165,8 @@ sim.gamma_wt[0] = 0.0
 # Particle parameters
 sim.mu_s[0] = 0.5
 sim.mu_d[0] = 0.5
-sim.gamma_n[0] = 100.0
-sim.gamma_t[0] = 100.0
+sim.gamma_n[0] = 1000.0
+sim.gamma_t[0] = 1000.0
 
 # push down upper wall
 compressional_strain = 0.5
