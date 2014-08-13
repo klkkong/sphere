@@ -15,13 +15,15 @@ sids = [
     'permeability-dp=4000.0-c_phi=1.0-c_grad_p=0.5',
     'permeability-dp=4000.0']
 
-K = numpy.array([])
-c_grad_p = numpy.array([])
+K = numpy.empty(len(sids))
+c_grad_p = numpy.empty_like(K)
+i = 0
 
 for sid in sids:
     pc = PermeabilityCalc(sid)
-    K.append(pc.conductivity())
-    c_grad_p.append(pc.c_grad_p())
+    K[i] = pc.conductivity()
+    c_grad_p[i] = pc.c_grad_p()
+    i += 1
         
 fig = plt.figure()
 plt.xlabel('Pressure gradient coefficient $c$ [-]')
