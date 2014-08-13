@@ -45,7 +45,7 @@ for dp_str in sys.argv[4:]:
     sim.setFluidBottomFixedPressure()
     sim.p_f[:,:,-1] = p_top
     sim.setDEMstepsPerCFDstep(10)
-    sim.initTemporal(total = 2.0, file_dt = 0.01, epsilon=0.07)
+    sim.initTemporal(total = 4.0, file_dt = 0.01, epsilon=0.07)
     sim.c_phi[0] = c_phi
     sim.c_grad_p[0] = c_grad_p
 
