@@ -4172,7 +4172,7 @@ class sim:
         fig = plt.figure()
         plt.xlabel('Time [s]')
         plt.ylabel('Consolidation [m]')
-        plt.semilogx(t, dh)
+        plt.semilogx(t, dh, '+-')
         plt.axhline(y = self.D0)
         plt.axhline(y = self.D50)
         plt.axhline(y = self.D100)
