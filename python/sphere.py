@@ -2300,7 +2300,6 @@ class sim:
         for i in range(5):
             self.adjustWall(idx=i)
 
-
     def shear(self, shear_strain_rate = 1.0):
         '''
         Setup shear experiment. The shear strain rate is the shear velocity
@@ -4149,6 +4148,31 @@ class sim:
         plt.clf()
         plt.close(fig)
 
+    def plotLoadCurve(self, graphics_format='png'):
+        '''
+        Plot the load curve (log time vs. upper wall movement).  The plot is
+        saved in the current folder with the file name
+        '<simulation id>-loadcurve.<graphics_format>'.
+        '''
+        t = numpy.empty(self.status())
+        dh = numpy.empty_like(t)
+        sim = sphere.sim(self.sid, fluid=self.fluid)
+        sim.readfirst(i)
+        h = sim.w_x[0]
+        for i in numpy.arange(1, self.status()):
+            sim.readstep(i)
+            t[i-1]  = sim.time_current[0]
+            dh[i-1] = h - sim.w_x[0]
+
+        fig = plt.figure()
+        plt.xlabel('Time [s]')
+        plt.ylabel('Consolidation [m]')
+        plt.semilogx(t, dh)
+        plt.grid()
+        plt.savefig(self.sid + '-loadcurve.' + graphics_format)
+        plt.clf()
+        plt.close(fig)
+        
     def plotConvergence(self, graphics_format='png'):
         '''
         Plot the convergence evolution in the CFD solver. The plot is saved 
