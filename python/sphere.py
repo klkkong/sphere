@@ -4153,25 +4153,50 @@ class sim:
         Plot the load curve (log time vs. upper wall movement).  The plot is
         saved in the current folder with the file name
         '<simulation id>-loadcurve.<graphics_format>'.
+        The consolidation coefficient calculations are done on the base of
+        Bowles 1992, p. 129--139. It is assumed that the consolidation has
+        stopped at the end of the simulation (i.e. flat curve).
         '''
         t = numpy.empty(self.status())
-        dh = numpy.empty_like(t)
+        dH = numpy.empty_like(t)
+        H = numpy.empty_like(t)
         sim = sphere.sim(self.sid, fluid=self.fluid)
         sim.readfirst(i)
         h = sim.w_x[0]
         for i in numpy.arange(1, self.status()):
             sim.readstep(i)
             t[i-1]  = sim.time_current[0]
-            dh[i-1] = h - sim.w_x[0]
+            H[i-1] = sim.w_x[0]
+            dH[i-1] = h - sim.w_x[0]
 
-        # save consolidation variables
-        self.D0 = h
-        self.D100 = h - dh[-1]
-        self.D50 = (self.D0 + self.D100)/2.0
+        # find consolidation parameters
+        self.H0 = H[0]
+        #self.H100 = h - dh[-1]
+        self.H100 = H[-1]
+        self.H50 = (self.H0 + self.H100)/2.0
+        T50 = 0.197 # case I
         
+        # find the time where 50% of the consolidation (H50) has happened by
+        # linear interpolation. The values in dh are expected to be
+        # monotonically decreasing! See Numerical Recipies p. 115
+        i_lower = 0
+        i_upper = self.status()-1
+        while (i_upper - i_lower > 1):
+            i_midpoint = int((i_upper + i_lower)/2)
+            if (self.H50 > H[i_midpoint]):
+                i_lower = i_midpoint
+            else:
+                i_upper = i_midpoint
+        self.t50 = t[i_lower] + (t[i_upper] - t[i_lower]) * \
+                (self.H50 - H[i_lower])/(H[i_upper] - H[i_lower])
+
+        self.c_v = T50*self.H50**2.0/(self.t50)
+
         fig = plt.figure()
         plt.xlabel('Time [s]')
         plt.ylabel('Consolidation [m]')
+        plt.title('Consolidation coefficient $c_v$ = %.4e m^2/s at %f kPa' \
+                % (self.c_v, self.w_devs[0]/1000.0))
         plt.semilogx(t, dh, '+-')
         plt.axhline(y = self.D0)
         plt.axhline(y = self.D50)
