@@ -4205,7 +4205,6 @@ class sim:
         plt.title('$c_v$ = %.2e m$^2$ s$^{-1}$ at %.1f kPa and $e$ = %.2f' \
                 % (self.c_v, sb.w_devs[0]/1000.0, e))
         plt.semilogx(t, H, '+-')
-        plt.plot(t, H, '+-')
         plt.axhline(y = self.H0, color='gray')
         plt.axhline(y = self.H50, color='gray')
         plt.axhline(y = self.H100, color='gray')
