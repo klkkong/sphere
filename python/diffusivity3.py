@@ -28,7 +28,7 @@ for sigma0 in [80.0e3, 120.0e3]:
     sim.cleanup()
     sim.adjustUpperWall()
     sim.zeroKinematics()
-    sim.consolidate(normal_stress = 10.0e3)
+    sim.consolidate(normal_stress = sigma0)
     sim.initFluid(mu = 17.87e-4, p = 1.0e5, hydrostatic = True)
     sim.setFluidBottomNoFlow()
     sim.setFluidTopFixedPressure()
