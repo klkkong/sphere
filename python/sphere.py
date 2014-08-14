@@ -4158,7 +4158,6 @@ class sim:
         stopped at the end of the simulation (i.e. flat curve).
         '''
         t = numpy.empty(self.status())
-        dH = numpy.empty_like(t)
         H = numpy.empty_like(t)
         sim = sphere.sim(self.sid, fluid=self.fluid)
         sim.readfirst(i)
@@ -4167,18 +4166,16 @@ class sim:
             sim.readstep(i)
             t[i-1]  = sim.time_current[0]
             H[i-1] = sim.w_x[0]
-            dH[i-1] = h - sim.w_x[0]
 
         # find consolidation parameters
         self.H0 = H[0]
-        #self.H100 = h - dh[-1]
         self.H100 = H[-1]
         self.H50 = (self.H0 + self.H100)/2.0
         T50 = 0.197 # case I
         
         # find the time where 50% of the consolidation (H50) has happened by
-        # linear interpolation. The values in dh are expected to be
-        # monotonically decreasing! See Numerical Recipies p. 115
+        # linear interpolation. The values in H are expected to be
+        # monotonically decreasing. See Numerical Recipies p. 115
         i_lower = 0
         i_upper = self.status()-1
         while (i_upper - i_lower > 1):
@@ -4198,9 +4195,10 @@ class sim:
         plt.title('Consolidation coefficient $c_v$ = %.4e m^2/s at %f kPa' \
                 % (self.c_v, self.w_devs[0]/1000.0))
         plt.semilogx(t, dh, '+-')
-        plt.axhline(y = self.D0)
-        plt.axhline(y = self.D50)
-        plt.axhline(y = self.D100)
+        plt.axhline(y = self.H0)
+        plt.axhline(y = self.H50)
+        plt.axhline(y = self.H100)
+        plt.axvline(x = self.t50)
         plt.grid()
         plt.savefig(self.sid + '-loadcurve.' + graphics_format)
         plt.clf()
