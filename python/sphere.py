@@ -4192,16 +4192,18 @@ class sim:
                 i_upper = i_midpoint
         self.t50 = t[i_lower] + (t[i_upper] - t[i_lower]) * \
                 (self.H50 - H[i_lower])/(H[i_upper] - H[i_lower])
-        print i_lower
-        print i_upper
 
         self.c_v = T50*self.H50**2.0/(self.t50)
+        if self.fluid == True:
+            e = numpy.mean(sb.phi[:,:,3:-8]) # ignore boundaries
+        else:
+            e = sb.voidRatio()
 
         fig = plt.figure()
         plt.xlabel('Time [s]')
         plt.ylabel('Height [m]')
-        plt.title('Consolidation coefficient $c_v$ = %.2e m$^2$ s$^{-1}$ at %.1f kPa' \
-                % (self.c_v, sb.w_devs[0]/1000.0))
+        plt.title('$c_v$ = %.2e m$^2$ s$^{-1}$ at %.1f kPa and $e$ = %.2f' \
+                % (self.c_v, sb.w_devs[0]/1000.0, e))
         plt.semilogx(t, H, '+-')
         plt.plot(t, H, '+-')
         plt.axhline(y = self.H0, color='gray')
