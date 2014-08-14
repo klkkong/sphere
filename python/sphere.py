@@ -4154,18 +4154,24 @@ class sim:
         saved in the current folder with the file name
         '<simulation id>-loadcurve.<graphics_format>'.
         The consolidation coefficient calculations are done on the base of
-        Bowles 1992, p. 129--139. It is assumed that the consolidation has
-        stopped at the end of the simulation (i.e. flat curve).
+        Bowles 1992, p. 129--139, using the "Casagrande" method.
+        It is assumed that the consolidation has stopped at the end of the
+        simulation (i.e. flat curve).
+
+        :param graphics_format: Save the plot in this format
+        :type graphics_format: str
         '''
         t = numpy.empty(self.status())
         H = numpy.empty_like(t)
-        sim = sphere.sim(self.sid, fluid=self.fluid)
-        sim.readfirst(i)
-        h = sim.w_x[0]
-        for i in numpy.arange(1, self.status()):
-            sim.readstep(i)
-            t[i-1]  = sim.time_current[0]
-            H[i-1] = sim.w_x[0]
+        sb = sim(self.sid, fluid=self.fluid)
+        sb.readfirst(verbose=False)
+        load = 0.0
+        for i in numpy.arange(1, self.status()+1):
+            sb.readstep(i, verbose=False)
+            if i == 0:
+                load = sb.w_devs[0]
+            t[i-1]  = sb.time_current[0]
+            H[i-1] = sb.w_x[0]
 
         # find consolidation parameters
         self.H0 = H[0]
@@ -4180,25 +4186,28 @@ class sim:
         i_upper = self.status()-1
         while (i_upper - i_lower > 1):
             i_midpoint = int((i_upper + i_lower)/2)
-            if (self.H50 > H[i_midpoint]):
+            if (self.H50 < H[i_midpoint]):
                 i_lower = i_midpoint
             else:
                 i_upper = i_midpoint
         self.t50 = t[i_lower] + (t[i_upper] - t[i_lower]) * \
                 (self.H50 - H[i_lower])/(H[i_upper] - H[i_lower])
+        print i_lower
+        print i_upper
 
         self.c_v = T50*self.H50**2.0/(self.t50)
 
         fig = plt.figure()
         plt.xlabel('Time [s]')
-        plt.ylabel('Consolidation [m]')
-        plt.title('Consolidation coefficient $c_v$ = %.4e m^2/s at %f kPa' \
-                % (self.c_v, self.w_devs[0]/1000.0))
-        plt.semilogx(t, dh, '+-')
-        plt.axhline(y = self.H0)
-        plt.axhline(y = self.H50)
-        plt.axhline(y = self.H100)
-        plt.axvline(x = self.t50)
+        plt.ylabel('Height [m]')
+        plt.title('Consolidation coefficient $c_v$ = %.2e m$^2$ s$^{-1}$ at %.1f kPa' \
+                % (self.c_v, sb.w_devs[0]/1000.0))
+        plt.semilogx(t, H, '+-')
+        plt.plot(t, H, '+-')
+        plt.axhline(y = self.H0, color='gray')
+        plt.axhline(y = self.H50, color='gray')
+        plt.axhline(y = self.H100, color='gray')
+        plt.axvline(x = self.t50, color='red')
         plt.grid()
         plt.savefig(self.sid + '-loadcurve.' + graphics_format)
         plt.clf()
