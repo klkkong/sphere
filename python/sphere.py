@@ -4164,10 +4164,18 @@ class sim:
             t[i-1]  = sim.time_current[0]
             dh[i-1] = h - sim.w_x[0]
 
+        # save consolidation variables
+        self.D0 = h
+        self.D100 = h - dh[-1]
+        self.D50 = (self.D0 + self.D100)/2.0
+        
         fig = plt.figure()
         plt.xlabel('Time [s]')
         plt.ylabel('Consolidation [m]')
         plt.semilogx(t, dh)
+        plt.axhline(y = self.D0)
+        plt.axhline(y = self.D50)
+        plt.axhline(y = self.D100)
         plt.grid()
         plt.savefig(self.sid + '-loadcurve.' + graphics_format)
         plt.clf()
