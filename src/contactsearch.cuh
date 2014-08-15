@@ -57,7 +57,7 @@ __device__ int findDistMod(int3* targetCell, Float3* distmod)
         }
 
         // Hande out-of grid cases on y-axis
-        if (targetCell->y < 0 || targetCell->y == devC_grid.num[1])
+        if (targetCell->y < 0 || targetCell->y >= devC_grid.num[1])
             return -1;
 
 
@@ -65,9 +65,9 @@ __device__ int findDistMod(int3* targetCell, Float3* distmod)
     } else {
 
         // Hande out-of grid cases on x- and y-axes
-        if (targetCell->x < 0 || targetCell->x == devC_grid.num[0])
+        if (targetCell->x < 0 || targetCell->x >= devC_grid.num[0])
             return -1;
-        if (targetCell->y < 0 || targetCell->y == devC_grid.num[1])
+        if (targetCell->y < 0 || targetCell->y >= devC_grid.num[1])
             return -1;
     }
 

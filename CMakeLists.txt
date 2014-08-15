@@ -31,7 +31,7 @@ enable_testing()
 # Set build type = Debug
 #set(CMAKE_BUILD_TYPE Debug)
 #if (CUDA_FOUND)
-#    set(CUDA_NVCC_FLAGS -g;-G)
+#    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-g -G)
 #endif()
 
 # Set build type = Release

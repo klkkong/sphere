@@ -1184,15 +1184,17 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
                             cellID = targetCell.x
                                 + targetCell.y * devC_grid.num[0]
                                 + (devC_grid.num[0] * devC_grid.num[1])
-                                * targetCell.z; 
+                                * targetCell.z;
 
                             // Lowest particle index in cell
+                            __syncthreads();
                             startIdx = dev_cellStart[cellID];
 
                             // Make sure cell is not empty
                             if (startIdx != 0xffffffff) {
 
                                 // Highest particle index in cell
+                                __syncthreads();
                                 endIdx = dev_cellEnd[cellID];
 
                                 // Iterate over cell particles

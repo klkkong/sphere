@@ -20,6 +20,8 @@ sim.addParticle([0.5, 0.5, 0.5], 0.05)
 sim.initTemporal(total=0.01, file_dt=0.001)
 
 sim.run(verbose=False)
+#sim.run(dry=True)
+#sim.run(cudamemcheck=True)
 #sim.writeVTKall()
 
 sim.readlast()
