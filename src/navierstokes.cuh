@@ -97,6 +97,10 @@ void DEM::initNSmemDev(void)
     cudaMalloc((void**)&dev_ns_div_phi_vi_v, memSizeF*3); // div(phi*vi*v)
     //cudaMalloc((void**)&dev_ns_div_phi_tau, memSizeF*3);  // div(phi*tau)
     cudaMalloc((void**)&dev_ns_f_pf, sizeof(Float3)*np); // particle fluid force
+    cudaMalloc((void**)&dev_ns_f_d, sizeof(Float4)*np); // drag force
+    cudaMalloc((void**)&dev_ns_f_p, sizeof(Float4)*np); // pressure force
+    cudaMalloc((void**)&dev_ns_f_v, sizeof(Float4)*np); // viscous force
+    cudaMalloc((void**)&dev_ns_f_sum, sizeof(Float4)*np); // sum of int. forces
 
     checkForCudaErrors("End of initNSmemDev");
 }
@@ -137,6 +141,10 @@ void DEM::freeNSmemDev()
     cudaFree(dev_ns_div_tau_y);
     cudaFree(dev_ns_div_tau_z);
     cudaFree(dev_ns_f_pf);
+    cudaFree(dev_ns_f_d);
+    cudaFree(dev_ns_f_p);
+    cudaFree(dev_ns_f_v);
+    cudaFree(dev_ns_f_sum);
 }
 
 // Transfer to device
@@ -184,6 +192,11 @@ void DEM::transferNSfromGlobalDeviceMemory(int statusmsg)
     cudaMemcpy(ns.phi, dev_ns_phi, memSizeF, cudaMemcpyDeviceToHost);
     cudaMemcpy(ns.dphi, dev_ns_dphi, memSizeF, cudaMemcpyDeviceToHost);
     cudaMemcpy(ns.norm, dev_ns_norm, memSizeF, cudaMemcpyDeviceToHost);
+    cudaMemcpy(ns.f_d, dev_ns_f_d, sizeof(Float4)*np, cudaMemcpyDeviceToHost);
+    cudaMemcpy(ns.f_p, dev_ns_f_p, sizeof(Float4)*np, cudaMemcpyDeviceToHost);
+    cudaMemcpy(ns.f_v, dev_ns_f_v, sizeof(Float4)*np, cudaMemcpyDeviceToHost);
+    cudaMemcpy(ns.f_sum, dev_ns_f_sum, sizeof(Float4)*np,
+            cudaMemcpyDeviceToHost);
 
     checkForCudaErrors("End of transferNSfromGlobalDeviceMemory", 0);
     if (verbose == 1 && statusmsg == 1)
@@ -3041,7 +3054,11 @@ __global__ void findInteractionForce(
     const Float*  __restrict__ dev_ns_div_tau_y,// in
     const Float*  __restrict__ dev_ns_div_tau_z,// in
     Float3* __restrict__ dev_ns_f_pf,     // out
-    Float4* __restrict__ dev_force)       // out
+    Float4* __restrict__ dev_force,       // out
+    Float4* __restrict__ dev_ns_f_d,      // out
+    Float4* __restrict__ dev_ns_f_p,      // out
+    Float4* __restrict__ dev_ns_f_v,      // out
+    Float4* __restrict__ dev_ns_f_sum)    // out
 {
     unsigned int i = threadIdx.x + blockIdx.x*blockDim.x; // Particle index
 
@@ -3141,6 +3158,7 @@ __global__ void findInteractionForce(
         checkFiniteFloat3("f_pf", i_x, i_y, i_z, f_pf);
 #endif
 
+        __syncthreads();
 #ifdef SET_1
         dev_ns_f_pf[i] = f_pf;
 #endif
@@ -3149,7 +3167,16 @@ __global__ void findInteractionForce(
         dev_ns_f_pf[i] = f_d;
 #endif
 
+        __syncthreads();
         dev_force[i] += MAKE_FLOAT4(f_pf.x, f_pf.y, f_pf.z, 0.0);
+        dev_ns_f_d[i] = MAKE_FLOAT4(f_d.x, f_d.y, f_d.z, 0.0);
+        dev_ns_f_p[i] = MAKE_FLOAT4(f_p.x, f_p.y, f_p.z, 0.0);
+        dev_ns_f_v[i] = MAKE_FLOAT4(f_v.x, f_v.y, f_v.z, 0.0);
+        dev_ns_f_sum[i] = MAKE_FLOAT4(
+                f_d.x + f_p.x + f_v.x,
+                f_d.y + f_p.y + f_v.y,
+                f_d.z + f_p.z + f_v.z,
+                0.0);
     }
 }
 

@@ -213,6 +213,10 @@ class DEM {
         Float*  dev_ns_div_tau_y;    // div(tau) on y-face
         Float*  dev_ns_div_tau_z;    // div(tau) on z-face
         Float3* dev_ns_f_pf;         // Interaction force on particles
+        Float4* dev_ns_f_d;          // Drag force on particles
+        Float4* dev_ns_f_p;          // Pressure force on particles
+        Float4* dev_ns_f_v;          // Viscous force on particles
+        Float4* dev_ns_f_sum;        // Total force on particles
 
         // Helper device arrays, input
         unsigned int** hdev_gridParticleIndex;

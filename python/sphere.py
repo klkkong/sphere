@@ -19,7 +19,7 @@ numpy.seterr(all='warn', over='raise')
 
 # Sphere version number. This field should correspond to the value in
 # `../src/constants.h`.
-VERSION=1.04
+VERSION=1.05
 
 class sim:
     '''
@@ -203,15 +203,15 @@ class sim:
 
         # Wall normals
         self.w_n     = numpy.zeros((self.nw, self.nd), dtype=numpy.float64)
-        if (self.nw >= 1):
+        if self.nw >= 1:
             self.w_n[0,2] = -1.0
-        if (self.nw >= 2):
+        if self.nw >= 2:
             self.w_n[1,0] = -1.0
-        if (self.nw >= 3):
+        if self.nw >= 3:
             self.w_n[2,0] =  1.0
-        if (self.nw >= 4):
+        if self.nw >= 4:
             self.w_n[3,1] = -1.0
-        if (self.nw >= 5):
+        if self.nw >= 5:
             self.w_n[4,1] =  1.0
             
         # Wall positions on the axes that are parallel to the wall normal [m]
@@ -270,7 +270,7 @@ class sim:
         # Simulate fluid? True: Yes, False: no
         self.fluid = fluid
 
-        if (self.fluid == True):
+        if self.fluid == True:
 
             # Fluid dynamic viscosity [N/(m/s)]
             self.mu = numpy.zeros(1, dtype=numpy.float64)
@@ -336,6 +336,12 @@ class sim:
 
             # Permeability scaling factor
             self.c_grad_p = numpy.ones(1, dtype=numpy.float64)
+
+            ## Interaction forces
+            self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+            self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+            self.f_v = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+            self.f_sum = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
 
         # Particle color marker
         self.color = numpy.zeros(self.np, dtype=numpy.int32)
@@ -600,6 +606,18 @@ class sim:
             elif (self.c_grad_p != other.c_grad_p):
                 print(85)
                 return(85)
+            elif (self.f_d != other.f_d).any():
+                print(86)
+                return(86)
+            elif (self.f_p != other.f_p).any():
+                print(87)
+                return(87)
+            elif (self.f_v != other.f_v).any():
+                print(88)
+                return(88)
+            elif (self.f_sum != other.f_sum).any():
+                print(89)
+                return(89)
 
         if ((self.color != other.color)).any():
             print(90)
@@ -673,6 +691,10 @@ class sim:
         self.ev     = numpy.append(self.ev, ev)
         self.p      = numpy.append(self.p, p) 
         self.color  = numpy.append(self.color, color)
+        self.f_d    = numpy.append(self.f_d, [numpy.zeros(3)], axis=0)
+        self.f_p    = numpy.append(self.f_p, [numpy.zeros(3)], axis=0)
+        self.f_v    = numpy.append(self.f_v, [numpy.zeros(3)], axis=0)
+        self.f_sum  = numpy.append(self.f_sum, [numpy.zeros(3)], axis=0)
 
     def deleteParticle(self, i):
         '''
@@ -699,6 +721,10 @@ class sim:
         self.ev     = numpy.delete(self.ev, i)
         self.p      = numpy.delete(self.p, i)
         self.color  = numpy.delete(self.color, i)
+        self.f_d    = numpy.delete(self.f_d, i, axis=0)
+        self.f_p    = numpy.delete(self.f_p, i, axis=0)
+        self.f_v    = numpy.delete(self.f_v, i, axis=0)
+        self.f_sum  = numpy.delete(self.f_sum, i, axis=0)
 
     def deleteAllParticles(self):
         '''
@@ -720,6 +746,10 @@ class sim:
         self.ev      = numpy.zeros(self.np, dtype=numpy.float64)
         self.p       = numpy.zeros(self.np, dtype=numpy.float64)
         self.color   = numpy.zeros(self.np, dtype=numpy.int32)
+        self.f_d     = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.f_p     = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.f_v     = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.f_sum   = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
 
     def readbin(self, targetbin, verbose = True, bonds = True, devsmod = True,
             esysparticle = False):
@@ -747,7 +777,7 @@ class sim:
         '''
 
         fh = None
-        try :
+        try:
             if (verbose == True):
                 print("Input file: {0}".format(targetbin))
             fh = open(targetbin, "rb")
@@ -819,7 +849,7 @@ class sim:
             self.torque = numpy.fromfile(fh, dtype=numpy.float64,\
                     count=self.np*self.nd).reshape(self.np, self.nd)
 
-            if (esysparticle == True):
+            if esysparticle == True:
                 return
 
             # Per-particle single-value parameters
@@ -976,6 +1006,38 @@ class sim:
                     self.c_phi = numpy.ones(1, dtype=numpy.float64)
                     self.c_grad_p = numpy.ones(1, dtype=numpy.float64)
 
+                if self.version >= 1.05:
+                    self.f_d = numpy.empty_like(self.x)
+                    self.f_p = numpy.empty_like(self.x)
+                    self.f_v = numpy.empty_like(self.x)
+                    self.f_sum = numpy.empty_like(self.x)
+
+                    for i in range(self.np[0]):
+                        self.f_d[i,:] = \
+                                numpy.fromfile(fh, dtype=numpy.float64,
+                                        count=self.nd)
+                    for i in range(self.np[0]):
+                        self.f_p[i,:] = \
+                                numpy.fromfile(fh, dtype=numpy.float64,
+                                        count=self.nd)
+                    for i in range(self.np[0]):
+                        self.f_v[i,:] = \
+                                numpy.fromfile(fh, dtype=numpy.float64,
+                                        count=self.nd)
+                    for i in range(self.np[0]):
+                        self.f_sum[i,:] = \
+                                numpy.fromfile(fh, dtype=numpy.float64,
+                                        count=self.nd)
+                else:
+                    self.f_d = numpy.zeros((self.np, self.nd),
+                            dtype=numpy.float64)
+                    self.f_p = numpy.zeros((self.np, self.nd),
+                            dtype=numpy.float64)
+                    self.f_v = numpy.zeros((self.np, self.nd),
+                            dtype=numpy.float64)
+                    self.f_sum = numpy.zeros((self.np, self.nd),
+                            dtype=numpy.float64)
+
             if (self.version >= 1.02):
                 self.color =\
                   numpy.fromfile(fh, dtype=numpy.int32, count=self.np)
@@ -1131,6 +1193,15 @@ class sim:
 
                 fh.write(self.c_phi.astype(numpy.float64))
                 fh.write(self.c_grad_p.astype(numpy.float64))
+
+                for i in numpy.arange(self.np):
+                    fh.write(self.f_d[i,:].astype(numpy.float64))
+                for i in numpy.arange(self.np):
+                    fh.write(self.f_p[i,:].astype(numpy.float64))
+                for i in numpy.arange(self.np):
+                    fh.write(self.f_v[i,:].astype(numpy.float64))
+                for i in numpy.arange(self.np):
+                    fh.write(self.f_sum[i,:].astype(numpy.float64))
 
             fh.write(self.color.astype(numpy.int32))
 
@@ -1308,6 +1379,51 @@ class sim:
                          (self.vel[i,0], self.vel[i,1], self.vel[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
+
+            if self.fluid == True:
+                # Fluid interaction force
+                fh.write('        <DataArray type="Float32" ' 
+                        + 'Name="Fluid force total" '
+                        + 'NumberOfComponents="3" format="ascii">\n')
+                fh.write('          ')
+                for i in range(self.np):
+                    fh.write('%f %f %f ' % \
+                            (self.f_sum[i,0], self.f_sum[i,1], self.f_sum[i,2]))
+                fh.write('\n')
+                fh.write('        </DataArray>\n')
+
+                # Fluid drag force
+                fh.write('        <DataArray type="Float32" '
+                        + 'Name="Fluid drag force" '
+                        + 'NumberOfComponents="3" format="ascii">\n')
+                fh.write('          ')
+                for i in range(self.np):
+                    fh.write('%f %f %f ' % \
+                            (self.f_d[i,0], self.f_d[i,1], self.f_d[i,2]))
+                fh.write('\n')
+                fh.write('        </DataArray>\n')
+
+                # Fluid pressure force
+                fh.write('        <DataArray type="Float32" '
+                        + 'Name="Fluid pressure force" '
+                        + 'NumberOfComponents="3" format="ascii">\n')
+                fh.write('          ')
+                for i in range(self.np):
+                    fh.write('%f %f %f ' % \
+                            (self.f_p[i,0], self.f_p[i,1], self.f_p[i,2]))
+                fh.write('\n')
+                fh.write('        </DataArray>\n')
+
+                # Fluid viscous force
+                fh.write('        <DataArray type="Float32" '
+                        + 'Name="Fluid viscous force" '
+                        + 'NumberOfComponents="3" format="ascii">\n')
+                fh.write('          ')
+                for i in range(self.np):
+                    fh.write('%f %f %f ' % \
+                            (self.f_v[i,0], self.f_v[i,1], self.f_v[i,2]))
+                fh.write('\n')
+                fh.write('        </DataArray>\n')
 
             # fixvel
             fh.write('        <DataArray type="Float32" Name="FixedVel" '
@@ -2507,6 +2623,11 @@ class sim:
 
         self.c_phi = numpy.ones(1, dtype=numpy.float64)
         self.c_grad_p = numpy.ones(1, dtype=numpy.float64)
+
+        self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.f_v = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.f_sum = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
 
     def setFluidBottomNoFlow(self):
         '''

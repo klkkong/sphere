@@ -12,7 +12,7 @@
 // Get the address of the first byte of an object's representation
 // See Stroustrup (2008) p. 388
     template<class T>
-char* as_bytes(T& i)	// treat a T as a sequence of bytes
+char* as_bytes(T& i)    // treat a T as a sequence of bytes
 {
     // get the address of the first byte of memory used
     // to store the object
@@ -297,6 +297,27 @@ void DEM::readbin(const char *target)
         ifs.read(as_bytes(ns.c_phi), sizeof(Float));
         ifs.read(as_bytes(ns.c_grad_p), sizeof(Float));
 
+        for (i = 0; i<np; ++i) {
+            ifs.read(as_bytes(ns.f_d[i].x), sizeof(Float));
+            ifs.read(as_bytes(ns.f_d[i].y), sizeof(Float));
+            ifs.read(as_bytes(ns.f_d[i].z), sizeof(Float));
+        }
+        for (i = 0; i<np; ++i) {
+            ifs.read(as_bytes(ns.f_p[i].x), sizeof(Float));
+            ifs.read(as_bytes(ns.f_p[i].y), sizeof(Float));
+            ifs.read(as_bytes(ns.f_p[i].z), sizeof(Float));
+        }
+        for (i = 0; i<np; ++i) {
+            ifs.read(as_bytes(ns.f_v[i].x), sizeof(Float));
+            ifs.read(as_bytes(ns.f_v[i].y), sizeof(Float));
+            ifs.read(as_bytes(ns.f_v[i].z), sizeof(Float));
+        }
+        for (i = 0; i<np; ++i) {
+            ifs.read(as_bytes(ns.f_sum[i].x), sizeof(Float));
+            ifs.read(as_bytes(ns.f_sum[i].y), sizeof(Float));
+            ifs.read(as_bytes(ns.f_sum[i].z), sizeof(Float));
+        }
+
         if (verbose == 1)
             cout << "Done" << std::endl;
     }
@@ -508,6 +529,27 @@ void DEM::writebin(const char *target)
 
             ofs.write(as_bytes(ns.c_phi), sizeof(Float));
             ofs.write(as_bytes(ns.c_grad_p), sizeof(Float));
+
+            for (i = 0; i<np; ++i) {
+                ofs.write(as_bytes(ns.f_d[i].x), sizeof(Float));
+                ofs.write(as_bytes(ns.f_d[i].y), sizeof(Float));
+                ofs.write(as_bytes(ns.f_d[i].z), sizeof(Float));
+            }
+            for (i = 0; i<np; ++i) {
+                ofs.write(as_bytes(ns.f_p[i].x), sizeof(Float));
+                ofs.write(as_bytes(ns.f_p[i].y), sizeof(Float));
+                ofs.write(as_bytes(ns.f_p[i].z), sizeof(Float));
+            }
+            for (i = 0; i<np; ++i) {
+                ofs.write(as_bytes(ns.f_v[i].x), sizeof(Float));
+                ofs.write(as_bytes(ns.f_v[i].y), sizeof(Float));
+                ofs.write(as_bytes(ns.f_v[i].z), sizeof(Float));
+            }
+            for (i = 0; i<np; ++i) {
+                ofs.write(as_bytes(ns.f_sum[i].x), sizeof(Float));
+                ofs.write(as_bytes(ns.f_sum[i].y), sizeof(Float));
+                ofs.write(as_bytes(ns.f_sum[i].z), sizeof(Float));
+            }
         }
 
         for (i = 0; i<np; ++i)

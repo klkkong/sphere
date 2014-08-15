@@ -1120,7 +1120,11 @@ __host__ void DEM::startTime()
                         dev_ns_div_tau_y,
                         dev_ns_div_tau_z,
                         dev_ns_f_pf,
-                        dev_force);
+                        dev_force,
+                        dev_ns_f_d,
+                        dev_ns_f_p,
+                        dev_ns_f_v,
+                        dev_ns_f_sum);
                 cudaThreadSynchronize();
                 checkForCudaErrorsIter("Post findInteractionForce", iter);
 

@@ -37,6 +37,10 @@ void DEM::initNSmem()
     ns.norm  = new Float[ncells];     // normalized residual of epsilon
     ns.epsilon = new Float[ncells];   // normalized residual of epsilon
     ns.epsilon_new = new Float[ncells]; // normalized residual of epsilon
+    ns.f_d = new Float4[np]; // drag force on particles
+    ns.f_p = new Float4[np]; // pressure force on particles
+    ns.f_v = new Float4[np]; // viscous force on particles
+    ns.f_sum = new Float4[np]; // sum of fluid forces on particles
 }
 
 unsigned int DEM::NScells()
@@ -73,6 +77,10 @@ void DEM::freeNSmem()
     delete[] ns.norm;
     delete[] ns.epsilon;
     delete[] ns.epsilon_new;
+    delete[] ns.f_d;
+    delete[] ns.f_p;
+    delete[] ns.f_v;
+    delete[] ns.f_sum;
 }
 
 // 3D index to 1D index
