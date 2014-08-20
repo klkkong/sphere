@@ -21,6 +21,10 @@ sigma0_list = numpy.array([5.0e3, 10.0e3, 20.0e3, 40.0e3, 80.0e3, 160.0e3])
 i = 0
 for sigma0 in sigma0_list:
 
+    if (i == 0):
+        i += 1
+        continue
+
     # Read previous output if not first load test
     if (i > 0):
         sim.sid = 'cons-sigma0=' + str(sigma0_list[i-1]) + '-c_phi=' + \
@@ -41,11 +45,11 @@ for sigma0 in sigma0_list:
     color_nx = 6
     color_ny = 6
     color_nz = 6
-    for i in range(sim.np):
-        ix = numpy.floor((sim.x[i,0] - x_min)/(x_max/color_nx))
-        iy = numpy.floor((sim.x[i,1] - y_min)/(y_max/color_ny))
-        iz = numpy.floor((sim.x[i,2] - z_min)/(z_max/color_nz))
-        sim.color[i] = (-1)**ix + (-1)**iy + (-1)**iz
+    for n in range(sim.np):
+        ix = numpy.floor((sim.x[n,0] - x_min)/(x_max/color_nx))
+        iy = numpy.floor((sim.x[n,1] - y_min)/(y_max/color_ny))
+        iz = numpy.floor((sim.x[n,2] - z_min)/(z_max/color_nz))
+        sim.color[n] = (-1)**ix + (-1)**iy + (-1)**iz
 
     sim.cleanup()
     sim.adjustUpperWall()
