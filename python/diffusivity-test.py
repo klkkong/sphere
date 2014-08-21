@@ -63,6 +63,8 @@ for sigma0 in sigma0_list:
     sim.setDEMstepsPerCFDstep(10)
     sim.setMaxIterations(2e5)
     sim.initTemporal(total = 5.0, file_dt = 0.01, epsilon=0.07)
+    sim.c_grad_p[0] = c_grad_p
+    sim.c_phi[0] = c_phi
 
     # Fix lowermost particles
     dz = sim.L[2]/sim.num[2]

@@ -41,26 +41,28 @@ for sid in sids:
 
 fig = plt.figure()
 
-plt.subplot(3,1,1)
-plt.xlabel('Pressure gradient $\\Delta p/\\Delta z$ [Pa m$^{-1}$]')
+#plt.subplot(3,1,1)
+plt.xlabel('Pressure gradient $\\Delta p/\\Delta z$ [kPa m$^{-1}$]')
 plt.ylabel('Hydraulic conductivity $K$ [ms$^{-1}$]')
-plt.plot(dpdz, K, '+')
+plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+dpdz /= 1000.0
+plt.plot(dpdz, K, 'o-k')
 plt.grid()
 
-plt.subplot(3,1,2)
-plt.xlabel('Pressure gradient $\\Delta p/\\Delta z$ [Pa m$^{-1}$]')
-plt.ylabel('Hydraulic flux $Q$ [m$^3$s$^{-1}$]')
-plt.plot(dpdz, Q, '+')
-plt.grid()
+#plt.subplot(3,1,2)
+#plt.xlabel('Pressure gradient $\\Delta p/\\Delta z$ [Pa m$^{-1}$]')
+#plt.ylabel('Hydraulic flux $Q$ [m$^3$s$^{-1}$]')
+#plt.plot(dpdz, Q, '+')
+#plt.grid()
 
-plt.subplot(3,1,3)
-plt.xlabel('Pressure gradient $\\Delta p/\\Delta z$ [Pa m$^{-1}$]')
-plt.ylabel('Mean porosity $\\bar{\\phi}$ [-]')
-plt.plot(dpdz, phi_bar, '+')
-plt.grid()
+#plt.subplot(3,1,3)
+#plt.xlabel('Pressure gradient $\\Delta p/\\Delta z$ [Pa m$^{-1}$]')
+#plt.ylabel('Mean porosity $\\bar{\\phi}$ [-]')
+#plt.plot(dpdz, phi_bar, '+')
+#plt.grid()
 
 plt.tight_layout()
-filename = 'permeability-dpdz-vs-K.png'
+filename = 'permeability-dpdz-vs-K.pdf'
 plt.savefig(filename)
 print(os.getcwd() + '/' + filename)
 plt.savefig(filename)
