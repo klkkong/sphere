@@ -9,14 +9,14 @@ import sphere
 from permeabilitycalculator import *
 import matplotlib.pyplot as plt
 
-sigma0_list = numpy.array([1.0e3, 2.0e3, 4.0e3, 10.0e3, 20.0e3, 40.0e3])
+dp_list = numpy.array([1.0e3, 2.0e3, 4.0e3, 10.0e3, 20.0e3, 40.0e3])
 
 sids = []
-for sigma0 in sigma0_list:
-    sids.append('permeability-dp=' + str(sigma0))
+for dp in dp_list:
+    sids.append('permeability-dp=' + str(dp))
 
 K = numpy.empty(len(sids))
-dpdz = numpy.empty_like(K)
+dp = numpy.empty_like(K)
 Q = numpy.empty_like(K)
 phi_bar = numpy.empty_like(K)
 i = 0
