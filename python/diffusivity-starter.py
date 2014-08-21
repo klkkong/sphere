@@ -20,21 +20,7 @@ for sigma0_str in sys.argv[4:]:
             '-c_grad_p=' + str(c_grad_p)
     print(sim.sid)
 
-    # Checkerboard colors
-    x_min = numpy.min(sim.x[:,0])
-    x_max = numpy.max(sim.x[:,0])
-    y_min = numpy.min(sim.x[:,1])
-    y_max = numpy.max(sim.x[:,1])
-    z_min = numpy.min(sim.x[:,2])
-    z_max = numpy.max(sim.x[:,2])
-    color_nx = 6
-    color_ny = 6
-    color_nz = 6
-    for i in range(sim.np):
-        ix = numpy.floor((sim.x[i,0] - x_min)/(x_max/color_nx))
-        iy = numpy.floor((sim.x[i,1] - y_min)/(y_max/color_ny))
-        iz = numpy.floor((sim.x[i,2] - z_min)/(z_max/color_nz))
-        sim.color[i] = (-1)**ix + (-1)**iy + (-1)**iz
+    sim.checkerboardColors()
 
     sim.cleanup()
     sim.adjustUpperWall()
