@@ -9,9 +9,10 @@ import numpy
 import matplotlib.pyplot as plt
 
 c_phi = 1.0
-c_grad_p_list = [1.0, 0.1, 0.01]
-#sigma0 = 10.0e3
-sigma0 = 5.0e3
+#c_grad_p_list = [1.0, 0.1, 0.01]
+c_grad_p_list = [1.0]
+sigma0 = 10.0e3
+#sigma0 = 5.0e3
 
 t = [[], [], []]
 H = [[], [], []]
@@ -31,7 +32,6 @@ for c_grad_p in c_grad_p_list:
     #sim.readfirst(verbose=True)
     for i in numpy.arange(1, sim.status()+1):
         sim.readstep(i, verbose=True)
-        print(sim.c_grad_p[0])
         t[c][i-1] = sim.time_current[0]
         H[c][i-1] = sim.w_x[0]
 
