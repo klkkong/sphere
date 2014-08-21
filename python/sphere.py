@@ -1845,6 +1845,29 @@ class sim:
                     + " large particles, and " + str(self.np[0] - nlarge)
                     + " small")
 
+    def checkerboardColors(self, nx = 6, ny = 6, nz = 6):
+        '''
+        Assign checkerboard color values to the particles in an orthogonal grid.
+
+        :param nx: Number of color values along the x axis
+        :type nx: int
+        :param ny: Number of color values along the y ayis
+        :type ny: int
+        :param nz: Number of color values along the z azis
+        :type nz: int
+        '''
+        x_min = numpy.min(self.x[:,0])
+        x_max = numpy.max(self.x[:,0])
+        y_min = numpy.min(self.x[:,1])
+        y_max = numpy.max(self.x[:,1])
+        z_min = numpy.min(self.x[:,2])
+        z_max = numpy.max(self.x[:,2])
+        for i in numpy.arange(self.np):
+            ix = numpy.floor((self.x[i,0] - x_min)/(x_max/nx))
+            iy = numpy.floor((self.x[i,1] - y_min)/(y_max/ny))
+            iz = numpy.floor((self.x[i,2] - z_min)/(z_max/nz))
+            self.color[i] = (-1)**ix + (-1)**iy + (-1)**iz
+
     def contactModel(self, contactmodel):
         '''
         Define which contact model to use for the tangential component of
