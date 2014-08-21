@@ -31,7 +31,7 @@ for c_grad_p in c_grad_p_list:
     #sim.plotLoadCurve()
     #sim.readfirst(verbose=True)
     for i in numpy.arange(1, sim.status()+1):
-        sim.readstep(i, verbose=True)
+        sim.readstep(i, verbose=False)
         t[c][i-1] = sim.time_current[0]
         H[c][i-1] = sim.w_x[0]
 
