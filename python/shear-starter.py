@@ -27,7 +27,7 @@ sim.cleanup()
 sim.adjustUpperWall()
 sim.zeroKinematics()
 
-sim.shear()
+sim.shear(1.0/20.0)
 
 sim.initFluid(mu = 17.87e-4, p = 1.0e5, hydrostatic = True)
 sim.setFluidBottomNoFlow()
