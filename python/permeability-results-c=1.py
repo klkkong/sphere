@@ -22,7 +22,8 @@ phi_bar = numpy.empty_like(K)
 i = 0
 
 for sid in sids:
-    pc = PermeabilityCalc(sid, plot_evolution=False)
+    pc = PermeabilityCalc(sid, plot_evolution=False, print_results=False,
+            verbose=False)
     K[i] = pc.conductivity()
     pc.findPressureGradient()
     pc.findCrossSectionalFlux()
