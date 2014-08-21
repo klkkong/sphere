@@ -55,7 +55,7 @@ for sigma0_str in sys.argv[4:]:
     sim.fixvel[I] = 1
     
     sim.run(dry=True)
-    sim.run(device=0)
+    sim.run(device=device)
     #sim.writeVTKall()
     sim.visualize('walls')
     sim.visualize('fluid-pressure')
