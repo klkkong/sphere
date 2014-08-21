@@ -60,7 +60,7 @@ plt.ylabel('Hydraulic conductivity $K$ [ms$^{-1}$]')
 plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 for c in range(len(c_vals)):
     dpdz /= 1000.0
-    plt.plot(dpdz[c], K[c], 'o-k', label='$c$ = %.2f' % (c_vals[c]))
+    plt.plot(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (c_vals[c]))
 plt.grid()
 
 #plt.subplot(3,1,2)
