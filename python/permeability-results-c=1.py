@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+import matplotlib
+matplotlib.use('Agg')
+matplotlib.rcParams.update({'font.size': 18, 'font.family': 'serif'})
+
+import os
 import numpy
 import sphere
 from permeabilitycalculator import *
@@ -54,4 +59,7 @@ plt.plot(dpdz, phi_bar, '+')
 plt.grid()
 
 plt.tight_layout()
-plt.savefig('permeability-dpdz-vs-K.png')
+filename = 'permeability-dpdz-vs-K.png'
+plt.savefig(filename)
+print(os.getcwd() + '/' + filename)
+plt.savefig(filename)

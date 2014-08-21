@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+import matplotlib
+matplotlib.use('Agg')
+matplotlib.rcParams.update({'font.size': 18, 'font.family': 'serif'})
+import os
+
 import numpy
 import sphere
 from permeabilitycalculator import *
@@ -21,20 +26,24 @@ c_grad_p = numpy.empty_like(K)
 i = 0
 
 for sid in sids:
-    pc = PermeabilityCalc(sid, plot_evolution=False)
+    pc = PermeabilityCalc(sid, plot_evolution=False, print_results=False,
+            verbose=False)
     K[i] = pc.conductivity()
     c_grad_p[i] = pc.c_grad_p()
     i += 1
         
 
 # produce VTK files
-for sid in sids:
-    sim = sphere.sim(sid, fluid=True)
-    sim.writeVTKall()
+#for sid in sids:
+    #sim = sphere.sim(sid, fluid=True)
+    #sim.writeVTKall()
 
 fig = plt.figure()
 plt.xlabel('Pressure gradient coefficient $c$ [-]')
 plt.ylabel('Hydraulic conductivity $K$ [m/s]')
 plt.plot(c_grad_p, K, '+')
 plt.grid()
-plt.savefig('c_grad_p-vs-K.png')
+plt.tight_layout()
+filename = 'c_grad_p-vs-K.pdf'
+plt.savefig(filename)
+print(os.getcwd() + '/' + filename)
