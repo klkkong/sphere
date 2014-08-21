@@ -33,7 +33,7 @@ for sigma0_str in sys.argv[4:]:
     sim.setFluidTopFixedPressure()
     sim.setDEMstepsPerCFDstep(10)
     sim.setMaxIterations(2e5)
-    sim.initTemporal(total = 5.0, file_dt = 0.01, epsilon=0.07)
+    sim.initTemporal(total = 10.0, file_dt = 0.01, epsilon=0.07)
 
     # Fix lowermost particles
     dz = sim.L[2]/sim.num[2]
