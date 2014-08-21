@@ -11,8 +11,10 @@ c_phi = float(sys.argv[2])
 c_grad_p = float(sys.argv[3])
 sigma0 = float(sys.argv[4])
 
-sim = sphere.sim('diffusivity-sigma0=' + str(sigma0) + '-c_phi=' + \
-        str(c_phi) + '-c_grad_p=' + str(c_grad_p), fluid=True)
+#sim = sphere.sim('diffusivity-sigma0=' + str(sigma0) + '-c_phi=' + \
+#        str(c_phi) + '-c_grad_p=' + str(c_grad_p), fluid=True)
+sim = sphere.sim('diffusivity-sigma0=' + str(sigma0) +'-c_phi=1.0-c_grad_p=1.0',
+        fluid=True)
 sim.readlast()
 
 sim.sid = 'shear-sigma0=' + str(sigma0) + '-c_phi=' + str(c_phi) + \
