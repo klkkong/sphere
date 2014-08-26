@@ -21,6 +21,7 @@ report lspci
 report uname -a
 report cmake --version
 report nvcc --version
+report gcc --version
 report cmake .
 report make
 report make test
