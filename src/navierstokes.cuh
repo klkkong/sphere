@@ -2913,7 +2913,6 @@ __global__ void updateNSvelocity(
 
         // Find new velocity
 #ifdef SET_1
-        __syncthreads();
         Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*phi)*grad_epsilon;
 #endif
 #ifdef SET_2
@@ -2940,6 +2939,7 @@ __global__ void updateNSvelocity(
             v = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
         // Check the advection term using the Courant-Friedrichs-Lewy condition
+        __syncthreads();
         if (v.x*ndem*devC_dt/dx
             + v.y*ndem*devC_dt/dy
             + v.z*ndem*devC_dt/dz > 1.0) {
