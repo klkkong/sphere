@@ -7,7 +7,11 @@ function report {
     $@ >> $OUTFILE 2>&1
 }
 
-report ls -lhR .
+report ls -lh .
+report ls -lhR src
+report ls -lhR python
+report ls -lhR input
+report ls -lhR Testing
 report git show
 report git status
 report lspci
