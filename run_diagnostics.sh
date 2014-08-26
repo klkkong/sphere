@@ -4,7 +4,7 @@ OUTFILE=diagnostics.txt
 
 function report {
     echo >> $OUTFILE
-    echo "### $@ ###" >> $OUTFILE
+    echo "#### $@ ###" >> $OUTFILE
     $@ >> $OUTFILE 2>&1
 }
 
