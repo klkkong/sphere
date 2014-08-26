@@ -20,24 +20,24 @@ __device__ int findDistMod(int3* targetCell, Float3* distmod)
         if (targetCell->x < 0) {
             //targetCell->x = devC_grid.num[0] - 1;
             targetCell->x += devC_grid.num[0];
-            *distmod += MAKE_FLOAT3(devC_grid.L[0], 0.0f, 0.0f);
+            *distmod += MAKE_FLOAT3(devC_grid.L[0], 0.0, 0.0);
         }
         if (targetCell->x >= devC_grid.num[0]) {
             //targetCell->x = 0;
             targetCell->x -= devC_grid.num[0];
-            *distmod -= MAKE_FLOAT3(devC_grid.L[0], 0.0f, 0.0f);
+            *distmod -= MAKE_FLOAT3(devC_grid.L[0], 0.0, 0.0);
         }
 
         // Periodic y-boundary
         if (targetCell->y < 0) {
             //targetCell->y = devC_grid.num[1] - 1;
             targetCell->y += devC_grid.num[1];
-            *distmod += MAKE_FLOAT3(0.0f, devC_grid.L[1], 0.0f);
+            *distmod += MAKE_FLOAT3(0.0, devC_grid.L[1], 0.0);
         }
         if (targetCell->y >= devC_grid.num[1]) {
             //targetCell->y = 0;
             targetCell->y -= devC_grid.num[1];
-            *distmod -= MAKE_FLOAT3(0.0f, devC_grid.L[1], 0.0f);
+            *distmod -= MAKE_FLOAT3(0.0, devC_grid.L[1], 0.0);
         }
 
 
@@ -48,12 +48,12 @@ __device__ int findDistMod(int3* targetCell, Float3* distmod)
         if (targetCell->x < 0) {
             //targetCell->x = devC_grid.num[0] - 1;
             targetCell->x += devC_grid.num[0];
-            *distmod += MAKE_FLOAT3(devC_grid.L[0], 0.0f, 0.0f);
+            *distmod += MAKE_FLOAT3(devC_grid.L[0], 0.0, 0.0);
         }
         if (targetCell->x >= devC_grid.num[0]) {
             //targetCell->x = 0;
             targetCell->x -= devC_grid.num[0];
-            *distmod -= MAKE_FLOAT3(devC_grid.L[0], 0.0f, 0.0f);
+            *distmod -= MAKE_FLOAT3(devC_grid.L[0], 0.0, 0.0);
         }
 
         // Hande out-of grid cases on y-axis
@@ -63,6 +63,8 @@ __device__ int findDistMod(int3* targetCell, Float3* distmod)
 
         // No periodic boundaries
     } else {
+
+        // Don't modify targetCell or distmod.
 
         // Hande out-of grid cases on x- and y-axes
         if (targetCell->x < 0 || targetCell->x >= devC_grid.num[0])
