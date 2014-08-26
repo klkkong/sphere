@@ -28,4 +28,5 @@ report cat Testing/Temporary/LastTestsFailed.log
 report cat Testing/Temporary/LastTest.log
 
 echo "Diagnostics complete."
-echo "Report bugs and unusual behavior to anders.damsgaard@geo.au.dk"
+echo "Report bugs and unusual behavior to anders.damsgaard@geo.au.dk."
+echo "Please attach the file $OUTFILE to the mail."
