@@ -2894,7 +2894,6 @@ __global__ void updateNSvelocity(
         const Float epsilon_yn = dev_ns_epsilon[idx(x,y-1,z)];
         const Float epsilon_zn = dev_ns_epsilon[idx(x,y,z-1)];
 
-
         const Float phi_xn = dev_ns_phi[idx(x-1,y,z)];
         const Float phi_c  = dev_ns_phi[idx(x,y,z)];
         const Float phi_yn = dev_ns_phi[idx(x,y-1,z)];
@@ -2932,11 +2931,27 @@ __global__ void updateNSvelocity(
            e_down);
            }*/
 
-        if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
+        //if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
+        if ((z == 0 && bc_bot == 1) || (z > nz-1 && bc_top == 1))
             v.z = 0.0;
 
-        if ((z == 0 && bc_bot == 2) || (z == nz-1 && bc_top == 2))
+        //if ((z == 0 && bc_bot == 2) || (z == nz-1 && bc_top == 2))
+        if ((z == 0 && bc_bot == 2) || (z > nz-1 && bc_top == 2))
             v = MAKE_FLOAT3(0.0, 0.0, 0.0);
+
+        // Do not calculate all components at the outer grid edges (nx, ny, nz)
+        if (x == nx) {
+            v.y = 0.0;
+            v.z = 0.0;
+        }
+        if (y == ny) {
+            v.x = 0.0;
+            v.z = 0.0;
+        }
+        if (z == nz) {
+            v.x = 0.0;
+            v.y = 0.0;
+        }
 
         // Check the advection term using the Courant-Friedrichs-Lewy condition
         __syncthreads();
@@ -2944,8 +2959,12 @@ __global__ void updateNSvelocity(
             + v.y*ndem*devC_dt/dy
             + v.z*ndem*devC_dt/dz > 1.0) {
             printf("[%d,%d,%d] Warning: Advection term in fluid may be "
-                   "unstable (CFL condition), v = %f,%f,%f\n",
-                   x,y,z, v.x, v.y, v.z);
+                   "unstable (CFL condition)\n"
+                   "\tv = %.2e,%.2e,%.2e\n"
+                   "\te_c,e_xn,e_yn,e_zn = %.2e,%.2e,%.2e,%.2e\n",
+                   x,y,z, v.x, v.y, v.z,
+                   epsilon_c, epsilon_xn, epsilon_yn, epsilon_zn
+                   );
         }
 
         // Write new values
