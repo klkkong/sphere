@@ -27,6 +27,7 @@ report make test
 report cat Testing/Temporary/LastTestsFailed.log
 report cat Testing/Temporary/LastTest.log
 
+gzip $OUTFILE
 echo "Diagnostics complete."
 echo "Report bugs and unusual behavior to anders.damsgaard@geo.au.dk."
-echo "Please attach the file $OUTFILE to the mail."
+echo "Please attach the file $OUTFILE.gz to the mail."
