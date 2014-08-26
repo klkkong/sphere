@@ -13,6 +13,7 @@ report git status
 report lspci
 report uname -a
 report cmake --version
+report nvcc --version
 report cmake .
 report make
 report make test
