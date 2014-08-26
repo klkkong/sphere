@@ -3,10 +3,12 @@
 OUTFILE=diagnostics.txt
 
 function report {
-    echo "\n### $@ ###" >> $OUTFILE
+    echo >> $OUTFILE
+    echo "### $@ ###" >> $OUTFILE
     $@ >> $OUTFILE 2>&1
 }
 
+date > $OUTFILE
 report ls -lh .
 report ls -lhR src
 report ls -lhR python
