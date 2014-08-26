@@ -8,6 +8,7 @@ function report {
     $@ >> $OUTFILE 2>&1
 }
 
+echo "Running diagnostics, this will take a few minutes. Please wait..."
 date > $OUTFILE
 report ls -lh .
 report ls -lhR src
