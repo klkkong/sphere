@@ -23,7 +23,7 @@ print('\n###### ' + sim.sid + ' ######')
 # Checkerboard colors
 sim.checkerboardColors()
 sim.cleanup()
-sim.adjustUpperWall()
+#sim.adjustUpperWall()
 sim.zeroKinematics()
 
 sim.consolidate(normal_stress = sigma0)
