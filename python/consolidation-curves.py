@@ -12,7 +12,7 @@ c_phi = float(sys.argv[2])
 c_grad_p = float(sys.argv[3])
 
 sim = sphere.sim('cons-sigma0=' + str(5.0e3) + '-c_phi=' + \
-            str(c_phi) + '-c_grad_p=' + str(1.0), fluid=True)
+            str(c_phi) + '-c_grad_p=' + str(c_grad_p), fluid=True)
 sim.readlast()
 
 sigma0 = 10.0e3
