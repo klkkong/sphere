@@ -74,8 +74,8 @@ plt.ylabel('Thickness change [m]')
 for c in range(len(c_grad_p_list)):
     plt.semilogx(t[c], H[c], 'o-', label='$c$ = %.2f' % (c_grad_p_list[c]))
 plt.grid()
-plt.legend(loc=0)
 
+plt.legend(loc=0)
 plt.tight_layout()
 filename = 'cons-curves.pdf'
 plt.savefig(filename)
