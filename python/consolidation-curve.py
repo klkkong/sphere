@@ -67,12 +67,19 @@ for c_grad_p in c_grad_p_list:
 
     c += 1
 
+# Normalize the thickness change
+min_H = 0.0
+for c in range(len(c_grad_p_list)):
+    min_H_c = numpy.min(H[c])
+    if min_H_c < min_H:
+        min_H = min_H_c
 
 plt.xlabel('Time [s]')
-plt.ylabel('Thickness change [m]')
+plt.ylabel('Normalized thickness change [-]')
 #plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 for c in range(len(c_grad_p_list)):
-    plt.semilogx(t[c], H[c], 'o-', label='$c$ = %.2f' % (c_grad_p_list[c]))
+    H[c] /= -min_H_c
+    plt.semilogx(t[c], H[c], '.-', label='$c$ = %.2f' % (c_grad_p_list[c]))
 plt.grid()
 
 plt.legend(loc=0)
