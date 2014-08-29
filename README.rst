@@ -3,6 +3,10 @@ sphere readme
 =============
 ``sphere`` is a 3D discrete element method algorithm utilizing CUDA.
 
+A powerful Nvidia GPU with proper support for double precision floating is
+highly recommended. ``sphere`` has been tested with the Nvidia Tesla K20 and
+Nvidia Tesla M2050 GPUs.
+
 License
 -------
 ``sphere`` is licensed under the GNU General Public License, v.3.
