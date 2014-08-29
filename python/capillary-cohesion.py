@@ -49,6 +49,7 @@ if gravity == 0:
     sim.L[2] *= 5
     sim.num[2] *= 5
     sim.w_x[0] = sim.L[2]
+    sim.sid = sim.sid + '-nograv'
     sim.x[:,2] += 0.5*sim.L[2] - 0.5*init_lz
     sim.g[2] = 0.0
 
