@@ -1,5 +1,5 @@
 #!/bin/sh
-#PBS -N diffusivity-test-c_grad_p
+#PBS -N diffusivity-test-c_grad_p-tall
 #PBS -l nodes=1:ppn=3
 #PBS -l walltime=19200:00:00
 #PBS -q qfermi

@@ -1,5 +1,5 @@
 #!/bin/sh
-#PBS -N cons-curves
+#PBS -N cons-curves-tall
 #PBS -l nodes=1:ppn=3
 #PBS -l walltime=19200:00:00
 #PBS -q qfermi
