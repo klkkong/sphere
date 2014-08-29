@@ -17,7 +17,7 @@ for sigma0_str in sys.argv[4:]:
     sim.readlast()
 
     sim.sid = 'diffusivity-sigma0=' + str(sigma0) + '-c_phi=' + str(c_phi) + \
-            '-c_grad_p=' + str(c_grad_p)
+            '-c_grad_p=' + str(c_grad_p) + '-tall'
     print(sim.sid)
 
     sim.checkerboardColors()
@@ -27,6 +27,10 @@ for sigma0_str in sys.argv[4:]:
     sim.zeroKinematics()
 
     sim.consolidate(normal_stress = sigma0)
+
+    # Increase height of grid
+    sim.L[2] *= 2.0
+    sim.num[2] *= 2
 
     sim.initFluid(mu = 17.87e-4, p = 1.0e5, hydrostatic = True)
     sim.setFluidBottomNoFlow()

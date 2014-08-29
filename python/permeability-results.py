@@ -47,6 +47,8 @@ for c_grad_p in cvals:
             Q[c][i] = pc.Q[2]
             pc.findMeanPorosity()
             phi_bar[c][i] = pc.phi_bar
+        else:
+            print(sid + ' not found')
 
         i += 1
 
