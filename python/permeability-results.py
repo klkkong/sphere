@@ -24,8 +24,11 @@ for c_grad_p in cvals:
 
     sids = []
     for dp in dp_list:
-        sids.append('permeability-dp=' + str(dp) + '-c_phi=' + \
-                str(c_phi) + '-c_grad_p=' + str(c_grad_p))
+        if c_grad_p == 1.0:
+            sids.append('permeability-dp=' + str(dp))
+        else:
+            sids.append('permeability-dp=' + str(dp) + '-c_phi=' + \
+                    str(c_phi) + '-c_grad_p=' + str(c_grad_p))
 
     K[c] = numpy.zeros(len(sids))
     dpdz[c] = numpy.zeros_like(K[c])
@@ -79,7 +82,7 @@ plt.grid()
 #plt.plot(dpdz, phi_bar, '+')
 #plt.grid()
 
-plt.legend()
+plt.legend(loc='lower left')
 plt.tight_layout()
 filename = 'permeability-dpdz-vs-K-vs-c.pdf'
 print(os.getcwd() + '/' + filename)

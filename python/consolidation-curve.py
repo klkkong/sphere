@@ -10,13 +10,14 @@ import matplotlib.pyplot as plt
 
 c_phi = 1.0
 #c_grad_p_list = [1.0, 0.1, 0.01, 0.001]
-c_grad_p_list = [1.0, 0.1, 0.01]
+#c_grad_p_list = [1.0, 0.1, 0.01]
+c_grad_p_list = [1.0, 0.1]
 #c_grad_p_list = [1.0]
 sigma0 = 10.0e3
 #sigma0 = 5.0e3
 
-t = [[], [], []]
-H = [[], [], []]
+t = [[], []]
+H = [[], []]
 #t = [[], [], [], []]
 #H = [[], [], [], []]
 
