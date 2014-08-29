@@ -17,7 +17,7 @@ sim.readlast()
 
 sigma0 = 10.0e3
 sim.sid = 'cons-sigma0=' + str(sigma0) + '-c_phi=' + str(c_phi) + \
-        '-c_grad_p=' + str(c_grad_p)
+        '-c_grad_p=' + str(c_grad_p) + '-tall'
 print('\n###### ' + sim.sid + ' ######')
 
 # Checkerboard colors
@@ -29,6 +29,8 @@ sim.zeroKinematics()
 #sim.consolidate(normal_stress = sigma0)
 sim.w_devs[0] = sigma0
 
+sim.L[2] *= 2.0
+sim.num[2] *= 2
 sim.initFluid(mu = 17.87e-4, p = 1.0e5, hydrostatic = True)
 #sim.setFluidBottomNoFlow()
 #sim.setFluidTopFixedPressure()
