@@ -39,10 +39,10 @@ nvidia-smi
 rm CMakeCache.txt
 cmake . && make
 cd python
-#python consolidation-curves.py 0 1.0 1.00 &
-python consolidation-curves.py 0 1.0 0.10 &
-python consolidation-curves.py 1 1.0 0.01 &
-python consolidation-curves.py 2 1.0 0.001 &
+python consolidation-curves.py 0 1.0 1.00 &
+python consolidation-curves.py 1 1.0 0.10 &
+python consolidation-curves.py 2 1.0 0.01 &
+#python consolidation-curves.py 2 1.0 0.001 &
 wait
 
 #cp $WORKDIR/output/* $ORIGDIR/output/
