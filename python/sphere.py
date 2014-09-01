@@ -691,10 +691,11 @@ class sim:
         self.ev     = numpy.append(self.ev, ev)
         self.p      = numpy.append(self.p, p) 
         self.color  = numpy.append(self.color, color)
-        self.f_d    = numpy.append(self.f_d, [numpy.zeros(3)], axis=0)
-        self.f_p    = numpy.append(self.f_p, [numpy.zeros(3)], axis=0)
-        self.f_v    = numpy.append(self.f_v, [numpy.zeros(3)], axis=0)
-        self.f_sum  = numpy.append(self.f_sum, [numpy.zeros(3)], axis=0)
+        if self.fluid:
+            self.f_d    = numpy.append(self.f_d, [numpy.zeros(3)], axis=0)
+            self.f_p    = numpy.append(self.f_p, [numpy.zeros(3)], axis=0)
+            self.f_v    = numpy.append(self.f_v, [numpy.zeros(3)], axis=0)
+            self.f_sum  = numpy.append(self.f_sum, [numpy.zeros(3)], axis=0)
 
     def deleteParticle(self, i):
         '''
