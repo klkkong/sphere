@@ -298,8 +298,8 @@ __device__ void capillaryCohesion2_exp(
     else
         r = radius_b/radius_a;
 
-    const Float lambda = 0.9/1.4142135623730951 * pow(devC_params.V_b, 2.0) * pow(r, -0.5)
-        * pow(1.0/radius_a + 1.0/radius_b, 0.5);
+    const Float lambda = 0.9/1.4142135623730951 * pow(devC_params.V_b, 2.0)
+        * pow(r, -0.5) * pow(1.0/radius_a + 1.0/radius_b, 0.5);
 
     // Calculate cohesional force
     const Float3 f_c =
@@ -307,7 +307,6 @@ __device__ void capillaryCohesion2_exp(
 
     // Add force components from this collision to total force for particle
     *N += f_c;
-
 }
 
 #endif
