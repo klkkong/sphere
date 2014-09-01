@@ -61,7 +61,7 @@ for z in range(nz):
     for y in range(ny):
         for x in range(nx):
 
-            if (grid[x,z] == 0):
+            if (grid[z,x] == 0):
                 continue # skip to next iteration
 
             for i in range(cube.np):
@@ -69,7 +69,7 @@ for z in range(nz):
                 pos = [ cube.x[i,0] + x*dx,
                         cube.x[i,1] + y*dy,
                         cube.x[i,2] + z*dz ]
-                sim.addParticle(pos, radius=cube.radius[i], color=grid[z,y])
+                sim.addParticle(pos, radius=cube.radius[i], color=grid[z,x])
 
 sim.checkerboardColors()
 sim.defaultParams(capillaryCohesion=cohesion)
