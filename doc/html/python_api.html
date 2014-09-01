@@ -448,6 +448,25 @@ The plot is saved in the current folder as
 </dd></dl>
 
 <dl class="method">
+<dt id="sphere.sim.checkerboardColors">
+<tt class="descname">checkerboardColors</tt><big>(</big><em>nx=6</em>, <em>ny=6</em>, <em>nz=6</em><big>)</big><a class="headerlink" href="#sphere.sim.checkerboardColors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign checkerboard color values to the particles in an orthogonal grid.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>nx</strong> (<em>int</em>) &#8211; Number of color values along the x axis</li>
+<li><strong>ny</strong> (<em>int</em>) &#8211; Number of color values along the y ayis</li>
+<li><strong>nz</strong> (<em>int</em>) &#8211; Number of color values along the z azis</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="sphere.sim.cleanup">
 <tt class="descname">cleanup</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.cleanup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes the input/output files and images belonging to the object
@@ -902,6 +921,24 @@ included.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="sphere.sim.interiaParameterPlanarShear">
+<tt class="descname">interiaParameterPlanarShear</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.interiaParameterPlanarShear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the value of the inertia parameter $I$ during planar shear
+proposed by GDR-MiDi 2004.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The value of $I$</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+<p>:see also:<cite>func:shearStrainRate()</cite>,`func:shearVel()`</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="sphere.sim.kineticEnergy">
 <tt class="descname">kineticEnergy</tt><big>(</big><em>idx</em><big>)</big><a class="headerlink" href="#sphere.sim.kineticEnergy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the (linear) kinetic energy for a particle.</p>
@@ -1139,6 +1176,26 @@ this value is -1, the center z position is used.</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="sphere.sim.plotLoadCurve">
+<tt class="descname">plotLoadCurve</tt><big>(</big><em>graphics_format='png'</em><big>)</big><a class="headerlink" href="#sphere.sim.plotLoadCurve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the load curve (log time vs. upper wall movement).  The plot is
+saved in the current folder with the file name
+&#8216;&lt;simulation id&gt;-loadcurve.&lt;graphics_format&gt;&#8217;.
+The consolidation coefficient calculations are done on the base of
+Bowles 1992, p. 129&#8211;139, using the &#8220;Casagrande&#8221; method.
+It is assumed that the consolidation has stopped at the end of the
+simulation (i.e. flat curve).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>graphics_format</strong> (<em>str</em>) &#8211; Save the plot in this format</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="sphere.sim.plotPrescribedFluidPressures">
 <tt class="descname">plotPrescribedFluidPressures</tt><big>(</big><em>graphics_format='png'</em><big>)</big><a class="headerlink" href="#sphere.sim.plotPrescribedFluidPressures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the prescribed fluid pressures through time that may be
@@ -1365,7 +1422,7 @@ tracer to this image format using Imagemagick</li>
 
 <dl class="method">
 <dt id="sphere.sim.run">
-<tt class="descname">run</tt><big>(</big><em>verbose=True</em>, <em>hideinputfile=False</em>, <em>dry=False</em>, <em>valgrind=False</em>, <em>cudamemcheck=False</em><big>)</big><a class="headerlink" href="#sphere.sim.run" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">run</tt><big>(</big><em>verbose=True</em>, <em>hideinputfile=False</em>, <em>dry=False</em>, <em>valgrind=False</em>, <em>cudamemcheck=False</em>, <em>device=-1</em><big>)</big><a class="headerlink" href="#sphere.sim.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start <tt class="docutils literal"><span class="pre">sphere</span></tt> calculations on the <tt class="docutils literal"><span class="pre">sim</span></tt> object</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1382,6 +1439,9 @@ computational time.</li>
 <li><strong>cudamemcheck</strong> (<em>bool</em>) &#8211; Run the program with <tt class="docutils literal"><span class="pre">cudamemcheck</span></tt> in order to
 check for device memory leaks and errors. This causes a significant
 increase in computational time.</li>
+<li><strong>device</strong> (<em>int</em>) &#8211; Specify the GPU device to execute the program on.
+If not specified, sphere will use the device with the most CUDA cores.
+To see a list of devices, run <tt class="docutils literal"><span class="pre">nvidia-smi</span></tt> in the system shell.</li>
 </ul>
 </td>
 </tr>
@@ -1472,7 +1532,16 @@ value (Dirichlet) boundary condition.</p>
 <dt id="sphere.sim.setFluidBottomNoFlow">
 <tt class="descname">setFluidBottomNoFlow</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.setFluidBottomNoFlow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the lower boundary of the fluid domain to follow the no-flow
-(Neumann) boundary condition.</p>
+(Neumann) boundary condition with free slip parallel to the boundary.</p>
+<p>The default behavior for the boundary is fixed value (Dirichlet), see
+<a class="reference internal" href="#sphere.sim.setFluidBottomFixedPressure" title="sphere.sim.setFluidBottomFixedPressure"><tt class="xref py py-func docutils literal"><span class="pre">setFluidBottomFixedPressure()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setFluidBottomNoFlowNoSlip">
+<tt class="descname">setFluidBottomNoFlowNoSlip</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.setFluidBottomNoFlowNoSlip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the lower boundary of the fluid domain to follow the no-flow
+(Neumann) boundary condition with no slip parallel to the boundary.</p>
 <p>The default behavior for the boundary is fixed value (Dirichlet), see
 <a class="reference internal" href="#sphere.sim.setFluidBottomFixedPressure" title="sphere.sim.setFluidBottomFixedPressure"><tt class="xref py py-func docutils literal"><span class="pre">setFluidBottomFixedPressure()</span></tt></a>.</p>
 </dd></dl>
@@ -1511,7 +1580,16 @@ value (Dirichlet) boundary condition.</p>
 <dt id="sphere.sim.setFluidTopNoFlow">
 <tt class="descname">setFluidTopNoFlow</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.setFluidTopNoFlow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the upper boundary of the fluid domain to follow the no-flow
-(Neumann) boundary condition.</p>
+(Neumann) boundary condition with free slip parallel to the boundary.</p>
+<p>The default behavior for the boundary is fixed value (Dirichlet), see
+<a class="reference internal" href="#sphere.sim.setFluidTopFixedPressure" title="sphere.sim.setFluidTopFixedPressure"><tt class="xref py py-func docutils literal"><span class="pre">setFluidTopFixedPressure()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.setFluidTopNoFlowNoSlip">
+<tt class="descname">setFluidTopNoFlowNoSlip</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.setFluidTopNoFlowNoSlip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the upper boundary of the fluid domain to follow the no-flow
+(Neumann) boundary condition with no slip parallel to the boundary.</p>
 <p>The default behavior for the boundary is fixed value (Dirichlet), see
 <a class="reference internal" href="#sphere.sim.setFluidTopFixedPressure" title="sphere.sim.setFluidTopFixedPressure"><tt class="xref py py-func docutils literal"><span class="pre">setFluidTopFixedPressure()</span></tt></a>.</p>
 </dd></dl>
@@ -1638,6 +1716,24 @@ displacement of the upper, fixed particles.</p>
 </tr>
 </tbody>
 </table>
+<p>:see also:<cite>func:shearStrainRate()</cite>,`func:shearVel()`</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sphere.sim.shearStrainRate">
+<tt class="descname">shearStrainRate</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.shearStrainRate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the shear strain rate (dot(gamma)) value of the experiment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The value of $I$</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+<p>:see also:<cite>func:shearStrain()</cite>,`func:shearVel()`</p>
 </dd></dl>
 
 <dl class="method">
@@ -1656,6 +1752,7 @@ upper particles.</p>
 </tr>
 </tbody>
 </table>
+<p>:see also:<cite>func:shearStrainRate()</cite>,`func:shearStrain()`</p>
 </dd></dl>
 
 <dl class="method">
@@ -2058,11 +2155,11 @@ The vtu files can be used to visualize the particles in ParaView.</p>
 session. The particles are visualized by selecting the imported data in
 the &#8220;Pipeline Browser&#8221;. Afterwards, click the &#8220;Glyph&#8221; button in the
 &#8220;Common&#8221; toolbar, or go to the &#8220;Filters&#8221; menu, and press &#8220;Glyph&#8221; from
-the &#8220;Common&#8221; list. Choose &#8220;Sphere&#8221; as the &#8220;Glyph Type&#8221;, set &#8220;Radius&#8221; to
-1.0, choose &#8220;scalar&#8221; as the &#8220;Scale Mode&#8221;. Check the &#8220;Edit&#8221; checkbox, and
-set the &#8220;Set Scale Factor&#8221; to 1.0. The field &#8220;Maximum Number of Points&#8221;
-may be increased if the number of particles exceed the default value.
-Finally press &#8220;Apply&#8221;, and the particles will appear in the main window.</p>
+the &#8220;Common&#8221; list. Choose &#8220;Sphere&#8221; as the &#8220;Glyph Type&#8221;, choose &#8220;scalar&#8221;
+as the &#8220;Scale Mode&#8221;. Check the &#8220;Edit&#8221; checkbox, and set the &#8220;Set Scale
+Factor&#8221; to 1.0. The field &#8220;Maximum Number of Points&#8221; may be increased if
+the number of particles exceed the default value. Finally press &#8220;Apply&#8221;,
+and the particles will appear in the main window.</p>
 <p>The sphere resolution may be adjusted (&#8220;Theta resolution&#8221;, &#8220;Phi
 resolution&#8221;) to increase the quality and the computational requirements
 of the rendering. All adjustments by default require the &#8220;Apply&#8221; button
