@@ -29,6 +29,7 @@ r_mean_old = numpy.mean(cube.radius)
 scale_factor = r_mean/r_mean_old
 cube.radius *= scale_factor
 cube.L *= scale_factor
+cube.x *= scale_factor
 
 # Fill out grid with cubic packages
 grid = numpy.array((
