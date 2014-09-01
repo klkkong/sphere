@@ -26,7 +26,7 @@ cube.adjustUpperWall(z_adjust=1.0)
 # shrink particles to new mean radius and resize domain
 r_mean = 0.001
 r_mean_old = numpy.mean(cube.radius)
-scale_fractor = r_mean/r_mean_old
+scale_factor = r_mean/r_mean_old
 cube.radius *= scale_factor
 cube.L *= scale_factor
 
