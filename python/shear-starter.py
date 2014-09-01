@@ -19,7 +19,9 @@ if wet == 1:
 else:
     fluit = False
     
-sim = sphere.sim('diffusivity-sigma0=' + str(sigma0) +'-c_phi=1.0-c_grad_p=1.0',
+#sim = sphere.sim('diffusivity-sigma0=' + str(sigma0) +'-c_phi=1.0-c_grad_p=1.0',
+#        fluid=True)
+sim = sphere.sim('diffusivity-sigma0=' + str(sigma0),
         fluid=True)
 sim.readlast()
 
