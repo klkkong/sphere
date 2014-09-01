@@ -160,7 +160,8 @@ __device__ void findAndProcessContactsInCell(
                                              x_ab, x_ab_length,
                                              delta_ab, kappa);
                     } else if (delta_ab < devC_params.db) { 
-                        // Check wether particle distance satisfies the capillary bond distance
+                        // Check wether particle distance satisfies the
+                        // capillary bond distance
                         capillaryCohesion_exp(F, radius_a, radius_b, delta_ab, 
                                               x_ab, x_ab_length, kappa);
                     }

@@ -277,5 +277,38 @@ __device__ void capillaryCohesion_exp(
 } // End of capillaryCohesion_exp
 
 
+// Capillary cohesion after Richefeu et al. (2008)
+__device__ void capillaryCohesion2_exp(
+    Float3* N,
+    const Float radius_a, 
+    const Float radius_b,
+    const Float delta_ab,
+    const Float3 x_ab,
+    const Float x_ab_length, 
+    const Float kappa)
+{
+
+    // Normal vector 
+    const Float3 n_ab = x_ab/x_ab_length;
+
+    // Determine the ratio; r = max{Ri/Rj;Rj/Ri}
+    Float r;
+    if ((radius_a/radius_b) > (radius_b/radius_a))
+        r = radius_a/radius_b;
+    else
+        r = radius_b/radius_a;
+
+    const Float lambda = 0.9/1.4142135623730951 * pow(devC_params.V_b, 2.0) * pow(r, -0.5)
+        * pow(1.0/radius_a + 1.0/radius_b, 0.5);
+
+    // Calculate cohesional force
+    const Float3 f_c =
+        -kappa * sqrtf(radius_a*radius_b) * expf(-delta_ab/lambda) * n_ab;
+
+    // Add force components from this collision to total force for particle
+    *N += f_c;
+
+}
+
 #endif
 // vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
