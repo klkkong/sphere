@@ -41,7 +41,7 @@ cmake . && make
 cd python
 python capillary-cohesion.py 0 0 1 &
 python capillary-cohesion.py 1 1 1 &
-python capillary-cohesion.py 1 1 0 &
+python capillary-cohesion.py 2 1 0 &
 wait
 
 #cp $WORKDIR/output/* $ORIGDIR/output/
