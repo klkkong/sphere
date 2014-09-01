@@ -4912,7 +4912,7 @@ class sim:
             if (outformat != 'txt'):
                 shearinfo = "$\\tau_u$ = {:.3} Pa at $\gamma$ = {:.3}".format(\
                         tau_u, tau_u_shearstrain)
-                fig.text(0.5, 0.03, shearinfo, horizontalalignment='center',
+                fig.text(0.01, 0.01, shearinfo, horizontalalignment='left',
                          fontproperties=FontProperties(size=14))
                 ax1 = plt.subplot2grid((2,1), (0,0))
                 ax1.set_xlabel('Shear strain [-]')
