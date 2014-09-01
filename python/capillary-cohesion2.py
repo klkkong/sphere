@@ -56,6 +56,7 @@ Ly = dy*ny
 Lz = dz*nz
 
 sim = sphere.sim('cap2-cohesion=' + str(cohesion), nw=0)
+sim.num = numpy.array([Lx, Ly, Lz])
 
 for z in range(nz):
     for y in range(ny):
@@ -71,6 +72,9 @@ for z in range(nz):
                         cube.x[i,2] + z*dz ]
                 sim.addParticle(pos, radius=cube.radius[i], color=grid[z,x])
 
+cellsize_min = 2.1 * numpy.amax(self.radius)
+sim.defineWorldBoundaries([Lx, Ly, Lz], dx = cellsize_min)
+sim.zeroKinematics()
 sim.checkerboardColors()
 sim.defaultParams(capillaryCohesion=cohesion)
 sim.k_n[0] = 1.0e6
