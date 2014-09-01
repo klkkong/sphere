@@ -25,8 +25,12 @@ sim = sphere.sim('diffusivity-sigma0=' + str(sigma0),
         fluid=True)
 sim.readlast()
 
-sim.sid = 'shear-sigma0=' + str(sigma0) + '-c_phi=' + str(c_phi) + \
-        '-c_grad_p=' + str(c_grad_p)
+if fluid:
+    sim.sid = 'shear-sigma0=' + str(sigma0) + '-c_phi=' + str(c_phi) + \
+            '-c_grad_p=' + str(c_grad_p)
+else:
+    sim.sid = 'shear-sigma0=' + str(sigma0)
+
 print(sim.sid)
 sim.fluid = fluid
 
