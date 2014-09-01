@@ -3468,6 +3468,8 @@ class sim:
 
         :returns: The shear velocity applied by the upper, fixed particles [m/s]
         :return type: float
+
+        :see also:`func:shearStrainRate()`,`func:shearStrain()`
         '''
 
         # Find the fixed particles
@@ -3484,6 +3486,8 @@ class sim:
 
         :returns: The total shear strain [-]
         :return type: float
+
+        :see also:`func:shearStrainRate()`,`func:shearVel()`
         '''
 
         # Current height
@@ -3494,6 +3498,30 @@ class sim:
 
         # Return shear strain
         return xdisp/w_x0
+
+    def shearStrainRate(self):
+        '''
+        Calculates the shear strain rate (dot(gamma)) value of the experiment.
+
+        :returns: The value of $I$
+        :return type: float
+
+        :see also:`func:shearStrain()`,`func:shearVel()`
+        '''
+        return self.shearStrain()/self.time_current[0]
+
+    def interiaParameterPlanarShear(self):
+        '''
+        Returns the value of the inertia parameter $I$ during planar shear
+        proposed by GDR-MiDi 2004.
+
+        :returns: The value of $I$
+        :return type: float
+
+        :see also:`func:shearStrainRate()`,`func:shearVel()`
+        '''
+        return self.shearStrainRate() * numpy.mean(self.radius) \
+                * numpy.sqrt(self.rho[0]/self.w_devs[0])
 
     def forcechains(self, lc=200.0, uc=650.0, outformat='png', disp='2d'):
         '''
