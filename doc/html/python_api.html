@@ -768,6 +768,24 @@ value is <tt class="docutils literal"><span class="pre">uni</span></tt>, which i
 </dd></dl>
 
 <dl class="method">
+<dt id="sphere.sim.inertiaParameterPlanarShear">
+<tt class="descname">inertiaParameterPlanarShear</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.inertiaParameterPlanarShear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the value of the inertia parameter $I$ during planar shear
+proposed by GDR-MiDi 2004.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The value of $I$</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+<p>:see also:<cite>func:shearStrainRate()</cite>,`func:shearVel()`</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="sphere.sim.initFluid">
 <tt class="descname">initFluid</tt><big>(</big><em>mu=0.00089</em>, <em>rho=1000.0</em>, <em>p=1.0</em>, <em>hydrostatic=True</em><big>)</big><a class="headerlink" href="#sphere.sim.initFluid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the fluid arrays and the fluid viscosity. The default value
@@ -918,24 +936,6 @@ included.</p>
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
-<dl class="method">
-<dt id="sphere.sim.interiaParameterPlanarShear">
-<tt class="descname">interiaParameterPlanarShear</tt><big>(</big><big>)</big><a class="headerlink" href="#sphere.sim.interiaParameterPlanarShear" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the value of the inertia parameter $I$ during planar shear
-proposed by GDR-MiDi 2004.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The value of $I$</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
-</tr>
-</tbody>
-</table>
-<p>:see also:<cite>func:shearStrainRate()</cite>,`func:shearVel()`</p>
 </dd></dl>
 
 <dl class="method">

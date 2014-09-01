@@ -3510,7 +3510,7 @@ class sim:
         '''
         return self.shearStrain()/self.time_current[0]
 
-    def interiaParameterPlanarShear(self):
+    def inertiaParameterPlanarShear(self):
         '''
         Returns the value of the inertia parameter $I$ during planar shear
         proposed by GDR-MiDi 2004.
