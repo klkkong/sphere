@@ -17,7 +17,7 @@ sigma0 = float(sys.argv[5])
 if wet == 1:
     fluid = True
 else:
-    fluit = False
+    fluid = False
     
 #sim = sphere.sim('diffusivity-sigma0=' + str(sigma0) +'-c_phi=1.0-c_grad_p=1.0',
 #        fluid=True)
