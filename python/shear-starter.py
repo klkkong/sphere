@@ -4,15 +4,21 @@ import numpy
 import sys
 
 # launch with:
-# $ python shear-starter <DEVICE> <C_PHI> <C_GRAD_P> <SIGMA_0>
+# $ python shear-starter.py <DEVICE> <FLUID> <C_PHI> <C_GRAD_P> <SIGMA_0>
 
 device = int(sys.argv[1])
-c_phi = float(sys.argv[2])
-c_grad_p = float(sys.argv[3])
-sigma0 = float(sys.argv[4])
+wet = int(sys.argv[2])
+c_phi = float(sys.argv[3])
+c_grad_p = float(sys.argv[4])
+sigma0 = float(sys.argv[5])
 
 #sim = sphere.sim('diffusivity-sigma0=' + str(sigma0) + '-c_phi=' + \
 #        str(c_phi) + '-c_grad_p=' + str(c_grad_p), fluid=True)
+if wet == 1:
+    fluid = True
+else:
+    fluit = False
+    
 sim = sphere.sim('diffusivity-sigma0=' + str(sigma0) +'-c_phi=1.0-c_grad_p=1.0',
         fluid=True)
 sim.readlast()
@@ -20,7 +26,7 @@ sim.readlast()
 sim.sid = 'shear-sigma0=' + str(sigma0) + '-c_phi=' + str(c_phi) + \
         '-c_grad_p=' + str(c_grad_p)
 print(sim.sid)
-
+sim.fluid = fluid
 
 sim.checkerboardColors(nx=6,ny=6,nz=6)
 sim.cleanup()
@@ -29,7 +35,8 @@ sim.zeroKinematics()
 
 sim.shear(1.0/20.0)
 
-sim.initFluid(mu = 17.87e-4, p = 1.0e5, hydrostatic = True)
+if fluid:
+    sim.initFluid(mu = 17.87e-4, p = 1.0e5, hydrostatic = True)
 sim.setFluidBottomNoFlow()
 sim.setFluidTopFixedPressure()
 sim.setDEMstepsPerCFDstep(10)
