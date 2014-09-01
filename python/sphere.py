@@ -3437,7 +3437,7 @@ class sim:
         verbose = False):
         '''
         Uses ffmpeg to combine images to animation. All images should be
-        rendered beforehand using func:`render()`.
+        rendered beforehand using :func:`render()`.
         
         :param out_folder: The output folder for the video file
         :type out_folder: str
@@ -5070,7 +5070,7 @@ def video(project,
         verbose = False):
     '''
     Uses ffmpeg to combine images to animation. All images should be
-    rendered beforehand using func:`render()`.
+    rendered beforehand using :func:`render()`.
     
     :param project: The simulation id of the project to render
     :type project: str
