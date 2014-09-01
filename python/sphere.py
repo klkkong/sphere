@@ -1310,7 +1310,7 @@ class sim:
         to be pressed before regenerating the view.
 
         If several vtu files are generated for the same simulation (e.g. using
-        the :func:``writeVTKall()`` function), it is able to step the
+        the :func:`writeVTKall()` function), it is able to step the
         visualization through time by using the ParaView controls.
 
         :param folder: The folder where to place the output binary file (default
@@ -2835,7 +2835,7 @@ class sim:
         :param gamma: The viscous damping constant [N/(m/s)]
         :type gamma: float
 
-        :see also:`func:setDampingTangential(gamma)`
+        See also: :func:`setDampingTangential(gamma)`
         '''
         self.gamma_n[0] = gamma
         damping_ratio = gamma/(2.0*numpy.sqrt(self.smallestMass()*self.k_n[0]))
@@ -2859,7 +2859,7 @@ class sim:
         :param gamma: The viscous damping constant [N/(m/s)]
         :type gamma: float
 
-        :see also:`func:setDampingNormal(gamma)`
+        See also: :func:`setDampingNormal(gamma)`
         '''
         self.gamma_t[0] = gamma
         damping_ratio = gamma/(2.0*numpy.sqrt(self.smallestMass()*self.k_t[0]))
@@ -3469,7 +3469,7 @@ class sim:
         :returns: The shear velocity applied by the upper, fixed particles [m/s]
         :return type: float
 
-        :see also:`func:shearStrainRate()`,`func:shearStrain()`
+        See also: :func:`shearStrainRate()` and :func:`shearStrain()`
         '''
 
         # Find the fixed particles
@@ -3487,7 +3487,7 @@ class sim:
         :returns: The total shear strain [-]
         :return type: float
 
-        :see also:`func:shearStrainRate()`,`func:shearVel()`
+        See also: :func:`shearStrainRate()` and :func:`shearVel()`
         '''
 
         # Current height
@@ -3506,7 +3506,7 @@ class sim:
         :returns: The value of $I$
         :return type: float
 
-        :see also:`func:shearStrain()`,`func:shearVel()`
+        See also: :func:`shearStrain()` and :func:`shearVel()`
         '''
         return self.shearStrain()/self.time_current[0]
 
@@ -3518,7 +3518,7 @@ class sim:
         :returns: The value of $I$
         :return type: float
 
-        :see also:`func:shearStrainRate()`,`func:shearVel()`
+        See also: :func:`shearStrainRate()` and :func:`shearVel()`
         '''
         return self.shearStrainRate() * numpy.mean(self.radius) \
                 * numpy.sqrt(self.rho[0]/self.w_devs[0])
