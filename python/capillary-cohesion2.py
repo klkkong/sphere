@@ -72,7 +72,7 @@ for z in range(nz):
                         cube.x[i,2] + z*dz ]
                 sim.addParticle(pos, radius=cube.radius[i], color=grid[z,x])
 
-cellsize_min = 2.1 * numpy.amax(self.radius)
+cellsize_min = 2.1 * numpy.amax(sim.radius)
 sim.defineWorldBoundaries([Lx, Ly, Lz], dx = cellsize_min)
 sim.zeroKinematics()
 sim.checkerboardColors()
