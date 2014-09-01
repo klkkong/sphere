@@ -23,22 +23,29 @@ cube = sphere.sim('cube-init')
 cube.readlast()
 cube.adjustUpperWall(z_adjust=1.0)
 
+# shrink particles to new mean radius and resize domain
+r_mean = 0.001
+r_mean_old = numpy.mean(cube.radius)
+scale_fractor = r_mean/r_mean_old
+cube.radius *= scale_factor
+cube.L *= scale_factor
+
 # Fill out grid with cubic packages
 grid = numpy.array((
-        [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [ 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [ 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [ 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [ 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [ 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [ 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [ 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [ 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0]))
+        [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [ 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [ 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [ 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [ 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [ 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [ 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [ 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [ 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0]))
 
 # World dimensions and cube grid
-nx = 1                # horizontal (thickness) cubes
-ny = grid.shape[1]    # horizontal cubes
+nx = grid.shape[1]    # horizontal cubes
+ny = 1
 nz = grid.shape[0]    # vertical cubes
 dx = cube.L[0]
 dy = cube.L[1]
@@ -53,7 +60,7 @@ for z in range(nz):
     for y in range(ny):
         for x in range(nx):
 
-            if (grid[z,y] == 0):
+            if (grid[x,z] == 0):
                 continue # skip to next iteration
 
             for i in range(cube.np):
@@ -65,6 +72,8 @@ for z in range(nz):
 
 sim.checkerboardColors()
 sim.defaultParams(capillaryCohesion=cohesion)
+sim.k_n[0] = 1.0e6
+sim.k_t[0] = 1.0e6
 sim.g[2] = -10.0
 sim.run(device=device)
 
