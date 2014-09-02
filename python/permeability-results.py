@@ -46,7 +46,7 @@ for c_grad_p in cvals:
             dpdz[c][i] = pc.dPdL[2]
             Q[c][i] = pc.Q[2]
             pc.findMeanPorosity()
-            pc.plotEvolution()
+            #pc.plotEvolution()
             phi_bar[c][i] = pc.phi_bar
         else:
             print(sid + ' not found')
