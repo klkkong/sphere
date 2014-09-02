@@ -27,7 +27,7 @@ sim.readlast()
 
 if fluid:
     sim.sid = 'shear-sigma0=' + str(sigma0) + '-c_phi=' + str(c_phi) + \
-            '-c_grad_p=' + str(c_grad_p) + '-hi_mu'
+            '-c_grad_p=' + str(c_grad_p) + '-hi_mu-lo_visc'
 else:
     sim.sid = 'shear-sigma0=' + str(sigma0)
 
