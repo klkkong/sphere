@@ -27,7 +27,10 @@ c = 0
 for c_grad_p in c_grad_p_list:
 
     sid = 'cons-sigma0=' + str(sigma0) + '-c_phi=' + \
-                     str(c_phi) + '-c_grad_p=' + str(c_grad_p) + '-tall'
+                     str(c_phi) + '-c_grad_p=' + str(c_grad_p)
+    if c_grad_p != 1.0:
+        sid += '-tall'
+
     if os.path.isfile('../output/' + sid + '.status.dat'):
         sim = sphere.sim(sid, fluid=True)
         t[c] = numpy.ones(sim.status())
