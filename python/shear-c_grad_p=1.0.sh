@@ -1,5 +1,5 @@
 #!/bin/sh
-#PBS -N shear-c_grad_p=1.0-hi_mu
+#PBS -N shear-c_grad_p=1.0-hi_mu-lo_visc
 #PBS -l nodes=1:ppn=3
 #PBS -l walltime=19200:00:00
 #PBS -q qfermi
