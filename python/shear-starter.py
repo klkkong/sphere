@@ -27,7 +27,7 @@ sim.readlast()
 
 if fluid:
     sim.sid = 'shear-sigma0=' + str(sigma0) + '-c_phi=' + str(c_phi) + \
-            '-c_grad_p=' + str(c_grad_p)
+            '-c_grad_p=' + str(c_grad_p) + '-hi_mu'
 else:
     sim.sid = 'shear-sigma0=' + str(sigma0)
 
@@ -51,6 +51,8 @@ sim.initTemporal(total = 20.0, file_dt = 0.01, epsilon=0.07)
 sim.c_phi[0] = c_phi
 sim.c_grad_p[0] = c_grad_p
 sim.w_devs[0] = sigma0
+sim.mu_s[0] = 0.5
+sim.mu_d[0] = 0.5
 
 # Fix lowermost particles
 dz = sim.L[2]/sim.num[2]
