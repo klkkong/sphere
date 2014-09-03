@@ -3376,6 +3376,72 @@ class sim:
             if fh is not None:
                 fh.close()
 
+    def torqueScriptPenguin(self,
+            email='adc@geo.au.dk',
+            email_alerts='ae',
+            walltime='1920:00:00',
+            queue='H30G',
+            spheredir='/home/adc/code/sphere'):
+        '''
+        Creates a job script for the Torque queue manager for the simulation
+        object.
+
+        :param email: The e-mail address that Torque messages should be sent to
+        :type email: str
+        :param email_alerts: The type of Torque messages to send to the e-mail
+            address. The character 'b' causes a mail to be sent when the
+            execution begins. The character 'e' causes a mail to be sent when
+            the execution ends normally. The character 'a' causes a mail to be
+            sent if the execution ends abnormally. The characters can be written
+            in any order.
+        :type email_alerts: str
+        :param walltime: The maximal allowed time for the job, in the format
+            'HH:MM:SS'.
+        :type walltime: str
+        :param queue: The Torque queue to schedule the job for
+        :type queue: str
+        :param spheredir: The path to the root directory of sphere on the
+            cluster
+        :type spheredir: str
+        '''
+
+        self.writebin()
+        filename = self.sid + ".sh"
+        fh = None
+        try :
+            fh = open(filename, "w")
+
+            fh.write('#!/bin/sh\n')
+            fh.write('#PBS -S /bin/bash\n')
+            fh.write('#PBS -N ' + self.sid + '\n')
+            fh.write('#PBS -l nodes=1:ppn=8\n')
+            fh.write('#PBS -l walltime=' + walltime + '\n')
+            fh.write('#PBS -q ' + queue + '\n')
+            fh.write('#PBS -M ' + email + '\n')
+            fh.write('#PBS -m ' + email_alerts + '\n')
+            fh.write('module load cmake/2.8.11.2\n')
+            fh.write('module load cuda/6.0\n')
+            fh.write('module load python/2.7.4\n')
+            fh.write('module load numpy/1.7.1/python.2.7.4\n')
+            fh.write('module load matplotlib/1.7.1/python.2.7.4\n')
+            fh.write('echo "`whoami`@`hostname`\n')
+            fh.write('echo "Start at `date`\n')
+            fh.write('nvidia-smi\n')
+            fh.write('cd ' + spheredir + '\n')
+            fh.write('rm CMakeCache.txt\n')
+            fh.write('cmake . && make\n')
+            fh.write('./sphere input/' + self.sid + '.bin > /dev/null &\n')
+            fh.write('wait\n')
+            if (use_workdir == True):
+                fh.write('cp $WORKDIR/output/* $ORIGDIR/output/\n')
+            fh.write('echo "End at `date`"\n')
+
+            print('submit with `qsub ' + filename + '`')
+
+        finally :
+            if fh is not None:
+                fh.close()
+
     def render(self,
             method = "pres",
             max_val = 1e3,
