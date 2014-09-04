@@ -13,8 +13,11 @@ c_phi = 1.0
 c_grad_p = 1.0
 #sigma0_list = numpy.array([5.0e3, 10.0e3, 20.0e3, 40.0e3, 80.0e3, 160.0e3])
 sigma0_list = numpy.array([10.0e3, 20.0e3, 40.0e3, 80.0e3, 160.0e3])
-alpha = numpy.empty_like(sigma0_list)
-phi_bar = numpy.empty_like(sigma0_list)
+#alpha = numpy.empty_like(sigma0_list)
+#phi_bar = numpy.empty_like(sigma0_list)
+load = numpy.array([])
+alpha = numpy.array([])
+phi_bar = numpy.array([])
 
 #dc = diffusivitycalc.DiffusivityCalc()
 
@@ -26,10 +29,11 @@ for sigma0 in sigma0_list:
     if os.path.isfile('../output/' + sid + '.status.dat'):
         sim = sphere.sim(sid, fluid=True)
 
-        sim.visualize('walls')
+        #sim.visualize('walls')
         sim.plotLoadCurve()
-        alpha[i] = sim.c_v
-        phi_bar[i] = sim.phi_bar
+        load = numpy.append(load, sigma0)
+        alpha = numpy.append(alpha, sim.c_v)
+        phi_bar = numpy.append(phi_bar, sim.phi_bar)
         #sim.writeVTKall()
 
     else:
@@ -38,19 +42,20 @@ for sigma0 in sigma0_list:
     i += 1
 
 fig, ax1 = plt.subplots()
-sigma0_list /= 1000.0
-
+load /= 1000.0
 
 #plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-ax1.plot(sigma0_list, alpha, '.-k')
+ax1.plot(load, alpha, 'o-k')
 ax1.set_xlabel('Normal stress $\\sigma_0$ [kPa]')
 ax1.set_ylabel('Hydraulic diffusivity $\\alpha$ [m$^2$s$^{-1}$]')
+#ax1.ticklabel_format(style='plain', axis='y')
+ax1.get_xaxis().get_major_formatter().set_useOffset(False)
 #ax1.grid()
 
 ax2 = ax1.twinx()
 color = 'b'
-ax2.plot(sigma0_list, phi_bar, '.--' + color)
-ax2.set_ylabel('Mean porosity $\\bar{\\phi}$ [-]')
+ax2.plot(load, phi_bar, 'o--' + color)
+ax2.set_ylabel('Mean porosity $\\bar{\\phi}$ [-]', color=color)
 for tl in ax2.get_yticklabels():
     tl.set_color(color)
 
