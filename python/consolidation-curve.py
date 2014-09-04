@@ -3,6 +3,7 @@ import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams.update({'font.size': 18, 'font.family': 'serif'})
 import os
+import shutil
 
 import sphere
 import numpy
@@ -98,5 +99,6 @@ plt.legend(loc=0)
 plt.tight_layout()
 filename = 'cons-curves.pdf'
 plt.savefig(filename)
-print(os.getcwd() + '/' + filename)
-plt.savefig(filename)
+#print(os.getcwd() + '/' + filename)
+shutil.copyfile(filename, '/home/adc/articles/own/2-org/' + filename)
+print(filename)

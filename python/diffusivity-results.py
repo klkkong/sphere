@@ -3,6 +3,7 @@ import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams.update({'font.size': 18, 'font.family': 'serif'})
 import os
+import shutil
 
 import sphere
 import numpy
@@ -36,8 +37,8 @@ for sigma0 in sigma0_list:
         phi_bar = numpy.append(phi_bar, sim.phi_bar)
         #sim.writeVTKall()
 
-    else:
-        print(sid + ' not found')
+    #else:
+        #print(sid + ' not found')
 
     i += 1
 
@@ -62,4 +63,6 @@ for tl in ax2.get_yticklabels():
 filename = 'diffusivity-sigma0-vs-alpha.pdf'
 plt.tight_layout()
 plt.savefig(filename)
-print(os.getcwd() + '/' + filename)
+shutil.copyfile(filename, '/home/adc/articles/own/2-org/' + filename)
+#print(os.getcwd() + '/' + filename)
+print(filename)

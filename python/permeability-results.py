@@ -2,6 +2,7 @@
 import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams.update({'font.size': 18, 'font.family': 'serif'})
+import shutil
 
 import os
 import numpy
@@ -88,5 +89,7 @@ plt.grid()
 plt.legend(loc='lower left')
 plt.tight_layout()
 filename = 'permeability-dpdz-vs-K-vs-c.pdf'
-print(os.getcwd() + '/' + filename)
+#print(os.getcwd() + '/' + filename)
 plt.savefig(filename)
+shutil.copyfile(filename, '/home/adc/articles/own/2-org/' + filename)
+print(filename)
