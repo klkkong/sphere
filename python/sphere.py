@@ -4438,6 +4438,7 @@ class sim:
         else:
             e = sb.voidRatio()
 
+        self.phi_bar = e
         fig = plt.figure()
         plt.xlabel('Time [s]')
         plt.ylabel('Height [m]')
