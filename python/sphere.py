@@ -4921,24 +4921,24 @@ class sim:
                 # First iteration: Allocate arrays and find constant values
                 if (i == 0):
                     # Shear displacement
-                    xdisp     = numpy.zeros(lastfile+1, dtype=numpy.float64)
+                    self.xdisp     = numpy.zeros(lastfile+1, dtype=numpy.float64)
 
                     # Normal stress
-                    sigma_eff = numpy.zeros(lastfile+1, dtype=numpy.float64)
+                    self.sigma_eff = numpy.zeros(lastfile+1, dtype=numpy.float64)
 
                     # Normal stress
-                    sigma_def = numpy.zeros(lastfile+1, dtype=numpy.float64)
+                    self.sigma_def = numpy.zeros(lastfile+1, dtype=numpy.float64)
 
                     # Shear stress
-                    tau       = numpy.zeros(lastfile+1, dtype=numpy.float64)
+                    self.tau       = numpy.zeros(lastfile+1, dtype=numpy.float64)
 
                     # Upper wall position
-                    dilation  = numpy.zeros(lastfile+1, dtype=numpy.float64)
+                    self.dilation  = numpy.zeros(lastfile+1, dtype=numpy.float64)
 
                     # Upper wall position
-                    tau_u = 0.0             # Peak shear stress
+                    self.tau_u = 0.0             # Peak shear stress
                     # Shear strain value of peak sh. stress
-                    tau_u_shearstrain = 0.0
+                    self.tau_u_shearstrain = 0.0
 
                     fixvel = numpy.nonzero(sb.fixvel > 0.0)
                     #fixvel_upper = numpy.nonzero(sb.vel[fixvel,0] > 0.0)
@@ -4949,12 +4949,12 @@ class sim:
                 # Summation of shear stress contributions
                 for j in fixvel[0]:
                     if (sb.vel[j,0] > 0.0):
-                        tau[i] += -sb.force[j,0]
+                        self.tau[i] += -sb.force[j,0]
 
                 if (i > 0):
-                    xdisp[i]    = xdisp[i-1] + sb.time_file_dt[0] * shearvel
-                sigma_eff[i] = sb.w_force[0] / A
-                sigma_def[i] = sb.w_devs[0]
+                    self.xdisp[i] = self.xdisp[i-1] +sb.time_file_dt[0]*shearvel
+                self.sigma_eff[i] = sb.w_force[0] / A
+                self.sigma_def[i] = sb.w_devs[0]
 
                 # dilation in meters
                 #dilation[i] = sb.w_x[0] - w_x0
@@ -4967,18 +4967,20 @@ class sim:
                 if numpy.isnan(d_bar):
                     raise Exception("Error, d_bar is NaN. Please check that the"
                             + " radii are initialized.")
-                dilation[i] = (sb.w_x[0] - w_x0)/d_bar
+                self.dilation[i] = (sb.w_x[0] - w_x0)/d_bar
 
                 # Test if this was the max. shear stress
-                if (tau[i] > tau_u):
-                    tau_u = tau[i]
-                    tau_u_shearstrain = xdisp[i]/w_x0
+                if (self.tau[i] > self.tau_u):
+                    self.tau_u = tau[i]
+                    self.tau_u_shearstrain = xdisp[i]/w_x0
 
+
+            self.shear_strain = self.xdisp/self.w_x0
 
             # Plot stresses
             if (outformat != 'txt'):
                 shearinfo = "$\\tau_u$ = {:.3} Pa at $\gamma$ = {:.3}".format(\
-                        tau_u, tau_u_shearstrain)
+                        self.tau_u, self.tau_u_shearstrain)
                 fig.text(0.01, 0.01, shearinfo, horizontalalignment='left',
                          fontproperties=FontProperties(size=14))
                 ax1 = plt.subplot2grid((2,1), (0,0))
@@ -4988,7 +4990,8 @@ class sim:
                 #ax1.plot(xdisp / w_x0, sigma_eff, '+-g', label="$\sigma'$")
                 #ax1.plot(xdisp / w_x0, sigma_def, '+-b', label="$\sigma_0$")
                 #ax1.plot(xdisp / w_x0, tau, '+-r', label="$\\tau$")
-                ax1.plot(xdisp / w_x0, tau/sigma_eff, '.-', label="$\\tau$")
+                ax1.plot(self.shear_strain, self.tau/self.sigma_eff,\
+                        '.-', label="$\\tau$")
                 #ax1.legend(loc=4)
                 ax1.grid()
 
@@ -4998,7 +5001,7 @@ class sim:
                 #ax2.set_ylabel('Dilation [m]')
                 #ax2.set_ylabel('Dilation [%]')
                 ax2.set_ylabel('Dilation, $\Delta h/(2\\bar{r})$ [m]')
-                ax2.plot(xdisp/w_x0, dilation, '.-')
+                ax2.plot(self.shear_strain, self.dilation, '.-')
                 ax2.grid()
 
                 fig.tight_layout()
