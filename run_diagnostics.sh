@@ -28,6 +28,7 @@ report make test
 report cat Testing/Temporary/LastTestsFailed.log
 report cat Testing/Temporary/LastTest.log
 
+rm -f $OUTFILE
 gzip $OUTFILE
 echo "Diagnostics complete."
 echo "Report bugs and unusual behavior to anders.damsgaard@geo.au.dk."
