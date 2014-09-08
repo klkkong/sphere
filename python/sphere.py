@@ -4971,11 +4971,11 @@ class sim:
 
                 # Test if this was the max. shear stress
                 if (self.tau[i] > self.tau_u):
-                    self.tau_u = tau[i]
-                    self.tau_u_shearstrain = xdisp[i]/w_x0
+                    self.tau_u = self.tau[i]
+                    self.tau_u_shearstrain = self.xdisp[i]/w_x0
 
 
-            self.shear_strain = self.xdisp/self.w_x0
+            self.shear_strain = self.xdisp/w_x0
 
             # Plot stresses
             if (outformat != 'txt'):
