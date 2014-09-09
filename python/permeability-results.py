@@ -86,7 +86,7 @@ plt.grid()
 #plt.plot(dpdz, phi_bar, '+')
 #plt.grid()
 
-plt.legend(loc='lower left')
+plt.legend(loc='lower left', prop={'size':18})
 plt.tight_layout()
 filename = 'permeability-dpdz-vs-K-vs-c.pdf'
 #print(os.getcwd() + '/' + filename)
