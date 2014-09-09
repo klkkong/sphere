@@ -2,6 +2,8 @@
 import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams.update({'font.size': 18, 'font.family': 'serif'})
+matplotlib.rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 import shutil
 
 import os
@@ -104,7 +106,7 @@ ax3.set_xlabel('Shear strain $\\gamma$ [-]')
 
 ax1.set_ylabel('Shear friction $\\tau/\\sigma\'$ [-]')
 ax2.set_ylabel('Dilation $\\Delta h/(2r)$ [-]')
-ax3.set_ylabel('Fluid pressure $p_f$ [Pa]')
+ax3.set_ylabel('Fluid pressure $p_\\text{f}$ [Pa]')
 
 plt.setp(ax1.get_xticklabels(), visible=False)
 plt.setp(ax2.get_xticklabels(), visible=False)

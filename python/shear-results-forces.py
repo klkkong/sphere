@@ -11,6 +11,7 @@ import numpy
 import sphere
 from permeabilitycalculator import *
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 
 #steps = [5, 10, 100]
 steps = [3]
@@ -61,9 +62,12 @@ for step in steps:
 
             xdisp[s,:] += sim.xyzsum[:,0]/nsteps_avg
 
+            '''
             for i in numpy.arange(sim.np):
                 f_pf[s,i] += \
                         sim.f_sum[i].dot(sim.f_sum[i])/nsteps_avg
+                        '''
+            f_pf[s,:] += sim.f_sum[:,2]
 
             dev_p[s,:] += \
                     numpy.average(numpy.average(sim.p_f, axis=0), axis=0)\
@@ -80,9 +84,10 @@ for s in numpy.arange(len(steps)):
     ax2 = plt.subplot((s+1)*100 + 32, sharey=ax1)
     ax3 = plt.subplot((s+1)*100 + 33, sharey=ax1)
 
-    ax1.plot(xdisp[s], zpos_p[s], '.')
-    ax2.plot(f_pf[s],  zpos_p[s], '.')
-    ax3.plot(dev_p[s], zpos_c[s])
+    ax1.plot(xdisp[s], zpos_p[s], '+')
+    ax2.plot(f_pf[s],  zpos_p[s], '+')
+    ax3.plot(dev_p[s]/1000.0, zpos_c[s])
+
     max_z = numpy.max(zpos_p)
     ax1.set_ylim([0, max_z])
     ax2.set_ylim([0, max_z])
@@ -93,18 +98,27 @@ for s in numpy.arange(len(steps)):
     #plt.loglog(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
 
     ax1.set_ylabel('Vertical position $z$ [m]')
-    #ax1.set_xlabel('Horizontal particle displacement [m]')
-    #ax2.set_xlabel('Average fluid pressure $\\bar{p_f}$ [Pa]')
-    #ax3.set_xlabel('Average fluid-particle interaction force '
-            #+ '$||\\bar{\\boldsymbol{f_{pf}}}||$ [N]')
+    ax1.set_xlabel('$x^3_p$ [m]')
+    ax2.set_xlabel('$\\boldsymbol{f}_\\text{pf}$ [N]')
+    ax3.set_xlabel('$\\bar{p_\\text{f}}$ [kPa]')
     plt.setp(ax2.get_yticklabels(), visible=False)
     plt.setp(ax3.get_yticklabels(), visible=False)
+
+    ax1.get_xaxis().set_major_locator(MaxNLocator(nbins=4))
+    ax2.get_xaxis().set_major_locator(MaxNLocator(nbins=4))
+    ax3.get_xaxis().set_major_locator(MaxNLocator(nbins=4))
+
+    plt.setp(ax1.xaxis.get_majorticklabels(), rotation=90)
+    plt.setp(ax2.xaxis.get_majorticklabels(), rotation=90)
+    plt.setp(ax3.xaxis.get_majorticklabels(), rotation=90)
     #ax1.grid()
     #ax2.grid()
     #ax1.legend(loc='lower right', prop={'size':18})
     #ax2.legend(loc='lower right', prop={'size':18})
 
 plt.tight_layout()
+plt.subplots_adjust(wspace = .001)
+plt.MaxNLocator(nbins=4)
 filename = 'shear-10kPa-forces.pdf'
 plt.savefig(filename)
 shutil.copyfile(filename, '/home/adc/articles/own/2-org/' + filename)
