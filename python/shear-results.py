@@ -71,8 +71,9 @@ ax2.plot(shear_strain[0], dilation[0], label='dry')
 
 mean_diameter = numpy.mean(sim.radius)*2.0
 for c in numpy.arange(1,len(cvals)+1):
-    ax1.plot(shear_strain[c], friction[c], label='$c$ = %.2f' % (cvals[c-1]))
-    ax2.plot(shear_strain[c], dilation[c]/mean_diameter, \
+    ax1.plot(shear_strain[c][1:], friction[c][1:], \
+            label='$c$ = %.2f' % (cvals[c-1]))
+    ax2.plot(shear_strain[c][1:], dilation[c][1:]/mean_diameter, \
             label='$c$ = %.2f' % (cvals[c-1]))
     #plt.plot(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
     #plt.semilogx(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
