@@ -62,7 +62,7 @@ for sigma0 in sigma0_list:
     sim.setFluidTopFixedPressure()
     sim.setDEMstepsPerCFDstep(10)
     sim.setMaxIterations(2e5)
-    sim.initTemporal(total = 5.0, file_dt = 0.01, epsilon=0.07)
+    sim.initTemporal(total = 20.0, file_dt = 0.01, epsilon=0.07)
     sim.c_grad_p[0] = c_grad_p
     sim.c_phi[0] = c_phi
 
