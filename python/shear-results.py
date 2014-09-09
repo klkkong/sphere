@@ -63,13 +63,13 @@ fig = plt.figure(figsize=(8,8))
 
 #plt.subplot(3,1,1)
 #plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+mean_diameter = numpy.mean(sim.radius)*2.0
 
 ax1 = plt.subplot(211)
 ax2 = plt.subplot(212, sharex=ax1)
 ax1.plot(shear_strain[0], friction[0], label='dry')
 ax2.plot(shear_strain[0], dilation[0]/mean_diameter, label='dry')
 
-mean_diameter = numpy.mean(sim.radius)*2.0
 for c in numpy.arange(1,len(cvals)+1):
     ax1.plot(shear_strain[c][1:], friction[c][1:], \
             label='$c$ = %.2f' % (cvals[c-1]))
@@ -83,8 +83,8 @@ ax2.set_xlabel('Shear strain [-]')
 ax1.set_ylabel('Shear friction $\\tau/\\sigma\'$ [-]')
 ax2.set_ylabel('Dilation $\\Delta h/(2r)$ [-]')
 plt.setp(ax1.get_xticklabels(), visible=False)
-ax1.grid()
-ax2.grid()
+#ax1.grid()
+#ax2.grid()
 ax1.legend(loc='lower right', prop={'size':18})
 ax2.legend(loc='lower right', prop={'size':18})
 
