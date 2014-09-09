@@ -39,15 +39,13 @@ sim.cleanup()
 sim.adjustUpperWall()
 sim.zeroKinematics()
 
-strainrate = 1.0/20.0
-if fluid:
-    sim.shear(strainrate, z_adjust=2.0)
-else:
-    sim.shear(strainrate, z_adjust=1.5)
+sim.shear(1.0/20.0, z_adjust=2.0)
 
 if fluid:
     sim.initFluid(mu = 1.787e-6, p = 1.0e5, hydrostatic = True)
     #sim.initFluid(mu = 17.87e-4, p = 1.0e5, hydrostatic = True)
+    sim.num[2] *= 2
+    sim.L[2] *= 2.0
 sim.setFluidBottomNoFlow()
 sim.setFluidTopFixedPressure()
 sim.setDEMstepsPerCFDstep(10)
