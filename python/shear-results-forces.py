@@ -82,17 +82,21 @@ for s in numpy.arange(len(steps)):
 
     ax1.plot(xdisp[s], zpos_p[s], '.')
     ax2.plot(f_pf[s],  zpos_p[s], '.')
-    ax3.plot(dev_p[s], zpos_c[s], '.')
+    ax3.plot(dev_p[s], zpos_c[s])
+    max_z = numpy.max(zpos_p)
+    ax1.set_ylim([0, max_z])
+    ax2.set_ylim([0, max_z])
+    ax3.set_ylim([0, max_z])
     #plt.plot(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
     #plt.semilogx(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
     #plt.semilogy(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
     #plt.loglog(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
 
     ax1.set_ylabel('Vertical position $z$ [m]')
-    ax1.set_xlabel('Horizontal particle displacement [m]')
-    ax2.set_xlabel('Average fluid pressure $\\bar{p_f}$ [Pa]')
-    ax3.set_xlabel('Average fluid-particle interaction force '
-            + '$||\\bar{\\boldsymbol{f_{pf}}}||$ [N]')
+    #ax1.set_xlabel('Horizontal particle displacement [m]')
+    #ax2.set_xlabel('Average fluid pressure $\\bar{p_f}$ [Pa]')
+    #ax3.set_xlabel('Average fluid-particle interaction force '
+            #+ '$||\\bar{\\boldsymbol{f_{pf}}}||$ [N]')
     plt.setp(ax2.get_yticklabels(), visible=False)
     plt.setp(ax3.get_yticklabels(), visible=False)
     #ax1.grid()
