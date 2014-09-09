@@ -39,7 +39,11 @@ sim.cleanup()
 sim.adjustUpperWall()
 sim.zeroKinematics()
 
-sim.shear(1.0/20.0)
+strainrate = 1.0/20.0
+if fluid:
+    sim.shear(strainrate, z_adjust=2.0)
+else:
+    sim.shear(strainrate, z_adjust=1.5)
 
 if fluid:
     sim.initFluid(mu = 1.787e-6, p = 1.0e5, hydrostatic = True)
