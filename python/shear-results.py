@@ -67,7 +67,7 @@ fig = plt.figure(figsize=(8,8))
 ax1 = plt.subplot(211)
 ax2 = plt.subplot(212, sharex=ax1)
 ax1.plot(shear_strain[0], friction[0], label='dry')
-ax2.plot(shear_strain[0], dilation[0], label='dry')
+ax2.plot(shear_strain[0], dilation[0]/mean_diameter, label='dry')
 
 mean_diameter = numpy.mean(sim.radius)*2.0
 for c in numpy.arange(1,len(cvals)+1):
