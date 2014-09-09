@@ -63,17 +63,16 @@ fig = plt.figure(figsize=(8,8))
 
 #plt.subplot(3,1,1)
 #plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-mean_diameter = numpy.mean(sim.radius)*2.0
 
 ax1 = plt.subplot(211)
 ax2 = plt.subplot(212, sharex=ax1)
 ax1.plot(shear_strain[0], friction[0], label='dry')
-ax2.plot(shear_strain[0], dilation[0]/mean_diameter, label='dry')
+ax2.plot(shear_strain[0], dilation[0], label='dry')
 
 for c in numpy.arange(1,len(cvals)+1):
     ax1.plot(shear_strain[c][1:], friction[c][1:], \
             label='$c$ = %.2f' % (cvals[c-1]))
-    ax2.plot(shear_strain[c][1:], dilation[c][1:]/mean_diameter, \
+    ax2.plot(shear_strain[c][1:], dilation[c][1:], \
             label='$c$ = %.2f' % (cvals[c-1]))
     #plt.plot(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
     #plt.semilogx(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
