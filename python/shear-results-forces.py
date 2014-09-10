@@ -15,8 +15,8 @@ from matplotlib.ticker import MaxNLocator
 
 #steps = [5, 10, 100]
 #steps = [5, 10]
-steps = [sys.argv[1]]
-nsteps_avg = 1 # no. of steps to average over
+steps = sys.argv[1:]
+nsteps_avg = 3 # no. of steps to average over
 
 sigma0 = 10.0e3
 c_grad_p = 1.0
@@ -55,16 +55,18 @@ f_pf_mean = numpy.zeros((len(steps), sim.num[2]))
 shear_strain = numpy.zeros(len(steps))
 
 s = 0
-for step in steps:
+for step_str in steps:
+
+    step = int(step_str)
 
     if os.path.isfile('../output/' + sid + '.status.dat'):
 
-        if step > sim.status():
-            raise Exception(
-                    'Simulation step %d not available (sim.status = %d).'
-                    % (step, sim.status()))
-
         for substep in numpy.arange(nsteps_avg):
+
+            if step + substep > sim.status():
+                raise Exception(
+                        'Simulation step %d not available (sim.status = %d).'
+                        % (step, sim.status()))
 
             sim.readstep(step + substep, verbose=False)
 
@@ -104,53 +106,59 @@ for step in steps:
 
 fig = plt.figure(figsize=(8,4*(len(steps))+1))
 
+ax = []
 for s in numpy.arange(len(steps)):
-    ax1 = plt.subplot((s+1)*100 + 31)
-    ax2 = plt.subplot((s+1)*100 + 32, sharey=ax1)
-    ax3 = plt.subplot((s+1)*100 + 33, sharey=ax1)
-    ax4 = ax3.twiny()
 
-    ax1.plot(xdisp[s], zpos_p[s], ',', color = '#888888')
-    ax1.plot(xdisp_mean[s], zpos_c[s], color = 'k')
+    ax.append(plt.subplot(len(steps)*100 + 31 + s*3))
+    ax.append(plt.subplot(len(steps)*100 + 32 + s*3, sharey=ax[s*4+0]))
+    ax.append(plt.subplot(len(steps)*100 + 33 + s*3, sharey=ax[s*4+0]))
+    ax.append(ax[s*4+2].twiny())
 
-    ax2.plot(f_pf[s],  zpos_p[s], ',', color = '#888888')
-    ax2.plot(f_pf_mean[s], zpos_c[s], color = 'k')
+    ax[s*4+0].plot(xdisp[s], zpos_p[s], ',', color = '#888888')
+    ax[s*4+0].plot(xdisp_mean[s], zpos_c[s], color = 'k')
 
-    ax3.plot(dev_p[s]/1000.0, zpos_c[s], 'k')
+    ax[s*4+1].plot(f_pf[s],  zpos_p[s], ',', color = '#888888')
+    ax[s*4+1].plot(f_pf_mean[s], zpos_c[s], color = 'k')
+
+    ax[s*4+2].plot(dev_p[s]/1000.0, zpos_c[s], 'k')
 
     phicolor = '#888888'
-    ax4.plot(phi_bar[s], zpos_c[s], '--', color = phicolor)
-    for tl in ax4.get_xticklabels():
+    ax[s*4+3].plot(phi_bar[s], zpos_c[s], '-', color = phicolor)
+    for tl in ax[s*4+3].get_xticklabels():
         tl.set_color(phicolor)
 
     max_z = numpy.max(zpos_p)
-    ax1.set_ylim([0, max_z])
-    ax2.set_ylim([0, max_z])
-    ax3.set_ylim([0, max_z])
+    ax[s*4+0].set_ylim([0, max_z])
+    ax[s*4+1].set_ylim([0, max_z])
+    ax[s*4+2].set_ylim([0, max_z])
     #plt.plot(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
     #plt.semilogx(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
     #plt.semilogy(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
     #plt.loglog(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
 
-    ax1.set_ylabel('Vertical position $z$ [m]')
-    ax1.set_xlabel('$x^3_\\text{p}$ [m]')
-    ax2.set_xlabel('$\\boldsymbol{f}_\\text{pf}$ [N]')
-    ax3.set_xlabel('$\\bar{p_\\text{f}}$ [kPa]')
-    ax4.set_xlabel('$\\bar{\\phi}$ [-]', color=phicolor)
-    plt.setp(ax2.get_yticklabels(), visible=False)
-    plt.setp(ax3.get_yticklabels(), visible=False)
+    ax[s*4+0].set_ylabel('Vertical position $z$ [m]')
+    ax[s*4+0].set_xlabel('$x^3_\\text{p}$ [m]')
+    ax[s*4+1].set_xlabel('$\\boldsymbol{f}_\\text{pf}$ [N]')
+    ax[s*4+2].set_xlabel('$\\bar{p_\\text{f}}$ [kPa]')
+    ax[s*4+3].set_xlabel('$\\bar{\\phi}$ [-]', color=phicolor)
+    plt.setp(ax[s*4+1].get_yticklabels(), visible=False)
+    plt.setp(ax[s*4+2].get_yticklabels(), visible=False)
 
-    ax1.get_xaxis().set_major_locator(MaxNLocator(nbins=5))
-    ax2.get_xaxis().set_major_locator(MaxNLocator(nbins=5))
-    ax3.get_xaxis().set_major_locator(MaxNLocator(nbins=5))
+    ax[s*4+0].get_xaxis().set_major_locator(MaxNLocator(nbins=5))
+    ax[s*4+1].get_xaxis().set_major_locator(MaxNLocator(nbins=5))
+    ax[s*4+2].get_xaxis().set_major_locator(MaxNLocator(nbins=5))
 
-    plt.setp(ax1.xaxis.get_majorticklabels(), rotation=90)
-    plt.setp(ax2.xaxis.get_majorticklabels(), rotation=90)
-    plt.setp(ax3.xaxis.get_majorticklabels(), rotation=90)
-    plt.setp(ax4.xaxis.get_majorticklabels(), rotation=90)
+    plt.setp(ax[s*4+0].xaxis.get_majorticklabels(), rotation=90)
+    plt.setp(ax[s*4+1].xaxis.get_majorticklabels(), rotation=90)
+    plt.setp(ax[s*4+2].xaxis.get_majorticklabels(), rotation=90)
+    plt.setp(ax[s*4+3].xaxis.get_majorticklabels(), rotation=90)
 
-    fig.text(0.1, 0.9,
-            'Shear strain $\\gamma = %.3f$' % (shear_strain[s]),
+    if s == 0:
+        y = 0.95
+    if s == 1:
+        y = 0.55
+
+    fig.text(0.1, y, 'Shear strain $\\gamma = %.3f$' % (shear_strain[s]),
             horizontalalignment='left', fontsize=22)
     #ax1.grid()
     #ax2.grid()
@@ -160,6 +168,7 @@ for s in numpy.arange(len(steps)):
 plt.tight_layout()
 plt.subplots_adjust(wspace = .05)
 plt.MaxNLocator(nbins=4)
+
 filename = 'shear-10kPa-forces.pdf'
 plt.savefig(filename)
 shutil.copyfile(filename, '/home/adc/articles/own/2-org/' + filename)
