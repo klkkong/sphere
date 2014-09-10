@@ -14,7 +14,8 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
 #steps = [5, 10, 100]
-steps = [3]
+#steps = [5, 10]
+steps = [sys.argv[1]]
 nsteps_avg = 1 # no. of steps to average over
 
 sigma0 = 10.0e3
@@ -101,7 +102,7 @@ for step in steps:
         print(sid + ' not found')
     s += 1
 
-fig = plt.figure(figsize=(8,4*(len(steps))))
+fig = plt.figure(figsize=(8,4*(len(steps))+1))
 
 for s in numpy.arange(len(steps)):
     ax1 = plt.subplot((s+1)*100 + 31)
@@ -109,15 +110,15 @@ for s in numpy.arange(len(steps)):
     ax3 = plt.subplot((s+1)*100 + 33, sharey=ax1)
     ax4 = ax3.twiny()
 
-    ax1.plot(xdisp[s], zpos_p[s], '+', color = '#888888')
+    ax1.plot(xdisp[s], zpos_p[s], ',', color = '#888888')
     ax1.plot(xdisp_mean[s], zpos_c[s], color = 'k')
 
-    ax2.plot(f_pf[s],  zpos_p[s], '+', color = '#888888')
+    ax2.plot(f_pf[s],  zpos_p[s], ',', color = '#888888')
     ax2.plot(f_pf_mean[s], zpos_c[s], color = 'k')
 
     ax3.plot(dev_p[s]/1000.0, zpos_c[s], 'k')
 
-    phicolor = '#666666'
+    phicolor = '#888888'
     ax4.plot(phi_bar[s], zpos_c[s], '--', color = phicolor)
     for tl in ax4.get_xticklabels():
         tl.set_color(phicolor)
