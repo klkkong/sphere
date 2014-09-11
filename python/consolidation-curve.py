@@ -34,15 +34,16 @@ for c_grad_p in c_grad_p_list:
 
     if os.path.isfile('../output/' + sid + '.status.dat'):
         sim = sphere.sim(sid, fluid=True)
-        t[c] = numpy.ones(sim.status())
-        H[c] = numpy.ones(sim.status())
+        t[c] = numpy.ones(sim.status()-1)
+        H[c] = numpy.ones(sim.status()-1)
 
         #sim.visualize('walls')
         #sim.writeVTKall()
 
         #sim.plotLoadCurve()
         #sim.readfirst(verbose=True)
-        for i in numpy.arange(1, sim.status()+1):
+        #for i in numpy.arange(1, sim.status()+1):
+        for i in numpy.arange(1, sim.status()):
             sim.readstep(i, verbose=False)
             t[c][i-1] = sim.time_current[0]
             H[c][i-1] = sim.w_x[0]
@@ -92,11 +93,11 @@ plt.ylabel('Thickness change [m]')
 #plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 #for c in range(len(c_grad_p_list)):
     #H[c] /= -min_H_c
-plt.semilogx(t[0], H[1], '-', label='$c$ = %.2f' % (c_grad_p_list[c]))
-plt.semilogx(t[1], H[0], '--', label='$c$ = %.2f' % (c_grad_p_list[c]))
+plt.semilogx(t[0], H[0], '-k', label='$c$ = %.2f' % (c_grad_p_list[0]))
+plt.semilogx(t[1], H[1], '--k', label='$c$ = %.2f' % (c_grad_p_list[1]))
 #plt.grid()
 
-plt.legend(loc=0, prop={'size':18})
+plt.legend(loc='best', prop={'size':18}, fancybox=True, framealpha=0.5)
 plt.tight_layout()
 filename = 'cons-curves.pdf'
 plt.savefig(filename)
