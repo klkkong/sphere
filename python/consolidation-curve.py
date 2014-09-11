@@ -90,10 +90,11 @@ plt.xlabel('Time [s]')
 #plt.ylabel('Normalized thickness change [-]')
 plt.ylabel('Thickness change [m]')
 #plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-for c in range(len(c_grad_p_list)):
+#for c in range(len(c_grad_p_list)):
     #H[c] /= -min_H_c
-    plt.semilogx(t[c], H[c], '-', label='$c$ = %.2f' % (c_grad_p_list[c]))
-plt.grid()
+plt.semilogx(t[0], H[1], '-', label='$c$ = %.2f' % (c_grad_p_list[c]))
+plt.semilogx(t[1], H[0], '--', label='$c$ = %.2f' % (c_grad_p_list[c]))
+#plt.grid()
 
 plt.legend(loc=0, prop={'size':18})
 plt.tight_layout()

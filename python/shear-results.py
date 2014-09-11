@@ -29,7 +29,7 @@ fluid=True
 # dry shear
 sid = 'shear-sigma0=' + str(10.0e3)
 sim = sphere.sim(sid)
-sim.readlast()
+sim.readlast(verbose=False)
 sim.visualize('shear')
 shear_strain[0] = sim.shear_strain
 friction[0] = sim.tau/sim.sigma_eff
@@ -50,7 +50,7 @@ for c in numpy.arange(1,len(cvals)+1):
         friction[c] = numpy.zeros_like(shear_strain[c])
         dilation[c] = numpy.zeros_like(shear_strain[c])
 
-        sim.readlast()
+        sim.readlast(verbose=False)
         sim.visualize('shear')
         shear_strain[c] = sim.shear_strain
         friction[c] = sim.tau/sim.sigma_eff
@@ -64,7 +64,7 @@ for c in numpy.arange(1,len(cvals)+1):
             iz_top = int(sim.w_x[0]/(sim.L[2]/sim.num[2]))-1
             p_mean[c][i] = numpy.mean(sim.p_f[:,:,0:iz_top])
             p_min[c][i] = numpy.min(sim.p_f[:,:,0:iz_top])
-            p_max[c][i] = numpy.min(sim.p_f[:,:,0:iz_top])
+            p_max[c][i] = numpy.max(sim.p_f[:,:,0:iz_top])
 
     else:
         print(sid + ' not found')
@@ -97,16 +97,16 @@ for c in numpy.arange(1,len(cvals)+1):
     ax2.plot(shear_strain[c][1:], dilation[c][1:], \
             label='$c$ = %.2f' % (cvals[c-1]))
 
-    ax3.plot(shear_strain[c][1:], p_max[c][1:], '--' + color[c])
-    ax3.plot(shear_strain[c][1:], p_mean[c][1:], '-' + color[c], \
+    ax3.plot(shear_strain[c][1:], p_max[c][1:]/1000, '--' + color[c])
+    ax3.plot(shear_strain[c][1:], p_mean[c][1:]/1000, '-' + color[c], \
             label='$c$ = %.2f' % (cvals[c-1]))
-    ax3.plot(shear_strain[c][1:], p_min[c][1:], '--' + color[c])
+    ax3.plot(shear_strain[c][1:], p_min[c][1:]/1000, '--' + color[c])
 
 ax3.set_xlabel('Shear strain $\\gamma$ [-]')
 
 ax1.set_ylabel('Shear friction $\\tau/\\sigma\'$ [-]')
 ax2.set_ylabel('Dilation $\\Delta h/(2r)$ [-]')
-ax3.set_ylabel('Fluid pressure $p_\\text{f}$ [Pa]')
+ax3.set_ylabel('Fluid pressure $p_\\text{f}$ [kPa]')
 
 plt.setp(ax1.get_xticklabels(), visible=False)
 plt.setp(ax2.get_xticklabels(), visible=False)

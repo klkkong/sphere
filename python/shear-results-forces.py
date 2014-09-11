@@ -16,7 +16,7 @@ from matplotlib.ticker import MaxNLocator
 #steps = [5, 10, 100]
 #steps = [5, 10]
 steps = sys.argv[1:]
-nsteps_avg = 3 # no. of steps to average over
+nsteps_avg = 5 # no. of steps to average over
 
 sigma0 = 10.0e3
 c_grad_p = 1.0
@@ -119,13 +119,16 @@ for s in numpy.arange(len(steps)):
 
     ax[s*4+1].plot(f_pf[s],  zpos_p[s], ',', color = '#888888')
     ax[s*4+1].plot(f_pf_mean[s], zpos_c[s], color = 'k')
+    ax[s*4+1].plot([0.0, 0.0], [0.0, sim.L[2]], '--', color='k')
 
     ax[s*4+2].plot(dev_p[s]/1000.0, zpos_c[s], 'k')
 
-    phicolor = '#888888'
-    ax[s*4+3].plot(phi_bar[s], zpos_c[s], '-', color = phicolor)
-    for tl in ax[s*4+3].get_xticklabels():
-        tl.set_color(phicolor)
+    #phicolor = '#888888'
+    #ax[s*4+3].plot(phi_bar[s], zpos_c[s], '-', color = phicolor)
+    #for tl in ax[s*4+3].get_xticklabels():
+        #tl.set_color(phicolor)
+    ax[s*4+3].plot(phi_bar[s,1:], zpos_c[s,1:], '-k', linewidth=3)
+    ax[s*4+3].plot(phi_bar[s,1:], zpos_c[s,1:], '-w', linewidth=2)
 
     max_z = numpy.max(zpos_p)
     ax[s*4+0].set_ylim([0, max_z])
@@ -137,10 +140,11 @@ for s in numpy.arange(len(steps)):
     #plt.loglog(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
 
     ax[s*4+0].set_ylabel('Vertical position $z$ [m]')
-    ax[s*4+0].set_xlabel('$x^3_\\text{p}$ [m]')
-    ax[s*4+1].set_xlabel('$\\boldsymbol{f}_\\text{pf}$ [N]')
+    ax[s*4+0].set_xlabel('$\\boldsymbol{x}^x_\\text{p}$ [m]')
+    ax[s*4+1].set_xlabel('$\\boldsymbol{f}^z_\\text{pf}$ [N]')
     ax[s*4+2].set_xlabel('$\\bar{p_\\text{f}}$ [kPa]')
-    ax[s*4+3].set_xlabel('$\\bar{\\phi}$ [-]', color=phicolor)
+    #ax[s*4+3].set_xlabel('$\\bar{\\phi}$ [-]', color=phicolor)
+    ax[s*4+3].set_xlabel('$\\bar{\\phi}$ [-]')
     plt.setp(ax[s*4+1].get_yticklabels(), visible=False)
     plt.setp(ax[s*4+2].get_yticklabels(), visible=False)
 
@@ -153,13 +157,19 @@ for s in numpy.arange(len(steps)):
     plt.setp(ax[s*4+2].xaxis.get_majorticklabels(), rotation=90)
     plt.setp(ax[s*4+3].xaxis.get_majorticklabels(), rotation=90)
 
-    if s == 0:
-        y = 0.95
-    if s == 1:
-        y = 0.55
+    #if s == 0:
+        #y = 0.95
+    #if s == 1:
+        #y = 0.55
 
-    fig.text(0.1, y, 'Shear strain $\\gamma = %.3f$' % (shear_strain[s]),
-            horizontalalignment='left', fontsize=22)
+    strain_str = 'Shear strain $\\gamma = %.3f$' % (shear_strain[s])
+    #fig.text(0.1, y, strain_str, horizontalalignment='left', fontsize=22)
+    #ax[s*4+0].annotate(strain_str, xytext=(0,1.1), textcoords='figure fraction',
+            #horizontalalignment='left', fontsize=22)
+    plt.text(0.05, 1.06, strain_str, horizontalalignment='left', fontsize=22,
+            transform=ax[s*4+0].transAxes)
+    #ax[s*4+0].set_title(strain_str)
+
     #ax1.grid()
     #ax2.grid()
     #ax1.legend(loc='lower right', prop={'size':18})
