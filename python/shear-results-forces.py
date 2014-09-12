@@ -15,10 +15,10 @@ from matplotlib.ticker import MaxNLocator
 
 #steps = [5, 10, 100]
 #steps = [5, 10]
-steps = sys.argv[1:]
+steps = sys.argv[2:]
 nsteps_avg = 5 # no. of steps to average over
 
-sigma0 = 10.0e3
+sigma0 = float(sys.argv[1])
 c_grad_p = 1.0
 c_phi = 1.0
 
@@ -179,7 +179,7 @@ plt.tight_layout()
 plt.subplots_adjust(wspace = .05)
 plt.MaxNLocator(nbins=4)
 
-filename = 'shear-10kPa-forces.pdf'
+filename = 'shear-' + str(int(sigma0/1000.0)) + 'kPa-forces.pdf'
 plt.savefig(filename)
 shutil.copyfile(filename, '/home/adc/articles/own/2-org/' + filename)
 print(filename)

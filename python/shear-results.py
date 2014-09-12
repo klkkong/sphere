@@ -7,13 +7,15 @@ matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 import shutil
 
 import os
+import sys
 import numpy
 import sphere
 from permeabilitycalculator import *
 import matplotlib.pyplot as plt
 
 #sigma0_list = numpy.array([1.0e3, 2.0e3, 4.0e3, 10.0e3, 20.0e3, 40.0e3])
-sigma0 = 10.0e3
+#sigma0 = 10.0e3
+sigma0 = float(sys.argv[1])
 #cvals = [1.0, 0.1]
 cvals = [1.0]
 c_phi = 1.0
@@ -28,7 +30,7 @@ p_max = [[], [], []]
 fluid=True
 
 # dry shear
-sid = 'shear-sigma0=' + str(10.0e3)
+sid = 'shear-sigma0=' + sys.argv[1]
 sim = sphere.sim(sid)
 sim.readlast(verbose=False)
 sim.visualize('shear')
@@ -129,7 +131,7 @@ ax3.legend(loc='lower right', prop={'size':18}, fancybox=True,
         framealpha=legend_alpha)
 
 plt.tight_layout()
-filename = 'shear-10kPa-stress-dilation.pdf'
+filename = 'shear-' + str(int(sigma0/1000.0)) + 'kPa-stress-dilation.pdf'
 #print(os.getcwd() + '/' + filename)
 plt.savefig(filename)
 shutil.copyfile(filename, '/home/adc/articles/own/2-org/' + filename)

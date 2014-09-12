@@ -2,6 +2,8 @@
 import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams.update({'font.size': 18, 'font.family': 'serif'})
+matplotlib.rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 import shutil
 
 import os
@@ -18,6 +20,7 @@ K = [[], [], []]
 dpdz = [[], [], []]
 Q = [[], [], []]
 phi_bar = [[], [], []]
+Re = [[], [], []]
 
 
 c = 0
@@ -35,6 +38,7 @@ for c_grad_p in cvals:
     dpdz[c] = numpy.zeros_like(K[c])
     Q[c] = numpy.zeros_like(K[c])
     phi_bar[c] = numpy.zeros_like(K[c])
+    Re[c] = numpy.zeros_like(K[c])
     i = 0
 
     for sid in sids:
@@ -49,6 +53,10 @@ for c_grad_p in cvals:
             pc.findMeanPorosity()
             #pc.plotEvolution()
             phi_bar[c][i] = pc.phi_bar
+
+            sim = sphere.sim(sid, fluid=True)
+            sim.readlast(verbose=False)
+            Re[c][i] = numpy.mean(sim.ReynoldsNumber())
         else:
             print(sid + ' not found')
 
@@ -60,19 +68,38 @@ for c_grad_p in cvals:
         #sim.writeVTKall()
     c += 1
 
-fig = plt.figure()
+fig = plt.figure(figsize=(8,12))
 
-#plt.subplot(3,1,1)
-plt.xlabel('Pressure gradient $\\Delta p/\\Delta z$ [kPa m$^{-1}$]')
-plt.ylabel('Hydraulic conductivity $K$ [ms$^{-1}$]')
-plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+ax1 = plt.subplot(3,1,1)
+ax2 = plt.subplot(3,1,2, sharex=ax1)
+ax3 = plt.subplot(3,1,3, sharex=ax1)
+lines = ['-', '--', '-.', ':']
+markers = ['o', 'x', '^', '+']
 for c in range(len(cvals)):
     dpdz[c] /= 1000.0
     #plt.plot(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
     #plt.semilogx(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
     #plt.semilogy(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
-    plt.loglog(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
-plt.grid()
+    ax1.loglog(dpdz[c], K[c], label='$c$ = %.2f' % (cvals[c]),
+            linestyle=lines[c], marker=markers[c], color='black')
+    ax2.semilogx(dpdz[c], phi_bar[c], label='$c$ = %.2f' % (cvals[c]),
+            linestyle=lines[c], marker=markers[c], color='black')
+    ax3.loglog(dpdz[c], Re[c], label='$c$ = %.2f' % (cvals[c]),
+            linestyle=lines[c], marker=markers[c], color='black')
+
+ax1.set_ylabel('Hydraulic conductivity $K$ [ms$^{-1}$]')
+#ax1.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+
+ax2.set_ylabel('Mean porosity $\\bar{\\phi}$ [-]')
+
+ax3.set_ylabel('Mean Reynolds number $\\bar{Re}$ [-]')
+
+ax3.set_xlabel('Pressure gradient $\\Delta p/\\Delta z$ [kPa m$^{-1}$]')
+plt.setp(ax1.get_xticklabels(), visible=False)
+
+ax1.grid()
+ax2.grid()
+ax3.grid()
 
 #plt.subplot(3,1,2)
 #plt.xlabel('Pressure gradient $\\Delta p/\\Delta z$ [Pa m$^{-1}$]')
@@ -86,7 +113,10 @@ plt.grid()
 #plt.plot(dpdz, phi_bar, '+')
 #plt.grid()
 
-plt.legend(loc='lower left', prop={'size':18}, fancybox=True, framealpha=0.5)
+ax1.legend(loc='best', prop={'size':18}, fancybox=True, framealpha=0.5)
+ax2.legend(loc='best', prop={'size':18}, fancybox=True, framealpha=0.5)
+ax3.legend(loc='best', prop={'size':18}, fancybox=True, framealpha=0.5)
+
 plt.tight_layout()
 filename = 'permeability-dpdz-vs-K-vs-c.pdf'
 #print(os.getcwd() + '/' + filename)

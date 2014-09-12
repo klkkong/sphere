@@ -4387,6 +4387,24 @@ class sim:
         plt.clf()
         plt.close(fig)
 
+    def ReynoldsNumber(self):
+        '''
+        Estimate the per-cell Reynolds number by: Re = rho * ||v_f|| * dx/mu
+
+        :returns: Reynolds number
+        :return type: Numpy array with dimensions like the fluid grid
+        '''
+
+        # find magnitude of fluid velocity vectors
+        self.v_f_magn = numpy.empty_like(self.p_f)
+        for z in numpy.arange(self.num[2]):
+            for y in numpy.arange(self.num[1]):
+                for x in numpy.arange(self.num[0]):
+                    self.v_f_magn = self.v_f[x,y,z,:].dot(self.v_f[x,y,z,:])
+
+        self.Re = self.rho_f*self.v_f_magn*self.L[0]/self.num[0]/self.mu
+        return self.Re
+
     def plotLoadCurve(self, graphics_format='png'):
         '''
         Plot the load curve (log time vs. upper wall movement).  The plot is

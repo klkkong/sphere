@@ -53,12 +53,14 @@ ax1.set_ylabel('Hydraulic diffusivity $\\alpha$ [m$^2$s$^{-1}$]')
 #ax1.grid()
 
 ax2 = ax1.twinx()
-color = 'b'
-ax2.plot(load, phi_bar, 'o--' + color)
-ax2.set_ylabel('Mean porosity $\\bar{\\phi}$ [-]', color=color)
+#color = 'black'
+#ax2.plot(load, phi_bar, 'o--' + color)
+ax2.plot(load, phi_bar, 'o--', color='black')
+ax2.set_ylabel('Mean porosity $\\bar{\\phi}$ [-]')
+#ax2.set_ylabel('Mean porosity $\\bar{\\phi}$ [-]', color=color)
 ax2.get_yaxis().get_major_formatter().set_useOffset(False)
-for tl in ax2.get_yticklabels():
-    tl.set_color(color)
+#for tl in ax2.get_yticklabels():
+    #tl.set_color(color)
 
 filename = 'diffusivity-sigma0-vs-alpha.pdf'
 plt.tight_layout()
