@@ -21,6 +21,7 @@ dpdz = [[], [], []]
 Q = [[], [], []]
 phi_bar = [[], [], []]
 Re = [[], [], []]
+fp_fsum = [[], [], []]
 
 
 c = 0
@@ -39,12 +40,13 @@ for c_grad_p in cvals:
     Q[c] = numpy.zeros_like(K[c])
     phi_bar[c] = numpy.zeros_like(K[c])
     Re[c] = numpy.zeros_like(K[c])
+    fp_fsum[c] = numpy.zeros_like(K[c])
     i = 0
 
     for sid in sids:
         if os.path.isfile('../output/' + sid + '.status.dat'):
-            pc = PermeabilityCalc(sid, plot_evolution=False, print_results=False,
-                    verbose=False)
+            pc = PermeabilityCalc(sid, plot_evolution=False,
+                    print_results=False, verbose=False)
             K[c][i] = pc.conductivity()
             pc.findPressureGradient()
             pc.findCrossSectionalFlux()
@@ -57,6 +59,20 @@ for c_grad_p in cvals:
             sim = sphere.sim(sid, fluid=True)
             sim.readlast(verbose=False)
             Re[c][i] = numpy.mean(sim.ReynoldsNumber())
+
+            # find magnitude of fluid pressure force and total interaction force
+            '''
+            fp_magn = numpy.empty(sim.np)
+            fsum_magn = numpy.empty(sim.np)
+            for i in numpy.arange(sim.np):
+                fp_magn[i] = sim.f_p[i,:].dot(sim.f_p[i,:])
+                fsum_magn[i] = sim.f_sum[i,:].dot(sim.f_sum[i,:])
+
+            fp_fsum[c][i] = numpy.mean(fp_magn/fsum_magn)
+            # interaction forces not written in these old output files!
+            '''
+
+
         else:
             print(sid + ' not found')
 
@@ -73,6 +89,7 @@ fig = plt.figure(figsize=(8,12))
 ax1 = plt.subplot(3,1,1)
 ax2 = plt.subplot(3,1,2, sharex=ax1)
 ax3 = plt.subplot(3,1,3, sharex=ax1)
+#ax4 = plt.subplot(4,1,4, sharex=ax1)
 lines = ['-', '--', '-.', ':']
 markers = ['o', 'x', '^', '+']
 for c in range(len(cvals)):
@@ -86,6 +103,8 @@ for c in range(len(cvals)):
             linestyle=lines[c], marker=markers[c], color='black')
     ax3.loglog(dpdz[c], Re[c], label='$c$ = %.2f' % (cvals[c]),
             linestyle=lines[c], marker=markers[c], color='black')
+    #ax4.loglog(dpdz[c], fp_fsum[c], label='$c$ = %.2f' % (cvals[c]),
+            #linestyle=lines[c], marker=markers[c], color='black')
 
 ax1.set_ylabel('Hydraulic conductivity $K$ [ms$^{-1}$]')
 #ax1.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
@@ -94,12 +113,17 @@ ax2.set_ylabel('Mean porosity $\\bar{\\phi}$ [-]')
 
 ax3.set_ylabel('Mean Reynolds number $\\bar{Re}$ [-]')
 
+#ax4.set_ylabel('$\\bar{\\boldsymbol{f}_{\\Delta p}/\\bar{\\boldsymbol{f}_\\text{pf}}$ [-]')
+
 ax3.set_xlabel('Pressure gradient $\\Delta p/\\Delta z$ [kPa m$^{-1}$]')
+
 plt.setp(ax1.get_xticklabels(), visible=False)
+plt.setp(ax2.get_xticklabels(), visible=False)
 
 ax1.grid()
 ax2.grid()
 ax3.grid()
+#ax4.grid()
 
 #plt.subplot(3,1,2)
 #plt.xlabel('Pressure gradient $\\Delta p/\\Delta z$ [Pa m$^{-1}$]')
