@@ -2729,8 +2729,8 @@ class sim:
         self.bc_top[0] = 0
 
     def defaultParams(self,
-            mu_s = 0.4,
-            mu_d = 0.4,
+            mu_s = 0.5,
+            mu_d = 0.5,
             mu_r = 0.0,
             rho = 2600,
             k_n = 1.16e9,
