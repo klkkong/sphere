@@ -30,7 +30,7 @@ p_max = [[], [], []]
 fluid=True
 
 # dry shear
-sid = 'shear-sigma0=' + sys.argv[1]
+sid = 'shear-sigma0=' + sys.argv[1] + '-hw'
 sim = sphere.sim(sid)
 sim.readlast(verbose=False)
 sim.visualize('shear')
@@ -45,7 +45,7 @@ for c in numpy.arange(1,len(cvals)+1):
 
     sid = 'shear-sigma0=' + str(sigma0) + '-c_phi=' + \
                     str(c_phi) + '-c_grad_p=' + str(c_grad_p) + \
-                    '-hi_mu-lo_visc'
+                    '-hi_mu-lo_visc-hw'
     if os.path.isfile('../output/' + sid + '.status.dat'):
 
         sim = sphere.sim(sid, fluid=fluid)
