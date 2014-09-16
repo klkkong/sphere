@@ -626,6 +626,16 @@ class sim:
         # All equal
         return 0
 
+    def id(self, sid):
+        '''
+        Set the simulation id/name, which will be used to identify simulation
+        files in the output folders.
+
+        :param sid: The desired simulation id
+        :type sid: str
+        '''
+        self.sid = sid
+
     def addParticle(self,
             x,
             radius,
