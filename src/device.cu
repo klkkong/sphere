@@ -1500,7 +1500,8 @@ __host__ void DEM::startTime()
                             ns.bc_bot,
                             ns.bc_top,
                             ns.theta,
-                            wall0_iz);
+                            wall0_iz,
+                            dp_dz);
                     cudaThreadSynchronize();
                     if (PROFILING == 1)
                         stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
@@ -1508,7 +1509,7 @@ __host__ void DEM::startTime()
                     checkForCudaErrorsIter("Post jacobiIterationNS", iter);
 
                     // set Dirichlet and Neumann BC at cells containing top wall
-                    if (walls.nw > 0 && walls.wmode[0] == 1) {
+                    /*if (walls.nw > 0 && walls.wmode[0] == 1) {
                         setNSepsilonAtTopWall<<<dimGridFluid, dimBlockFluid>>>(
                                 dev_ns_epsilon,
                                 dev_ns_epsilon_new,
@@ -1518,7 +1519,7 @@ __host__ void DEM::startTime()
                         cudaThreadSynchronize();
                         checkForCudaErrorsIter("Post setNSepsilonAtTopWall",
                                 iter);
-                    }
+                    }*/
 
                     // Copy new values to current values
                     copyValues<Float><<<dimGridFluid, dimBlockFluid>>>(

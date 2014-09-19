@@ -459,15 +459,17 @@ __global__ void setNSepsilonAtTopWall(
 
     const unsigned int cellidx = idx(x,y,z);
 
-    // cells containing the wall
-    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z == iz) {
+    // cells containing the wall (Dirichlet BC)
+    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2] &&
+            z == iz) {
         __syncthreads();
         dev_ns_epsilon[cellidx]     = value;
         dev_ns_epsilon_new[cellidx] = value;
     }
 
-    // cells above the wall
-    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z == iz+1) {
+    // cells above the wall (Neumann BC)
+    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2] &&
+            z == iz+1) {
 
         // Pressure value in order to obtain hydrostatic pressure distribution
         // for Neumann BC. The pressure should equal the value at the top wall
@@ -2670,7 +2672,8 @@ __global__ void jacobiIterationNS(
     const int bc_bot,
     const int bc_top,
     const Float theta,
-    const unsigned int wall0_iz)
+    const unsigned int wall0_iz,
+    const Float dp_dz)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -2739,8 +2742,15 @@ __global__ void jacobiIterationNS(
                + dxdx*dydy*(e_zn + e_zp))
             /(2.0*(dxdx*dydy + dxdx*dzdz + dydy*dzdz));
 
+
+        // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
+        // grid if the wall isn't dynamic
         if (z == wall0_iz)
             e_new = e;
+
+        // Neumann BC at dynamic top wall
+        if (z == wall0_iz + 1)
+            e_new = e_zn + dp_dz;
 
         // New value of epsilon in 1D update
         //const Float e_new = (e_zp + e_zn - dz*dz*f)/2.0;
