@@ -841,9 +841,10 @@ __host__ void DEM::startTime()
     double t_ratio;     // ration between time flow in model vs. reality
 
     // Index of dynamic top wall (if it exists)
-    unsigned int wall0_iz;
+    unsigned int wall0_iz = 10000000;
     // weight of fluid between two cells in z direction
     const Float dp_dz = fabs(params.rho_f*params.g[2]*grid.L[2]/grid.num[2]);
+    std::cout << "dp_dz = " << dp_dz << std::endl;
 
     // Write a log file of the number of iterations it took before
     // convergence in the fluid solver
@@ -1184,6 +1185,14 @@ __host__ void DEM::startTime()
                             dp_dz);
                     cudaThreadSynchronize();
                     checkForCudaErrorsIter("Post setNSepsilonAtTopWall", iter);
+#ifdef REPORT_EPSILON
+                    std::cout
+                        << "\n@@@@@@ TIME STEP " << iter << " @@@@@@"
+                        << "\n###### EPSILON setNSepsilonAtTopWall "
+                        << "######" << std::endl;
+                    transferNSepsilonFromGlobalDeviceMemory();
+                    printNSarray(stdout, ns.epsilon, "epsilon");
+#endif
                 }
 
                 // Modulate the pressures at the upper boundary cells
@@ -1480,45 +1489,6 @@ __host__ void DEM::startTime()
                     printNSarray(stdout, ns.epsilon, "epsilon");
 #endif
 
-                    /*smoothing<Float><<<dimGridFluid, dimBlockFluid>>>(
-                      dev_ns_epsilon,
-                      ns.bc_bot, ns.bc_top);
-                      cudaThreadSynchronize();
-                      checkForCudaErrorsIter("Post smoothing", iter);
-
-#ifdef REPORT_EPSILON
-                      std::cout << "\n###### JACOBI ITERATION "
-                      << nijac << " after smoothing(epsilon) ######"
-                      << std::endl;
-                      transferNSepsilonFromGlobalDeviceMemory();
-                      printNSarray(stdout, ns.epsilon, "epsilon");
-#endif
-
-                      setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
-                      dev_ns_epsilon,
-                      ns.bc_bot, ns.bc_top);
-                      cudaThreadSynchronize();
-                      checkForCudaErrorsIter("Post setNSghostNodesEpsilon(3)",
-                      iter);
-                     */
-
-                    /*if (report_epsilon == 1) {
-                      std::cout << "\n###### JACOBI ITERATION "
-                      << nijac
-                      << " after setNSghostNodesEpsilon(epsilon,3) ######"
-                      << std::endl;
-                      transferNSepsilonFromGlobalDeviceMemory();
-                      printNSarray(stdout, ns.epsilon, "epsilon");
-                      }*/
-
-                    // Store old values
-                    /*copyValues<Float><<<dimGridFluid, dimBlockFluid>>>(
-                      dev_ns_epsilon,
-                      dev_ns_epsilon_old);
-                      cudaThreadSynchronize();
-                      checkForCudaErrorsIter
-                          ("Post copyValues (epsilon->epsilon_old)", iter);*/
-
                     // Perform a single Jacobi iteration
                     if (PROFILING == 1)
                         startTimer(&kernel_tic);
@@ -1529,7 +1499,8 @@ __host__ void DEM::startTime()
                             dev_ns_f,
                             ns.bc_bot,
                             ns.bc_top,
-                            ns.theta);
+                            ns.theta,
+                            wall0_iz);
                     cudaThreadSynchronize();
                     if (PROFILING == 1)
                         stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
@@ -1549,11 +1520,6 @@ __host__ void DEM::startTime()
                                 iter);
                     }
 
-                    // Flip flop: swap new and current array pointers
-                    /*Float* tmp         = dev_ns_epsilon;
-                      dev_ns_epsilon     = dev_ns_epsilon_new;
-                      dev_ns_epsilon_new = tmp;*/
-
                     // Copy new values to current values
                     copyValues<Float><<<dimGridFluid, dimBlockFluid>>>(
                             dev_ns_epsilon_new,
@@ -1561,15 +1527,6 @@ __host__ void DEM::startTime()
                     cudaThreadSynchronize();
                     checkForCudaErrorsIter
                         ("Post copyValues (epsilon_new->epsilon)", iter);
-
-                    /*findNormalizedResiduals<<<dimGridFluid, dimBlockFluid>>>(
-                      dev_ns_epsilon_old,
-                      dev_ns_epsilon,
-                      dev_ns_norm,
-                      ns.bc_bot, ns.bc_top);
-                      cudaThreadSynchronize();
-                      checkForCudaErrorsIter("Post findNormalizedResiduals",
-                      iter);*/
 
 #ifdef REPORT_EPSILON
                     std::cout << "\n###### JACOBI ITERATION "
@@ -1688,15 +1645,8 @@ __host__ void DEM::startTime()
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                             &t_updateNSvelocityPressure);
                 checkForCudaErrorsIter("Post updateNSvelocity", iter);
-            }
-
-            /*std::cout << "\n###### ITERATION "
-              << iter << " ######" << std::endl;
-              transferNSepsilonFromGlobalDeviceMemory();
-              printNSarray(stdout, ns.epsilon, "epsilon");*/
-            //transferNSepsilonNewFromGlobalDeviceMemory();
-            //printNSarray(stdout, ns.epsilon_new, "epsilon_new");
-        }
+            } // end iter % ns.dem == 0
+        } // end navierstokes == 1
 
         if (np > 0) {
             // Update particle kinematics

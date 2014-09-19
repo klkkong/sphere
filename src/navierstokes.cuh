@@ -474,6 +474,7 @@ __global__ void setNSepsilonAtTopWall(
         // minus the contribution due to the fluid weight.
         // p_iz+1 = p_iz - rho_f*g*dz
         const Float p = value - dp_dz;
+        printf("%d,%d,%d\tp = %f\n", x,y,z, p);
 
         __syncthreads();
         dev_ns_epsilon[cellidx]     = p;
@@ -2669,7 +2670,8 @@ __global__ void jacobiIterationNS(
     const Float* __restrict__ dev_ns_f,
     const int bc_bot,
     const int bc_top,
-    const Float theta)
+    const Float theta,
+    const unsigned int wall0_iz)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -2737,6 +2739,9 @@ __global__ void jacobiIterationNS(
                + dxdx*dzdz*(e_yn + e_yp)
                + dxdx*dydy*(e_zn + e_zp))
             /(2.0*(dxdx*dydy + dxdx*dzdz + dydy*dzdz));
+
+        if (z == wall0_iz)
+            e_new = e;
 
         // New value of epsilon in 1D update
         //const Float e_new = (e_zp + e_zn - dz*dz*f)/2.0;
