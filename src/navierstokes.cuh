@@ -474,7 +474,6 @@ __global__ void setNSepsilonAtTopWall(
         // minus the contribution due to the fluid weight.
         // p_iz+1 = p_iz - rho_f*g*dz
         const Float p = value - dp_dz;
-        printf("%d,%d,%d\tp = %f\n", x,y,z, p);
 
         __syncthreads();
         dev_ns_epsilon[cellidx]     = p;
