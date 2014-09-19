@@ -417,11 +417,9 @@ __global__ void setNSepsilonBottom(
     }
 }
 
-// Set the constant values of epsilon at the lower boundary.  Since the
+// Set the constant values of epsilon at the upper boundary.  Since the
 // Dirichlet boundary values aren't transfered during array swapping, the values
-// also need to be written to the new array of epsilons.  A value of 0 equals
-// the Dirichlet boundary condition: the new value should be identical to the
-// old value, i.e. the temporal gradient is 0
+// also need to be written to the new array of epsilons.
 __global__ void setNSepsilonTop(
     Float* __restrict__ dev_ns_epsilon,
     Float* __restrict__ dev_ns_epsilon_new,
@@ -442,6 +440,47 @@ __global__ void setNSepsilonTop(
         dev_ns_epsilon_new[cellidx] = value;
     }
 }
+
+// Set the constant values of epsilon and grad_z(epsilon) at the upper wall, if
+// it is dynamic (Dirichlet+Neumann). Since the Dirichlet boundary values aren't
+// transfered during array swapping, the values also need to be written to the
+// new array of epsilons.
+__global__ void setNSepsilonAtTopWall(
+    Float* __restrict__ dev_ns_epsilon,
+    Float* __restrict__ dev_ns_epsilon_new,
+    const unsigned int iz,
+    const Float value,
+    const Float dp_dz)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    const unsigned int cellidx = idx(x,y,z);
+
+    // cells containing the wall
+    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z == iz) {
+        __syncthreads();
+        dev_ns_epsilon[cellidx]     = value;
+        dev_ns_epsilon_new[cellidx] = value;
+    }
+
+    // cells above the wall
+    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z == iz+1) {
+
+        // Pressure value in order to obtain hydrostatic pressure distribution
+        // for Neumann BC. The pressure should equal the value at the top wall
+        // minus the contribution due to the fluid weight.
+        // p_iz+1 = p_iz - rho_f*g*dz
+        const Float p = value - dp_dz;
+
+        __syncthreads();
+        dev_ns_epsilon[cellidx]     = p;
+        dev_ns_epsilon_new[cellidx] = p;
+    }
+}
+
 __device__ void copyNSvalsDev(
     const unsigned int read,
     const unsigned int write,

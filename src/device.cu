@@ -840,6 +840,11 @@ __host__ void DEM::startTime()
     double t_start = time.current;
     double t_ratio;     // ration between time flow in model vs. reality
 
+    // Index of dynamic top wall (if it exists)
+    unsigned int wall0_iz;
+    // weight of fluid between two cells in z direction
+    const Float dp_dz = fabs(params.rho_f*params.g[2]*grid.L[2]/grid.num[2]);
+
     // Write a log file of the number of iterations it took before
     // convergence in the fluid solver
     std::ofstream convlog;
@@ -1157,6 +1162,7 @@ __host__ void DEM::startTime()
             if ((iter % ns.ndem) == 0) {
                 // Initial guess for the top epsilon values. These may be
                 // changed in setUpperPressureNS
+                // TODO: Check if this should only be set when top bc=Dirichlet
                 Float pressure = ns.p[idx(0,0,ns.nz-1)];
                 Float pressure_new = pressure; // Dirichlet
                 Float epsilon_value = pressure_new - ns.beta*pressure;
@@ -1166,6 +1172,19 @@ __host__ void DEM::startTime()
                         epsilon_value);
                 cudaThreadSynchronize();
                 checkForCudaErrorsIter("Post setNSepsilonTop", iter);
+
+                // find cell containing top wall
+                if (walls.nw > 0 && walls.wmode[0] == 1) {
+                    wall0_iz = walls.nx->w/(grid.L[2]/grid.num[2]);
+                    setNSepsilonAtTopWall<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_ns_epsilon,
+                            dev_ns_epsilon_new,
+                            wall0_iz,
+                            epsilon_value,
+                            dp_dz);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post setNSepsilonAtTopWall", iter);
+                }
 
                 // Modulate the pressures at the upper boundary cells
                 if ((ns.p_mod_A > 1.0e-5 || ns.p_mod_A < -1.0e-5) &&

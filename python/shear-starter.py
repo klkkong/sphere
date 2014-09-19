@@ -44,7 +44,7 @@ sim.shear(1.0/20.0)
 if fluid:
     sim.num[2] *= 2
     sim.L[2] *= 2.0
-    sim.initFluid(mu = 1.787e-6, p = 1.0e5, hydrostatic = True)
+    sim.initFluid(mu = 1.787e-6, p = 600.0e3, hydrostatic = True)
     #sim.initFluid(mu = 17.87e-4, p = 1.0e5, hydrostatic = True)
 sim.setFluidBottomNoFlow()
 sim.setFluidTopFixedPressure()
@@ -53,8 +53,8 @@ sim.setMaxIterations(2e5)
 sim.initTemporal(total = 20.0, file_dt = 0.01, epsilon=0.07)
 sim.c_phi[0] = c_phi
 sim.c_grad_p[0] = c_grad_p
-#sim.w_devs[0] = sigma0
-sim.w_devs[0] = 0.0
+sim.w_devs[0] = sigma0
+#sim.w_devs[0] = 0.0
 sim.w_m[0] = numpy.abs(sigma0*sim.L[0]*sim.L[1]/sim.g[2])
 sim.mu_s[0] = 0.5
 sim.mu_d[0] = 0.5

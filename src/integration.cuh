@@ -334,10 +334,12 @@ __global__ void integrateWalls(
 
             const Float dt = devC_dt;
 
-            // Normal load = Deviatoric stress times wall surface area,
-            // directed downwards.
+            // Apply sinusoidal variation if specified
             const Float sigma_0 = w_mvfd.w
                 + devC_params.devs_A*sin(2.0*PI*devC_params.devs_f * t_current);
+
+            // Normal load = Normal stress times wall surface area,
+            // directed downwards.
             const Float N = -sigma_0*devC_grid.L[0]*devC_grid.L[1];
 
             // Calculate resulting acceleration of wall
