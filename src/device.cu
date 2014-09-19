@@ -1536,6 +1536,19 @@ __host__ void DEM::startTime()
                                 &t_jacobiIterationNS);
                     checkForCudaErrorsIter("Post jacobiIterationNS", iter);
 
+                    // set Dirichlet and Neumann BC at cells containing top wall
+                    if (walls.nw > 0 && walls.wmode[0] == 1) {
+                        setNSepsilonAtTopWall<<<dimGridFluid, dimBlockFluid>>>(
+                                dev_ns_epsilon,
+                                dev_ns_epsilon_new,
+                                wall0_iz,
+                                epsilon_value,
+                                dp_dz);
+                        cudaThreadSynchronize();
+                        checkForCudaErrorsIter("Post setNSepsilonAtTopWall",
+                                iter);
+                    }
+
                     // Flip flop: swap new and current array pointers
                     /*Float* tmp         = dev_ns_epsilon;
                       dev_ns_epsilon     = dev_ns_epsilon_new;
