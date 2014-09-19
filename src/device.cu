@@ -844,7 +844,7 @@ __host__ void DEM::startTime()
     unsigned int wall0_iz = 10000000;
     // weight of fluid between two cells in z direction
     const Float dp_dz = fabs(params.rho_f*params.g[2]*grid.L[2]/grid.num[2]);
-    std::cout << "dp_dz = " << dp_dz << std::endl;
+    //std::cout << "dp_dz = " << dp_dz << std::endl;
 
     // Write a log file of the number of iterations it took before
     // convergence in the fluid solver
