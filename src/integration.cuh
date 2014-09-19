@@ -347,12 +347,12 @@ __global__ void integrateWalls(
             Float acc = (w_mvfd.z + N)/w_mvfd.x;
 
             // Apply gravity
-            if (idx == 0)
+            /*if (idx == 0)
                 acc += devC_params.g[2];
             else if (idx == 1)
                 acc += devC_params.g[0];
             else if (idx == 2)
-                acc += devC_params.g[1];
+                acc += devC_params.g[1];*/
 
             // If Wall BC is controlled by velocity, it should not change
             if (wmode == 2) { 
