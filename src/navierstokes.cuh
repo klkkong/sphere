@@ -2910,6 +2910,7 @@ __global__ void updateNSvelocity(
     const int    bc_top,          // in
     const unsigned int ndem,      // in
     const Float  c_grad_p,        // in
+    const unsigned int wall0_iz,  // in
     Float* __restrict__ dev_ns_v_x,      // out
     Float* __restrict__ dev_ns_v_y,      // out
     Float* __restrict__ dev_ns_v_z)      // out
@@ -3005,6 +3006,10 @@ __global__ void updateNSvelocity(
             v.x = 0.0;
             v.y = 0.0;
         }
+
+        // Set velocities to zero above the dynamic wall
+        if (z > wall0_iz)
+            v = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
         // Check the advection term using the Courant-Friedrichs-Lewy condition
         __syncthreads();
