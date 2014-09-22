@@ -2406,7 +2406,7 @@ class sim:
         # Set top wall to a certain mass corresponding to the selected normal
         # stress
         #self.w_devs = numpy.zeros(1)
-        self.w_m[0] = numpy.abs(normal_stress*sim.L[0]*sim.L[1]/sim.g[2])
+        self.w_m[0] = numpy.abs(normal_stress*self.L[0]*self.L[1]/self.g[2])
 
     def uniaxialStrainRate(self, wvel = -0.001):
         '''
