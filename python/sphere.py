@@ -3609,16 +3609,19 @@ class sim:
         Find all particle-particle overlaps by a n^2 contact search. The
         particle pair indexes and the distance of the overlaps is saved in the
         object itself as the ``.pairs`` and ``.overlaps`` members.
+        Warning: this function is EXTREMELY slow.
         '''
 
         # Allocate big arrays instead of dynamically allocating during the
         # iterative process. Blank positions will be erased afterwards
         max_avg_contacts_per_particle = 16
-        self.pairs = numpy.empty(self.np*max_avg_contacts_per_particle, 2)
+        self.pairs = numpy.empty((self.np[0]*max_avg_contacts_per_particle, 2))
         self.overlaps = numpy.empty_like(self.pairs)
 
+        # Loop through particle pairs
         p = 0
         for i in numpy.arange(self.np):
+            print('%.2f%%, idx %d' % (float(i/self.np[0]), i))
             for j in numpy.arange(self.np):
 
                 if i < j:
@@ -3631,31 +3634,10 @@ class sim:
                         self.pairs[p,:] = [i,j]
                         self.overlaps[p] = delta_n
                         p += 1
+        
+        # trim output arrays
         self.pairs    = self.pairs[:p+1,:]
         self.overlaps = self.overlaps[:p+1]
-
-
-    def forcechains2d(self, lc=200.0, uc=650.0, outformat='png', axes=[0,2]):
-        '''
-        Visualizes the force chains in the system from the magnitude of the
-        normal contact forces, and produces an image of them. The force chains
-        are orthogonally projected into a 2d plane specified by the axes
-        parameter.
-
-        :param lc: Lower cutoff of contact forces. Contacts below are not
-            visualized
-        :type lc: float
-        :param uc: Upper cutoff of contact forces. Contacts above are
-            visualized with this value
-        :type uc: float
-        :param outformat: Format of output image. Possible values are
-            'interactive', 'png', 'epslatex', 'epslatex-color'
-        :type outformat: str
-        :param axes: The coordinate system axes in the projection plane (0:x,
-            1:y, 2:z), default 0,2.
-        :type axes: tuple
-        '''
-
 
 
     def forcechains(self, lc=200.0, uc=650.0, outformat='png', disp='2d'):
