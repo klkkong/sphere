@@ -16,8 +16,8 @@ import matplotlib.pyplot as plt
 #sigma0_list = numpy.array([1.0e3, 2.0e3, 4.0e3, 10.0e3, 20.0e3, 40.0e3])
 #sigma0 = 10.0e3
 sigma0 = float(sys.argv[1])
-#cvals = [1.0, 0.1]
-cvals = [1.0]
+cvals = [1.0, 0.1]
+#cvals = [1.0]
 c_phi = 1.0
 
 shear_strain = [[], [], []]
@@ -34,7 +34,8 @@ sid = 'shear-sigma0=' + sys.argv[1] + '-hw'
 sim = sphere.sim(sid)
 sim.readlast(verbose=False)
 sim.visualize('shear')
-shear_strain[0] = sim.shear_strain
+#shear_strain[0] = sim.shear_strain
+shear_strain[0] = numpy.arange(sim.status()+1)
 friction[0] = sim.tau/sim.sigma_eff
 dilation[0] = sim.dilation
 
@@ -55,7 +56,8 @@ for c in numpy.arange(1,len(cvals)+1):
 
         sim.readlast(verbose=False)
         sim.visualize('shear')
-        shear_strain[c] = sim.shear_strain
+        #shear_strain[c] = sim.shear_strain
+        shear_strain[c] = numpy.arange(sim.status()+1)
         friction[c] = sim.tau/sim.sigma_eff
         dilation[c] = sim.dilation
 
@@ -115,6 +117,8 @@ ax3.set_xlabel('Shear strain $\\gamma$ [-]')
 ax1.set_ylabel('Shear friction $\\tau/\\sigma\'$ [-]')
 ax2.set_ylabel('Dilation $\\Delta h/(2r)$ [-]')
 ax3.set_ylabel('Fluid pressure $p_\\text{f}$ [kPa]')
+
+ax1.set_xlim([200,300])
 
 plt.setp(ax1.get_xticklabels(), visible=False)
 plt.setp(ax2.get_xticklabels(), visible=False)

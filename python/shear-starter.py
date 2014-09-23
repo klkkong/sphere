@@ -27,7 +27,7 @@ sim.readlast()
 
 if fluid:
     sim.sid = 'shear-sigma0=' + str(sigma0) + '-c_phi=' + str(c_phi) + \
-            '-c_grad_p=' + str(c_grad_p) + '-hi_mu-lo_visc-hw'
+            '-c_grad_p=' + str(c_grad_p) + '-hi_mu-lo_visc-hw-noshear'
 else:
     sim.sid = 'shear-sigma0=' + str(sigma0) + '-hw'
 
@@ -39,7 +39,8 @@ sim.cleanup()
 sim.adjustUpperWall()
 sim.zeroKinematics()
 
-sim.shear(1.0/20.0)
+#sim.shear(1.0/20.0)
+sim.shear(0.0)
 
 if fluid:
     #sim.num[2] *= 2
@@ -51,6 +52,7 @@ sim.setFluidTopFixedPressure()
 sim.setDEMstepsPerCFDstep(10)
 sim.setMaxIterations(2e5)
 sim.initTemporal(total = 20.0, file_dt = 0.01, epsilon=0.07)
+#sim.initTemporal(total = 20.0, file_dt = 0.01, epsilon=0.05)
 sim.c_phi[0] = c_phi
 sim.c_grad_p[0] = c_grad_p
 sim.w_devs[0] = sigma0

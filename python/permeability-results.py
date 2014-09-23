@@ -60,6 +60,8 @@ for c_grad_p in cvals:
             sim.readlast(verbose=False)
             Re[c][i] = numpy.mean(sim.ReynoldsNumber())
 
+            #sim.writeVTKall()
+
             # find magnitude of fluid pressure force and total interaction force
             '''
             fp_magn = numpy.empty(sim.np)

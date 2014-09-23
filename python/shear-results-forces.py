@@ -15,11 +15,12 @@ from matplotlib.ticker import MaxNLocator
 
 #steps = [5, 10, 100]
 #steps = [5, 10]
-steps = sys.argv[2:]
+steps = sys.argv[3:]
 nsteps_avg = 5 # no. of steps to average over
 
 sigma0 = float(sys.argv[1])
-c_grad_p = 1.0
+#c_grad_p = 1.0
+c_grad_p = float(sys.argv[2])
 c_phi = 1.0
 
 sid = 'shear-sigma0=' + str(sigma0) + '-c_phi=' + \
