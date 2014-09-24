@@ -3659,7 +3659,7 @@ class sim:
         :type disp: str
         '''
 
-        self.writebin()
+        self.writebin(verbose=False)
 
         nd = ''
         if (disp == '2d'):
@@ -3668,7 +3668,7 @@ class sim:
         subprocess.call("cd .. && ./forcechains " + nd + "-f " + outformat \
                 + " -lc " + str(lc) + " -uc " + str(uc) + " input/" + self.sid \
                 + ".bin > python/tmp.gp", shell=True)
-        subprocess.call("gnuplot tmp.gp && rm tmp.bin && rm tmp.gp", shell=True)
+        subprocess.call("gnuplot tmp.gp && rm tmp.gp", shell=True)
 
 
     def forcechainsRose(self, lower_limit=0.25, graphics_format='pdf'):

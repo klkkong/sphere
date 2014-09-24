@@ -25,9 +25,13 @@ sim = sphere.sim('diffusivity-sigma0=' + str(sigma0),
         fluid=True)
 sim.readlast()
 
+if sigma0 == 20.0e3 and c_phi == 1.0 and c_grad_p == 0.1:
+    sim.sid = 'shear-sigma0=20000.0-c_phi=1.0-c_grad_p=0.1-hi_mu-lo_visc-hw-noshear'
+    sim.readlast()
+
 if fluid:
     sim.sid = 'shear-sigma0=' + str(sigma0) + '-c_phi=' + str(c_phi) + \
-            '-c_grad_p=' + str(c_grad_p) + '-hi_mu-lo_visc-hw-noshear'
+            '-c_grad_p=' + str(c_grad_p) + '-hi_mu-lo_visc-hw'
 else:
     sim.sid = 'shear-sigma0=' + str(sigma0) + '-hw'
 
@@ -39,8 +43,8 @@ sim.cleanup()
 sim.adjustUpperWall()
 sim.zeroKinematics()
 
-#sim.shear(1.0/20.0)
-sim.shear(0.0)
+sim.shear(1.0/20.0)
+#sim.shear(0.0)
 
 if fluid:
     #sim.num[2] *= 2
