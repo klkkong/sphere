@@ -726,10 +726,10 @@ void DEM::forcechains(const std::string format, const int threedim,
             //<< "set palette defined ( 1 '#000fff', 2 '#0090ff', 3 '#0fffee', 4 '#90ff70', 5 '#ffee00', 6 '#ff7000', 7 '#ee0000', 8 '#7f0000')\n"
 
             // Light gray to black
-            //<< "set palette defined ( 1 '#999999', 2 '#000000')\n"
+            << "set palette defined ( 1 '#d3d3d3', 2 '#000000')\n"
 
             // White to black (useful when using lc = 0)
-            << "set palette defined ( 1 '#ffffff', 2 '#000000')\n"
+            //<< "set palette defined ( 1 '#ffffff', 2 '#000000')\n"
 
             //<< "set cbrange [" << f_n_max*lim_low << ':' << f_n_max*lim_high << "]\n"
             << "set cbrange [" << lower_cutoff << ':' << upper_cutoff << "]\n"
