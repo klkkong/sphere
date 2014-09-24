@@ -15,8 +15,9 @@ for i in numpy.arange(210,300):
     sim.readstep(i, verbose=False)
     #sim.forcechains(lc = 3.0e1, uc=1.0e2)
     sim.forcechains(lc = 30.0, uc=1.0e2)
-    subprocess.call('mv ' + sid + '-fc.' + imgformat \
+    subprocess.call('mv shear-sigma0=20000-0-hw-fc.' + imgformat \
             + ' ' + sid + '-fc/%05d.png' % (d), shell=True)
     d += 1
 
-subprocess.call('mv ' + sid + '-fc && sh ./make_video.sh', shell=True)
+subprocess.call('cd ' + sid + '-fc && sh ./make_video.sh', shell=True)
+
