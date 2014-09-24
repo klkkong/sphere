@@ -740,6 +740,8 @@ void DEM::forcechains(const std::string format, const int threedim,
     unsigned int n, i, j;
     Float delta_n, f_n, ratio;
     std::string color;
+    //const double thickness_scaling = 8.0;
+    const double thickness_scaling = 16.0;
     for (n=0; n<ij.size(); ++n) {
 
         // Get contact particle indexes
@@ -789,7 +791,7 @@ void DEM::forcechains(const std::string format, const int threedim,
                     cout << k.x[j].y, ',';
                 cout << k.x[j].z;
                 cout << " nohead "
-                    << "lw " << ratio * 8.0
+                    << "lw " << ratio * thickness_scaling
                     << " lc palette cb " << f_n 
                     << endl;
             }
