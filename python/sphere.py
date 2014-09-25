@@ -709,13 +709,28 @@ class sim:
 
     def deleteParticle(self, i):
         '''
-        Delete particle with index ``i``.
+        Delete particle(s) with index ``i``.
 
-        :param i: Particle index to delete
-        :type i: int
+        :param i: One or more particle indexes to delete
+        :type i: int, list or numpy.array
         '''
 
-        self.np = self.np - 1
+        # The user wants to delete several particles, indexes in a numpy.array
+        if type(i) == numpy.ndarray:
+            self.np -= i.size
+
+        # The user wants to delete several particles, indexes in a Python list
+        elif type(i) == list:
+            self.np -= len(i)
+
+        # The user wants to delete a single particle with a integer index
+        else:
+            self.np -= 1
+
+        if type(i) == tuple:
+            raise Exception('Cannot parse tuples as index value. ' +
+                    'Valid types are int, list and numpy.ndarray')
+
 
         self.x      = numpy.delete(self.x, i, axis=0)
         self.radius = numpy.delete(self.radius, i)
