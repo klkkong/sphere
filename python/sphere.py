@@ -2646,11 +2646,26 @@ class sim:
                 dtype=numpy.float64) * p
 
         if (hydrostatic == True):
+
             dz = self.L[2]/self.num[2]
-            for iz in range(self.num[2]-1):
-                z = dz*iz + 0.5*dz
-                depth = self.L[2] - z
-                self.p_f[:,:,iz] = p + (depth-dz) * rho * -self.g[2]
+            # Zero pressure gradient from grid top to top wall, linear pressure
+            # distribution from top wall to grid bottom
+            if (self.nw == 1):
+                wall0_iz = int(self.w_x[0]/(self.L[2]/self.num[2]))
+                self.p_f[:,:,wall0_iz:] = p
+
+                for iz in numpy.arange(wall0_iz - 1):
+                    z = dz*iz + 0.5*dz
+                    depth = self.w_x[0] - z
+                    self.p_f[:,:,iz] = p + (depth-dz) * rho * -self.g[2]
+
+            # Linear pressure distribution from grid top to grid bottom
+            else:
+                for iz in numpy.arange(self.num[2] - 1):
+                    z = dz*iz + 0.5*dz
+                    depth = self.L[2] - z
+                    self.p_f[:,:,iz] = p + (depth-dz) * rho * -self.g[2]
+
 
         self.v_f = numpy.zeros((self.num[0], self.num[1], self.num[2], self.nd),
                 dtype=numpy.float64)
