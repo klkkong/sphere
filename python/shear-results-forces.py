@@ -112,7 +112,8 @@ for step_str in steps:
         print(sid + ' not found')
     s += 1
 
-fig = plt.figure(figsize=(8,4*(len(steps))+1))
+#fig = plt.figure(figsize=(8,4*(len(steps))+1))
+fig = plt.figure(figsize=(8,5*(len(steps))+1))
 
 ax = []
 for s in numpy.arange(len(steps)):
