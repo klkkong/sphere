@@ -38,6 +38,7 @@ int main(const int argc, const char *argv[])
     float lower_cutoff = 0.0f;// lower cutoff, particles below won't be rendered
     int fluid = 0;
     int device = -1; // -1 run on device with most cores, 0+ run on specified device
+    int print_contacts = 0;
 
     // Process input parameters
     int i;
@@ -66,6 +67,7 @@ int main(const int argc, const char *argv[])
                 "\tnormal, pres, vel, angvel, xdisp, angpos\n"
                 "\t'normal' is the default mode\n"
                 "\tif -l is appended, don't render particles with value below\n"
+                "-c, --contacts\t\tPrint a list of particle-particle contacts\n"
                 << std::endl;
             return 0; // Exit with success
         }
@@ -105,6 +107,9 @@ int main(const int argc, const char *argv[])
 
         else if (argvi == "-f" || argvi == "--fluid")
             fluid = 1;
+
+        else if (argvi == "-c" || argvi == "--contacts")
+            print_contacts = 1;
 
         else if (argvi == "-d") {
             device = atoi(argv[i+1]);
@@ -169,6 +174,10 @@ int main(const int argc, const char *argv[])
                 // Create DEM class, read data from input binary, check values,
                 // init cuda, transfer const mem
                 DEM dem(argvi, verbose, checkVals, dry, 1, 1, fluid, device);
+
+                if (print_contacts == 1)
+                    dem.printContacts();
+
                 // Render image if requested
                 if (render == 1)
                     dem.render(method, max_val, lower_cutoff);
@@ -181,6 +190,9 @@ int main(const int argc, const char *argv[])
                 
                 // Do not transfer to const. mem after the first file
                 DEM dem(argvi, verbose, checkVals, dry, 1, 0, fluid, device);
+
+                if (print_contacts == 1)
+                    dem.printContacts();
 
                 // Render image if requested
                 if (render == 1)

@@ -813,4 +813,17 @@ void DEM::forcechains(const std::string format, const int threedim,
     }
 }
 
+// Loop over all particles, find intersections. Print particle indexes,
+// overlap distance and normal force
+void DEM::printContacts()
+{
+    std::vector< std::vector<unsigned int> > ij;
+    std::vector< Float > delta_n_ij;
+    findOverlaps(ij, delta_n_ij);
+
+    for (unsigned int n=0; n<ij.size(); ++n)
+        std::cout << ij[n][0] << '\t' << ij[n][1] << '\t' << delta_n_ij[n]
+            << std::endl;
+}
+
 // vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4

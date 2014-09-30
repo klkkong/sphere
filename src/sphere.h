@@ -357,7 +357,10 @@ class DEM {
                 const double lower_cutoff = 0.0,
                 const double upper_cutoff = 1.0e9);
 
-        
+        // Print all particle-particle contacts to stdout
+        void printContacts();
+
+
         ///// Porous flow functions
 
         // Print fluid arrays to file stream
