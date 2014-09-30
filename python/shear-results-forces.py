@@ -44,10 +44,13 @@ xdisp = numpy.zeros((len(steps), sim.np))
 f_pf  = numpy.zeros_like(xdisp)
 
 # pressure - hydrostatic pressure
-dev_p = numpy.zeros((len(steps), sim.num[2]))
+#dev_p = numpy.zeros((len(steps), sim.num[2]))
 
 # mean porosity
 phi_bar = numpy.zeros((len(steps), sim.num[2]))
+
+# mean porosity change
+dphi_bar = numpy.zeros((len(steps), sim.num[2]))
 
 # mean per-particle values
 xdisp_mean = numpy.zeros((len(steps), sim.num[2]))
@@ -82,13 +85,17 @@ for step_str in steps:
                         '''
             f_pf[s,:] += sim.f_sum[:,2]
 
-            dev_p[s,:] += \
-                    numpy.average(numpy.average(sim.p_f, axis=0), axis=0)\
-                    /nsteps_avg
+            #dev_p[s,:] += \
+                    #numpy.average(numpy.average(sim.p_f, axis=0), axis=0)\
+                    #/nsteps_avg
 
             phi_bar[s,:] += \
                     numpy.average(numpy.average(sim.phi, axis=0), axis=0)\
                     /nsteps_avg
+
+            dphi_bar[s,:] += \
+                    numpy.average(numpy.average(sim.dphi, axis=0), axis=0)\
+                    /nsteps_avg/sim.time_dt
 
             shear_strain[s] += sim.shearStrain()/nsteps_avg
 
@@ -122,14 +129,15 @@ for s in numpy.arange(len(steps)):
     ax[s*4+1].plot(f_pf_mean[s], zpos_c[s], color = 'k')
     ax[s*4+1].plot([0.0, 0.0], [0.0, sim.L[2]], '--', color='k')
 
-    ax[s*4+2].plot(dev_p[s]/1000.0, zpos_c[s], 'k')
+    #ax[s*4+2].plot(dev_p[s]/1000.0, zpos_c[s], 'k')
+    ax[s*4+2].plot(phi_bar[s,1:], zpos_c[s,1:], '-k', linewidth=3)
 
     #phicolor = '#888888'
     #ax[s*4+3].plot(phi_bar[s], zpos_c[s], '-', color = phicolor)
     #for tl in ax[s*4+3].get_xticklabels():
         #tl.set_color(phicolor)
-    ax[s*4+3].plot(phi_bar[s,1:], zpos_c[s,1:], '-k', linewidth=3)
-    ax[s*4+3].plot(phi_bar[s,1:], zpos_c[s,1:], '-w', linewidth=2)
+    ax[s*4+3].plot(dphi_bar[s,1:], zpos_c[s,1:], '-k', linewidth=3)
+    ax[s*4+3].plot(dphi_bar[s,1:], zpos_c[s,1:], '-w', linewidth=2)
 
     max_z = numpy.max(zpos_p)
     ax[s*4+0].set_ylim([0, max_z])
@@ -143,9 +151,10 @@ for s in numpy.arange(len(steps)):
     ax[s*4+0].set_ylabel('Vertical position $z$ [m]')
     ax[s*4+0].set_xlabel('$\\boldsymbol{x}^x_\\text{p}$ [m]')
     ax[s*4+1].set_xlabel('$\\boldsymbol{f}^z_\\text{pf}$ [N]')
-    ax[s*4+2].set_xlabel('$\\bar{p_\\text{f}}$ [kPa]')
+    #ax[s*4+2].set_xlabel('$\\bar{p_\\text{f}}$ [kPa]')
     #ax[s*4+3].set_xlabel('$\\bar{\\phi}$ [-]', color=phicolor)
-    ax[s*4+3].set_xlabel('$\\bar{\\phi}$ [-]')
+    ax[s*4+2].set_xlabel('$\\bar{\\phi}$ [-]')
+    ax[s*4+3].set_xlabel('$\\delta \\bar{\\phi}/\\delta t$ [-]')
     plt.setp(ax[s*4+1].get_yticklabels(), visible=False)
     plt.setp(ax[s*4+2].get_yticklabels(), visible=False)
 
