@@ -179,7 +179,7 @@ int main(const int argc, const char *argv[])
                     dem.printContacts();
 
                 // Render image if requested
-                if (render == 1)
+                else if (render == 1)
                     dem.render(method, max_val, lower_cutoff);
 
                 // Otherwise, start iterating through time
@@ -195,7 +195,7 @@ int main(const int argc, const char *argv[])
                     dem.printContacts();
 
                 // Render image if requested
-                if (render == 1)
+                else if (render == 1)
                     dem.render(method, max_val, lower_cutoff);
 
                 // Otherwise, start iterating through time
