@@ -3666,7 +3666,7 @@ class sim:
         self.writebin(verbose=False)
         subprocess.call('cd .. && ./sphere --contacts input/' + self.sid
                 + '.bin > output/' + self.sid + '.contacts.txt', shell=True)
-        contactdata = numpy.loadtxt('output/' + self.sid + '.contacts.txt')
+        contactdata = numpy.loadtxt('../output/' + self.sid + '.contacts.txt')
         self.pairs = numpy.array((contactdata[:,0], contactdata[:,1]),
                 dtype=numpy.int32)
         self.overlaps = numpy.array(contactdata[:,2])

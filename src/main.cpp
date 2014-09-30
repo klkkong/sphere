@@ -108,8 +108,10 @@ int main(const int argc, const char *argv[])
         else if (argvi == "-f" || argvi == "--fluid")
             fluid = 1;
 
-        else if (argvi == "-c" || argvi == "--contacts")
+        else if (argvi == "-c" || argvi == "--contacts") {
+            verbose = 0;
             print_contacts = 1;
+        }
 
         else if (argvi == "-d") {
             device = atoi(argv[i+1]);
