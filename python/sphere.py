@@ -2885,23 +2885,28 @@ class sim:
         See also: :func:`setDampingTangential(gamma)`
         '''
         self.gamma_n[0] = gamma
-        damping_ratio = gamma/(2.0*numpy.sqrt(self.smallestMass()*self.k_n[0]))
+        critical_gamma = 2.0*numpy.sqrt(self.smallestMass()*self.k_n[0])
+        damping_ratio = gamma/critical_gamma
         if (damping_ratio < 1.0):
             print('Info: The system is under-dampened (ratio = '
                   + str(damping_ratio)
-                  + ') in the normal component. This is ok.')
+                  + ') in the normal component. Critical damping = '
+                  + str(critical_gamma) + '. This is ok.')
         elif (damping_ratio > 1.0):
             if over_damping:
                 print('Warning: The system is over-dampened (ratio = '
-                  + str(damping_ratio) + ') in the normal component.')
+                  + str(damping_ratio) + ') in the normal component. '
+                  + 'Critical damping = ' + str(critical_gamma) + '.')
             else:
                 raise Exception('Warning: The system is over-dampened (ratio = '
                       + str(damping_ratio) + ') in the normal component.\n'
                       + 'Call this function once more with `over_damping=True` '
-                      + 'if this is what you want.')
+                      + 'if this is what you want. Critical damping = '
+                      + str(critical_gamma) + '.')
         else:
             print('Warning: The system is critically dampened (ratio = '
-                  + str(damping_ratio) + ') in the normal component.')
+                  + str(damping_ratio) + ') in the normal component. '
+                  + 'Critical damping = ' + str(critical_gamma) + '.')
         
     def setDampingTangential(self, gamma, over_damping=False):
         '''

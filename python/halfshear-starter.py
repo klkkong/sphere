@@ -50,6 +50,8 @@ sim.w_devs[0] = sigma0
 #sim.w_m[0] = numpy.abs(sigma0*sim.L[0]*sim.L[1]/sim.g[2])
 sim.mu_s[0] = 0.5
 sim.mu_d[0] = 0.5
+sim.setDampingNormal(0.0)
+sim.setDampingTangential(0.0)
 
 # Fix lowermost particles
 dz = sim.L[2]/sim.num[2]
