@@ -270,7 +270,7 @@ class sim:
         # Simulate fluid? True: Yes, False: no
         self.fluid = fluid
 
-        if self.fluid == True:
+        if self.fluid:
 
             # Fluid dynamic viscosity [N/(m/s)]
             self.mu = numpy.zeros(1, dtype=numpy.float64)
@@ -542,7 +542,7 @@ class sim:
             print(64)
             return 64
 
-        if (self.fluid == True):
+        if self.fluid:
             if (self.mu != other.mu):
                 print(65)
                 return 65
@@ -805,7 +805,7 @@ class sim:
 
         fh = None
         try:
-            if (verbose == True):
+            if verbose:
                 print("Input file: {0}".format(targetbin))
             fh = open(targetbin, "rb")
 
@@ -876,7 +876,7 @@ class sim:
             self.torque = numpy.fromfile(fh, dtype=numpy.float64,\
                     count=self.np*self.nd).reshape(self.np, self.nd)
 
-            if esysparticle == True:
+            if esysparticle:
                 return
 
             # Per-particle single-value parameters
@@ -929,11 +929,11 @@ class sim:
                 self.w_force[i] =\
                         numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.w_devs[i]= numpy.fromfile(fh, dtype=numpy.float64, count=1)
-            if (devsmod == True):
+            if devsmod:
                 self.w_devs_A = numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.w_devs_f = numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
-            if (bonds == True):
+            if bonds:
                 # Inter-particle bonds
                 self.lambda_bar =\
                         numpy.fromfile(fh, dtype=numpy.float64, count=1)
@@ -957,7 +957,7 @@ class sim:
             else:
                 self.nb0 = numpy.zeros(1, dtype=numpy.uint32)
 
-            if (self.fluid == True):
+            if self.fluid:
                 self.mu = numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
                 self.v_f = numpy.empty(
@@ -1091,7 +1091,7 @@ class sim:
         fh = None
         try :
             targetbin = folder + "/" + self.sid + ".bin"
-            if (verbose == True):
+            if verbose:
                 print("Output file: {0}".format(targetbin))
 
             fh = open(targetbin, "wb")
@@ -1189,7 +1189,7 @@ class sim:
             fh.write(self.bonds_omega_n.astype(numpy.float64))
             fh.write(self.bonds_omega_t.astype(numpy.float64))
 
-            if (self.fluid == True):
+            if self.fluid:
                 fh.write(self.mu.astype(numpy.float64))
                 for z in range(self.num[2]):
                     for y in range(self.num[1]):
@@ -1296,17 +1296,17 @@ class sim:
                 if (i == 0):
                     sb.writeVTK(verbose=verbose)
                 elif (i == lastfile):
-                    if (verbose == True):
+                    if verbose:
                         print("\tto")
                     sb.writeVTK(verbose=verbose)
                 else:
                     sb.writeVTK(verbose=False)
-            if (self.fluid == True):
+            if self.fluid:
                 if (i == 0):
                     sb.writeFluidVTK(verbose=verbose,
                             cell_centered=cell_centered)
                 elif (i == lastfile):
-                    if (verbose == True):
+                    if verbose:
                         print("\tto")
                     sb.writeFluidVTK(verbose=verbose,
                             cell_centered=cell_centered)
@@ -1349,7 +1349,7 @@ class sim:
         fh = None
         try :
             targetbin = folder + '/' + self.sid + '.vtu' # unstructured grid
-            if (verbose == True):
+            if verbose:
                 print('Output file: ' + targetbin)
 
             fh = open(targetbin, 'w')
@@ -1407,7 +1407,7 @@ class sim:
             fh.write('\n')
             fh.write('        </DataArray>\n')
 
-            if self.fluid == True:
+            if self.fluid:
                 # Fluid interaction force
                 fh.write('        <DataArray type="Float32" ' 
                         + 'Name="Fluid force total" '
@@ -1711,7 +1711,7 @@ class sim:
         writer.SetFileName(filename)
         writer.SetInput(grid)
         writer.Update()
-        if (verbose == True):
+        if verbose:
             print('Output file: ' + filename)
 
 
@@ -1814,7 +1814,7 @@ class sim:
             self.radius = numpy.random.uniform(radius_min, radius_max, self.np)
 
         # Show radii as histogram
-        if (histogram == True):
+        if histogram:
             fig = plt.figure(figsize=(15,10), dpi=300)
             figtitle = 'Particle size distribution, {0} particles'.format(\
                     self.np[0])
@@ -1867,7 +1867,7 @@ class sim:
         if (abs(V_large_total/V_small_total - ratio) > 1.0e5):
             raise Exception("Volumetric ratio seems wrong")
 
-        if (verbose == True):
+        if verbose:
             print("generateBimodalRadii created " + str(nlarge)
                     + " large particles, and " + str(self.np[0] - nlarge)
                     + " small")
@@ -1968,7 +1968,7 @@ class sim:
         # Particle positions randomly distributed without overlap
         for i in range(self.np):
             overlaps = True
-            while overlaps == True:
+            while overlaps:
                 overlaps = False
 
                 # Draw random position
@@ -2582,7 +2582,7 @@ class sim:
 
         # Check numerical stability of the fluid phase, by criteria derived by
         # von Neumann stability analysis of the diffusion and advection terms
-        if (self.fluid == True):
+        if self.fluid:
 
             # Cell spacing
             dx = numpy.amin((\
@@ -2646,7 +2646,7 @@ class sim:
         self.p_f = numpy.ones((self.num[0], self.num[1], self.num[2]),
                 dtype=numpy.float64) * p
 
-        if (hydrostatic == True):
+        if hydrostatic:
 
             dz = self.L[2]/self.num[2]
             # Zero pressure gradient from grid top to top wall, linear pressure
@@ -3334,19 +3334,19 @@ class sim:
         valgrindbin = ""
         cudamemchk = ""
         binary = "sphere"
-        if (verbose == False):
+        if verbose == False:
             quiet = "-q "
-        if (hideinputfile == True):
+        if hideinputfile:
             stdout = " > /dev/null"
-        if (dry == True):
+        if dry:
             dryarg = "--dry "
-        if (valgrind == True):
+        if valgrind:
             valgrindbin = "valgrind -q "
-        if (cudamemcheck == True):
+        if cudamemcheck:
             cudamemchk = "cuda-memcheck --leak-check full "
-        if (self.fluid == True):
+        if self.fluid:
             fluidarg = "--fluid "
-        if (device != -1):
+        if device != -1:
             devicearg = "-d " + str(device) + " "
 
         cmd = "cd ..; " + valgrindbin + cudamemchk + "./" + binary + " " \
@@ -3426,7 +3426,7 @@ class sim:
             fh.write('echo "`whoami`@`hostname`"\n')
             fh.write('echo "Start at `date`"\n')
             fh.write('ORIGDIR=' + spheredir + '\n')
-            if (use_workdir == True):
+            if use_workdir:
                 fh.write('WORKDIR=' + workdir + "/$PBS_JOBID\n")
                 fh.write('cp -r $ORIGDIR/* $WORKDIR\n')
                 fh.write('cd $WORKDIR\n')
@@ -3435,7 +3435,7 @@ class sim:
             fh.write('cmake . && make\n')
             fh.write('./sphere input/' + self.sid + '.bin > /dev/null &\n')
             fh.write('wait\n')
-            if (use_workdir == True):
+            if use_workdir:
                 fh.write('cp $WORKDIR/output/* $ORIGDIR/output/\n')
             fh.write('echo "End at `date`"\n')
 
@@ -3499,7 +3499,7 @@ class sim:
             fh.write('cmake . && make\n')
             fh.write('./sphere input/' + self.sid + '.bin > /dev/null &\n')
             fh.write('wait\n')
-            if (use_workdir == True):
+            if use_workdir:
                 fh.write('cp $WORKDIR/output/* $ORIGDIR/output/\n')
             fh.write('echo "End at `date`"\n')
 
@@ -4082,7 +4082,7 @@ class sim:
                 if (self.p[i] > pmax):
                     pmax = self.p[i]
 
-        if (verbose == True):
+        if verbose:
             print("Max. pressure of intersecting spheres: " + str(pmax) + " Pa")
             if (cbmax != None):
                 print("Value limited to: " + str(cbmax) + " Pa")
@@ -4554,7 +4554,7 @@ class sim:
                 (self.H50 - H[i_lower])/(H[i_upper] - H[i_lower])
 
         self.c_v = T50*self.H50**2.0/(self.t50)
-        if self.fluid == True:
+        if self.fluid:
             e = numpy.mean(sb.phi[:,:,3:-8]) # ignore boundaries
         else:
             e = sb.voidRatio()
@@ -5177,7 +5177,7 @@ class sim:
 
         # Optional save of figure
         if (outformat != 'txt'):
-            if (savefig == True):
+            if savefig:
                 fig.savefig("{0}-{1}.{2}".format(self.sid, method, outformat))
                 fig.clf()
             else :
@@ -5367,7 +5367,7 @@ def run(binary, verbose=True, hideinputfile=False):
     stdout = ''
     if (verbose == False):
         quiet = '-q'
-    if (hideinputfile == True):
+    if hideinputfile:
         stdout = ' > /dev/null'
     subprocess.call('cd ..; ./sphere ' + quiet + ' ' + binary + ' ' + stdout, \
             shell=True)
@@ -5434,7 +5434,7 @@ def torqueScriptParallel3(obj1, obj2, obj3,
         fh.write(':$CUDAPATH/lib:$LD_LIBRARY_PATH\n')
         fh.write('echo "`whoami`@`hostname`"\n')
         fh.write('echo "Start at `date`"\n')
-        if (use_workdir == True):
+        if use_workdir:
             fh.write('ORIGDIR=' + spheredir + '\n')
             fh.write('WORKDIR=' + workdir + "/$PBS_JOBID\n")
             fh.write('cp -r $ORIGDIR/* $WORKDIR\n')
@@ -5446,7 +5446,7 @@ def torqueScriptParallel3(obj1, obj2, obj3,
         fh.write('./sphere input/' + obj2.sid + '.bin > /dev/null &\n')
         fh.write('./sphere input/' + obj3.sid + '.bin > /dev/null &\n')
         fh.write('wait\n')
-        if (use_workdir == True):
+        if use_workdir:
             fh.write('cp $WORKDIR/output/* $ORIGDIR/output/\n')
         fh.write('echo "End at `date`"\n')
         return filename
