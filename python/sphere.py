@@ -2871,7 +2871,7 @@ class sim:
         # Debonding distance
         self.db[0] = (1.0 + theta/2.0) * self.V_b**(1.0/3.0)
 
-    def setDampingNormal(self, gamma):
+    def setDampingNormal(self, gamma, over_damping=False):
         '''
         Set the dampening coefficient (gamma) in the normal direction of the
         particle-particle contact model. The function will print the fraction
@@ -2879,6 +2879,8 @@ class sim:
 
         :param gamma: The viscous damping constant [N/(m/s)]
         :type gamma: float
+        :param over_damping: Accept overdampening
+        :type over_damping: boolean
 
         See also: :func:`setDampingTangential(gamma)`
         '''
@@ -2889,13 +2891,19 @@ class sim:
                   + str(damping_ratio)
                   + ') in the normal component. This is ok.')
         elif (damping_ratio > 1.0):
-            print('Warning: The system is over-dampened (ratio = '
+            if over_damping:
+                print('Warning: The system is over-dampened (ratio = '
                   + str(damping_ratio) + ') in the normal component.')
+            else:
+                raise Exception('Warning: The system is over-dampened (ratio = '
+                      + str(damping_ratio) + ') in the normal component.\n'
+                      + 'Call this function once more with `over_damping=True` '
+                      + 'if this is what you want.')
         else:
             print('Warning: The system is critically dampened (ratio = '
                   + str(damping_ratio) + ') in the normal component.')
         
-    def setDampingTangential(self, gamma):
+    def setDampingTangential(self, gamma, over_damping=False):
         '''
         Set the dampening coefficient (gamma) in the tangential direction of the
         particle-particle contact model. The function will print the fraction
@@ -2903,6 +2911,8 @@ class sim:
 
         :param gamma: The viscous damping constant [N/(m/s)]
         :type gamma: float
+        :param over_damping: Accept overdampening
+        :type over_damping: boolean
 
         See also: :func:`setDampingNormal(gamma)`
         '''
@@ -2913,8 +2923,14 @@ class sim:
                   + str(damping_ratio)
                   + ') in the tangential component. This is ok.')
         elif (damping_ratio > 1.0):
-            print('Warning: The system is over-dampened (ratio = '
+            if over_damping:
+                print('Warning: The system is over-dampened (ratio = '
                   + str(damping_ratio) + ') in the tangential component.')
+            else:
+                raise Exception('Warning: The system is over-dampened (ratio = '
+                      + str(damping_ratio) + ') in the tangential component.\n'
+                      + 'Call this function once more with `over_damping=True` '
+                      + 'if this is what you want.')
         else:
             print('Warning: The system is critically dampened (ratio = '
                   + str(damping_ratio) + ') in the tangential component.')
