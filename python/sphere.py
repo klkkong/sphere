@@ -3662,6 +3662,8 @@ class sim:
         done in C++. The particle pair indexes and the distance of the overlaps
         is saved in the object itself as the ``.pairs`` and ``.overlaps``
         members.
+
+        See also: :func:`findNormalForces()`
         '''
         self.writebin(verbose=False)
         subprocess.call('cd .. && ./sphere --contacts input/' + self.sid
@@ -3670,6 +3672,19 @@ class sim:
         self.pairs = numpy.array((contactdata[:,0], contactdata[:,1]),
                 dtype=numpy.int32)
         self.overlaps = numpy.array(contactdata[:,2])
+
+    def findNormalForces(self):
+        '''
+        Finds all particle-particle overlaps (by first calling
+        :func:`findOverlaps()`) and calculating the normal magnitude by
+        multiplying the overlaps with the elastic stiffness ``self.k_n``.
+
+        The result is saved in ``self.f_n_magn``.
+
+        See also: :func:`findOverlaps()`
+        '''
+        self.findOverlaps()
+        self.f_n_magn = self.k_n * numpy.abs(self.overlaps)
 
 
     def forcechains(self, lc=200.0, uc=650.0, outformat='png', disp='2d'):

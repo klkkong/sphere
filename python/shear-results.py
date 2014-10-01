@@ -26,6 +26,8 @@ dilation = [[], [], []]
 p_min = [[], [], []]
 p_mean = [[], [], []]
 p_max = [[], [], []]
+f_n_mean = [[], [], []]
+f_n_max  = [[], [], []]
 
 fluid=True
 
@@ -61,15 +63,22 @@ for c in numpy.arange(1,len(cvals)+1):
         friction[c] = sim.tau/sim.sigma_eff
         dilation[c] = sim.dilation
 
-        # fluid pressures
-        p_mean[c] = numpy.zeros_like(shear_strain[c])
-        p_min[c] = numpy.zeros_like(shear_strain[c])
-        p_max[c] = numpy.zeros_like(shear_strain[c])
+        # fluid pressures and particle forces
+        p_mean[c]   = numpy.zeros_like(shear_strain[c])
+        p_min[c]    = numpy.zeros_like(shear_strain[c])
+        p_max[c]    = numpy.zeros_like(shear_strain[c])
+        f_n_mean[c] = numpy.zeros_like(shear_strain[c])
+        f_n_max[c]  = numpy.zeros_like(shear_strain[c])
         for i in numpy.arange(sim.status()):
+            sim.readstep(i, verbose=False)
             iz_top = int(sim.w_x[0]/(sim.L[2]/sim.num[2]))-1
             p_mean[c][i] = numpy.mean(sim.p_f[:,:,0:iz_top])/1000
-            p_min[c][i] = numpy.min(sim.p_f[:,:,0:iz_top])/1000
-            p_max[c][i] = numpy.max(sim.p_f[:,:,0:iz_top])/1000
+            p_min[c][i]  = numpy.min(sim.p_f[:,:,0:iz_top])/1000
+            p_max[c][i]  = numpy.max(sim.p_f[:,:,0:iz_top])/1000
+
+            sim.findNormalForces()
+            f_n_mean[c][i] = numpy.mean(sim.f_n_magn)
+            f_n_max[c][i]  = numpy.max(sim.f_n_magn)
 
     else:
         print(sid + ' not found')
@@ -82,14 +91,16 @@ for c in numpy.arange(1,len(cvals)+1):
 
 
 #fig = plt.figure(figsize=(8,8)) # (w,h)
-fig = plt.figure(figsize=(8,12))
+#fig = plt.figure(figsize=(8,12))
+fig = plt.figure(figsize=(8,16))
 
 #plt.subplot(3,1,1)
 #plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
-ax1 = plt.subplot(311)
-ax2 = plt.subplot(312, sharex=ax1)
-ax3 = plt.subplot(313, sharex=ax1)
+ax1 = plt.subplot(411)
+ax2 = plt.subplot(412, sharex=ax1)
+ax3 = plt.subplot(413, sharex=ax1)
+ax4 = plt.subplot(414, sharex=ax1)
 ax1.plot(shear_strain[0], friction[0], label='dry')
 ax2.plot(shear_strain[0], dilation[0], label='dry')
 
@@ -112,11 +123,17 @@ for c in numpy.arange(1,len(cvals)+1):
             where=p_min[c][1:]<=p_max[c][1:], facecolor=color[c],
             interpolate=True, alpha=alpha)
 
+    ax4.plot(shear_strain[c][1:], f_n_mean[c][1:], '-' + color[c],
+            label='$c$ = %.2f' % (cvals[c-1]), linewidth=2)
+    ax4.plot(shear_strain[c][1:], f_n_max[c][1:], '--' + color[c])
+            #label='$c$ = %.2f' % (cvals[c-1]), linewidth=2)
+
 ax3.set_xlabel('Shear strain $\\gamma$ [-]')
 
 ax1.set_ylabel('Shear friction $\\tau/\\sigma\'$ [-]')
 ax2.set_ylabel('Dilation $\\Delta h/(2r)$ [-]')
 ax3.set_ylabel('Fluid pressure $p_\\text{f}$ [kPa]')
+ax4.set_ylabel('Particle contact force $||\\boldsymbol{f}_\\text{p}||$ [N]')
 
 #ax1.set_xlim([200,300])
 
@@ -132,6 +149,8 @@ ax1.legend(loc='best', prop={'size':18}, fancybox=True, framealpha=legend_alpha)
 ax2.legend(loc='lower right', prop={'size':18}, fancybox=True,
         framealpha=legend_alpha)
 ax3.legend(loc='lower right', prop={'size':18}, fancybox=True,
+        framealpha=legend_alpha)
+ax4.legend(loc='best', prop={'size':18}, fancybox=True,
         framealpha=legend_alpha)
 
 plt.tight_layout()
