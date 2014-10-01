@@ -34,34 +34,55 @@ for i in numpy.arange(sim.num[2]):
 shear_strain = numpy.zeros(sim.status())
 
 dev_pres = numpy.zeros((sim.num[2], sim.status()))
+pres_static = numpy.zeros_like(dev_pres)
+pres = numpy.zeros_like(dev_pres)
 
 for i in numpy.arange(sim.status()):
 
     sim.readstep(i, verbose=False)
 
-    '''
-    dev_pres[:,i] = numpy.average(numpy.average(sim.p_f, axis=0), axis=0)
+    pres[:,i] = numpy.average(numpy.average(sim.p_f, axis=0), axis=0)
 
     for z in numpy.arange(0, sim.w_x[0]+1):
-        pres_static = (sim.w_x[0] - zpos_c[z])*sim.rho_f*numpy.abs(sim.g[2])\
+        pres_static[z,i] = \
+                (sim.w_x[0] - zpos_c[z])*sim.rho_f*numpy.abs(sim.g[2])\
                 + sim.p_f[0,0,-1]
-        dev_pres[z,i] -= pres_static
-        '''
-    dev_pres[:,i] = numpy.arange(0, sim.num[2])
 
     shear_strain[i] = sim.shearStrain()
 
+dev_pres = pres - pres_static
 
-#fig = plt.figure(figsize=(8,4*(len(steps))+1))
-fig = plt.figure(figsize=(8,6))
+#fig = plt.figure(figsize=(8,6))
+fig = plt.figure(figsize=(8,15))
 
-plt.pcolormesh(shear_strain, zpos_c, dev_pres/1000.0, rasterized=True)
-plt.xlim([0, shear_strain[-1]])
-plt.ylim([zpos_c[0], sim.w_x[0]])
-plt.xlabel('Shear strain $\\gamma$ [-]')
-plt.ylabel('Vertical position $z$ [m]')
+ax1 = plt.subplot(311)
+ax1.pcolormesh(shear_strain, zpos_c, dev_pres/1000.0, rasterized=True)
+ax1.set_xlim([0, shear_strain[-1]])
+ax1.set_ylim([zpos_c[0], sim.w_x[0]])
+ax1.set_xlabel('Shear strain $\\gamma$ [-]')
+ax1.set_ylabel('Vertical position $z$ [m]')
 cb = plt.colorbar()
 cb.set_label('Deviatoric pressure $p_\\text{f}$ [kPa]')
+cb.solids.set_rasterized(True)
+
+ax2 = plt.subplot(312)
+ax2.pcolormesh(shear_strain, zpos_c, pres/1000.0, rasterized=True)
+ax2.set_xlim([0, shear_strain[-1]])
+ax2.set_ylim([zpos_c[0], sim.w_x[0]])
+ax2.set_xlabel('Shear strain $\\gamma$ [-]')
+ax2.set_ylabel('Vertical position $z$ [m]')
+cb = plt.colorbar()
+cb.set_label('Pressure $p_\\text{f}$ [kPa]')
+cb.solids.set_rasterized(True)
+
+ax3 = plt.subplot(312)
+ax3.pcolormesh(shear_strain, zpos_c, pres_static/1000.0, rasterized=True)
+ax3.set_xlim([0, shear_strain[-1]])
+ax3.set_ylim([zpos_c[0], sim.w_x[0]])
+ax3.set_xlabel('Shear strain $\\gamma$ [-]')
+ax3.set_ylabel('Vertical position $z$ [m]')
+cb = plt.colorbar()
+cb.set_label('Pressure $p_\\text{f}$ [kPa]')
 cb.solids.set_rasterized(True)
 
 

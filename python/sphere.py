@@ -2619,6 +2619,23 @@ class sim:
         self.time_file_dt[0] = file_dt
         self.time_step_count[0] = 0
 
+    def dry(self):
+        '''
+        Set the simulation to be dry (no fluids).
+
+        See also :func:`wet()`
+        '''
+        self.fluid = False
+
+    def wet(self):
+        '''
+        Set the simulation to be dry (no fluids).
+
+        See also :func:`dry()`
+        '''
+        self.fluid = True
+        self.initFluid()
+
     def initFluid(self, mu = 8.9e-4, rho = 1.0e3, p = 1.0,
             hydrostatic = True):
         '''
