@@ -183,7 +183,6 @@ int main(const int argc, const char *argv[])
                 // init cuda, transfer const mem
                 DEM dem(argvi, verbose, checkVals, dry, 1, 1, fluid, device);
 
-
                 // Render image if requested
                 if (render == 1)
                     dem.render(method, max_val, lower_cutoff);
