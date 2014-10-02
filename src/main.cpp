@@ -171,17 +171,21 @@ int main(const int argc, const char *argv[])
                 std::cout << argv[0] << ": processing input file: " << argvi <<
                     std::endl;
 
+            if (print_contacts == 1) {
+                DEM dem(argvi, verbose, 0, 0, 0, 0, fluid, device);
+                dem.printContacts();
+                exit(0);
+            }
+
             if (nfiles == 1) {
 
                 // Create DEM class, read data from input binary, check values,
                 // init cuda, transfer const mem
                 DEM dem(argvi, verbose, checkVals, dry, 1, 1, fluid, device);
 
-                if (print_contacts == 1)
-                    dem.printContacts();
 
                 // Render image if requested
-                else if (render == 1)
+                if (render == 1)
                     dem.render(method, max_val, lower_cutoff);
 
                 // Otherwise, start iterating through time

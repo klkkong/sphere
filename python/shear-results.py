@@ -148,7 +148,7 @@ ax3.set_ylabel('Fluid pressure $p_\\text{f}$ [kPa]')
 ax4.set_ylabel('Particle contact force $||\\boldsymbol{f}_\\text{p}||$ [N]')
 
 #ax1.set_xlim([200,300])
-ax3.set_ylim([550,650])
+ax3.set_ylim([595,608])
 
 plt.setp(ax1.get_xticklabels(), visible=False)
 plt.setp(ax2.get_xticklabels(), visible=False)
