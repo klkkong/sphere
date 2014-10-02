@@ -5185,7 +5185,7 @@ class sim:
 
         else :
             print("Visualization type '" + method + "' not understood")
-
+            return
 
         # Optional save of figure
         if (outformat != 'txt'):
