@@ -102,7 +102,7 @@ for c in numpy.arange(1,len(cvals)+1):
 #fig = plt.figure(figsize=(8,8)) # (w,h)
 #fig = plt.figure(figsize=(8,12))
 fig = plt.figure(figsize=(8,16))
-fig.subplots_adjust(vspace=0)
+fig.subplots_adjust(hspace=0.0)
 
 #plt.subplot(3,1,1)
 #plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
@@ -148,7 +148,7 @@ ax3.set_ylabel('Fluid pressure $p_\\text{f}$ [kPa]')
 ax4.set_ylabel('Particle contact force $||\\boldsymbol{f}_\\text{p}||$ [N]')
 
 #ax1.set_xlim([200,300])
-ax2.set_ylim([550,650])
+ax3.set_ylim([550,650])
 
 plt.setp(ax1.get_xticklabels(), visible=False)
 plt.setp(ax2.get_xticklabels(), visible=False)
@@ -169,6 +169,7 @@ ax4.legend(loc='best', prop={'size':18}, fancybox=True,
         framealpha=legend_alpha)
 
 plt.tight_layout()
+plt.subplots_adjust(hspace=0.0)
 filename = 'shear-' + str(int(sigma0/1000.0)) + 'kPa-stress-dilation.pdf'
 #print(os.getcwd() + '/' + filename)
 plt.savefig(filename)
