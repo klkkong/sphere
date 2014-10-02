@@ -102,7 +102,7 @@ for c in numpy.arange(1,len(cvals)+1):
 #fig = plt.figure(figsize=(8,8)) # (w,h)
 #fig = plt.figure(figsize=(8,12))
 fig = plt.figure(figsize=(8,16))
-fig.subplots_adjust(hspace=0)
+fig.subplots_adjust(vspace=0)
 
 #plt.subplot(3,1,1)
 #plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
@@ -113,8 +113,8 @@ ax3 = plt.subplot(413, sharex=ax1)
 ax4 = plt.subplot(414, sharex=ax1)
 ax1.plot(shear_strain[0], friction[0], label='dry')
 ax2.plot(shear_strain[0], dilation[0], label='dry')
-ax4.plot(shear_strain[0], f_n_mean[0], '-', label='dry')
-ax4.plot(shear_strain[0], f_n_max[0], '--')
+ax4.plot(shear_strain[0], f_n_mean[0], '-', label='dry', color='blue')
+ax4.plot(shear_strain[0], f_n_max[0], '--', color='blue')
 
 color = ['b','g','r']
 for c in numpy.arange(1,len(cvals)+1):
@@ -148,6 +148,7 @@ ax3.set_ylabel('Fluid pressure $p_\\text{f}$ [kPa]')
 ax4.set_ylabel('Particle contact force $||\\boldsymbol{f}_\\text{p}||$ [N]')
 
 #ax1.set_xlim([200,300])
+ax2.set_ylim([550,650])
 
 plt.setp(ax1.get_xticklabels(), visible=False)
 plt.setp(ax2.get_xticklabels(), visible=False)
