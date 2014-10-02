@@ -20,8 +20,9 @@ sigma0 = float(sys.argv[1])
 c_grad_p = float(sys.argv[2])
 c_phi = 1.0
 
-sid = 'shear-sigma0=' + str(sigma0) + '-c_phi=' + \
-                str(c_phi) + '-c_grad_p=' + str(c_grad_p) + '-hi_mu-lo_visc'
+#sid = 'shear-sigma0=' + str(sigma0) + '-c_phi=' + \
+#                str(c_phi) + '-c_grad_p=' + str(c_grad_p) + '-hi_mu-lo_visc'
+sid = 'halfshear-sigma0=' + str(sigma0) + '-c=' + str(c_grad_p) + '-shear'
 sim = sphere.sim(sid, fluid=True)
 sim.readfirst(verbose=False)
 
@@ -74,8 +75,8 @@ ax1.set_xlim([0, shear_strain[-1]])
 ax1.set_ylim([zpos_c[0], sim.w_x[0]])
 ax1.set_xlabel('Shear strain $\\gamma$ [-]')
 ax1.set_ylabel('Vertical position $z$ [m]')
-#cb1 = plt.colorbar(im1, boundaries=[min_p, numpy.abs(min_p)])
-cb1 = plt.colorbar(cmap=cmap, norm=norm)
+#cb1 = plt.colorbar()
+cb1 = plt.colorbar(im1, cmap=cmap, norm=norm)
 cb1.set_label('Deviatoric pressure $p_\\text{f}$ [kPa]')
 cb1.solids.set_rasterized(True)
 
