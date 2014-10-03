@@ -12,7 +12,8 @@ import sphere
 from permeabilitycalculator import *
 import matplotlib.pyplot as plt
 
-dp_list = numpy.array([1.0e3, 2.0e3, 4.0e3, 10.0e3, 20.0e3, 40.0e3])
+#dp_list = numpy.array([1.0e3, 2.0e3, 4.0e3, 10.0e3, 20.0e3, 40.0e3])
+dp_list = numpy.array([1.0e3, 2.0e3, 4.0e3, 10.0e3])
 cvals = [1.0, 0.1, 0.01]
 c_phi = 1.0
 

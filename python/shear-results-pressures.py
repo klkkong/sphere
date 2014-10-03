@@ -63,22 +63,31 @@ min_p = numpy.min(dev_pres)/1000.0
 #max_p = numpy.min(dev_pres)
 max_p = numpy.abs(min_p)
 
-cmap = matplotlib.colors.ListedColormap(['b', 'w', 'r'])
-bounds = [min_p, 0, max_p]
-norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
+#cmap = matplotlib.colors.ListedColormap(['b', 'w', 'r'])
+#bounds = [min_p, 0, max_p]
+#norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
 
 #ax1 = plt.subplot(311)
 ax1 = plt.subplot(111)
-im1 = ax1.pcolormesh(shear_strain, zpos_c, dev_pres/1000.0, rasterized=True,
-        cmap=cmap, norm=norm)
+#im1 = ax1.pcolormesh(shear_strain, zpos_c, dev_pres/1000.0, rasterized=True,
+#        cmap=cmap, norm=norm)
+im1 = ax1.pcolormesh(shear_strain, zpos_c, dev_pres/1000.0, vmin=min_p,
+        vmax=max_p, rasterized=True)
 ax1.set_xlim([0, shear_strain[-1]])
 ax1.set_ylim([zpos_c[0], sim.w_x[0]])
 ax1.set_xlabel('Shear strain $\\gamma$ [-]')
 ax1.set_ylabel('Vertical position $z$ [m]')
-#cb1 = plt.colorbar()
-cb1 = plt.colorbar(im1, cmap=cmap, norm=norm)
-cb1.set_label('Deviatoric pressure $p_\\text{f}$ [kPa]')
+cb1 = plt.colorbar(im1)
+#cb1 = plt.colorbar(im1, cmap=cmap, norm=norm)
+cb1.set_label('$p_\\text{f} - p^\\text{hyd}_\\text{f}$ [kPa]')
 cb1.solids.set_rasterized(True)
+
+# annotate plot
+ax1.text(0.02, 0.15, 'compressive',
+        bbox={'facecolor':'white', 'alpha':0.5, 'pad':10})
+
+ax1.text(0.12, 0.25, 'dilative',
+        bbox={'facecolor':'white', 'alpha':0.5, 'pad':10})
 
 '''
 ax2 = plt.subplot(312)

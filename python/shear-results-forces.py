@@ -23,8 +23,9 @@ sigma0 = float(sys.argv[1])
 c_grad_p = float(sys.argv[2])
 c_phi = 1.0
 
-sid = 'shear-sigma0=' + str(sigma0) + '-c_phi=' + \
-                str(c_phi) + '-c_grad_p=' + str(c_grad_p) + '-hi_mu-lo_visc'
+#sid = 'shear-sigma0=' + str(sigma0) + '-c_phi=' + \
+#                str(c_phi) + '-c_grad_p=' + str(c_grad_p) + '-hi_mu-lo_visc'
+sid = 'halfshear-sigma0=' + str(sigma0) + '-c=' + str(c_grad_p) + '-shear'
 sim = sphere.sim(sid, fluid=True)
 sim.readfirst(verbose=False)
 
@@ -112,11 +113,13 @@ for step_str in steps:
         print(sid + ' not found')
     s += 1
 
+
 #fig = plt.figure(figsize=(8,4*(len(steps))+1))
 fig = plt.figure(figsize=(8,5*(len(steps))+1))
 
 ax = []
 for s in numpy.arange(len(steps)):
+
 
     ax.append(plt.subplot(len(steps)*100 + 31 + s*3))
     ax.append(plt.subplot(len(steps)*100 + 32 + s*3, sharey=ax[s*4+0]))
@@ -126,9 +129,19 @@ for s in numpy.arange(len(steps)):
     ax[s*4+0].plot(xdisp[s], zpos_p[s], ',', color = '#888888')
     ax[s*4+0].plot(xdisp_mean[s], zpos_c[s], color = 'k')
 
-    ax[s*4+1].plot(f_pf[s],  zpos_p[s], ',', color = '#888888')
-    ax[s*4+1].plot(f_pf_mean[s], zpos_c[s], color = 'k')
-    ax[s*4+1].plot([0.0, 0.0], [0.0, sim.L[2]], '--', color='k')
+    # remove particles with 0.0 pressure force
+    I = numpy.nonzero(numpy.abs(f_pf[s]) > .01)
+    f_pf_nonzero = f_pf[s][I]
+    zpos_p_nonzero = zpos_p[s][I]
+    I = numpy.nonzero(numpy.abs(f_pf_mean[s]) > .01)
+    f_pf_mean_nonzero = f_pf_mean[s][I]
+    zpos_c_nonzero = zpos_c[s][I]
+
+    #ax[s*4+1].plot(f_pf[s],  zpos_p[s], ',', color = '#888888')
+    ax[s*4+1].plot(f_pf_nonzero,  zpos_p_nonzero, ',', color = '#888888')
+    #ax[s*4+1].plot(f_pf_mean[s][1:-2], zpos_c[s][1:-2], color = 'k')
+    ax[s*4+1].plot(f_pf_mean_nonzero, zpos_c_nonzero, color = 'k')
+    #ax[s*4+1].plot([0.0, 0.0], [0.0, sim.L[2]], '--', color='k')
 
     #ax[s*4+2].plot(dev_p[s]/1000.0, zpos_c[s], 'k')
     ax[s*4+2].plot(phi_bar[s,1:], zpos_c[s,1:], '-k', linewidth=3)
@@ -142,6 +155,7 @@ for s in numpy.arange(len(steps)):
 
     max_z = numpy.max(zpos_p)
     ax[s*4+0].set_ylim([0, max_z])
+    ax[s*4+1].set_xlim([0.15, 0.46])
     ax[s*4+1].set_ylim([0, max_z])
     ax[s*4+2].set_ylim([0, max_z])
     #plt.plot(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
@@ -181,8 +195,9 @@ for s in numpy.arange(len(steps)):
             transform=ax[s*4+0].transAxes)
     #ax[s*4+0].set_title(strain_str)
 
-    #ax1.grid()
-    #ax2.grid()
+    ax[s*4+0].grid()
+    ax[s*4+1].grid()
+    ax[s*4+2].grid()
     #ax1.legend(loc='lower right', prop={'size':18})
     #ax2.legend(loc='lower right', prop={'size':18})
 
