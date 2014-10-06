@@ -47,9 +47,8 @@ for i in numpy.arange(sim.status()):
     dz = sim.L[2]/sim.num[2]
     wall0_iz = int(sim.w_x[0]/dz)
     for z in numpy.arange(0, wall0_iz+1):
-                #(wall0_iz*dz - zpos_c[z] + 0.5*dz)*sim.rho_f*numpy.abs(sim.g[2])\
         pres_static[z,i] = \
-                (wall0_iz*dz - zpos_c[z])*sim.rho_f*numpy.abs(sim.g[2])\
+                (wall0_iz*dz - zpos_c[z] + 0.5*dz)*sim.rho_f*numpy.abs(sim.g[2])\
                 + sim.p_f[0,0,-1]
         #pres_static[z,i] = zpos_c[z]
         #pres_static[z,i] = z
@@ -77,6 +76,7 @@ ax1 = plt.subplot(311)
 #        cmap=cmap, norm=norm)
 im1 = ax1.pcolormesh(shear_strain, zpos_c, dev_pres/1000.0, vmin=min_p,
         vmax=max_p, rasterized=True)
+#im1 = ax1.pcolormesh(shear_strain, zpos_c, dev_pres/1000.0, rasterized=True)
 #ax1.set_xlim([0, shear_strain[-1]])
 #ax1.set_ylim([zpos_c[0], sim.w_x[0]])
 ax1.set_xlabel('Shear strain $\\gamma$ [-]')
