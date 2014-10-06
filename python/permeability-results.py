@@ -145,6 +145,7 @@ ax2.legend(loc='best', prop={'size':18}, fancybox=True, framealpha=0.5)
 ax3.legend(loc='best', prop={'size':18}, fancybox=True, framealpha=0.5)
 
 plt.tight_layout()
+plt.subplots_adjust(hspace = .12)
 filename = 'permeability-dpdz-vs-K-vs-c.pdf'
 #print(os.getcwd() + '/' + filename)
 plt.savefig(filename)

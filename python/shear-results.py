@@ -16,8 +16,8 @@ import matplotlib.pyplot as plt
 #sigma0_list = numpy.array([1.0e3, 2.0e3, 4.0e3, 10.0e3, 20.0e3, 40.0e3])
 #sigma0 = 10.0e3
 sigma0 = float(sys.argv[1])
-#cvals = [1.0, 0.1]
-cvals = [1.0]
+cvals = [1.0, 0.1]
+#cvals = [1.0]
 
 shear_strain = [[], [], []]
 friction = [[], [], []]
@@ -169,7 +169,7 @@ ax4.legend(loc='best', prop={'size':18}, fancybox=True,
         framealpha=legend_alpha)
 
 plt.tight_layout()
-plt.subplots_adjust(hspace=0.0)
+plt.subplots_adjust(hspace=0.05)
 filename = 'shear-' + str(int(sigma0/1000.0)) + 'kPa-stress-dilation.pdf'
 #print(os.getcwd() + '/' + filename)
 plt.savefig(filename)

@@ -144,20 +144,28 @@ for s in numpy.arange(len(steps)):
     #ax[s*4+1].plot([0.0, 0.0], [0.0, sim.L[2]], '--', color='k')
 
     #ax[s*4+2].plot(dev_p[s]/1000.0, zpos_c[s], 'k')
-    ax[s*4+2].plot(phi_bar[s,1:], zpos_c[s,1:], '-k', linewidth=3)
+    #ax[s*4+2].plot(phi_bar[s,1:], zpos_c[s,1:], '-k', linewidth=3)
+    ax[s*4+2].plot(phi_bar[s,1:], zpos_c[s,1:], '-k')
 
     #phicolor = '#888888'
     #ax[s*4+3].plot(phi_bar[s], zpos_c[s], '-', color = phicolor)
     #for tl in ax[s*4+3].get_xticklabels():
         #tl.set_color(phicolor)
-    ax[s*4+3].plot(dphi_bar[s,1:], zpos_c[s,1:], '-k', linewidth=3)
-    ax[s*4+3].plot(dphi_bar[s,1:], zpos_c[s,1:], '-w', linewidth=2)
+    ax[s*4+3].plot(dphi_bar[s,1:], zpos_c[s,1:], '--k')
+    #ax[s*4+3].plot(dphi_bar[s,1:], zpos_c[s,1:], '-k', linewidth=3)
+    #ax[s*4+3].plot(dphi_bar[s,1:], zpos_c[s,1:], '-w', linewidth=2)
 
     max_z = numpy.max(zpos_p)
     ax[s*4+0].set_ylim([0, max_z])
-    ax[s*4+1].set_xlim([0.15, 0.46])
+
+    #ax[s*4+1].set_xlim([0.15, 0.46]) # f_pf
+    ax[s*4+1].set_xlim([0.235, 0.409]) # f_pf
     ax[s*4+1].set_ylim([0, max_z])
+
     ax[s*4+2].set_ylim([0, max_z])
+    ax[s*4+2].set_xlim([0.33, 0.6])      # phi
+    ax[s*4+3].set_xlim([-0.09, 0.024])  # dphi/dt
+
     #plt.plot(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
     #plt.semilogx(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
     #plt.semilogy(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
@@ -168,8 +176,8 @@ for s in numpy.arange(len(steps)):
     ax[s*4+1].set_xlabel('$\\boldsymbol{f}^z_\\text{pf}$ [N]')
     #ax[s*4+2].set_xlabel('$\\bar{p_\\text{f}}$ [kPa]')
     #ax[s*4+3].set_xlabel('$\\bar{\\phi}$ [-]', color=phicolor)
-    ax[s*4+2].set_xlabel('$\\bar{\\phi}$ [-]')
-    ax[s*4+3].set_xlabel('$\\delta \\bar{\\phi}/\\delta t$ [-]')
+    ax[s*4+2].set_xlabel('$\\bar{\\phi}$ [-] (solid)')
+    ax[s*4+3].set_xlabel('$\\delta \\bar{\\phi}/\\delta t$ [-] (dashed)')
     plt.setp(ax[s*4+1].get_yticklabels(), visible=False)
     plt.setp(ax[s*4+2].get_yticklabels(), visible=False)
 

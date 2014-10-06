@@ -3132,6 +3132,7 @@ __global__ void findInteractionForce(
     const Float*  __restrict__ dev_ns_div_tau_x,// in
     const Float*  __restrict__ dev_ns_div_tau_y,// in
     const Float*  __restrict__ dev_ns_div_tau_z,// in
+    const Float c_grad_p,                       // in
     Float3* __restrict__ dev_ns_f_pf,     // out
     Float4* __restrict__ dev_force,       // out
     Float4* __restrict__ dev_ns_f_d,      // out
@@ -3211,7 +3212,7 @@ __global__ void findInteractionForce(
 
         // Pressure gradient force
         const Float3 f_p =
-            -1.0*gradient(dev_ns_p, i_x, i_y, i_z, dx, dy, dz)*V_p;
+            -c_grad_p*gradient(dev_ns_p, i_x, i_y, i_z, dx, dy, dz)*V_p;
 
         // Viscous force
         const Float3 f_v = -1.0*div_tau*V_p;
