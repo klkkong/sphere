@@ -96,7 +96,7 @@ for s in numpy.arange(len(cvals)):
     if cvals[s] == 'dry':
         legend = 'dry'
     else:
-        legend = 'c = ' + str(cvals[s])
+        legend = 'wet, c = ' + str(cvals[s])
 
     ax[0].plot(xdisp[s], zpos_p[s], ',', color = '#888888')
     ax[0].plot(xdisp_mean[s], zpos_c[s], linetype[s], color='k', label = legend,
@@ -134,7 +134,7 @@ for s in numpy.arange(len(cvals)):
     #ax2.legend(loc='lower right', prop={'size':18})
 
 legend_alpha=0.5
-ax[0].legend(loc='best', prop={'size':18}, fancybox=True, framealpha=legend_alpha)
+ax[0].legend(loc='lower right', prop={'size':18}, fancybox=True, framealpha=legend_alpha)
 ax[0].grid()
 plt.tight_layout()
 plt.subplots_adjust(wspace = .05)
