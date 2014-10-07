@@ -340,7 +340,7 @@ for s in numpy.arange(len(steps)):
     #ax1.legend(loc='lower right', prop={'size':18})
     #ax2.legend(loc='lower right', prop={'size':18})
 
-    strain_str = 'Shear strain $\\gamma = %.3f$' % (shear_strain[s])
+    #strain_str = 'Shear strain $\\gamma = %.3f$' % (shear_strain[s])
     #fig.text(0.1, y, strain_str, horizontalalignment='left', fontsize=22)
     #ax[s*4+0].annotate(strain_str, xytext=(0,1.1), textcoords='figure fraction',
             #horizontalalignment='left', fontsize=22)
