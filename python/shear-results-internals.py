@@ -143,13 +143,17 @@ for step_str in steps:
 
 #fig = plt.figure(figsize=(8,4*(len(steps))+1))
 #fig = plt.figure(figsize=(8,5*(len(steps))+1))
-#fig = plt.figure(figsize=(16,5*(len(steps))+1))
-fig = plt.figure(figsize=(20,5*(len(steps))+1))
+fig = plt.figure(figsize=(16,5*(len(steps))+1))
 
 ax = []
 for s in numpy.arange(len(steps)):
 
-    strain_str = 'Shear strain $\\gamma = %.3f$' % (shear_strain[s])
+    #strain_str = 'Shear strain\n $\\gamma = %.3f$' % (shear_strain[s])
+
+    if s == 0:
+        strain_str = 'Dilating state ($\\gamma = %.2f$)' % (shear_strain[s])
+    else:
+        strain_str = 'Steady state ($\\gamma = %.2f$)' % (shear_strain[s])
 
     n = 7
     if s == 0:
@@ -254,6 +258,7 @@ for s in numpy.arange(len(steps)):
 
     ax[s*n+1].set_xlim([0.33, 0.6])      # phi
     ax[s*n+2].set_xlim([-0.09, 0.035])  # dphi/dt
+    ax[s*n+3].set_xlim([-1.50, 1.50])      # v_z_p
 
 
     #plt.plot(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
