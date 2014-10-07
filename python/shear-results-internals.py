@@ -151,9 +151,9 @@ for s in numpy.arange(len(steps)):
     #strain_str = 'Shear strain\n $\\gamma = %.3f$' % (shear_strain[s])
 
     if s == 0:
-        strain_str = 'Dilating state ($\\gamma = %.2f$)' % (shear_strain[s])
+        strain_str = 'Dilating state\n $\\gamma = %.2f$' % (shear_strain[s])
     else:
-        strain_str = 'Steady state ($\\gamma = %.2f$)' % (shear_strain[s])
+        strain_str = 'Steady state\n $\\gamma = %.2f$' % (shear_strain[s])
 
     n = 7
     if s == 0:
