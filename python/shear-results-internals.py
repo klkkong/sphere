@@ -100,9 +100,15 @@ for step_str in steps:
                         '''
             f_pf[s,:] += sim.f_sum[:,2]
 
-            dev_p[s,:] += \
-                    numpy.average(numpy.average(sim.p_f, axis=0), axis=0)\
-                    /nsteps_avg
+            dz = sim.L[2]/sim.num[2]
+            wall0_iz = int(sim.w_x[0]/dz)
+            for z in numpy.arange(0, wall0_iz+1):
+                dev_p[s,z] += \
+                        (numpy.average(sim.p_f[:,:,z]) -
+                        ((wall0_iz*dz - zpos_c[s][z] + 0.5*dz)
+                                *sim.rho_f*numpy.abs(sim.g[2])\
+                        + sim.p_f[0,0,-1])) \
+                        /nsteps_avg
 
             v_z_f[s,:] += sim.v_f[:,:,:,2]/nsteps_avg
 
@@ -137,7 +143,8 @@ for step_str in steps:
 
 #fig = plt.figure(figsize=(8,4*(len(steps))+1))
 #fig = plt.figure(figsize=(8,5*(len(steps))+1))
-fig = plt.figure(figsize=(16,5*(len(steps))+1))
+#fig = plt.figure(figsize=(16,5*(len(steps))+1))
+fig = plt.figure(figsize=(20,5*(len(steps))+1))
 
 ax = []
 for s in numpy.arange(len(steps)):
@@ -182,17 +189,19 @@ for s in numpy.arange(len(steps)):
     #ax[s*4+3].plot(dphi_bar[s,1:], zpos_c[s,1:], '-k', linewidth=3)
     #ax[s*4+3].plot(dphi_bar[s,1:], zpos_c[s,1:], '-w', linewidth=2)
 
-    #ax[s*n+3].plot(v_z_p[s]*100.0, zpos_p[s], ',', color = '#888888')
+    ax[s*n+3].plot(v_z_p[s]*100.0, zpos_p[s], ',', color = '#888888')
     ax[s*n+3].plot(v_z_p_bar[s]*100.0, zpos_c[s], color = 'k')
     #ax[s*n+0].plot([0.0,0.0], [0.0, sim.L[2]], '--', color='k')
 
     # hydrostatic pressure distribution
     ax[s*n+4].plot(dev_p[s]/1000.0, zpos_c[s], 'k')
-    y_top = sim.w_x[0]
-    x_top = sim.p_f[0,0,-1]
-    y_bot = 0.0
-    x_bot = x_top + (y_top - y_bot)*sim.rho*numpy.abs(sim.g[2])
-    ax[s*n+4].plot([x_top/1000.0, x_bot/1000.0], [y_top, y_bot], '--', color='k')
+    #dz = sim.L[2]/sim.num[2]
+    #wall0_iz = int(sim.w_x[0]/dz)
+    #y_top = wall0_iz*dz + 0.5*dz
+    #x_top = sim.p_f[0,0,-1]
+    #y_bot = 0.0
+    #x_bot = x_top + (wall0_iz*dz - zpos_c[s][0] + 0.5*dz)*sim.rho_f*numpy.abs(sim.g[2])
+    #ax[s*n+4].plot([x_top/1000.0, x_bot/1000.0], [y_top, y_bot], '--', color='k')
     #ax[s*n+1].set_title(strain_str)
     #ax[s*n+1].set_title('   ')
 
@@ -204,7 +213,7 @@ for s in numpy.arange(len(steps)):
     f_pf_mean_nonzero = f_pf_mean[s][I]
     zpos_c_nonzero = zpos_c[s][I]
 
-    #ax[s*n+5].plot(f_pf_nonzero,  zpos_p_nonzero, ',', color = '#888888')
+    ax[s*n+5].plot(f_pf_nonzero,  zpos_p_nonzero, ',', color = '#888888')
     #ax[s*4+1].plot(f_pf_mean[s][1:-2], zpos_c[s][1:-2], color = 'k')
     ax[s*n+5].plot(f_pf_mean_nonzero, zpos_c_nonzero, color = 'k')
     #ax[s*4+1].plot([0.0, 0.0], [0.0, sim.L[2]], '--', color='k')
@@ -236,7 +245,7 @@ for s in numpy.arange(len(steps)):
     #ax[s*n+0].set_xlim([-0.01,0.01])
     #ax[s*n+0].set_xlim([-0.005,0.005])
     #ax[s*n+0].set_xlim([-0.25,0.75])
-    ax[s*n+4].set_xlim([595,625])   # p_f
+    #ax[s*n+4].set_xlim([595,625])   # p_f
     #ax[s*n+2].set_xlim([-0.0005,0.0005])
     #ax[s*n+2].set_xlim([-0.08,0.08])
 
@@ -256,10 +265,21 @@ for s in numpy.arange(len(steps)):
     ax[s*n+0].set_xlabel('$\\boldsymbol{x}^x_\\text{p}$ [m]')
     ax[s*n+1].set_xlabel('$\\bar{\\phi}$ [-] (solid)')
     ax[s*n+2].set_xlabel('$\\delta \\bar{\\phi}/\\delta t$ [-] (dashed)')
-    ax[s*n+3].set_xlabel('$\\boldsymbol{v}^z_\\text{p}$ [cms$^-1$]')
-    ax[s*n+4].set_xlabel('$\\bar{p_\\text{f}}$ [kPa]')
+    ax[s*n+3].set_xlabel('$\\boldsymbol{v}^z_\\text{p}$ [cms$^{-1}$]')
+    #ax[s*n+4].set_xlabel('$\\bar{p_\\text{f}}$ [kPa]')
+    ax[s*n+4].set_xlabel('$\\bar{p_\\text{f}} - p_\\text{hyd}$ [kPa]')
     ax[s*n+5].set_xlabel('$\\boldsymbol{f}^z_\\text{pf}$ [N]')
-    ax[s*n+6].set_xlabel('$\\bar{\\boldsymbol{v}}^z_\\text{f}$ [cms$^-1$]')
+    ax[s*n+6].set_xlabel('$\\bar{\\boldsymbol{v}}^z_\\text{f}$ [cms$^{-1}$]')
+
+    # align x labels
+    labely = -0.3
+    ax[s*n+0].xaxis.set_label_coords(0.5, labely)
+    ax[s*n+1].xaxis.set_label_coords(0.5, labely)
+    #ax[s*n+2].xaxis.set_label_coords(0.5, labely)
+    ax[s*n+3].xaxis.set_label_coords(0.5, labely)
+    ax[s*n+4].xaxis.set_label_coords(0.5, labely)
+    ax[s*n+5].xaxis.set_label_coords(0.5, labely)
+    ax[s*n+6].xaxis.set_label_coords(0.5, labely)
 
     plt.setp(ax[s*n+1].get_yticklabels(), visible=False)
     plt.setp(ax[s*n+2].get_yticklabels(), visible=False)
@@ -297,12 +317,13 @@ for s in numpy.arange(len(steps)):
     #plt.text(0.05, 1.06, strain_str, horizontalalignment='left', fontsize=22,
             #transform=ax[s*n+0].transAxes)
     #ax[s*4+0].set_title(strain_str)
-    ax[s*n+0].set_title('a')
-    ax[s*n+1].set_title('b')
-    ax[s*n+3].set_title('c')
-    ax[s*n+4].set_title('d')
-    ax[s*n+5].set_title('e')
-    ax[s*n+6].set_title('f')
+
+    #ax[s*n+0].set_title('a')
+    #ax[s*n+1].set_title('b')
+    #ax[s*n+3].set_title('c')
+    #ax[s*n+4].set_title('d')
+    #ax[s*n+5].set_title('e')
+    #ax[s*n+6].set_title('f')
 
     ax[s*n+0].grid()
     ax[s*n+1].grid()
@@ -318,7 +339,7 @@ for s in numpy.arange(len(steps)):
     #fig.text(0.1, y, strain_str, horizontalalignment='left', fontsize=22)
     #ax[s*4+0].annotate(strain_str, xytext=(0,1.1), textcoords='figure fraction',
             #horizontalalignment='left', fontsize=22)
-    plt.text(0.05, 1.06, strain_str, horizontalalignment='left', fontsize=22,
+    plt.text(-0.38, 1.15, strain_str, horizontalalignment='left', fontsize=22,
             transform=ax[s*n+0].transAxes)
 
 #plt.title('  ')

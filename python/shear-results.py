@@ -87,7 +87,7 @@ def smooth(x, window_len=10, window='hanning'):
     return y[window_len-1:-window_len+1]
 
 
-smooth_window = 11
+smooth_window = 40
 
 shear_strain = [[], [], []]
 friction = [[], [], []]
