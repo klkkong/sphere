@@ -87,7 +87,7 @@ def smooth(x, window_len=10, window='hanning'):
     return y[window_len-1:-window_len+1]
 
 
-smooth_window = 40
+smooth_window = 10
 
 shear_strain = [[], [], []]
 friction = [[], [], []]
@@ -188,18 +188,19 @@ ax2 = plt.subplot(212, sharex=ax1)
 #ax4 = plt.subplot(414, sharex=ax1)
 alpha = 0.5
 #ax1.plot(shear_strain[0], friction[0], label='dry', alpha = 0.5)
-ax1.plot(shear_strain[0], friction_smooth[0], label='dry')
-ax2.plot(shear_strain[0], dilation[0], label='dry')
+ax1.plot(shear_strain[0], friction_smooth[0], label='dry', linewidth=1,
+        alpha=0.5)
+ax2.plot(shear_strain[0], dilation[0], label='dry', linewidth=2)
 #ax4.plot(shear_strain[0], f_n_mean[0], '-', label='dry', color='blue')
 #ax4.plot(shear_strain[0], f_n_max[0], '--', color='blue')
 
-color = ['b','g','r']
+color = ['b','g','r','c']
 for c in numpy.arange(1,len(cvals)+1):
 
     #ax1.plot(shear_strain[c][1:], friction[c][1:], \
             #label='$c$ = %.2f' % (cvals[c-1]))
     ax1.plot(shear_strain[c][1:], friction_smooth[c][1:], \
-            label='$c$ = %.2f' % (cvals[c-1]))
+            label='$c$ = %.2f' % (cvals[c-1]), linewidth=1, alpha=0.3)
 
     ax2.plot(shear_strain[c][1:], dilation[c][1:], \
             label='$c$ = %.2f' % (cvals[c-1]), linewidth=2)
@@ -241,7 +242,8 @@ ax2.grid()
 #ax4.grid()
 
 legend_alpha=0.5
-ax1.legend(loc='best', prop={'size':18}, fancybox=True, framealpha=legend_alpha)
+ax1.legend(loc='lower right', prop={'size':18}, fancybox=True,
+        framealpha=legend_alpha)
 ax2.legend(loc='lower right', prop={'size':18}, fancybox=True,
         framealpha=legend_alpha)
 #ax3.legend(loc='lower right', prop={'size':18}, fancybox=True,

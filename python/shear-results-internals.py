@@ -16,7 +16,8 @@ from matplotlib.ticker import MaxNLocator
 #steps = [5, 10, 100]
 #steps = [5, 10]
 steps = sys.argv[3:]
-nsteps_avg = 5 # no. of steps to average over
+#nsteps_avg = 5 # no. of steps to average over
+nsteps_avg = 100 # no. of steps to average over
 
 sigma0 = float(sys.argv[1])
 #c_grad_p = 1.0
@@ -145,6 +146,16 @@ for step_str in steps:
 #fig = plt.figure(figsize=(8,5*(len(steps))+1))
 fig = plt.figure(figsize=(16,5*(len(steps))+1))
 
+def color(c):
+    if c == 1.0:
+        return 'green'
+    elif c == 0.1:
+        return 'red'
+    elif c == 0.01:
+        return 'cyan'
+    else:
+        return 'blue'
+
 ax = []
 for s in numpy.arange(len(steps)):
 
@@ -181,26 +192,27 @@ for s in numpy.arange(len(steps)):
                 sharex=ax[6])) # 6: v_z^f
 
     #ax[s*n+0].plot(xdisp[s], zpos_p[s], ',', color = '#888888')
-    ax[s*n+0].plot(xdisp_mean[s], zpos_c[s], color = 'k')
+    ax[s*n+0].plot(xdisp_mean[s], zpos_c[s], color=color(c_grad_p))
 
     #ax[s*4+2].plot(dev_p[s]/1000.0, zpos_c[s], 'k')
     #ax[s*4+2].plot(phi_bar[s,1:], zpos_c[s,1:], '-k', linewidth=3)
-    ax[s*n+1].plot(phi_bar[s,1:], zpos_c[s,1:], '-k')
+    ax[s*n+1].plot(phi_bar[s,1:], zpos_c[s,1:], '-', color=color(c_grad_p))
 
     #phicolor = '#888888'
     #ax[s*4+3].plot(phi_bar[s], zpos_c[s], '-', color = phicolor)
     #for tl in ax[s*4+3].get_xticklabels():
         #tl.set_color(phicolor)
-    ax[s*n+2].plot(dphi_bar[s,1:], zpos_c[s,1:], '--k')
+    ax[s*n+2].plot(dphi_bar[s,1:], zpos_c[s,1:], '--', color=color(c_grad_p))
     #ax[s*4+3].plot(dphi_bar[s,1:], zpos_c[s,1:], '-k', linewidth=3)
     #ax[s*4+3].plot(dphi_bar[s,1:], zpos_c[s,1:], '-w', linewidth=2)
 
-    ax[s*n+3].plot(v_z_p[s]*100.0, zpos_p[s], ',', color = '#888888')
-    ax[s*n+3].plot(v_z_p_bar[s]*100.0, zpos_c[s], color = 'k')
+    ax[s*n+3].plot(v_z_p[s]*100.0, zpos_p[s], ',', alpha=0.5,
+            color=color(c_grad_p))
+    ax[s*n+3].plot(v_z_p_bar[s]*100.0, zpos_c[s], color=color(c_grad_p))
     #ax[s*n+0].plot([0.0,0.0], [0.0, sim.L[2]], '--', color='k')
 
     # hydrostatic pressure distribution
-    ax[s*n+4].plot(dev_p[s]/1000.0, zpos_c[s], 'k')
+    ax[s*n+4].plot(dev_p[s]/1000.0, zpos_c[s], color=color(c_grad_p))
     #dz = sim.L[2]/sim.num[2]
     #wall0_iz = int(sim.w_x[0]/dz)
     #y_top = wall0_iz*dz + 0.5*dz
@@ -219,12 +231,13 @@ for s in numpy.arange(len(steps)):
     f_pf_mean_nonzero = f_pf_mean[s][I]
     zpos_c_nonzero = zpos_c[s][I]
 
-    ax[s*n+5].plot(f_pf_nonzero,  zpos_p_nonzero, ',', color = '#888888')
+    ax[s*n+5].plot(f_pf_nonzero,  zpos_p_nonzero, ',', alpha=0.5,
+            color=color(c_grad_p))
     #ax[s*4+1].plot(f_pf_mean[s][1:-2], zpos_c[s][1:-2], color = 'k')
-    ax[s*n+5].plot(f_pf_mean_nonzero, zpos_c_nonzero, color = 'k')
+    ax[s*n+5].plot(f_pf_mean_nonzero, zpos_c_nonzero, color=color(c_grad_p))
     #ax[s*4+1].plot([0.0, 0.0], [0.0, sim.L[2]], '--', color='k')
 
-    ax[s*n+6].plot(v_z_f_bar[s]*100.0, zpos_c[s], color = 'k')
+    ax[s*n+6].plot(v_z_f_bar[s]*100.0, zpos_c[s], color=color(c_grad_p))
     #ax[s*n+2].plot([0.0,0.0], [0.0, sim.L[2]], '--', color='k')
 
 

@@ -4789,6 +4789,28 @@ class sim:
         '''
         self.ndem = numpy.asarray(ndem)
 
+    def shearStress(self):
+        '''
+        Calculates the sum of shear stress values measured on any moving
+        particles.
+
+        :returns: The shear stress in Pa
+        :return type: numpy.array
+        '''
+
+        fixvel = numpy.nonzero(self.fixvel > 0.0)
+        shearvel = self.shearVel()
+
+        force = numpy.zeros(3)
+
+        # Summation of shear stress contributions
+        for i in fixvel[0]:
+            if (sb.vel[i,0] > 0.0):
+                force += -sb.force[i,:]
+
+        return force/(sim.L[0]*sim.L[1])
+
+
     def visualize(self, method = 'energy', savefig = True, outformat = 'png'):
         '''
         Visualize output from the simulation, where the temporal progress is
@@ -5069,9 +5091,9 @@ class sim:
                     self.dilation  = numpy.zeros(lastfile+1, dtype=numpy.float64)
 
                     # Upper wall position
-                    self.tau_u = 0.0             # Peak shear stress
+                    self.tau_p = 0.0             # Peak shear stress
                     # Shear strain value of peak sh. stress
-                    self.tau_u_shearstrain = 0.0
+                    self.tau_p_shearstrain = 0.0
 
                     fixvel = numpy.nonzero(sb.fixvel > 0.0)
                     #fixvel_upper = numpy.nonzero(sb.vel[fixvel,0] > 0.0)
@@ -5082,7 +5104,7 @@ class sim:
                 # Summation of shear stress contributions
                 for j in fixvel[0]:
                     if (sb.vel[j,0] > 0.0):
-                        self.tau[i] += -sb.force[j,0]
+                        self.tau[i] += -sb.force[j,0]/A
 
                 if (i > 0):
                     self.xdisp[i] = self.xdisp[i-1] +sb.time_file_dt[0]*shearvel
@@ -5103,17 +5125,17 @@ class sim:
                 self.dilation[i] = (sb.w_x[0] - w_x0)/d_bar
 
                 # Test if this was the max. shear stress
-                if (self.tau[i] > self.tau_u):
-                    self.tau_u = self.tau[i]
-                    self.tau_u_shearstrain = self.xdisp[i]/w_x0
+                if (self.tau[i] > self.tau_p):
+                    self.tau_p = self.tau[i]
+                    self.tau_p_shearstrain = self.xdisp[i]/w_x0
 
 
             self.shear_strain = self.xdisp/w_x0
 
             # Plot stresses
             if (outformat != 'txt'):
-                shearinfo = "$\\tau_u$ = {:.3} Pa at $\gamma$ = {:.3}".format(\
-                        self.tau_u, self.tau_u_shearstrain)
+                shearinfo = "$\\tau_p$ = {:.3} Pa at $\gamma$ = {:.3}".format(\
+                        self.tau_p, self.tau_p_shearstrain)
                 fig.text(0.01, 0.01, shearinfo, horizontalalignment='left',
                          fontproperties=FontProperties(size=14))
                 ax1 = plt.subplot2grid((2,1), (0,0))

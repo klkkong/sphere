@@ -93,19 +93,22 @@ ax1 = plt.subplot(3,1,1)
 ax2 = plt.subplot(3,1,2, sharex=ax1)
 ax3 = plt.subplot(3,1,3, sharex=ax1)
 #ax4 = plt.subplot(4,1,4, sharex=ax1)
-lines = ['-', '--', '-.', ':']
-markers = ['o', 'x', '^', '+']
+colors = ['g', 'r', 'c', 'y']
+#lines = ['-', '--', '-.', ':']
+lines = ['-', '-', '-', '-']
+#markers = ['o', 'x', '^', '+']
+markers = ['x', 'x', 'x', 'x']
 for c in range(len(cvals)):
     dpdz[c] /= 1000.0
     #plt.plot(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
     #plt.semilogx(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
     #plt.semilogy(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
     ax1.loglog(dpdz[c], K[c], label='$c$ = %.2f' % (cvals[c]),
-            linestyle=lines[c], marker=markers[c], color='black')
+            linestyle=lines[c], marker=markers[c], color=colors[c])
     ax2.semilogx(dpdz[c], phi_bar[c], label='$c$ = %.2f' % (cvals[c]),
-            linestyle=lines[c], marker=markers[c], color='black')
+            linestyle=lines[c], marker=markers[c], color=colors[c])
     ax3.loglog(dpdz[c], Re[c], label='$c$ = %.2f' % (cvals[c]),
-            linestyle=lines[c], marker=markers[c], color='black')
+            linestyle=lines[c], marker=markers[c], color=colors[c])
     #ax4.loglog(dpdz[c], fp_fsum[c], label='$c$ = %.2f' % (cvals[c]),
             #linestyle=lines[c], marker=markers[c], color='black')
 
