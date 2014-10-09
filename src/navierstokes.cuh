@@ -2493,6 +2493,7 @@ __global__ void findNSforcing(
     const Float*  __restrict__ dev_ns_v_p_z,       // in
     const unsigned int nijac,                      // in
     const unsigned int ndem,                       // in
+    const Float c_grad_p,                          // in
     Float*  __restrict__ dev_ns_f1,                // out
     Float3* __restrict__ dev_ns_f2,                // out
     Float*  __restrict__ dev_ns_f)                 // out
@@ -2544,9 +2545,9 @@ __global__ void findNSforcing(
 
             // Find forcing function terms
 #ifdef SET_1
-            const Float t1 = phi*devC_params.rho_f*div_v_p/dt;
-            const Float t2 = devC_params.rho_f*dot(v_p, grad_phi)/dt;
-            const Float t4 = dphi*devC_params.rho_f/(dt*dt);
+            const Float t1 = phi*devC_params.rho_f*div_v_p/(c_grad_p*dt);
+            const Float t2 = devC_params.rho_f*dot(v_p, grad_phi)/(c_grad_p*dt);
+            const Float t4 = dphi*devC_params.rho_f/(c_grad_p*dt*dt);
 
 #endif
 #ifdef SET_2

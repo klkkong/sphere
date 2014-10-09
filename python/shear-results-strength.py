@@ -22,9 +22,9 @@ def print_strengths(sid, fluid=False, c=0.0):
     tau_ultimate = numpy.average(friction[-500:-1])
 
     if fluid:
-        print('%.2f \t %.3f \t %.3f' % (c, tau_peak, tau_ultimate))
+        print('%.2f \t %.2f \t %.2f' % (c, tau_peak, tau_ultimate))
     else:
-        print('dry \t %.3f \t %.3f' % (tau_peak, tau_ultimate))
+        print('dry \t %.2f \t %.2f' % (tau_peak, tau_ultimate))
 
     return friction
 
@@ -32,7 +32,7 @@ def print_strengths(sid, fluid=False, c=0.0):
 
 
 # print header
-print('$c$ [-] \t Peak \\tau/\\sigma\' [-] \t Ultimate \\tau/\\sigma\' [-]')
+print('$c$ [-] \t \\tau/\\sigma\' (peak) [-] \t \\tau/\\sigma\' (ultimate) [-]')
 f = print_strengths(baseid + '-shear', fluid=False)
 f = print_strengths(baseid + '-c=1.0-shear', fluid=True, c=1.0)
 f = print_strengths(baseid + '-c=0.1-shear', fluid=True, c=0.1)

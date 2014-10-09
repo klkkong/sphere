@@ -13,10 +13,10 @@ from permeabilitycalculator import *
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
-#cvals = ['dry', 1.0, 0.1]
 sigma0 = 20000.0
-cvals = ['dry', 1.0]
-step = 1000
+cvals = ['dry', 1.0, 0.1]
+#cvals = ['dry', 1.0]
+step = 800
 nsteps_avg = 1 # no. of steps to average over
 
 sim = sphere.sim('halfshear-sigma0=' + str(sigma0) + '-shear')
@@ -101,9 +101,9 @@ for s in numpy.arange(len(cvals)):
         legend = 'wet, c = ' + str(cvals[s])
 
     #ax[0].plot(xdisp[s], zpos_p[s], ',', color = '#888888')
-    ax[0].plot(xdisp[s], zpos_p[s], ',', color=color[s], alpha=0.5)
+    #ax[0].plot(xdisp[s], zpos_p[s], ',', color=color[s], alpha=0.5)
     ax[0].plot(xdisp_mean[s], zpos_c[s], linetype[s], color=color[s],
-            label=legend, linewidth=2)
+            label=legend, linewidth=1)
 
     ax[0].set_ylabel('Vertical position $z$ [m]')
     ax[0].set_xlabel('$\\boldsymbol{x}^x_\\text{p}$ [m]')

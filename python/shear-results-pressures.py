@@ -66,9 +66,6 @@ for c in numpy.arange(len(c_grad_p)):
 #fig = plt.figure(figsize=(8,12))
 fig = plt.figure(figsize=(8,15))
 
-min_p = numpy.min(dev_pres[0])/1000.0
-#max_p = numpy.min(dev_pres)
-max_p = numpy.abs(min_p)
 
 #cmap = matplotlib.colors.ListedColormap(['b', 'w', 'r'])
 #bounds = [min_p, 0, max_p]
@@ -79,12 +76,19 @@ for c in numpy.arange(len(c_grad_p)):
 
     ax.append(plt.subplot(len(c_grad_p), 1, c+1))
 
+    max_p_dev = numpy.max((numpy.abs(numpy.min(dev_pres[c])),
+            numpy.max(dev_pres[c])))
+    #max_p = numpy.min(dev_pres)
+    min_p = -max_p_dev/1000.0
+    max_p = max_p_dev/1000.0
+
     #im1 = ax[c].pcolormesh(shear_strain[c], zpos_c[c], dev_pres[c]/1000.0,
             #vmin=min_p, vmax=max_p, rasterized=True)
     im1 = ax[c].pcolormesh(shear_strain[c], zpos_c[c], dev_pres[c]/1000.0,
             rasterized=True)
-    ax[c].set_xlim([0, shear_strain[c,-1]])
-    ax[c].set_ylim([zpos_c[0,0], sim.w_x[0]])
+    if c == 0:
+        ax[c].set_xlim([0, numpy.max(shear_strain[c])])
+        ax[c].set_ylim([zpos_c[0,0], sim.w_x[0]])
     ax[c].set_xlabel('Shear strain $\\gamma$ [-]')
     ax[c].set_ylabel('Vertical position $z$ [m]')
 

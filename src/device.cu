@@ -1458,6 +1458,7 @@ __host__ void DEM::startTime()
                             dev_ns_v_p_z,
                             nijac,
                             ns.ndem,
+                            ns.c_grad_p,
                             dev_ns_f1,
                             dev_ns_f2,
                             dev_ns_f);
