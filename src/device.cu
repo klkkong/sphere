@@ -1125,7 +1125,7 @@ __host__ void DEM::startTime()
                         dev_ns_div_tau_x,
                         dev_ns_div_tau_y,
                         dev_ns_div_tau_z,
-                        ns.c_grad_p,
+                        //ns.c_grad_p,
                         dev_ns_f_pf,
                         dev_force,
                         dev_ns_f_d,

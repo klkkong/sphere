@@ -2545,9 +2545,13 @@ __global__ void findNSforcing(
 
             // Find forcing function terms
 #ifdef SET_1
-            const Float t1 = phi*devC_params.rho_f*div_v_p/(c_grad_p*dt);
-            const Float t2 = devC_params.rho_f*dot(v_p, grad_phi)/(c_grad_p*dt);
-            const Float t4 = dphi*devC_params.rho_f/(c_grad_p*dt*dt);
+            //const Float t1 = phi*devC_params.rho_f*div_v_p/(c_grad_p*dt);
+            //const Float t2 = devC_params.rho_f*dot(v_p, grad_phi)/(c_grad_p*dt);
+            //const Float t4 = dphi*devC_params.rho_f/(c_grad_p*dt*dt);
+            const Float t1 = phi*phi*devC_params.rho_f*div_v_p/(c_grad_p*dt);
+            const Float t2 =
+                devC_params.rho_f*phi*dot(v_p, grad_phi)/(c_grad_p*dt);
+            const Float t4 = dphi*devC_params.rho_f*phi/(c_grad_p*dt*dt);
 
 #endif
 #ifdef SET_2
@@ -2556,7 +2560,8 @@ __global__ void findNSforcing(
             const Float t4 = dphi*devC_params.rho_f/(dt*dt*phi);
 #endif
             f1 = t1 + t2 + t4;
-            f2 = grad_phi/phi; // t3/grad(epsilon)
+            //f2 = grad_phi/phi; // t3/grad(epsilon)
+            f2 = grad_phi; // t3/grad(epsilon)
 
 #ifdef REPORT_FORCING_TERMS
             // Report values terms in the forcing function for debugging
@@ -3133,7 +3138,7 @@ __global__ void findInteractionForce(
     const Float*  __restrict__ dev_ns_div_tau_x,// in
     const Float*  __restrict__ dev_ns_div_tau_y,// in
     const Float*  __restrict__ dev_ns_div_tau_z,// in
-    const Float c_grad_p,                       // in
+    //const Float c_grad_p,                       // in
     Float3* __restrict__ dev_ns_f_pf,     // out
     Float4* __restrict__ dev_force,       // out
     Float4* __restrict__ dev_ns_f_d,      // out
@@ -3213,7 +3218,7 @@ __global__ void findInteractionForce(
 
         // Pressure gradient force
         const Float3 f_p =
-            -c_grad_p*gradient(dev_ns_p, i_x, i_y, i_z, dx, dy, dz)*V_p;
+            -1.0*gradient(dev_ns_p, i_x, i_y, i_z, dx, dy, dz)*V_p;
 
         // Viscous force
         const Float3 f_v = -1.0*div_tau*V_p;
