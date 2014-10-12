@@ -2391,9 +2391,10 @@ __global__ void findPredNSvelocities(
             const Float3 grad_p = MAKE_FLOAT3(
                 (p - p_xn)/dx,
                 (p - p_yn)/dy,
-                (p - p_zn)/dz) * c_grad_p;
+                (p - p_zn)/dz);
 #ifdef SET_1
-            pressure_term = -beta*dt/(rho*phi)*grad_p;
+            //pressure_term = -beta*dt/(rho*phi)*grad_p;
+            pressure_term = -beta*c_grad_p*dt/rho*grad_p;
 #endif
 #ifdef SET_2
             pressure_term = -beta*dt/rho*grad_p;
@@ -2408,7 +2409,8 @@ __global__ void findPredNSvelocities(
         // Determine the predicted velocity
 #ifdef SET_1
         const Float3 interaction_term = -dt/(rho*phi)*f_i;
-        const Float3 diffusion_term = dt/(rho*phi)*div_tau;
+        //const Float3 diffusion_term = dt/(rho*phi)*div_tau;
+        const Float3 diffusion_term = dt/rho*div_tau;
         const Float3 gravity_term = MAKE_FLOAT3(
             devC_params.g[0], devC_params.g[1], devC_params.g[2])*dt;
         const Float3 porosity_term = -1.0*v*dphi/phi;
@@ -2548,10 +2550,16 @@ __global__ void findNSforcing(
             //const Float t1 = phi*devC_params.rho_f*div_v_p/(c_grad_p*dt);
             //const Float t2 = devC_params.rho_f*dot(v_p, grad_phi)/(c_grad_p*dt);
             //const Float t4 = dphi*devC_params.rho_f/(c_grad_p*dt*dt);
-            const Float t1 = phi*phi*devC_params.rho_f*div_v_p/(c_grad_p*dt);
+
+            //const Float t1 = phi*phi*devC_params.rho_f*div_v_p/(c_grad_p*dt);
+            //const Float t2 =
+                //devC_params.rho_f*phi*dot(v_p, grad_phi)/(c_grad_p*dt);
+            //const Float t4 = dphi*devC_params.rho_f*phi/(c_grad_p*dt*dt);
+
+            const Float t1 = devC_params.rho_f*div_v_p/(c_grad_p*dt);
             const Float t2 =
-                devC_params.rho_f*phi*dot(v_p, grad_phi)/(c_grad_p*dt);
-            const Float t4 = dphi*devC_params.rho_f*phi/(c_grad_p*dt*dt);
+                devC_params.rho_f*dot(v_p, grad_phi)/(phi*dt*c_grad_p);
+            const Float t4 = devC_params.rho_f*dphi/(dt*dt*c_grad_p*phi);
 
 #endif
 #ifdef SET_2
@@ -2560,8 +2568,8 @@ __global__ void findNSforcing(
             const Float t4 = dphi*devC_params.rho_f/(dt*dt*phi);
 #endif
             f1 = t1 + t2 + t4;
-            //f2 = grad_phi/phi; // t3/grad(epsilon)
-            f2 = grad_phi; // t3/grad(epsilon)
+            f2 = grad_phi/phi; // t3/grad(epsilon)
+            //f2 = grad_phi; // t3/grad(epsilon)
 
 #ifdef REPORT_FORCING_TERMS
             // Report values terms in the forcing function for debugging
@@ -2972,7 +2980,8 @@ __global__ void updateNSvelocity(
 
         // Find new velocity
 #ifdef SET_1
-        Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*phi)*grad_epsilon;
+        //Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*phi)*grad_epsilon;
+        Float3 v = v_p - ndem*devC_dt/devC_params.rho_f*grad_epsilon;
 #endif
 #ifdef SET_2
         Float3 v = v_p - ndem*devC_dt/devC_params.rho_f*grad_epsilon;
