@@ -2282,11 +2282,11 @@ __global__ void findPredNSvelocities(
     const Float*  __restrict__ dev_ns_div_tau_y,       // in
     const Float*  __restrict__ dev_ns_div_tau_z,       // in
     const Float3* __restrict__ dev_ns_div_phi_vi_v,    // in
-    const int     bc_bot,                 // in
-    const int     bc_top,                 // in
-    const Float   beta,                   // in
+    const int     bc_bot,                              // in
+    const int     bc_top,                              // in
+    const Float   beta,                                // in
     const Float3* __restrict__ dev_ns_F_pf,            // in
-    const unsigned int ndem,              // in
+    const unsigned int ndem,                           // in
     const Float   __restrict__ c_grad_p,               // in
     Float* __restrict__ dev_ns_v_p_x,           // out
     Float* __restrict__ dev_ns_v_p_y,           // out
@@ -2976,12 +2976,12 @@ __global__ void updateNSvelocity(
         const Float3 grad_epsilon = MAKE_FLOAT3(
             (epsilon_c - epsilon_xn)/dx,
             (epsilon_c - epsilon_yn)/dy,
-            (epsilon_c - epsilon_zn)/dz) * c_grad_p;
+            (epsilon_c - epsilon_zn)/dz);
 
         // Find new velocity
 #ifdef SET_1
         //Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*phi)*grad_epsilon;
-        Float3 v = v_p - ndem*devC_dt/devC_params.rho_f*grad_epsilon;
+        Float3 v = v_p - ndem*devC_dt*c_grad_p/devC_params.rho_f*grad_epsilon;
 #endif
 #ifdef SET_2
         Float3 v = v_p - ndem*devC_dt/devC_params.rho_f*grad_epsilon;

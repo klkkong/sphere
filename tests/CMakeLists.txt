@@ -27,5 +27,8 @@ add_test(cfd_tests ${PYTHON_EXECUTABLE}
 add_test(cfd_tests_neumann ${PYTHON_EXECUTABLE} 
     ${CMAKE_CURRENT_BINARY_DIR}/cfd_tests_neumann.py)
 
+add_test(cfd_tests_neumann-c=0.1 ${PYTHON_EXECUTABLE} 
+    ${CMAKE_CURRENT_BINARY_DIR}/cfd_tests_neumann-c=0.1.py)
+
 add_test(fluid_particle_interaction ${PYTHON_EXECUTABLE} 
     ${CMAKE_CURRENT_BINARY_DIR}/fluid_particle_interaction.py)
