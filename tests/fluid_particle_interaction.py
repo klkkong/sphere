@@ -53,7 +53,7 @@ test(sim.vel[1,0] > 0.0, 'Particle 1 velocity:')
 test(sim.vel[2,0] > 0.0, 'Particle 2 velocity:')
 
 
-#'''
+'''
 print('# Test 3: Test pressure gradient force, c = 0.1')
 sim.p_f[:,:,0]  = 10.0
 sim.p_f[:,:,-1] = 1.0
@@ -94,6 +94,6 @@ test((sim.v_f[:,:,:,0] > 0.0).all(), 'Fluid velocity:')
 test(sim.vel[0,0] > 0.0, 'Particle 0 velocity:')
 test(sim.vel[1,0] > 0.0, 'Particle 1 velocity:')
 test(sim.vel[2,0] > 0.0, 'Particle 2 velocity:')
-#'''
+'''
 
 sim.cleanup()
