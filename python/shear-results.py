@@ -205,7 +205,7 @@ if smoothed_results:
             alpha=0.5)
 else:
     ax1.plot(shear_strain[0], friction[0], label='dry', linewidth=1, alpha=0.5)
-ax2.plot(shear_strain[0], dilation[0], label='dry', linewidth=2)
+ax2.plot(shear_strain[0], dilation[0], label='dry', linewidth=1)
 #ax4.plot(shear_strain[0], f_n_mean[0], '-', label='dry', color='blue')
 #ax4.plot(shear_strain[0], f_n_max[0], '--', color='blue')
 
@@ -220,7 +220,7 @@ for c in numpy.arange(1,len(cvals)+1):
                 label='$c$ = %.2f' % (cvals[c-1]), linewidth=1, alpha=0.5)
 
     ax2.plot(shear_strain[c][1:], dilation[c][1:], \
-            label='$c$ = %.2f' % (cvals[c-1]), linewidth=2)
+            label='$c$ = %.2f' % (cvals[c-1]), linewidth=1)
 
     '''
     alpha = 0.5

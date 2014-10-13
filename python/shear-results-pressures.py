@@ -17,7 +17,8 @@ matplotlib.rcParams['image.cmap'] = 'bwr'
 
 sigma0 = float(sys.argv[1])
 #c_grad_p = 1.0
-c_grad_p = [1.0, 0.1]
+#c_grad_p = [1.0, 0.1]
+c_grad_p = [1.0, 0.1, 0.01]
 c_phi = 1.0
 
 
@@ -64,7 +65,7 @@ for c in numpy.arange(len(c_grad_p)):
 
 #fig = plt.figure(figsize=(8,6))
 #fig = plt.figure(figsize=(8,12))
-fig = plt.figure(figsize=(8,15))
+fig = plt.figure(figsize=(8,5*len(c_grad_p)+2))
 
 
 #cmap = matplotlib.colors.ListedColormap(['b', 'w', 'r'])
@@ -84,7 +85,9 @@ for c in numpy.arange(len(c_grad_p)):
 
     #im1 = ax[c].pcolormesh(shear_strain[c], zpos_c[c], dev_pres[c]/1000.0,
             #vmin=min_p, vmax=max_p, rasterized=True)
-    im1 = ax[c].pcolormesh(shear_strain[c], zpos_c[c], dev_pres[c]/1000.0,
+    #im1 = ax[c].pcolormesh(shear_strain[c], zpos_c[c], dev_pres[c]/1000.0,
+            #rasterized=True)
+    im1 = ax[c].pcolormesh(shear_strain[c], zpos_c[c], pres[c]/1000.0,
             rasterized=True)
     if c == 0:
         ax[c].set_xlim([0, numpy.max(shear_strain[c])])
