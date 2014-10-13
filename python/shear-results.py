@@ -13,10 +13,15 @@ import sphere
 from permeabilitycalculator import *
 import matplotlib.pyplot as plt
 
+smoothed_results = False
+contact_forces = False
+pressures = False
+
 #sigma0_list = numpy.array([1.0e3, 2.0e3, 4.0e3, 10.0e3, 20.0e3, 40.0e3])
 #sigma0 = 10.0e3
 sigma0 = float(sys.argv[1])
-cvals = [1.0, 0.1]
+#cvals = [1.0, 0.1]
+cvals = [1.0, 0.1, 0.01]
 #cvals = [1.0]
 
 # return a smoothed version of in. The returned array is smaller than the
@@ -89,15 +94,16 @@ def smooth(x, window_len=10, window='hanning'):
 
 smooth_window = 10
 
-shear_strain = [[], [], []]
-friction = [[], [], []]
-friction_smooth = [[], [], []]
-dilation = [[], [], []]
-p_min = [[], [], []]
-p_mean = [[], [], []]
-p_max = [[], [], []]
-f_n_mean = [[], [], []]
-f_n_max  = [[], [], []]
+shear_strain = [[], [], [], []]
+friction = [[], [], [], []]
+if smoothed_results:
+    friction_smooth = [[], [], [], []]
+dilation = [[], [], [], []]
+p_min = [[], [], [], []]
+p_mean = [[], [], [], []]
+p_max = [[], [], [], []]
+f_n_mean = [[], [], [], []]
+f_n_max  = [[], [], [], []]
 
 fluid=True
 
@@ -110,16 +116,18 @@ sim.visualize('shear')
 shear_strain[0] = sim.shear_strain
 #shear_strain[0] = numpy.arange(sim.status()+1)
 friction[0] = sim.tau/sim.sigma_eff
-friction_smooth[0] = smooth(friction[0], smooth_window)
+if smoothed_results:
+    friction_smooth[0] = smooth(friction[0], smooth_window)
 dilation[0] = sim.dilation
 
-f_n_mean[0] = numpy.zeros_like(shear_strain[0])
-f_n_max[0]  = numpy.zeros_like(shear_strain[0])
-for i in numpy.arange(sim.status()):
-    sim.readstep(i, verbose=False)
-    sim.findNormalForces()
-    f_n_mean[0][i] = numpy.mean(sim.f_n_magn)
-    f_n_max[0][i]  = numpy.max(sim.f_n_magn)
+if contact_forces:
+    f_n_mean[0] = numpy.zeros_like(shear_strain[0])
+    f_n_max[0]  = numpy.zeros_like(shear_strain[0])
+    for i in numpy.arange(sim.status()):
+        sim.readstep(i, verbose=False)
+        sim.findNormalForces()
+        f_n_mean[0][i] = numpy.mean(sim.f_n_magn)
+        f_n_max[0][i]  = numpy.max(sim.f_n_magn)
 
 # wet shear
 c = 1
@@ -136,7 +144,8 @@ for c in numpy.arange(1,len(cvals)+1):
         shear_strain[c] = numpy.zeros(sim.status())
         friction[c] = numpy.zeros_like(shear_strain[c])
         dilation[c] = numpy.zeros_like(shear_strain[c])
-        friction_smooth[c] = numpy.zeros_like(shear_strain[c])
+        if smoothed_results:
+            friction_smooth[c] = numpy.zeros_like(shear_strain[c])
 
         sim.readlast(verbose=False)
         sim.visualize('shear')
@@ -144,24 +153,28 @@ for c in numpy.arange(1,len(cvals)+1):
         #shear_strain[c] = numpy.arange(sim.status()+1)
         friction[c] = sim.tau/sim.sigma_eff
         dilation[c] = sim.dilation
-        friction_smooth[c] = smooth(friction[c], smooth_window)
+        if smoothed_results:
+            friction_smooth[c] = smooth(friction[c], smooth_window)
 
         # fluid pressures and particle forces
-        p_mean[c]   = numpy.zeros_like(shear_strain[c])
-        p_min[c]    = numpy.zeros_like(shear_strain[c])
-        p_max[c]    = numpy.zeros_like(shear_strain[c])
-        f_n_mean[c] = numpy.zeros_like(shear_strain[c])
-        f_n_max[c]  = numpy.zeros_like(shear_strain[c])
-        for i in numpy.arange(sim.status()):
-            sim.readstep(i, verbose=False)
-            iz_top = int(sim.w_x[0]/(sim.L[2]/sim.num[2]))-1
-            p_mean[c][i] = numpy.mean(sim.p_f[:,:,0:iz_top])/1000
-            p_min[c][i]  = numpy.min(sim.p_f[:,:,0:iz_top])/1000
-            p_max[c][i]  = numpy.max(sim.p_f[:,:,0:iz_top])/1000
+        if pressures or contact_forces:
+            p_mean[c]   = numpy.zeros_like(shear_strain[c])
+            p_min[c]    = numpy.zeros_like(shear_strain[c])
+            p_max[c]    = numpy.zeros_like(shear_strain[c])
+            f_n_mean[c] = numpy.zeros_like(shear_strain[c])
+            f_n_max[c]  = numpy.zeros_like(shear_strain[c])
+            for i in numpy.arange(sim.status()):
+                if pressures:
+                    sim.readstep(i, verbose=False)
+                    iz_top = int(sim.w_x[0]/(sim.L[2]/sim.num[2]))-1
+                    p_mean[c][i] = numpy.mean(sim.p_f[:,:,0:iz_top])/1000
+                    p_min[c][i]  = numpy.min(sim.p_f[:,:,0:iz_top])/1000
+                    p_max[c][i]  = numpy.max(sim.p_f[:,:,0:iz_top])/1000
 
-            sim.findNormalForces()
-            f_n_mean[c][i] = numpy.mean(sim.f_n_magn)
-            f_n_max[c][i]  = numpy.max(sim.f_n_magn)
+                if contact_forces:
+                    sim.findNormalForces()
+                    f_n_mean[c][i] = numpy.mean(sim.f_n_magn)
+                    f_n_max[c][i]  = numpy.max(sim.f_n_magn)
 
     else:
         print(sid + ' not found')
@@ -187,9 +200,11 @@ ax2 = plt.subplot(212, sharex=ax1)
 #ax3 = plt.subplot(413, sharex=ax1)
 #ax4 = plt.subplot(414, sharex=ax1)
 alpha = 0.5
-#ax1.plot(shear_strain[0], friction[0], label='dry', alpha = 0.5)
-ax1.plot(shear_strain[0], friction_smooth[0], label='dry', linewidth=1,
-        alpha=0.5)
+if smoothed_results:
+    x1.plot(shear_strain[0], friction_smooth[0], label='dry', linewidth=1,
+            alpha=0.5)
+else:
+    ax1.plot(shear_strain[0], friction[0], label='dry', linewidth=1, alpha=0.5)
 ax2.plot(shear_strain[0], dilation[0], label='dry', linewidth=2)
 #ax4.plot(shear_strain[0], f_n_mean[0], '-', label='dry', color='blue')
 #ax4.plot(shear_strain[0], f_n_max[0], '--', color='blue')
@@ -197,10 +212,12 @@ ax2.plot(shear_strain[0], dilation[0], label='dry', linewidth=2)
 color = ['b','g','r','c']
 for c in numpy.arange(1,len(cvals)+1):
 
-    #ax1.plot(shear_strain[c][1:], friction[c][1:], \
-            #label='$c$ = %.2f' % (cvals[c-1]))
-    ax1.plot(shear_strain[c][1:], friction_smooth[c][1:], \
-            label='$c$ = %.2f' % (cvals[c-1]), linewidth=1, alpha=0.3)
+    if smoothed_results:
+        ax1.plot(shear_strain[c][1:], friction_smooth[c][1:], \
+                label='$c$ = %.2f' % (cvals[c-1]), linewidth=1, alpha=0.5)
+    else:
+        ax1.plot(shear_strain[c][1:], friction[c][1:], \
+                label='$c$ = %.2f' % (cvals[c-1]), linewidth=1, alpha=0.5)
 
     ax2.plot(shear_strain[c][1:], dilation[c][1:], \
             label='$c$ = %.2f' % (cvals[c-1]), linewidth=2)
