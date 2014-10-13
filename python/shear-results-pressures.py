@@ -35,31 +35,36 @@ for c in numpy.arange(len(c_grad_p)):
     for i in numpy.arange(sim.num[2]):
         zpos_c[c,i] = i*dz + 0.5*dz
 
-shear_strain = numpy.zeros((len(c_grad_p), sim.status()))
-dev_pres = numpy.zeros((len(c_grad_p), sim.num[2], sim.status()))
-pres_static = numpy.ones_like(dev_pres)*sim.p_f[0,0,-1]
-pres = numpy.zeros_like(dev_pres)
 
+shear_strain = [[], [], []]
+dev_pres = [[], [], []]
+pres_static = [[], [], []]
+pres = [[], [], []]
 
 for c in numpy.arange(len(c_grad_p)):
     sim.sid = 'halfshear-sigma0=' + str(sigma0) + '-c=' + str(c_grad_p[c]) \
             + '-shear'
 
+    shear_strain[c] = numpy.zeros(sim.status())
+    dev_pres[c] = numpy.zeros((sim.num[2], sim.status()))
+    pres_static[c] = numpy.ones_like(dev_pres[c])*sim.p_f[0,0,-1]
+    pres[c] = numpy.zeros_like(dev_pres[c])
+
     for i in numpy.arange(sim.status()):
 
         sim.readstep(i, verbose=False)
 
-        pres[c,:,i] = numpy.average(numpy.average(sim.p_f, axis=0), axis=0)
+        pres[c][:,i] = numpy.average(numpy.average(sim.p_f, axis=0), axis=0)
 
         dz = sim.L[2]/sim.num[2]
         wall0_iz = int(sim.w_x[0]/dz)
         for z in numpy.arange(0, wall0_iz+1):
-            pres_static[c,z,i] = \
+            pres_static[c][z,i] = \
                     (wall0_iz*dz - zpos_c[c,z] + 0.5*dz)\
                     *sim.rho_f*numpy.abs(sim.g[2])\
                     + sim.p_f[0,0,-1]
 
-        shear_strain[c,i] = sim.shearStrain()
+        shear_strain[c][i] = sim.shearStrain()
 
     dev_pres[c] = pres[c] - pres_static[c]
 
@@ -82,16 +87,18 @@ for c in numpy.arange(len(c_grad_p)):
     #max_p = numpy.min(dev_pres)
     min_p = -max_p_dev/1000.0
     max_p = max_p_dev/1000.0
+    #min_p = -5.0
+    #max_p = 5.0
 
-    #im1 = ax[c].pcolormesh(shear_strain[c], zpos_c[c], dev_pres[c]/1000.0,
-            #vmin=min_p, vmax=max_p, rasterized=True)
+    im1 = ax[c].pcolormesh(shear_strain[c], zpos_c[c], dev_pres[c]/1000.0,
+            vmin=min_p, vmax=max_p, rasterized=True)
     #im1 = ax[c].pcolormesh(shear_strain[c], zpos_c[c], dev_pres[c]/1000.0,
             #rasterized=True)
-    im1 = ax[c].pcolormesh(shear_strain[c], zpos_c[c], pres[c]/1000.0,
-            rasterized=True)
-    if c == 0:
-        ax[c].set_xlim([0, numpy.max(shear_strain[c])])
-        ax[c].set_ylim([zpos_c[0,0], sim.w_x[0]])
+    #im1 = ax[c].pcolormesh(shear_strain[c], zpos_c[c], pres[c]/1000.0,
+            #rasterized=True)
+    #if c == 0:
+    ax[c].set_xlim([0, numpy.max(shear_strain[c])])
+    ax[c].set_ylim([zpos_c[0,0], sim.w_x[0]])
     ax[c].set_xlabel('Shear strain $\\gamma$ [-]')
     ax[c].set_ylabel('Vertical position $z$ [m]')
 
