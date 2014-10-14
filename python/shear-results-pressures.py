@@ -17,8 +17,8 @@ matplotlib.rcParams['image.cmap'] = 'bwr'
 
 sigma0 = float(sys.argv[1])
 #c_grad_p = 1.0
-#c_grad_p = [1.0, 0.1]
-c_grad_p = [1.0, 0.1, 0.01]
+c_grad_p = [1.0, 0.1]
+#c_grad_p = [1.0, 0.1, 0.01, 1e-07]
 c_phi = 1.0
 
 
@@ -36,10 +36,10 @@ for c in numpy.arange(len(c_grad_p)):
         zpos_c[c,i] = i*dz + 0.5*dz
 
 
-shear_strain = [[], [], []]
-dev_pres = [[], [], []]
-pres_static = [[], [], []]
-pres = [[], [], []]
+shear_strain = [[], [], [], []]
+dev_pres = [[], [], [], []]
+pres_static = [[], [], [], []]
+pres = [[], [], [], []]
 
 for c in numpy.arange(len(c_grad_p)):
     sim.sid = 'halfshear-sigma0=' + str(sigma0) + '-c=' + str(c_grad_p[c]) \
