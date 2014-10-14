@@ -40,9 +40,9 @@ rm CMakeCache.txt
 cmake . && make
 cd python
 # $ python shear-starter.py <DEVICE> <FLUID> <C_PHI> <C_GRAD_P> <SIGMA_0>
-python halfshear-starter-rate.py 0 0 1.0 1.0 20.0e3 20000.0 2.0 &
-python halfshear-starter-rate.py 1 0 1.0 1.0 20.0e3 20000.0 1.0 &
-python halfshear-starter-rate.py 2 0 1.0 1.0 20.0e3 20000.0 0.5 &
+python halfshear-starter-rate.py 0 0 1.0 1.0 20000.0 2.0 &
+python halfshear-starter-rate.py 1 0 1.0 1.0 20000.0 1.0 &
+python halfshear-starter-rate.py 2 0 1.0 1.0 20000.0 0.5 &
 wait
 
 #cp $WORKDIR/output/* $ORIGDIR/output/
