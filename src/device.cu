@@ -704,7 +704,8 @@ __host__ void DEM::startTime()
     checkForCudaErrors("Start of startTime()");
 
     // Write initial data to output/<sid>.output00000.bin
-    writebin(("output/" + sid + ".output00000.bin").c_str());
+    if (time.step_count == 0)
+        writebin(("output/" + sid + ".output00000.bin").c_str());
 
     // Time variables
     clock_t tic, toc;
@@ -1775,7 +1776,8 @@ __host__ void DEM::startTime()
             // Write binary output file
             time.step_count += 1;
             sprintf(file,"output/%s.output%05d.bin", sid.c_str(),
-                    time.step_count); writebin(file);
+                    time.step_count);
+            writebin(file);
 
             /*std::cout << "\n###### OUTPUT FILE " << time.step_count << " ######"
                 << std::endl;
