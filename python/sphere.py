@@ -5091,19 +5091,19 @@ class sim:
                 # First iteration: Allocate arrays and find constant values
                 if (i == 0):
                     # Shear displacement
-                    self.xdisp     = numpy.zeros(lastfile+1, dtype=numpy.float64)
+                    self.xdisp    = numpy.zeros(lastfile+1, dtype=numpy.float64)
 
                     # Normal stress
-                    self.sigma_eff = numpy.zeros(lastfile+1, dtype=numpy.float64)
+                    self.sigma_eff= numpy.zeros(lastfile+1, dtype=numpy.float64)
 
                     # Normal stress
-                    self.sigma_def = numpy.zeros(lastfile+1, dtype=numpy.float64)
+                    self.sigma_def= numpy.zeros(lastfile+1, dtype=numpy.float64)
 
                     # Shear stress
-                    self.tau       = numpy.zeros(lastfile+1, dtype=numpy.float64)
+                    self.tau      = numpy.zeros(lastfile+1, dtype=numpy.float64)
 
                     # Upper wall position
-                    self.dilation  = numpy.zeros(lastfile+1, dtype=numpy.float64)
+                    self.dilation = numpy.zeros(lastfile+1, dtype=numpy.float64)
 
                     # Upper wall position
                     self.tau_p = 0.0             # Peak shear stress
@@ -5115,6 +5115,9 @@ class sim:
                     shearvel = sb.vel[fixvel,0].max()
                     w_x0 = sb.w_x[0]        # Original height
                     A = sb.L[0] * sb.L[1]   # Upper surface area
+
+                if (i == 1):
+                    w_x0 = sb.w_x[0]        # Original height
 
                 # Summation of shear stress contributions
                 for j in fixvel[0]:
