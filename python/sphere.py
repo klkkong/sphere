@@ -1684,6 +1684,16 @@ class sim:
         else:
             dporos.SetNumberOfTuples(grid.GetNumberOfPoints())
 
+        # array of scalars: Reynold's number
+        self.ReynoldsNumber()
+        Re = vtk.vtkDoubleArray()
+        Re.SetName("Reynolds number")
+        Re.SetNumberOfComponents(1)
+        if cell_centered:
+            Re.SetNumberOfTuples(grid.GetNumberOfCells())
+        else:
+            Re.SetNumberOfTuples(grid.GetNumberOfPoints())
+
         # insert values
         for z in range(self.num[2]):
             for y in range(self.num[1]):
@@ -1693,6 +1703,7 @@ class sim:
                     vel.SetTuple(idx, self.v_f[x,y,z,:])
                     poros.SetValue(idx, self.phi[x,y,z])
                     dporos.SetValue(idx, self.dphi[x,y,z])
+                    Re.SetValue(idx, self.Re[x,y,z])
 
         # add pres array to grid
         if cell_centered:
@@ -1700,11 +1711,13 @@ class sim:
             grid.GetCellData().AddArray(vel)
             grid.GetCellData().AddArray(poros)
             grid.GetCellData().AddArray(dporos)
+            grid.GetCellData().AddArray(Re)
         else:
             grid.GetPointData().AddArray(pres)
             grid.GetPointData().AddArray(vel)
             grid.GetPointData().AddArray(poros)
             grid.GetPointData().AddArray(dporos)
+            grid.GetPointData().AddArray(Re)
 
         # write VTK XML image data file
         writer = vtk.vtkXMLImageDataWriter()
@@ -4504,7 +4517,8 @@ class sim:
 
     def ReynoldsNumber(self):
         '''
-        Estimate the per-cell Reynolds number by: Re = rho * ||v_f|| * dx/mu
+        Estimate the per-cell Reynolds number by: Re = rho * ||v_f|| * dx/mu.
+        This value is returned and also stored in `self.Re`.
 
         :returns: Reynolds number
         :return type: Numpy array with dimensions like the fluid grid
@@ -4515,7 +4529,8 @@ class sim:
         for z in numpy.arange(self.num[2]):
             for y in numpy.arange(self.num[1]):
                 for x in numpy.arange(self.num[0]):
-                    self.v_f_magn = self.v_f[x,y,z,:].dot(self.v_f[x,y,z,:])
+                    self.v_f_magn[x,y,z] = \
+                            self.v_f[x,y,z,:].dot(self.v_f[x,y,z,:])
 
         self.Re = self.rho_f*self.v_f_magn*self.L[0]/self.num[0]/self.mu
         return self.Re
