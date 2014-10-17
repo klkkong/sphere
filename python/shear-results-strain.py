@@ -14,10 +14,10 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
 sigma0 = 20000.0
-cvals = ['dry', 1.0, 0.1]
+cvals = ['dry', 1.0, 0.1, 0.01]
+#cvals = ['dry', 1.0, 0.1]
 #cvals = ['dry', 1.0]
-step = 800
-nsteps_avg = 1 # no. of steps to average over
+#step = 1999
 
 sim = sphere.sim('halfshear-sigma0=' + str(sigma0) + '-shear')
 sim.readfirst(verbose=False)
@@ -51,20 +51,13 @@ for c in cvals:
 
     if os.path.isfile('../output/' + sid + '.status.dat'):
 
-        for substep in numpy.arange(nsteps_avg):
+        sim.readlast(verbose=False)
 
-            if step + substep > sim.status():
-                raise Exception(
-                        'Simulation step %d not available (sim.status = %d).'
-                        % (step, sim.status()))
+        zpos_p[s,:] = sim.x[:,2]
 
-            sim.readstep(step + substep, verbose=False)
+        xdisp[s,:] = sim.xyzsum[:,0]
 
-            zpos_p[s,:] += sim.x[:,2]/nsteps_avg
-
-            xdisp[s,:] += sim.xyzsum[:,0]/nsteps_avg
-
-            #shear_strain[s] += sim.shearStrain()/nsteps_avg
+        #shear_strain[s] += sim.shearStrain()/nsteps_avg
 
         # calculate mean values of xdisp and f_pf
         for iz in numpy.arange(sim.num[2]):
@@ -73,6 +66,10 @@ for c in cvals:
             I = numpy.nonzero((zpos_p[s,:] >= z_bot) & (zpos_p[s,:] < z_top))
             if len(I) > 0:
                 xdisp_mean[s,iz] = numpy.mean(xdisp[s,I])
+
+        # normalize distance
+        max_dist = numpy.nanmax(xdisp_mean[s])
+        xdisp_mean[s] /= max_dist
 
     else:
         print(sid + ' not found')
@@ -85,8 +82,8 @@ fig = plt.figure(figsize=(8,6))
 
 ax = []
 #linetype = ['-', '--', '-.']
-linetype = ['-', '-', '-']
-color = ['b','g','r','c']
+linetype = ['-', '-', '-', '-']
+color = ['b','g','c','y']
 for s in numpy.arange(len(cvals)):
 
     ax.append(plt.subplot(111))
@@ -102,11 +99,12 @@ for s in numpy.arange(len(cvals)):
 
     #ax[0].plot(xdisp[s], zpos_p[s], ',', color = '#888888')
     #ax[0].plot(xdisp[s], zpos_p[s], ',', color=color[s], alpha=0.5)
-    ax[0].plot(xdisp_mean[s], zpos_c[s], linetype[s], color=color[s],
-            label=legend, linewidth=1)
+    ax[0].plot(xdisp_mean[s], zpos_c[s], linetype[s],
+            color=color[s], label=legend, linewidth=1)
 
     ax[0].set_ylabel('Vertical position $z$ [m]')
-    ax[0].set_xlabel('$\\boldsymbol{x}^x_\\text{p}$ [m]')
+    #ax[0].set_xlabel('$\\boldsymbol{x}^x_\\text{p}$ [m]')
+    ax[0].set_xlabel('Normalized horizontal distance')
 
     #ax[s*4+0].get_xaxis().set_major_locator(MaxNLocator(nbins=5))
     #ax[s*4+1].get_xaxis().set_major_locator(MaxNLocator(nbins=5))

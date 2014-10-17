@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 smoothed_results = False
 contact_forces = False
 pressures = False
+zflow = True
 
 #sigma0_list = numpy.array([1.0e3, 2.0e3, 4.0e3, 10.0e3, 20.0e3, 40.0e3])
 #sigma0 = 10.0e3
@@ -104,6 +105,7 @@ p_mean = [[], [], [], []]
 p_max = [[], [], [], []]
 f_n_mean = [[], [], [], []]
 f_n_max  = [[], [], [], []]
+v_f_z_mean  = [[], [], [], []]
 
 fluid=True
 
@@ -163,6 +165,7 @@ for c in numpy.arange(1,len(cvals)+1):
             p_max[c]    = numpy.zeros_like(shear_strain[c])
             f_n_mean[c] = numpy.zeros_like(shear_strain[c])
             f_n_max[c]  = numpy.zeros_like(shear_strain[c])
+            v_f_z_mean[c] = numpy.zeros_like(shear_strain[c])
             for i in numpy.arange(sim.status()):
                 if pressures:
                     sim.readstep(i, verbose=False)
@@ -175,6 +178,9 @@ for c in numpy.arange(1,len(cvals)+1):
                     sim.findNormalForces()
                     f_n_mean[c][i] = numpy.mean(sim.f_n_magn)
                     f_n_max[c][i]  = numpy.max(sim.f_n_magn)
+
+                if zflow:
+                    v_f_z_mean[c][i] = numpy.mean(sim.v_f[:,:,:,2])
 
     else:
         print(sid + ' not found')
@@ -195,8 +201,11 @@ fig.subplots_adjust(hspace=0.0)
 #plt.subplot(3,1,1)
 #plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
-ax1 = plt.subplot(211)
-ax2 = plt.subplot(212, sharex=ax1)
+#ax1 = plt.subplot(211)
+#ax2 = plt.subplot(212, sharex=ax1)
+ax1 = plt.subplot(311)
+ax2 = plt.subplot(312, sharex=ax1)
+ax3 = plt.subplot(313, sharex=ax1)
 #ax3 = plt.subplot(413, sharex=ax1)
 #ax4 = plt.subplot(414, sharex=ax1)
 alpha = 0.5
@@ -222,6 +231,11 @@ for c in numpy.arange(1,len(cvals)+1):
     ax2.plot(shear_strain[c][1:], dilation[c][1:], \
             label='$c$ = %.2f' % (cvals[c-1]), linewidth=1)
 
+    if zflow:
+        ax3.plot(shear_strain[c][1:], v_f_z_mean[c][1:],
+            label='$c$ = %.2f' % (cvals[c-1]), linewidth=1)
+
+
     '''
     alpha = 0.5
     ax3.plot(shear_strain[c][1:], p_max[c][1:], '-' + color[c], alpha=alpha)
@@ -243,6 +257,7 @@ for c in numpy.arange(1,len(cvals)+1):
 
 ax1.set_ylabel('Shear friction $\\tau/\\sigma\'$ [-]')
 ax2.set_ylabel('Dilation $\\Delta h/(2r)$ [-]')
+ax3.set_ylabel('$\\boldsymbol{v}_\\text{f}^z h$ [ms$^{-1}$]')
 #ax3.set_ylabel('Fluid pressure $p_\\text{f}$ [kPa]')
 #ax4.set_ylabel('Particle contact force $||\\boldsymbol{f}_\\text{p}||$ [N]')
 

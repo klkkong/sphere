@@ -16,8 +16,8 @@ from matplotlib.ticker import MaxNLocator
 #steps = [5, 10, 100]
 #steps = [5, 10]
 steps = sys.argv[3:]
-#nsteps_avg = 5 # no. of steps to average over
-nsteps_avg = 100 # no. of steps to average over
+nsteps_avg = 5 # no. of steps to average over
+#nsteps_avg = 100 # no. of steps to average over
 
 sigma0 = float(sys.argv[1])
 #c_grad_p = 1.0
@@ -50,6 +50,7 @@ v_z_f = numpy.zeros((len(steps), sim.num[0], sim.num[1], sim.num[2]))
 
 # pressure - hydrostatic pressure
 dev_p = numpy.zeros((len(steps), sim.num[2]))
+p     = numpy.zeros((len(steps), sim.num[2]))
 
 # mean per-particle values
 v_z_p_bar = numpy.zeros((len(steps), sim.num[2]))
@@ -85,7 +86,7 @@ for step_str in steps:
             if step + substep > sim.status():
                 raise Exception(
                         'Simulation step %d not available (sim.status = %d).'
-                        % (step, sim.status()))
+                        % (step + substep, sim.status()))
 
             sim.readstep(step + substep, verbose=False)
 
@@ -110,6 +111,9 @@ for step_str in steps:
                                 *sim.rho_f*numpy.abs(sim.g[2])\
                         + sim.p_f[0,0,-1])) \
                         /nsteps_avg
+
+            p[s,:] += numpy.average(numpy.average(sim.p_f[:,:,:], axis=0),\
+                    axis=0)/nsteps_avg
 
             v_z_f[s,:] += sim.v_f[:,:,:,2]/nsteps_avg
 
@@ -213,6 +217,7 @@ for s in numpy.arange(len(steps)):
 
     # hydrostatic pressure distribution
     ax[s*n+4].plot(dev_p[s]/1000.0, zpos_c[s], color=color(c_grad_p))
+    #ax[s*n+4].plot(p[s]/1000.0, zpos_c[s], color=color(c_grad_p))
     #dz = sim.L[2]/sim.num[2]
     #wall0_iz = int(sim.w_x[0]/dz)
     #y_top = wall0_iz*dz + 0.5*dz
