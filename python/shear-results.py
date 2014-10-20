@@ -165,7 +165,6 @@ for c in numpy.arange(1,len(cvals)+1):
             p_max[c]    = numpy.zeros_like(shear_strain[c])
             f_n_mean[c] = numpy.zeros_like(shear_strain[c])
             f_n_max[c]  = numpy.zeros_like(shear_strain[c])
-            v_f_z_mean[c] = numpy.zeros_like(shear_strain[c])
             for i in numpy.arange(sim.status()):
                 if pressures:
                     sim.readstep(i, verbose=False)
@@ -179,7 +178,9 @@ for c in numpy.arange(1,len(cvals)+1):
                     f_n_mean[c][i] = numpy.mean(sim.f_n_magn)
                     f_n_max[c][i]  = numpy.max(sim.f_n_magn)
 
-                if zflow:
+        if zflow:
+            v_f_z_mean[c] = numpy.zeros_like(shear_strain[c])
+            for i in numpy.arange(sim.status()):
                     v_f_z_mean[c][i] = numpy.mean(sim.v_f[:,:,:,2])
 
     else:
@@ -270,7 +271,8 @@ plt.setp(ax1.get_xticklabels(), visible=False)
 
 ax1.grid()
 ax2.grid()
-#ax3.grid()
+if zflow:
+    ax3.grid()
 #ax4.grid()
 
 legend_alpha=0.5
@@ -278,8 +280,9 @@ ax1.legend(loc='lower right', prop={'size':18}, fancybox=True,
         framealpha=legend_alpha)
 ax2.legend(loc='lower right', prop={'size':18}, fancybox=True,
         framealpha=legend_alpha)
-#ax3.legend(loc='lower right', prop={'size':18}, fancybox=True,
-        #framealpha=legend_alpha)
+if zflow:
+    ax3.legend(loc='lower right', prop={'size':18}, fancybox=True,
+            framealpha=legend_alpha)
 #ax4.legend(loc='best', prop={'size':18}, fancybox=True,
         #framealpha=legend_alpha)
 

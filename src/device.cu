@@ -6,8 +6,8 @@
 #include <cuda.h>
 #include <helper_math.h>
 
-#include "vector_arithmetic.h"	// for arbitrary prec. vectors
-//#include <vector_functions.h>	// for single prec. vectors
+#include "vector_arithmetic.h"  // for arbitrary prec. vectors
+//#include <vector_functions.h> // for single prec. vectors
 #include "thrust/device_ptr.h"
 #include "thrust/sort.h"
 
@@ -17,7 +17,7 @@
 #include "constants.cuh"
 #include "debug.h"
 
-#include "sorting.cuh"	
+#include "sorting.cuh"
 #include "contactmodels.cuh"
 #include "cohesion.cuh"
 #include "contactsearch.cuh"
@@ -223,7 +223,7 @@ __host__ void DEM::checkConstantMemory()
 
     // Compare values between global and constant memory
     // structures on the device.
-    int* equal = new int;	// The values are equal = 0, if not = 1
+    int* equal = new int;  // The values are equal = 0, if not = 1
     *equal = 0;
     int* dev_equal;
     cudaMalloc((void**)&dev_equal, sizeof(int));
@@ -548,15 +548,15 @@ __host__ void DEM::transferToGlobalDeviceMemory(int statusmsg)
     //cudaMemcpy(dev_time, &time, sizeof(Time), cudaMemcpyHostToDevice);
 
     // Kinematic particle values
-    cudaMemcpy( dev_x,	       k.x,	   
+    cudaMemcpy( dev_x,        k.x,
                 memSizeF4, cudaMemcpyHostToDevice);
-    cudaMemcpy( dev_xyzsum,    k.xyzsum,
+    cudaMemcpy( dev_xyzsum,   k.xyzsum,
                 memSizeF4, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_vel,      k.vel,
                 memSizeF4, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_vel0,     k.vel,
                 memSizeF4, cudaMemcpyHostToDevice);
-    cudaMemcpy( dev_acc,      k.acc, 
+    cudaMemcpy( dev_acc,      k.acc,
                 memSizeF4, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_force,    k.force,
                 memSizeF4, cudaMemcpyHostToDevice);

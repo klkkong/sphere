@@ -16,8 +16,8 @@ from matplotlib.ticker import MaxNLocator
 #steps = [5, 10, 100]
 #steps = [5, 10]
 steps = sys.argv[3:]
-nsteps_avg = 5 # no. of steps to average over
-#nsteps_avg = 100 # no. of steps to average over
+#nsteps_avg = 5 # no. of steps to average over
+nsteps_avg = 100 # no. of steps to average over
 
 sigma0 = float(sys.argv[1])
 #c_grad_p = 1.0
@@ -72,7 +72,8 @@ dphi_bar = numpy.zeros((len(steps), sim.num[2]))
 xdisp_mean = numpy.zeros((len(steps), sim.num[2]))
 f_pf_mean = numpy.zeros((len(steps), sim.num[2]))
 
-shear_strain = numpy.zeros(len(steps))
+shear_strain_start = numpy.zeros(len(steps))
+shear_strain_end = numpy.zeros(len(steps))
 
 s = 0
 for step_str in steps:
@@ -130,7 +131,10 @@ for step_str in steps:
                     /nsteps_avg/sim.time_dt
 
 
-            shear_strain[s] += sim.shearStrain()/nsteps_avg
+            if substep == 0:
+                shear_strain_start[s] = sim.shearStrain()
+            else:
+                shear_strain_end[s] = sim.shearStrain()
 
         # calculate mean values of xdisp and f_pf
         for iz in numpy.arange(sim.num[2]):
@@ -151,6 +155,7 @@ for step_str in steps:
 fig = plt.figure(figsize=(16,5*(len(steps))+1))
 
 def color(c):
+    return 'black'
     if c == 1.0:
         return 'green'
     elif c == 0.1:
@@ -166,11 +171,11 @@ for s in numpy.arange(len(steps)):
     #strain_str = 'Shear strain\n $\\gamma = %.3f$' % (shear_strain[s])
 
     if s == 0:
-        strain_str = 'Dilating state\n $\\gamma = %.2f$, $c = %.2f$' % \
-        (shear_strain[s], c_grad_p)
+        strain_str = 'Dilating state\n$\\gamma = %.2f$ to $%.2f$\n$c = %.2f$' % \
+        (shear_strain_start[s], shear_strain_end[s], c_grad_p)
     else:
-        strain_str = 'Steady state\n $\\gamma = %.2f$, $c = %.2f$' % \
-        (shear_strain[s], c_grad_p)
+        strain_str = 'Steady state\n$\\gamma = %.2f$ to $%.2f$\n$c = %.2f$' % \
+        (shear_strain_start[s], shear_strain_end[s], c_grad_p)
 
     n = 7
     if s == 0:
@@ -195,7 +200,7 @@ for s in numpy.arange(len(steps)):
         ax.append(plt.subplot(len(steps), n-1, s*(n-1)+6, sharey=ax[s*n+0],
                 sharex=ax[6])) # 6: v_z^f
 
-    #ax[s*n+0].plot(xdisp[s], zpos_p[s], ',', color = '#888888')
+    ax[s*n+0].plot(xdisp[s], zpos_p[s], ',', color = '#888888')
     ax[s*n+0].plot(xdisp_mean[s], zpos_c[s], color=color(c_grad_p))
 
     #ax[s*4+2].plot(dev_p[s]/1000.0, zpos_c[s], 'k')
@@ -211,20 +216,21 @@ for s in numpy.arange(len(steps)):
     #ax[s*4+3].plot(dphi_bar[s,1:], zpos_c[s,1:], '-w', linewidth=2)
 
     ax[s*n+3].plot(v_z_p[s]*100.0, zpos_p[s], ',', alpha=0.5,
-            color=color(c_grad_p))
+            color='#888888')
+            #color=color(c_grad_p))
     ax[s*n+3].plot(v_z_p_bar[s]*100.0, zpos_c[s], color=color(c_grad_p))
     #ax[s*n+0].plot([0.0,0.0], [0.0, sim.L[2]], '--', color='k')
 
     # hydrostatic pressure distribution
-    ax[s*n+4].plot(dev_p[s]/1000.0, zpos_c[s], color=color(c_grad_p))
-    #ax[s*n+4].plot(p[s]/1000.0, zpos_c[s], color=color(c_grad_p))
-    #dz = sim.L[2]/sim.num[2]
-    #wall0_iz = int(sim.w_x[0]/dz)
-    #y_top = wall0_iz*dz + 0.5*dz
-    #x_top = sim.p_f[0,0,-1]
-    #y_bot = 0.0
-    #x_bot = x_top + (wall0_iz*dz - zpos_c[s][0] + 0.5*dz)*sim.rho_f*numpy.abs(sim.g[2])
-    #ax[s*n+4].plot([x_top/1000.0, x_bot/1000.0], [y_top, y_bot], '--', color='k')
+    #ax[s*n+4].plot(dev_p[s]/1000.0, zpos_c[s], color=color(c_grad_p))
+    ax[s*n+4].plot(p[s]/1000.0, zpos_c[s], color=color(c_grad_p))
+    dz = sim.L[2]/sim.num[2]
+    wall0_iz = int(sim.w_x[0]/dz)
+    y_top = wall0_iz*dz + 0.5*dz
+    x_top = sim.p_f[0,0,-1]
+    y_bot = 0.0
+    x_bot = x_top + (wall0_iz*dz - zpos_c[s][0] + 0.5*dz)*sim.rho_f*numpy.abs(sim.g[2])
+    ax[s*n+4].plot([x_top/1000.0, x_bot/1000.0], [y_top, y_bot], '--', color='k')
     #ax[s*n+1].set_title(strain_str)
     #ax[s*n+1].set_title('   ')
 
@@ -237,7 +243,8 @@ for s in numpy.arange(len(steps)):
     zpos_c_nonzero = zpos_c[s][I]
 
     ax[s*n+5].plot(f_pf_nonzero,  zpos_p_nonzero, ',', alpha=0.5,
-            color=color(c_grad_p))
+            color='#888888')
+            #color=color(c_grad_p))
     #ax[s*4+1].plot(f_pf_mean[s][1:-2], zpos_c[s][1:-2], color = 'k')
     ax[s*n+5].plot(f_pf_mean_nonzero, zpos_c_nonzero, color=color(c_grad_p))
     #ax[s*4+1].plot([0.0, 0.0], [0.0, sim.L[2]], '--', color='k')
@@ -276,9 +283,10 @@ for s in numpy.arange(len(steps)):
     #ax[s*4+1].set_xlim([0.15, 0.46]) # f_pf
     #ax[s*n+1].set_xlim([0.235, 0.409]) # f_pf
 
-    ax[s*n+1].set_xlim([0.33, 0.6])      # phi
+    ax[s*n+1].set_xlim([0.33, 0.6])     # phi
     ax[s*n+2].set_xlim([-0.09, 0.035])  # dphi/dt
-    ax[s*n+3].set_xlim([-1.50, 1.50])      # v_z_p
+    ax[s*n+3].set_xlim([-1.50, 1.50])   # v_z_p
+    ax[s*n+5].set_xlim([5.0, 8.0])      # f_z_pf
 
 
     #plt.plot(dpdz[c], K[c], 'o-', label='$c$ = %.2f' % (cvals[c]))
@@ -291,8 +299,8 @@ for s in numpy.arange(len(steps)):
     ax[s*n+1].set_xlabel('$\\bar{\\phi}$ [-] (solid)')
     ax[s*n+2].set_xlabel('$\\delta \\bar{\\phi}/\\delta t$ [-] (dashed)')
     ax[s*n+3].set_xlabel('$\\boldsymbol{v}^z_\\text{p}$ [cms$^{-1}$]')
-    #ax[s*n+4].set_xlabel('$\\bar{p_\\text{f}}$ [kPa]')
-    ax[s*n+4].set_xlabel('$\\bar{p_\\text{f}} - p_\\text{hyd}$ [kPa]')
+    ax[s*n+4].set_xlabel('$\\bar{p_\\text{f}}$ [kPa]')
+    #ax[s*n+4].set_xlabel('$\\bar{p_\\text{f}} - p_\\text{hyd}$ [kPa]')
     ax[s*n+5].set_xlabel('$\\boldsymbol{f}^z_\\text{pf}$ [N]')
     ax[s*n+6].set_xlabel('$\\bar{\\boldsymbol{v}}^z_\\text{f}$ [cms$^{-1}$]')
 
@@ -364,7 +372,7 @@ for s in numpy.arange(len(steps)):
     #fig.text(0.1, y, strain_str, horizontalalignment='left', fontsize=22)
     #ax[s*4+0].annotate(strain_str, xytext=(0,1.1), textcoords='figure fraction',
             #horizontalalignment='left', fontsize=22)
-    plt.text(-0.38, 1.15, strain_str, horizontalalignment='left', fontsize=22,
+    plt.text(-0.38, 1.10, strain_str, horizontalalignment='left', fontsize=22,
             transform=ax[s*n+0].transAxes)
 
 #plt.title('  ')
