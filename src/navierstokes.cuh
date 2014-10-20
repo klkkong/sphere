@@ -2398,7 +2398,8 @@ __global__ void findPredNSvelocities(
             pressure_term = -beta*c_grad_p*dt/(rho*phi)*grad_p;
 #endif
 #ifdef SET_2
-            pressure_term = -beta*dt/rho*grad_p;
+            //pressure_term = -beta*dt/rho*grad_p;
+            pressure_term = -beta*c_grad_p*dt/rho*grad_p;
 #endif
         }
 
@@ -2410,8 +2411,7 @@ __global__ void findPredNSvelocities(
         // Determine the predicted velocity
 #ifdef SET_1
         const Float3 interaction_term = -dt/(rho*phi)*f_i;
-        //const Float3 diffusion_term = dt/(rho*phi)*div_tau;
-        const Float3 diffusion_term = dt/rho*div_tau;
+        const Float3 diffusion_term = dt/(rho*phi)*div_tau;
         const Float3 gravity_term = MAKE_FLOAT3(
             devC_params.g[0], devC_params.g[1], devC_params.g[2])*dt;
         const Float3 porosity_term = -1.0*v*dphi/phi;
@@ -2568,9 +2568,10 @@ __global__ void findNSforcing(
 
 #endif
 #ifdef SET_2
-            const Float t1 = devC_params.rho_f*div_v_p/dt;
-            const Float t2 = devC_params.rho_f*dot(v_p, grad_phi)/(phi*dt);
-            const Float t4 = dphi*devC_params.rho_f/(dt*dt*phi);
+            const Float t1 = devC_params.rho_f*div_v_p/(c_grad_p*dt);
+            const Float t2 =
+                devC_params.rho_f*dot(v_p, grad_phi)/(c_grad_p*phi*dt);
+            const Float t4 = dphi*devC_params.rho_f/(c_grad_p*dt*dt*phi);
 #endif
             f1 = t1 + t2 + t4;
             f2 = grad_phi/phi; // t3/grad(epsilon)
@@ -2991,7 +2992,8 @@ __global__ void updateNSvelocity(
             v_p - ndem*devC_dt*c_grad_p/(phi*devC_params.rho_f)*grad_epsilon;
 #endif
 #ifdef SET_2
-        Float3 v = v_p - ndem*devC_dt/devC_params.rho_f*grad_epsilon;
+        //Float3 v = v_p - ndem*devC_dt/devC_params.rho_f*grad_epsilon;
+        Float3 v = v_p - ndem*devC_dt*c_grad_p/devC_params.rho_f*grad_epsilon;
 #endif
 
         // Print values for debugging
@@ -3030,7 +3032,7 @@ __global__ void updateNSvelocity(
         }
 
         // Set velocities to zero above the dynamic wall
-        if (z > wall0_iz)
+        if (z >= wall0_iz)
             v = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
         // Check the advection term using the Courant-Friedrichs-Lewy condition
