@@ -2545,6 +2545,48 @@ class sim:
         self.mu_ws[0] = 0.0
         self.mu_wd[0] = 0.0
 
+    def largestFluidTimeStep(self, safety=0.01):
+        '''
+        Finds and returns the largest time step in the fluid phase by von
+        Neumann and Courant-Friedrichs-Lewy analysis given the current
+        velocities. This ensures stability in the diffusive and advective parts
+        of the momentum equation.
+
+        The value of the time step decreases with increasing fluid viscosity
+        (`self.mu`), and increases with fluid cell size (`self.L/self.num`)
+
+        and fluid velocities (`self.v_f`)
+
+        :param safety: Safety factor which is multiplied to the largest time
+            step.
+        :type safety: float
+        :returns: The largest timestep stable for the current fluid state.
+        :return type: float
+        '''
+
+        dx_min = numpy.min(self.L/self.num)
+        dt_min_von_neumann = 0.5*dx_min**2/self.mu[0]
+
+        # Normalized velocities
+        v_norm = numpy.empty(self.num[0]*self.num[1]*self.num[2])
+        idx = 0
+        for x in numpy.arange(self.num[0]):
+            for y in numpy.arange(self.num[1]):
+                for z in numpy.arange(self.num[2]):
+                    v_norm[idx] = numpy.sqrt(self.v_f[x,y,z,:].dot(\
+                            self.v_f[x,y,z,:]))
+                    idx += 1
+
+        # Advection term. This term has to be reevaluated during the
+        # computations, as the fluid velocity changes.
+        v_max = numpy.amax(v_norm)
+        if v_max == 0:
+            v_max = 1.0e-7
+
+        dt_min_cfl = dx_min/v_max
+
+        return numpy.min([dt_min_von_neumann, dt_min_cfl])*safety
+
     def initTemporal(self, total,
             current = 0.0,
             file_dt = 0.05,
@@ -2604,7 +2646,7 @@ class sim:
                     self.L[2]/self.num[2]))
 
             # Diffusion term
-            if (self.mu[0]*self.time_dt[0]/(dx*dx) > 0.5):
+            if (self.mu[0]*self.time_dt[0]/(dx**2) > 0.5):
                 raise Exception("Error: The time step is too large to ensure "
                         + "stability in the diffusive term of the fluid "
                         + "momentum equation.")
@@ -2617,7 +2659,7 @@ class sim:
                     for z in numpy.arange(self.num[2]):
                         v_norm[idx] = numpy.sqrt(self.v_f[x,y,z,:].dot(\
                                 self.v_f[x,y,z,:]))
-                        idx = idx + 1
+                        idx += 1
 
             # Advection term. This term has to be reevaluated during the
             # computations, as the fluid velocity changes.

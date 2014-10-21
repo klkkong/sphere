@@ -47,7 +47,7 @@ const int conv_log_interval = 1;
 #define REPORT_V_C_COMPONENTS
 
 // Enable reporting of forcing function terms to stdout
-#define REPORT_FORCING_TERMS
+//#define REPORT_FORCING_TERMS
 
 // Choose solver model (see Zhou et al. 2010 "Discrete particle simulation of
 // particle-fluid flow: model formulations and their applicability", table. 1.

@@ -1650,6 +1650,24 @@ __host__ void DEM::startTime()
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                             &t_updateNSvelocityPressure);
                 checkForCudaErrorsIter("Post updateNSvelocity", iter);
+
+                setNSghostNodesFace<Float>
+                    <<<dimGridFluidFace, dimBlockFluidFace>>>(
+                        dev_ns_v_p_x,
+                        dev_ns_v_p_y,
+                        dev_ns_v_p_z,
+                        ns.bc_bot, ns.bc_top);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter(
+                        "Post setNSghostNodesFace(dev_ns_v)", iter);
+
+                interpolateFaceToCenter<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_v_x,
+                        dev_ns_v_y,
+                        dev_ns_v_z,
+                        dev_ns_v);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post interpolateFaceToCenter", iter);
             } // end iter % ns.dem == 0
         } // end navierstokes == 1
 

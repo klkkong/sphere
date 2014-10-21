@@ -2954,7 +2954,8 @@ __global__ void updateNSvelocity(
     const unsigned int cellidx = vidx(x,y,z);
 
     // Check that we are not outside the fluid grid
-    if (x <= nx && y <= ny && z <= nz) {
+    //if (x <= nx && y <= ny && z <= nz) {
+    if (x < nx && y < ny && z < nz) {
 
         // Read values
         __syncthreads();
@@ -2995,11 +2996,6 @@ __global__ void updateNSvelocity(
         //Float3 v = v_p - ndem*devC_dt/devC_params.rho_f*grad_epsilon;
         Float3 v = v_p - ndem*devC_dt*c_grad_p/devC_params.rho_f*grad_epsilon;
 #endif
-
-#ifdef REPORT_V_C_COMPONENTS
-        printf("[%d,%d,%d] v_c = %f\t%f\t%f\n",
-                v.x-v_p.x, v.y-v_p.y, v.z-v_p.z);
-#endif
         // Print values for debugging
         /* if (z == 0) {
            Float e_up = dev_ns_epsilon[idx(x,y,z+1)];
@@ -3038,6 +3034,21 @@ __global__ void updateNSvelocity(
         // Set velocities to zero above the dynamic wall
         if (z >= wall0_iz)
             v = MAKE_FLOAT3(0.0, 0.0, 0.0);
+
+#ifdef REPORT_V_C_COMPONENTS
+        printf("[%d,%d,%d]\n"
+                "\tv_p           = % f\t% f\t% f\n"
+                "\tv_c           = % f\t% f\t% f\n"
+                "\tv             = % f\t% f\t% f\n"
+                "\tgrad(epsilon) = % f\t% f\t% f\n"
+                "\tphi           = % f\t% f\t% f\n",
+                x, y, z,
+                v_p.x, v_p.y, v_p.z,
+                v.x-v_p.x, v.y-v_p.y, v.z-v_p.z,
+                v.x, v.y, v.z,
+                grad_epsilon.x, grad_epsilon.y, grad_epsilon.z,
+                phi.x, phi.y, phi.z);
+#endif
 
         // Check the advection term using the Courant-Friedrichs-Lewy condition
         __syncthreads();
