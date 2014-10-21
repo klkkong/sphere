@@ -2996,7 +2996,7 @@ __global__ void updateNSvelocity(
         Float3 v = v_p - ndem*devC_dt*c_grad_p/devC_params.rho_f*grad_epsilon;
 #endif
 
-#define REPORT_V_C_COMPONENTS
+#ifdef REPORT_V_C_COMPONENTS
         printf("[%d,%d,%d] v_c = %f\t%f\t%f\n",
                 v.x-v_p.x, v.y-v_p.y, v.z-v_p.z);
 #endif
