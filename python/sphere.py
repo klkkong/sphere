@@ -1650,7 +1650,7 @@ class sim:
 
         # array of scalars: hydraulic pressures
         pres = vtk.vtkDoubleArray()
-        pres.SetName("Pressure")
+        pres.SetName("Pressure [Pa]")
         pres.SetNumberOfComponents(1)
         if cell_centered:
             pres.SetNumberOfTuples(grid.GetNumberOfCells())
@@ -1659,7 +1659,7 @@ class sim:
 
         # array of vectors: hydraulic velocities
         vel = vtk.vtkDoubleArray()
-        vel.SetName("Velocity")
+        vel.SetName("Velocity [m/s]")
         vel.SetNumberOfComponents(3)
         if cell_centered:
             vel.SetNumberOfTuples(grid.GetNumberOfCells())
@@ -1668,7 +1668,7 @@ class sim:
 
         # array of scalars: porosities
         poros = vtk.vtkDoubleArray()
-        poros.SetName("Porosity")
+        poros.SetName("Porosity [-]")
         poros.SetNumberOfComponents(1)
         if cell_centered:
             poros.SetNumberOfTuples(grid.GetNumberOfCells())
@@ -1677,7 +1677,7 @@ class sim:
 
         # array of scalars: porosity change
         dporos = vtk.vtkDoubleArray()
-        dporos.SetName("Porosity change")
+        dporos.SetName("Porosity change [1/s]")
         dporos.SetNumberOfComponents(1)
         if cell_centered:
             dporos.SetNumberOfTuples(grid.GetNumberOfCells())
@@ -1687,7 +1687,7 @@ class sim:
         # array of scalars: Reynold's number
         self.ReynoldsNumber()
         Re = vtk.vtkDoubleArray()
-        Re.SetName("Reynolds number")
+        Re.SetName("Reynolds number [-]")
         Re.SetNumberOfComponents(1)
         if cell_centered:
             Re.SetNumberOfTuples(grid.GetNumberOfCells())
