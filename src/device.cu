@@ -1563,15 +1563,16 @@ __host__ void DEM::startTime()
                         if (write_conv_log == 1 && iter % conv_log_interval == 0)
                             convlog << iter << '\t' << nijac << std::endl;
 
+                        setNSghostNodes<Float>
+                            <<<dimGridFluid, dimBlockFluid>>>(
+                                dev_ns_epsilon,
+                                ns.bc_bot, ns.bc_top);
+                        cudaThreadSynchronize();
+                        checkForCudaErrorsIter
+                            ("Post setNSghostNodesEpsilon(4)", iter);
+
                         // Apply smoothing if requested
                         if (ns.gamma > 0.0) {
-                            setNSghostNodes<Float>
-                                <<<dimGridFluid, dimBlockFluid>>>(
-                                    dev_ns_epsilon,
-                                    ns.bc_bot, ns.bc_top);
-                            cudaThreadSynchronize();
-                            checkForCudaErrorsIter
-                                ("Post setNSghostNodesEpsilon(4)", iter);
 
                             smoothing<<<dimGridFluid, dimBlockFluid>>>(
                                     dev_ns_epsilon,
