@@ -21,8 +21,8 @@ const unsigned int nijacnorm = 10;
 const int write_res_log = 0;
 
 // Report epsilon values during Jacobi iterations to stdout
-#define REPORT_EPSILON
-#define REPORT_MORE_EPSILON
+//#define REPORT_EPSILON
+//#define REPORT_MORE_EPSILON
 
 // Report the number of iterations it took before convergence to logfile
 // 'output/<sid>-conv.dat'
@@ -47,7 +47,7 @@ const int conv_log_interval = 1;
 #define REPORT_V_C_COMPONENTS
 
 // Enable reporting of forcing function terms to stdout
-#define REPORT_FORCING_TERMS
+//#define REPORT_FORCING_TERMS
 
 // Choose solver model (see Zhou et al. 2010 "Discrete particle simulation of
 // particle-fluid flow: model formulations and their applicability", table. 1.

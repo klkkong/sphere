@@ -692,7 +692,8 @@ __global__ void setNSghostNodes(
         // z
         if (z == 0 && bc_bot == 0)
             dev_scalarfield[idx(x,y,-1)] = val;     // Dirichlet
-        if (z == 1 && bc_bot == 1)
+        //if (z == 1 && bc_bot == 1)
+        if (z == 0 && bc_bot == 1)
             dev_scalarfield[idx(x,y,-1)] = val;     // Neumann
         if (z == 0 && bc_bot == 2)
             dev_scalarfield[idx(x,y,nz)] = val;     // Periodic -z
@@ -2450,23 +2451,22 @@ __global__ void findPredNSvelocities(
 
 #ifdef REPORT_V_P_COMPONENTS
         // Report velocity components to stdout for debugging
-        if (z==0)
-            printf("\n[%d,%d,%d]"
-                   "\tv_p      = %+e %+e %+e\n"
-                   "\tpres     = %+e %+e %+e\n"
-                   "\tinteract = %+e %+e %+e\n"
-                   "\tdiff     = %+e %+e %+e\n"
-                   "\tgrav     = %+e %+e %+e\n"
-                   "\tporos    = %+e %+e %+e\n"
-                   "\tadv      = %+e %+e %+e\n",
-                   x, y, z,
-                   v_p.x, v_p.y, v_p.z,
-                   pressure_term.x, pressure_term.y, pressure_term.z, 
-                   interaction_term.x, interaction_term.y, interaction_term.z, 
-                   diffusion_term.x, diffusion_term.y, diffusion_term.z, 
-                   gravity_term.x, gravity_term.y, gravity_term.z, 
-                   porosity_term.x, porosity_term.y, porosity_term.z, 
-                   advection_term.x, advection_term.y, advection_term.z);
+        printf("\n[%d,%d,%d]"
+               "\tv_p      = %+e %+e %+e\n"
+               "\tpres     = %+e %+e %+e\n"
+               "\tinteract = %+e %+e %+e\n"
+               "\tdiff     = %+e %+e %+e\n"
+               "\tgrav     = %+e %+e %+e\n"
+               "\tporos    = %+e %+e %+e\n"
+               "\tadv      = %+e %+e %+e\n",
+               x, y, z,
+               v_p.x, v_p.y, v_p.z,
+               pressure_term.x, pressure_term.y, pressure_term.z, 
+               interaction_term.x, interaction_term.y, interaction_term.z, 
+               diffusion_term.x, diffusion_term.y, diffusion_term.z, 
+               gravity_term.x, gravity_term.y, gravity_term.z, 
+               porosity_term.x, porosity_term.y, porosity_term.z, 
+               advection_term.x, advection_term.y, advection_term.z);
 #endif
 
         // Save the predicted velocity
