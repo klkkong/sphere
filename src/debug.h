@@ -31,8 +31,8 @@ const int write_conv_log = 1;
 
 // The interval between iteration number reporting in 'output/<sid>-conv.log'
 //const int conv_log_interval = 10;
-//const int conv_log_interval = 4;
-const int conv_log_interval = 1;
+const int conv_log_interval = 4;
+//const int conv_log_interval = 1;
 
 // Enable drag force and particle fluid coupling
 #define CFD_DEM_COUPLING
@@ -41,13 +41,13 @@ const int conv_log_interval = 1;
 #define CHECK_NS_FINITE
 
 // Enable reporting of velocity prediction components to stdout
-#define REPORT_V_P_COMPONENTS
+//#define REPORT_V_P_COMPONENTS
 
 // Enable reporting of velocity correction components to stdout
-#define REPORT_V_C_COMPONENTS
+//#define REPORT_V_C_COMPONENTS
 
 // Enable reporting of forcing function terms to stdout
-#define REPORT_FORCING_TERMS
+//#define REPORT_FORCING_TERMS
 
 // Choose solver model (see Zhou et al. 2010 "Discrete particle simulation of
 // particle-fluid flow: model formulations and their applicability", table. 1.
