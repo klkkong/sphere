@@ -48,9 +48,9 @@ orig.cleanup()
 orig.defineWorldBoundaries([0.3, 0.3, 0.3], dx = 0.1)
 #orig.g[2] = -10.0
 orig.initFluid(mu = 8.9e-4)
-#orig.initTemporal(total = 0.05, file_dt = 0.005, dt = 1.0e-4)
+orig.initTemporal(total = 0.05, file_dt = 0.005, dt = 1.0e-4)
 #orig.initTemporal(total = 1.0e-2, file_dt = 1.0e-4, dt = 1.0e-4)
-orig.initTemporal(total = 1.0e-3, file_dt = 1.0e-4, dt = 1.0e-4)
+#orig.initTemporal(total = 1.0e-3, file_dt = 1.0e-4, dt = 1.0e-4)
 #print(orig.largestFluidTimeStep())
 #orig.initTemporal(total = orig.largestFluidTimeStep()*10.0,
         #file_dt = orig.largestFluidTimeStep(),
