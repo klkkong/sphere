@@ -51,7 +51,6 @@ orig.initFluid(mu = 8.9e-4)
 #orig.initTemporal(total = 0.05, file_dt = 0.005, dt = 1.0e-4)
 #orig.initTemporal(total = 1.0e-2, file_dt = 1.0e-4, dt = 1.0e-4)
 orig.initTemporal(total = 1.0e-3, file_dt = 1.0e-4, dt = 1.0e-4)
-orig.v_f[:,:,:,2] = 0.0
 #print(orig.largestFluidTimeStep())
 #orig.initTemporal(total = orig.largestFluidTimeStep()*10.0,
         #file_dt = orig.largestFluidTimeStep(),
@@ -59,7 +58,6 @@ orig.v_f[:,:,:,2] = 0.0
 py = sphere.sim(sid = orig.sid, fluid = True)
 orig.g[2] = -10.0
 orig.bc_bot[0] = 1      # No-flow BC at bottom (Neumann)
-orig.setTolerance(1.0e-12)
 #orig.run(dry=True)
 orig.run(verbose=False)
 orig.writeVTKall()

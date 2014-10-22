@@ -2288,7 +2288,8 @@ __global__ void findPredNSvelocities(
     const Float   beta,                                // in
     const Float3* __restrict__ dev_ns_F_pf,            // in
     const unsigned int ndem,                           // in
-    const Float   __restrict__ c_grad_p,               // in
+    const unsigned int wall0_iz,                       // in
+    const Float   c_grad_p,                            // in
     Float* __restrict__ dev_ns_v_p_x,           // out
     Float* __restrict__ dev_ns_v_p_y,           // out
     Float* __restrict__ dev_ns_v_p_z)           // out
@@ -2449,6 +2450,17 @@ __global__ void findPredNSvelocities(
           v_p.z = 0.0;
           }*/
 
+        //if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
+        if ((z == 0 && bc_bot == 1) || (z > nz-1 && bc_top == 1))
+            v_p.z = 0.0;
+
+        //if ((z == 0 && bc_bot == 2) || (z == nz-1 && bc_top == 2))
+        if ((z == 0 && bc_bot == 2) || (z > nz-1 && bc_top == 2))
+            v_p = MAKE_FLOAT3(0.0, 0.0, 0.0);
+
+        // Set velocities to zero above the dynamic wall
+        if (z >= wall0_iz)
+            v_p = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
 #ifdef REPORT_V_P_COMPONENTS
         // Report velocity components to stdout for debugging
@@ -2934,6 +2946,7 @@ __global__ void updateNSvelocity(
     const unsigned int ndem,      // in
     const Float  c_grad_p,        // in
     const unsigned int wall0_iz,  // in
+    const unsigned int iter,      // in
     Float* __restrict__ dev_ns_v_x,      // out
     Float* __restrict__ dev_ns_v_y,      // out
     Float* __restrict__ dev_ns_v_z)      // out
@@ -2992,13 +3005,15 @@ __global__ void updateNSvelocity(
 #ifdef SET_1
         //Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*phi)*grad_epsilon;
         //Float3 v = v_p - ndem*devC_dt*c_grad_p/devC_params.rho_f*grad_epsilon;
-        Float3 v =
-            v_p - ndem*devC_dt*c_grad_p/(phi*devC_params.rho_f)*grad_epsilon;
+        Float3 v = v_p 
+            -ndem*devC_dt*c_grad_p/(phi*devC_params.rho_f)*grad_epsilon;
 #endif
 #ifdef SET_2
         //Float3 v = v_p - ndem*devC_dt/devC_params.rho_f*grad_epsilon;
-        Float3 v = v_p - ndem*devC_dt*c_grad_p/devC_params.rho_f*grad_epsilon;
+        Float3 v = v_p 
+            -ndem*devC_dt*c_grad_p/devC_params.rho_f*grad_epsilon;
 #endif
+
         // Print values for debugging
         /* if (z == 0) {
            Float e_up = dev_ns_epsilon[idx(x,y,z+1)];
@@ -3396,7 +3411,7 @@ __global__ void interpolateCenterToFace(
         const Float z_val = amean(center.z, zn.z);
 
         __syncthreads();
-        printf("c2f [%d,%d,%d] = %f,%f,%f\n", x,y,z, x_val, y_val, z_val);
+        //printf("c2f [%d,%d,%d] = %f,%f,%f\n", x,y,z, x_val, y_val, z_val);
         dev_out_x[faceidx] = x_val;
         dev_out_y[faceidx] = y_val;
         dev_out_z[faceidx] = z_val;
@@ -3438,7 +3453,7 @@ __global__ void interpolateFaceToCenter(
             amean(z_n, z_p));
 
         __syncthreads();
-        printf("f2c [%d,%d,%d] = %f, %f, %f\n", x,y,z, val.x, val.y, val.z);
+        //printf("f2c [%d,%d,%d] = %f, %f, %f\n", x,y,z, val.x, val.y, val.z);
         dev_out[idx(x,y,z)] = val;
     }
 }

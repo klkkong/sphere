@@ -1176,6 +1176,12 @@ __host__ void DEM::startTime()
                 cudaThreadSynchronize();
                 checkForCudaErrorsIter("Post setNSepsilonTop", iter);
 
+#if defined(REPORT_EPSILON) || defined(REPORT_V_P_COMPONENTS) || defined(REPORT_V_C_COMPONENTS)
+                    std::cout
+                        << "\n\n@@@@@@ TIME STEP " << iter << " @@@"
+                        << std::endl;
+#endif
+
                 // find cell containing top wall
                 if (walls.nw > 0 && walls.wmode[0] == 1) {
                     wall0_iz = walls.nx->w/(grid.L[2]/grid.num[2]);
@@ -1187,9 +1193,9 @@ __host__ void DEM::startTime()
                             dp_dz);
                     cudaThreadSynchronize();
                     checkForCudaErrorsIter("Post setNSepsilonAtTopWall", iter);
+
 #ifdef REPORT_EPSILON
                     std::cout
-                        << "\n@@@@@@ TIME STEP " << iter << " @@@@@@"
                         << "\n###### EPSILON setNSepsilonAtTopWall "
                         << "######" << std::endl;
                     transferNSepsilonFromGlobalDeviceMemory();
@@ -1313,6 +1319,7 @@ __host__ void DEM::startTime()
                         ns.beta,
                         dev_ns_F_pf,
                         ns.ndem,
+                        wall0_iz,
                         ns.c_grad_p,
                         dev_ns_v_p_x,
                         dev_ns_v_p_y,
@@ -1643,6 +1650,7 @@ __host__ void DEM::startTime()
                         ns.ndem,
                         ns.c_grad_p,
                         wall0_iz,
+                        iter,
                         dev_ns_v_x,
                         dev_ns_v_y,
                         dev_ns_v_z);
