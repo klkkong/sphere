@@ -51,6 +51,7 @@ orig.initFluid(mu = 8.9e-4)
 #orig.initTemporal(total = 0.05, file_dt = 0.005, dt = 1.0e-4)
 #orig.initTemporal(total = 1.0e-2, file_dt = 1.0e-4, dt = 1.0e-4)
 orig.initTemporal(total = 1.0e-3, file_dt = 1.0e-4, dt = 1.0e-4)
+orig.v_f[:,:,:,2] = 0.0
 #print(orig.largestFluidTimeStep())
 #orig.initTemporal(total = orig.largestFluidTimeStep()*10.0,
         #file_dt = orig.largestFluidTimeStep(),

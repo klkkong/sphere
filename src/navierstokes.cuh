@@ -2322,6 +2322,7 @@ __global__ void findPredNSvelocities(
             dev_ns_v_x[fidx],
             dev_ns_v_y[fidx],
             dev_ns_v_z[fidx]);
+        //printf("v in v* [%d,%d,%d] = %f, %f, %f\n", x,y,z, v.x, v.y, v.z);
 
         Float3 div_tau = MAKE_FLOAT3(0.0, 0.0, 0.0);
         if (devC_params.mu > 0.0) {
@@ -2451,7 +2452,7 @@ __global__ void findPredNSvelocities(
 
 #ifdef REPORT_V_P_COMPONENTS
         // Report velocity components to stdout for debugging
-        printf("\n[%d,%d,%d]"
+        printf("\n[%d,%d,%d] REPORT_V_P_COMPONENTS\n"
                "\tv_p      = %+e %+e %+e\n"
                "\tv_old    = %+e %+e %+e\n"
                "\tpres     = %+e %+e %+e\n"
@@ -2461,8 +2462,8 @@ __global__ void findPredNSvelocities(
                "\tporos    = %+e %+e %+e\n"
                "\tadv      = %+e %+e %+e\n",
                x, y, z,
-               v.x, v.y, v.z,
                v_p.x, v_p.y, v_p.z,
+               v.x, v.y, v.z,
                pressure_term.x, pressure_term.y, pressure_term.z, 
                interaction_term.x, interaction_term.y, interaction_term.z, 
                diffusion_term.x, diffusion_term.y, diffusion_term.z, 
@@ -2581,8 +2582,8 @@ __global__ void findNSforcing(
 
 #ifdef REPORT_FORCING_TERMS
             // Report values terms in the forcing function for debugging
-            printf("[%d,%d,%d]\tt1 = %f\tt2 = %f\tt4 = %f\n",
-                   x,y,z, t1, t2, t4);
+            printf("[%d,%d,%d] REPORT_FORCING_TERMS\t"
+                    "t1 = %f\tt2 = %f\tt4 = %f\n", x,y,z, t1, t2, t4);
 #endif
 
             // Save values
@@ -2608,7 +2609,7 @@ __global__ void findNSforcing(
 #ifdef REPORT_FORCING_TERMS
         const Float t3 = -dot(f2, grad_epsilon);
         if (z >= nz-3)
-            printf("[%d,%d,%d]\tf = %f\tf1 = %f\tt3 = %f\n",
+            printf("[%d,%d,%d] REPORT_FORCING_TERMS\tf= %f\tf1 = %f\tt3 = %f\n",
                    x,y,z, f, f1, t3);
 #endif
 
@@ -3038,7 +3039,7 @@ __global__ void updateNSvelocity(
             v = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
 #ifdef REPORT_V_C_COMPONENTS
-        printf("[%d,%d,%d]\n"
+        printf("[%d,%d,%d] REPORT_V_C_COMPONENTS\n"
                 "\tv_p           = % f\t% f\t% f\n"
                 "\tv_c           = % f\t% f\t% f\n"
                 "\tv             = % f\t% f\t% f\n"
@@ -3395,7 +3396,7 @@ __global__ void interpolateCenterToFace(
         const Float z_val = amean(center.z, zn.z);
 
         __syncthreads();
-        //printf("c2f [%d,%d,%d] = %f,%f,%f\n", x,y,z, x_val, y_val, z_val);
+        printf("c2f [%d,%d,%d] = %f,%f,%f\n", x,y,z, x_val, y_val, z_val);
         dev_out_x[faceidx] = x_val;
         dev_out_y[faceidx] = y_val;
         dev_out_z[faceidx] = z_val;
@@ -3437,7 +3438,7 @@ __global__ void interpolateFaceToCenter(
             amean(z_n, z_p));
 
         __syncthreads();
-        //printf("[%d,%d,%d] = %f, %f, %f\n", x,y,z, val.x, val.y, val.z);
+        printf("f2c [%d,%d,%d] = %f, %f, %f\n", x,y,z, val.x, val.y, val.z);
         dev_out[idx(x,y,z)] = val;
     }
 }
