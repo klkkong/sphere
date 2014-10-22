@@ -2453,6 +2453,7 @@ __global__ void findPredNSvelocities(
         // Report velocity components to stdout for debugging
         printf("\n[%d,%d,%d]"
                "\tv_p      = %+e %+e %+e\n"
+               "\tv_old    = %+e %+e %+e\n"
                "\tpres     = %+e %+e %+e\n"
                "\tinteract = %+e %+e %+e\n"
                "\tdiff     = %+e %+e %+e\n"
@@ -2460,6 +2461,7 @@ __global__ void findPredNSvelocities(
                "\tporos    = %+e %+e %+e\n"
                "\tadv      = %+e %+e %+e\n",
                x, y, z,
+               v.x, v.y, v.z,
                v_p.x, v_p.y, v_p.z,
                pressure_term.x, pressure_term.y, pressure_term.z, 
                interaction_term.x, interaction_term.y, interaction_term.z, 
