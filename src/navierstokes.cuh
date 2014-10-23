@@ -2289,7 +2289,8 @@ __global__ void findPredNSvelocities(
     const Float3* __restrict__ dev_ns_F_pf,            // in
     const unsigned int ndem,                           // in
     const unsigned int wall0_iz,                       // in
-    const Float   c_grad_p,                            // in
+    const Float   c_v,                                 // in
+    const Float   c_a,                                 // in
     Float* __restrict__ dev_ns_v_p_x,           // out
     Float* __restrict__ dev_ns_v_p_y,           // out
     Float* __restrict__ dev_ns_v_p_z)           // out
@@ -2397,12 +2398,12 @@ __global__ void findPredNSvelocities(
                 (p - p_zn)/dz);
 #ifdef SET_1
             //pressure_term = -beta*dt/(rho*phi)*grad_p;
-            //pressure_term = -beta*c_grad_p*dt/rho*grad_p;
-            pressure_term = -beta*c_grad_p*dt/(rho*phi)*grad_p;
+            //pressure_term = -beta*dt/rho*grad_p;
+            pressure_term = -beta*dt/(rho*phi)*grad_p;
 #endif
 #ifdef SET_2
             //pressure_term = -beta*dt/rho*grad_p;
-            pressure_term = -beta*c_grad_p*dt/rho*grad_p;
+            pressure_term = -beta*dt/rho*grad_p;
 #endif
         }
 
@@ -2413,20 +2414,20 @@ __global__ void findPredNSvelocities(
 
         // Determine the predicted velocity
 #ifdef SET_1
-        const Float3 interaction_term = -dt/(rho*phi)*f_i;
-        const Float3 diffusion_term = dt/(rho*phi)*div_tau;
-        const Float3 gravity_term = MAKE_FLOAT3(
+        const Float3 interaction_term = -c_v*dt/(rho*phi)*f_i;
+        const Float3 diffusion_term = c_v*dt/(rho*phi)*div_tau;
+        const Float3 gravity_term = c_v*MAKE_FLOAT3(
             devC_params.g[0], devC_params.g[1], devC_params.g[2])*dt;
-        const Float3 porosity_term = -1.0*v*dphi/phi;
-        const Float3 advection_term = -1.0*div_phi_vi_v*dt/phi;
+        const Float3 porosity_term = -c_v*v*dphi/phi;
+        const Float3 advection_term = -c_v*c_a*div_phi_vi_v*dt/phi;
 #endif
 #ifdef SET_2
-        const Float3 interaction_term = -dt/(rho*phi)*f_i;
-        const Float3 diffusion_term = dt/rho*div_tau;
-        const Float3 gravity_term = MAKE_FLOAT3(
+        const Float3 interaction_term = -c_v*dt/(rho*phi)*f_i;
+        const Float3 diffusion_term = c_v*dt/rho*div_tau;
+        const Float3 gravity_term = c_v*MAKE_FLOAT3(
             devC_params.g[0], devC_params.g[1], devC_params.g[2])*dt;
-        const Float3 porosity_term = -1.0*v*dphi/phi;
-        const Float3 advection_term = -1.0*div_phi_vi_v*dt/phi;
+        const Float3 porosity_term = -c_v*v*dphi/phi;
+        const Float3 advection_term = -c_v*c_a*div_phi_vi_v*dt/phi;
 #endif
 
         Float3 v_p = v
@@ -2511,7 +2512,7 @@ __global__ void findNSforcing(
     const Float*  __restrict__ dev_ns_v_p_z,       // in
     const unsigned int nijac,                      // in
     const unsigned int ndem,                       // in
-    const Float c_grad_p,                          // in
+    const Float c_v,                               // in
     Float*  __restrict__ dev_ns_f1,                // out
     Float3* __restrict__ dev_ns_f2,                // out
     Float*  __restrict__ dev_ns_f)                 // out
@@ -2563,30 +2564,20 @@ __global__ void findNSforcing(
 
             // Find forcing function terms
 #ifdef SET_1
-            //const Float t1 = phi*devC_params.rho_f*div_v_p/(c_grad_p*dt);
-            //const Float t2 = devC_params.rho_f*dot(v_p, grad_phi)/(c_grad_p*dt);
-            //const Float t4 = dphi*devC_params.rho_f/(c_grad_p*dt*dt);
-
-            //const Float t1 = phi*phi*devC_params.rho_f*div_v_p/(c_grad_p*dt);
-            //const Float t2 =
-                //devC_params.rho_f*phi*dot(v_p, grad_phi)/(c_grad_p*dt);
-            //const Float t4 = dphi*devC_params.rho_f*phi/(c_grad_p*dt*dt);
-
-            //const Float t1 = devC_params.rho_f*div_v_p/(c_grad_p*dt);
-            //const Float t2 =
-                //devC_params.rho_f*dot(v_p, grad_phi)/(phi*dt*c_grad_p);
-            //const Float t4 = devC_params.rho_f*dphi/(dt*dt*c_grad_p*phi);
-
-            const Float t1 = devC_params.rho_f*phi/(c_grad_p*dt)*div_v_p;
-            const Float t2 = devC_params.rho_f/(c_grad_p*dt)*dot(grad_phi, v_p);
-            const Float t4 = devC_params.rho_f*dphi/(dt*dt*c_grad_p);
-
+            //const Float t1 = devC_params.rho_f*phi/dt*div_v_p;
+            //const Float t2 = devC_params.rho_f/dt*dot(grad_phi, v_p);
+            //const Float t4 = devC_params.rho_f*dphi/(dt*dt);
+            const Float t1 = devC_params.rho_f*phi/(c_v*dt)*div_v_p;
+            const Float t2 = devC_params.rho_f/(c_v*dt)*dot(grad_phi, v_p);
+            const Float t4 = devC_params.rho_f*dphi/(c_v*dt*dt);
 #endif
 #ifdef SET_2
-            const Float t1 = devC_params.rho_f*div_v_p/(c_grad_p*dt);
-            const Float t2 =
-                devC_params.rho_f*dot(v_p, grad_phi)/(c_grad_p*phi*dt);
-            const Float t4 = dphi*devC_params.rho_f/(c_grad_p*dt*dt*phi);
+            //const Float t1 = devC_params.rho_f*div_v_p/dt;
+            //const Float t2 = devC_params.rho_f*dot(v_p, grad_phi)/(phi*dt);
+            //const Float t4 = dphi*devC_params.rho_f/(dt*dt*phi);
+            const Float t1 = devC_params.rho_f*div_v_p/(c_v*dt);
+            const Float t2 = devC_params.rho_f*dot(v_p, grad_phi)/(c_v*phi*dt);
+            const Float t4 = dphi*devC_params.rho_f/(c_v*dt*dt*phi);
 #endif
             f1 = t1 + t2 + t4;
             f2 = grad_phi/phi; // t3/grad(epsilon)
@@ -2944,7 +2935,7 @@ __global__ void updateNSvelocity(
     const int    bc_bot,          // in
     const int    bc_top,          // in
     const unsigned int ndem,      // in
-    const Float  c_grad_p,        // in
+    const Float  c_v,             // in
     const unsigned int wall0_iz,  // in
     const unsigned int iter,      // in
     Float* __restrict__ dev_ns_v_x,      // out
@@ -3003,15 +2994,10 @@ __global__ void updateNSvelocity(
 
         // Find new velocity
 #ifdef SET_1
-        //Float3 v = v_p - ndem*devC_dt/(devC_params.rho_f*phi)*grad_epsilon;
-        //Float3 v = v_p - ndem*devC_dt*c_grad_p/devC_params.rho_f*grad_epsilon;
-        Float3 v = v_p 
-            -ndem*devC_dt*c_grad_p/(phi*devC_params.rho_f)*grad_epsilon;
+        Float3 v = v_p - c_v*ndem*devC_dt/(phi*devC_params.rho_f)*grad_epsilon;
 #endif
 #ifdef SET_2
-        //Float3 v = v_p - ndem*devC_dt/devC_params.rho_f*grad_epsilon;
-        Float3 v = v_p 
-            -ndem*devC_dt*c_grad_p/devC_params.rho_f*grad_epsilon;
+        Float3 v = v_p - c_v*ndem*devC_dt/(devC_params.rho_f*grad_epsilon;
 #endif
 
         // Print values for debugging
@@ -3189,7 +3175,7 @@ __global__ void findInteractionForce(
     const Float*  __restrict__ dev_ns_div_tau_x,// in
     const Float*  __restrict__ dev_ns_div_tau_y,// in
     const Float*  __restrict__ dev_ns_div_tau_z,// in
-    //const Float c_grad_p,                       // in
+    //const Float c_v,                       // in
     Float3* __restrict__ dev_ns_f_pf,     // out
     Float4* __restrict__ dev_force,       // out
     Float4* __restrict__ dev_ns_f_d,      // out

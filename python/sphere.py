@@ -19,7 +19,7 @@ numpy.seterr(all='warn', over='raise')
 
 # Sphere version number. This field should correspond to the value in
 # `../src/constants.h`.
-VERSION=1.05
+VERSION=1.06
 
 class sim:
     '''
@@ -334,8 +334,11 @@ class sim:
             # Porosity scaling factor
             self.c_phi = numpy.ones(1, dtype=numpy.float64)
 
-            # Permeability scaling factor
-            self.c_grad_p = numpy.ones(1, dtype=numpy.float64)
+            # Fluid velocity scaling factor
+            self.c_v = numpy.ones(1, dtype=numpy.float64)
+
+            # Advection scaling factor
+            self.c_a = numpy.ones(1, dtype=numpy.float64)
 
             ## Interaction forces
             self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
@@ -603,7 +606,9 @@ class sim:
             elif (self.c_phi != other.c_phi):
                 print(84)
                 return(84)
-            elif (self.c_grad_p != other.c_grad_p):
+            elif (self.c_v != other.c_v):
+                print(85)
+            elif (self.c_a != other.c_a):
                 print(85)
                 return(85)
             elif (self.f_d != other.f_d).any():
@@ -1020,18 +1025,23 @@ class sim:
                 self.tolerance =\
                         numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.maxiter = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
-                if (self.version >= 1.01):
+                if self.version >= 1.01:
                     self.ndem = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
                 else:
                     self.ndem = 1
 
-                if (self.version >= 1.04):
+                if self.version >= 1.04:
                     self.c_phi = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                    self.c_grad_p =\
+                    self.c_v =\
                       numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    if self.version >= 1.06:
+                        self.c_a =\
+                                numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    else:
+                        self.c_a = numpy.ones(1, dtype=numpy.float64)
                 else:
                     self.c_phi = numpy.ones(1, dtype=numpy.float64)
-                    self.c_grad_p = numpy.ones(1, dtype=numpy.float64)
+                    self.c_v = numpy.ones(1, dtype=numpy.float64)
 
                 if self.version >= 1.05:
                     self.f_d = numpy.empty_like(self.x)
@@ -1219,7 +1229,8 @@ class sim:
                 fh.write(self.ndem.astype(numpy.uint32))
 
                 fh.write(self.c_phi.astype(numpy.float64))
-                fh.write(self.c_grad_p.astype(numpy.float64))
+                fh.write(self.c_v.astype(numpy.float64))
+                fh.write(self.c_a.astype(numpy.float64))
 
                 for i in numpy.arange(self.np):
                     fh.write(self.f_d[i,:].astype(numpy.float64))
@@ -2764,7 +2775,8 @@ class sim:
         self.ndem = numpy.array(1)
 
         self.c_phi = numpy.ones(1, dtype=numpy.float64)
-        self.c_grad_p = numpy.ones(1, dtype=numpy.float64)
+        self.c_v = numpy.ones(1, dtype=numpy.float64)
+        self.c_a = numpy.ones(1, dtype=numpy.float64)
 
         self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
         self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
@@ -4622,7 +4634,7 @@ class sim:
         self.t50 = t[i_lower] + (t[i_upper] - t[i_lower]) * \
                 (self.H50 - H[i_lower])/(H[i_upper] - H[i_lower])
 
-        self.c_v = T50*self.H50**2.0/(self.t50)
+        self.c_coeff = T50*self.H50**2.0/(self.t50)
         if self.fluid:
             e = numpy.mean(sb.phi[:,:,3:-8]) # ignore boundaries
         else:
@@ -4633,7 +4645,7 @@ class sim:
         plt.xlabel('Time [s]')
         plt.ylabel('Height [m]')
         plt.title('$c_v$ = %.2e m$^2$ s$^{-1}$ at %.1f kPa and $e$ = %.2f' \
-                % (self.c_v, sb.w_devs[0]/1000.0, e))
+                % (self.c_coeff, sb.w_devs[0]/1000.0, e))
         plt.semilogx(t, H, '+-')
         plt.axhline(y = self.H0, color='gray')
         plt.axhline(y = self.H50, color='gray')
