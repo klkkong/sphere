@@ -21,8 +21,8 @@ orig.c_v[0] = 0.1
 #orig.c_phi[0] = 0.1
 py = sphere.sim(sid = orig.sid, fluid = True)
 orig.bc_bot[0] = 1      # No-flow BC at bottom (Neumann)
-orig.run(dry=True)
-#orig.run(verbose=False)
+#orig.run(dry=True)
+orig.run(verbose=False)
 #orig.run(device=2)
 #orig.writeVTKall()
 py.readlast(verbose = False)
@@ -55,7 +55,7 @@ orig.g[2] = -10.0
 orig.c_v[0] = 0.1
 orig.bc_bot[0] = 1      # No-flow BC at bottom (Neumann)
 #orig.run(dry=True)
-orig.run(verbose=True)
+orig.run(verbose=False)
 #orig.run(device=2)
 orig.writeVTKall()
 py.readlast(verbose = False)
