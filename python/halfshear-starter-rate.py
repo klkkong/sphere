@@ -4,14 +4,15 @@ import numpy
 import sys
 
 # launch with:
-# $ python shear-starter.py <DEVICE> <FLUID> <C_PHI> <C_GRAD_P> <SIGMA_0> <VELOCITY FACTOR>
+# $ python halfshear-starter-rate.py <DEVICE> <FLUID> <C_PHI> <C_V> <SIGMA_0> <VELOCITY FACTOR> <C_A>
 
 device = int(sys.argv[1])
 wet = int(sys.argv[2])
 c_phi = float(sys.argv[3])
-c_grad_p = float(sys.argv[4])
+c_v = float(sys.argv[4])
 sigma0 = float(sys.argv[5])
 velfac = float(sys.argv[6])
+c_a = float(sys.argv[7])
 
 #sim = sphere.sim('diffusivity-sigma0=' + str(sigma0) + '-c_phi=' + \
 #        str(c_phi) + '-c_grad_p=' + str(c_grad_p), fluid=True)
@@ -28,8 +29,9 @@ sim.readlast()
 
 sim.fluid = fluid
 if fluid:
-    sim.id('halfshear-sigma0=' + str(sigma0) + '-c=' + str(c_grad_p) + \
-    '-velfac=' + str(velfac) + '-shear')
+    sim.id('halfshear-sigma0=' + str(sigma0) + '-c_v=' + str(c_v) + \
+            '-c_a=' + str(c_a) + \
+            '-velfac=' + str(velfac) + '-shear')
 else:
     sim.id('halfshear-sigma0=' + str(sigma0) + \
             '-velfac=' + str(velfac) + '-shear')
@@ -51,7 +53,8 @@ if fluid:
     sim.setDEMstepsPerCFDstep(100)
     sim.setMaxIterations(2e5)
     sim.c_phi[0] = c_phi
-    sim.c_grad_p[0] = c_grad_p
+    sim.c_v[0] = c_v
+    sim.c_a[0] = c_a
 
 sim.initTemporal(total = 20.0/velfac, file_dt = 0.01/velfac, epsilon=0.07)
 sim.w_devs[0] = sigma0

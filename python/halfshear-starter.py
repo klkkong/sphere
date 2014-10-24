@@ -24,7 +24,7 @@ sim.readlast()
 
 sim.fluid = fluid
 if fluid:
-    sim.id('halfshear-sigma0=' + str(sigma0) + '-c_v=' + str(c_v) + 
+    sim.id('halfshear-sigma0=' + str(sigma0) + '-c_v=' + str(c_v) + \
             '-c_a=' + str(c_a) + '-shear')
 else:
     sim.id('halfshear-sigma0=' + str(sigma0) + '-shear')
