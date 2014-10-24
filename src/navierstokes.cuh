@@ -2397,12 +2397,9 @@ __global__ void findPredNSvelocities(
                 (p - p_yn)/dy,
                 (p - p_zn)/dz);
 #ifdef SET_1
-            //pressure_term = -beta*dt/(rho*phi)*grad_p;
-            //pressure_term = -beta*dt/rho*grad_p;
             pressure_term = -beta*dt/(rho*phi)*grad_p;
 #endif
 #ifdef SET_2
-            //pressure_term = -beta*dt/rho*grad_p;
             pressure_term = -beta*dt/rho*grad_p;
 #endif
         }
@@ -2412,50 +2409,32 @@ __global__ void findPredNSvelocities(
             amean(div_phi_vi_v_yn.x, div_phi_vi_v_c.y),
             amean(div_phi_vi_v_zn.x, div_phi_vi_v_c.z));
 
-        // Determine the predicted velocity
-#ifdef SET_1
-        const Float3 interaction_term = -c_v*dt/(rho*phi)*f_i;
-        const Float3 diffusion_term = c_v*dt/(rho*phi)*div_tau;
-        const Float3 gravity_term = c_v*MAKE_FLOAT3(
+        // Determine the terms of the predicted velocity change
+        const Float3 interaction_term = -dt/(rho*phi)*f_i;
+        const Float3 gravity_term = MAKE_FLOAT3(
             devC_params.g[0], devC_params.g[1], devC_params.g[2])*dt;
-        const Float3 porosity_term = -c_v*v*dphi/phi;
-        const Float3 advection_term = -c_v*c_a*div_phi_vi_v*dt/phi;
+        const Float3 advection_term = -1.0*div_phi_vi_v*dt/phi;
+        const Float3 porosity_term = -1.0*v*dphi/phi;
+#ifdef SET_1
+        const Float3 diffusion_term = dt/(rho*phi)*div_tau;
 #endif
 #ifdef SET_2
-        const Float3 interaction_term = -c_v*dt/(rho*phi)*f_i;
-        const Float3 diffusion_term = c_v*dt/rho*div_tau;
-        const Float3 gravity_term = c_v*MAKE_FLOAT3(
-            devC_params.g[0], devC_params.g[1], devC_params.g[2])*dt;
-        const Float3 porosity_term = -c_v*v*dphi/phi;
-        const Float3 advection_term = -c_v*c_a*div_phi_vi_v*dt/phi;
+        const Float3 diffusion_term = dt/rho*div_tau;
 #endif
 
-        Float3 v_p = v
-            + pressure_term
-            + interaction_term
-            + diffusion_term
-            + gravity_term
-            + porosity_term
-            + advection_term;
+        // Predict new velocity and add scaling parameters
+        Float3 v_p = v + c_v*(
+                pressure_term
+                + interaction_term
+                + diffusion_term
+                + gravity_term
+                + porosity_term
+                + c_a*advection_term);
 
         //// Neumann BCs
-
-        // Free slip
-        /*if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
-          v_p.z = v.z;*/
-
-        // No slip
-        /*if ((z == 0 && bc_bot == 2) || (z == nz-1 && bc_top == 2)) {
-          v_p.x = 0.0;
-          v_p.y = 0.0;
-          v_p.z = 0.0;
-          }*/
-
-        //if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
         if ((z == 0 && bc_bot == 1) || (z > nz-1 && bc_top == 1))
             v_p.z = 0.0;
 
-        //if ((z == 0 && bc_bot == 2) || (z == nz-1 && bc_top == 2))
         if ((z == 0 && bc_bot == 2) || (z > nz-1 && bc_top == 2))
             v_p = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
@@ -2477,12 +2456,24 @@ __global__ void findPredNSvelocities(
                x, y, z,
                v_p.x, v_p.y, v_p.z,
                v.x, v.y, v.z,
-               pressure_term.x, pressure_term.y, pressure_term.z, 
-               interaction_term.x, interaction_term.y, interaction_term.z, 
-               diffusion_term.x, diffusion_term.y, diffusion_term.z, 
-               gravity_term.x, gravity_term.y, gravity_term.z, 
-               porosity_term.x, porosity_term.y, porosity_term.z, 
-               advection_term.x, advection_term.y, advection_term.z);
+               c_v*pressure_term.x,
+               c_v*pressure_term.y,
+               c_v*pressure_term.z,
+               c_v*interaction_term.x,
+               c_v*interaction_term.y,
+               c_v*interaction_term.z,
+               c_v*diffusion_term.x,
+               c_v*diffusion_term.y,
+               c_v*diffusion_term.z,
+               c_v*gravity_term.x,
+               c_v*gravity_term.y,
+               c_v*gravity_term.z,
+               c_v*porosity_term.x,
+               c_v*porosity_term.y,
+               c_v*porosity_term.z,
+               c_v*c_a*advection_term.x,
+               c_v*c_a*advection_term.y,
+               c_v*c_a*advection_term.z);
 #endif
 
         // Save the predicted velocity
@@ -2564,24 +2555,17 @@ __global__ void findNSforcing(
 
             // Find forcing function terms
 #ifdef SET_1
-            //const Float t1 = devC_params.rho_f*phi/dt*div_v_p;
-            //const Float t2 = devC_params.rho_f/dt*dot(grad_phi, v_p);
-            //const Float t4 = devC_params.rho_f*dphi/(dt*dt);
-            const Float t1 = devC_params.rho_f*phi/(c_v*dt)*div_v_p;
-            const Float t2 = devC_params.rho_f/(c_v*dt)*dot(grad_phi, v_p);
-            const Float t4 = devC_params.rho_f*dphi/(c_v*dt*dt);
+            const Float t1 = devC_params.rho_f*phi*div_v_p/(c_v*dt);
+            const Float t2 = devC_params.rho_f*dot(grad_phi, v_p)/(c_v*dt);
+            const Float t4 = devC_params.rho_f*dphi/(dt*dt*c_v);
 #endif
 #ifdef SET_2
-            //const Float t1 = devC_params.rho_f*div_v_p/dt;
-            //const Float t2 = devC_params.rho_f*dot(v_p, grad_phi)/(phi*dt);
-            //const Float t4 = dphi*devC_params.rho_f/(dt*dt*phi);
             const Float t1 = devC_params.rho_f*div_v_p/(c_v*dt);
-            const Float t2 = devC_params.rho_f*dot(v_p, grad_phi)/(c_v*phi*dt);
-            const Float t4 = dphi*devC_params.rho_f/(c_v*dt*dt*phi);
+            const Float t2 = devC_params.rho_f*dot(grad_phi, v_p)/(c_v*dt*phi);
+            const Float t4 = devC_params.rho_f*dphi/(dt*dt*phi*c_v);
 #endif
             f1 = t1 + t2 + t4;
             f2 = grad_phi/phi; // t3/grad(epsilon)
-            //f2 = grad_phi; // t3/grad(epsilon)
 
 #ifdef REPORT_FORCING_TERMS
             // Report values terms in the forcing function for debugging
@@ -2993,31 +2977,17 @@ __global__ void updateNSvelocity(
             (epsilon_c - epsilon_zn)/dz);
 
         // Find new velocity
+        Float3 v = v_p
 #ifdef SET_1
-        Float3 v = v_p - c_v*ndem*devC_dt/(phi*devC_params.rho_f)*grad_epsilon;
+            - c_v*ndem*devC_dt/(phi*devC_params.rho_f)*grad_epsilon;
 #endif
 #ifdef SET_2
-        Float3 v = v_p - c_v*ndem*devC_dt/(devC_params.rho_f*grad_epsilon;
+            - c_v*ndem*devC_dt/devC_params.rho_f*grad_epsilon;
 #endif
 
-        // Print values for debugging
-        /* if (z == 0) {
-           Float e_up = dev_ns_epsilon[idx(x,y,z+1)];
-           Float e_down = dev_ns_epsilon[idx(x,y,z-1)];
-           printf("[%d,%d,%d]\tgrad_e = %f,%f,%f\te_up = %f\te_down = %f\n",
-           x,y,z,
-           grad_epsilon.x,
-           grad_epsilon.y,
-           grad_epsilon.z,
-           e_up,
-           e_down);
-           }*/
-
-        //if ((z == 0 && bc_bot == 1) || (z == nz-1 && bc_top == 1))
         if ((z == 0 && bc_bot == 1) || (z > nz-1 && bc_top == 1))
             v.z = 0.0;
 
-        //if ((z == 0 && bc_bot == 2) || (z == nz-1 && bc_top == 2))
         if ((z == 0 && bc_bot == 2) || (z > nz-1 && bc_top == 2))
             v = MAKE_FLOAT3(0.0, 0.0, 0.0);
 
