@@ -240,7 +240,8 @@ for c in numpy.arange(len(velfacvals)):
 
 ax1.set_ylabel('Shear friction $\\tau/\\sigma\'$ [-]')
 ax2.set_ylabel('Dilation $\\Delta h/(2r)$ [-]')
-ax3.set_ylabel('$\\boldsymbol{v}_\\text{f}^z h$ [ms$^{-1}$]')
+if zflow and fluid:
+    ax3.set_ylabel('$\\boldsymbol{v}_\\text{f}^z h$ [ms$^{-1}$]')
 #ax3.set_ylabel('Fluid pressure $p_\\text{f}$ [kPa]')
 #ax4.set_ylabel('Particle contact force $||\\boldsymbol{f}_\\text{p}||$ [N]')
 
