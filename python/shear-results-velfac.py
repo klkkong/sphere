@@ -210,7 +210,7 @@ for c in numpy.arange(len(velfacvals)):
     ax2.plot(shear_strain[c][1:], dilation[c][1:], \
             label='$\\dot{\\gamma}$ = %.2f' % (velfacvals[c]), linewidth=1, alpha=0.5)
 
-    if zflow:
+    if zflow and fluid:
         ax3.plot(shear_strain[c][1:], v_f_z_mean[c][1:],
             label='$\\dot{\\gamma}$ = %.2f' % (velfacvals[c]), linewidth=1, alpha=0.5)
 
