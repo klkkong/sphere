@@ -30,7 +30,7 @@ if int(sys.argv[2]) == 1:
     fluid = True
     c_v = float(sys.argv[3])
     c_a = float(sys.argv[4])
-velfacvals = [1.0, 0.5, 2.0]
+velfacvals = [0.5, 1.0, 2.0]
 
 # return a smoothed version of in. The returned array is smaller than the
 # original input array
@@ -206,17 +206,17 @@ for c in numpy.arange(len(velfacvals)):
 
     if smoothed_results:
         ax1.plot(shear_strain[c][1:], friction_smooth[c][1:], \
-                label='$\\dot{\\gamma}$ = %.2f' % (velfacvals[c]), linewidth=1, alpha=0.5)
+                label='$c_\\dot{\\gamma}$ = %.2f' % (velfacvals[c]), linewidth=1, alpha=0.5)
     else:
         ax1.plot(shear_strain[c][1:], friction[c][1:], \
-                label='$\\dot{\\gamma}$ = %.2f' % (velfacvals[c]), linewidth=1, alpha=0.5)
+                label='$c_\\dot{\\gamma}$ = %.2f' % (velfacvals[c]), linewidth=1, alpha=0.5)
 
     ax2.plot(shear_strain[c][1:], dilation[c][1:], \
-            label='$\\dot{\\gamma}$ = %.2f' % (velfacvals[c]), linewidth=1, alpha=0.5)
+            label='$c_\\dot{\\gamma}$ = %.2f' % (velfacvals[c]), linewidth=1, alpha=0.5)
 
     if zflow and fluid:
         ax3.plot(shear_strain[c][1:], v_f_z_mean[c][1:],
-            label='$\\dot{\\gamma}$ = %.2f' % (velfacvals[c]), linewidth=1, alpha=0.5)
+            label='$c_\\dot{\\gamma}$ = %.2f' % (velfacvals[c]), linewidth=1, alpha=0.5)
 
 
     '''
