@@ -5217,7 +5217,8 @@ class sim:
                 #ax1.plot(xdisp / w_x0, sigma_eff, '+-g', label="$\sigma'$")
                 #ax1.plot(xdisp / w_x0, sigma_def, '+-b', label="$\sigma_0$")
                 #ax1.plot(xdisp / w_x0, tau, '+-r', label="$\\tau$")
-                ax1.plot(self.shear_strain, self.tau/self.sigma_eff,\
+                ax1.plot(self.shear_strain[1:],\
+                        self.tau[1:]/self.sigma_eff[1:],\
                         '.-', label="$\\tau$")
                 #ax1.legend(loc=4)
                 ax1.grid()
