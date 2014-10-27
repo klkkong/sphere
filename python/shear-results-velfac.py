@@ -263,7 +263,7 @@ ax1.legend(loc='lower right', prop={'size':18}, fancybox=True,
         framealpha=legend_alpha)
 ax2.legend(loc='lower right', prop={'size':18}, fancybox=True,
         framealpha=legend_alpha)
-if zflow:
+if zflow and fluid:
     ax3.legend(loc='lower right', prop={'size':18}, fancybox=True,
             framealpha=legend_alpha)
 #ax4.legend(loc='best', prop={'size':18}, fancybox=True,
