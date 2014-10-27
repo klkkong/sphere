@@ -254,7 +254,7 @@ plt.setp(ax1.get_xticklabels(), visible=False)
 
 ax1.grid()
 ax2.grid()
-if zflow:
+if zflow and fluid:
     ax3.grid()
 #ax4.grid()
 
