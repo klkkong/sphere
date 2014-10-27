@@ -180,8 +180,10 @@ for c in numpy.arange(0,len(velfacvals)):
     c += 1
 
 
-#fig = plt.figure(figsize=(8,8)) # (w,h)
-fig = plt.figure(figsize=(8,10))
+if zflow and fluid:
+    fig = plt.figure(figsize=(8,10))
+else:
+    fig = plt.figure(figsize=(8,8)) # (w,h)
 #fig = plt.figure(figsize=(8,12))
 #fig = plt.figure(figsize=(8,16))
 fig.subplots_adjust(hspace=0.0)
@@ -189,11 +191,13 @@ fig.subplots_adjust(hspace=0.0)
 #plt.subplot(3,1,1)
 #plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
-#ax1 = plt.subplot(211)
-#ax2 = plt.subplot(212, sharex=ax1)
-ax1 = plt.subplot(311)
-ax2 = plt.subplot(312, sharex=ax1)
-ax3 = plt.subplot(313, sharex=ax1)
+if zflow and fluid:
+    ax1 = plt.subplot(311)
+    ax2 = plt.subplot(312, sharex=ax1)
+    ax3 = plt.subplot(313, sharex=ax1)
+else:
+    ax1 = plt.subplot(211)
+    ax2 = plt.subplot(212, sharex=ax1)
 #ax3 = plt.subplot(413, sharex=ax1)
 #ax4 = plt.subplot(414, sharex=ax1)
 
@@ -266,7 +270,11 @@ if zflow:
 
 plt.tight_layout()
 plt.subplots_adjust(hspace=0.05)
-filename = 'shear-' + str(int(sigma0/1000.0)) + 'kPa-stress-dilation.pdf'
+filename = 'shear-' + str(int(sigma0/1000.0)) + 'kPa-stress-dilation-velfac-dry.pdf'
+if fluid:
+    filename = 'shear-' + str(int(sigma0/1000.0)) + \
+            'kPa-stress-dilation-velfac-c_v=' + str(c_v) + \
+            '-c_a=' + str(c_a) + '.pdf'
 #print(os.getcwd() + '/' + filename)
 plt.savefig(filename)
 shutil.copyfile(filename, '/home/adc/articles/own/2-org/' + filename)
