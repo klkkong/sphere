@@ -254,73 +254,134 @@ void DEM::readbin(const char *target)
     if (verbose == 1)
         cout << "Done\n";
 
-    if (navierstokes == 1) {    // Navier Stokes flow
+    // Simulate fluid
+    if (fluid == 1) {
 
-        initNSmem();
+        ifs.read(as_bytes(cfd_solver), sizeof(int));
 
-        ifs.read(as_bytes(params.mu), sizeof(params.mu));
+        if (cfd_solver < 0 || cfd_solver > 1) {
+            std::cerr << "Value of cfd_solver not understood ("
+                << cfd_solver << ")" << std::endl;
+            exit(1);
+        }
 
-        if (verbose == 1)
-            cout << "  - Reading fluid values:\t\t\t  ";
+        if (cfd_solver == 0) {    // Navier Stokes flow
 
-        for (z = 0; z<grid.num[2]; ++z) {
-            for (y = 0; y<grid.num[1]; ++y) {
-                for (x = 0; x<grid.num[0]; ++x) {
-                    i = idx(x,y,z);
-                    ifs.read(as_bytes(ns.v[i].x), sizeof(Float));
-                    ifs.read(as_bytes(ns.v[i].y), sizeof(Float));
-                    ifs.read(as_bytes(ns.v[i].z), sizeof(Float));
-                    ifs.read(as_bytes(ns.p[i]), sizeof(Float));
-                    ifs.read(as_bytes(ns.phi[i]), sizeof(Float));
-                    ifs.read(as_bytes(ns.dphi[i]), sizeof(Float));
+            initNSmem();
+
+            ifs.read(as_bytes(params.mu), sizeof(params.mu));
+
+            if (verbose == 1)
+                cout << "  - Reading fluid values:\t\t\t  ";
+
+            for (z = 0; z<grid.num[2]; ++z) {
+                for (y = 0; y<grid.num[1]; ++y) {
+                    for (x = 0; x<grid.num[0]; ++x) {
+                        i = idx(x,y,z);
+                        ifs.read(as_bytes(ns.v[i].x), sizeof(Float));
+                        ifs.read(as_bytes(ns.v[i].y), sizeof(Float));
+                        ifs.read(as_bytes(ns.v[i].z), sizeof(Float));
+                        ifs.read(as_bytes(ns.p[i]), sizeof(Float));
+                        ifs.read(as_bytes(ns.phi[i]), sizeof(Float));
+                        ifs.read(as_bytes(ns.dphi[i]), sizeof(Float));
+                    }
                 }
             }
+
+            ifs.read(as_bytes(params.rho_f), sizeof(Float));
+            ifs.read(as_bytes(ns.p_mod_A), sizeof(Float));
+            ifs.read(as_bytes(ns.p_mod_f), sizeof(Float));
+            ifs.read(as_bytes(ns.p_mod_phi), sizeof(Float));
+
+            ifs.read(as_bytes(ns.bc_bot), sizeof(int));
+            ifs.read(as_bytes(ns.bc_top), sizeof(int));
+            ifs.read(as_bytes(ns.free_slip_bot), sizeof(int));
+            ifs.read(as_bytes(ns.free_slip_top), sizeof(int));
+
+            ifs.read(as_bytes(ns.gamma), sizeof(Float));
+            ifs.read(as_bytes(ns.theta), sizeof(Float));
+            ifs.read(as_bytes(ns.beta), sizeof(Float));
+            ifs.read(as_bytes(ns.tolerance), sizeof(Float));
+            ifs.read(as_bytes(ns.maxiter), sizeof(unsigned int));
+            ifs.read(as_bytes(ns.ndem), sizeof(unsigned int));
+
+            ifs.read(as_bytes(ns.c_phi), sizeof(Float));
+            ifs.read(as_bytes(ns.c_v), sizeof(Float));
+            ifs.read(as_bytes(ns.dt_dem_fac), sizeof(Float));
+
+            for (i = 0; i<np; ++i) {
+                ifs.read(as_bytes(ns.f_d[i].x), sizeof(Float));
+                ifs.read(as_bytes(ns.f_d[i].y), sizeof(Float));
+                ifs.read(as_bytes(ns.f_d[i].z), sizeof(Float));
+            }
+            for (i = 0; i<np; ++i) {
+                ifs.read(as_bytes(ns.f_p[i].x), sizeof(Float));
+                ifs.read(as_bytes(ns.f_p[i].y), sizeof(Float));
+                ifs.read(as_bytes(ns.f_p[i].z), sizeof(Float));
+            }
+            for (i = 0; i<np; ++i) {
+                ifs.read(as_bytes(ns.f_v[i].x), sizeof(Float));
+                ifs.read(as_bytes(ns.f_v[i].y), sizeof(Float));
+                ifs.read(as_bytes(ns.f_v[i].z), sizeof(Float));
+            }
+            for (i = 0; i<np; ++i) {
+                ifs.read(as_bytes(ns.f_sum[i].x), sizeof(Float));
+                ifs.read(as_bytes(ns.f_sum[i].y), sizeof(Float));
+                ifs.read(as_bytes(ns.f_sum[i].z), sizeof(Float));
+            }
+
+            if (verbose == 1)
+                cout << "Done" << std::endl;
+
+        } else if (cfd_solver == 1) { // Darcy flow
+
+            initDarcyMem();
+
+            ifs.read(as_bytes(params.mu), sizeof(params.mu));
+
+            if (verbose == 1)
+                cout << "  - Reading fluid values:\t\t\t  ";
+
+            for (z = 0; z<grid.num[2]; ++z) {
+                for (y = 0; y<grid.num[1]; ++y) {
+                    for (x = 0; x<grid.num[0]; ++x) {
+                        i = idx(x,y,z);
+                        ifs.read(as_bytes(darcy.v[i].x), sizeof(Float));
+                        ifs.read(as_bytes(darcy.v[i].y), sizeof(Float));
+                        ifs.read(as_bytes(darcy.v[i].z), sizeof(Float));
+                        ifs.read(as_bytes(darcy.p[i]), sizeof(Float));
+                        ifs.read(as_bytes(darcy.phi[i]), sizeof(Float));
+                        ifs.read(as_bytes(darcy.dphi[i]), sizeof(Float));
+                    }
+                }
+            }
+
+            ifs.read(as_bytes(params.rho_f), sizeof(Float));
+            ifs.read(as_bytes(darcy.p_mod_A), sizeof(Float));
+            ifs.read(as_bytes(darcy.p_mod_f), sizeof(Float));
+            ifs.read(as_bytes(darcy.p_mod_phi), sizeof(Float));
+
+            ifs.read(as_bytes(darcy.bc_bot), sizeof(int));
+            ifs.read(as_bytes(darcy.bc_top), sizeof(int));
+            ifs.read(as_bytes(darcy.free_slip_bot), sizeof(int));
+            ifs.read(as_bytes(darcy.free_slip_top), sizeof(int));
+
+            ifs.read(as_bytes(darcy.tolerance), sizeof(Float));
+            ifs.read(as_bytes(darcy.maxiter), sizeof(unsigned int));
+            ifs.read(as_bytes(darcy.c_phi), sizeof(Float));
+
+            for (i = 0; i<np; ++i) {
+                ifs.read(as_bytes(darcy.f_d[i].x), sizeof(Float));
+                ifs.read(as_bytes(darcy.f_d[i].y), sizeof(Float));
+                ifs.read(as_bytes(darcy.f_d[i].z), sizeof(Float));
+            }
+
+            ifs.read(as_bytes(darcy.beta_f), sizeof(Float));
+            ifs.read(as_bytes(darcy.k_c), sizeof(Float));
+
+            if (verbose == 1)
+                cout << "Done" << std::endl;
         }
-
-        ifs.read(as_bytes(params.rho_f), sizeof(Float));
-        ifs.read(as_bytes(ns.p_mod_A), sizeof(Float));
-        ifs.read(as_bytes(ns.p_mod_f), sizeof(Float));
-        ifs.read(as_bytes(ns.p_mod_phi), sizeof(Float));
-
-        ifs.read(as_bytes(ns.bc_bot), sizeof(int));
-        ifs.read(as_bytes(ns.bc_top), sizeof(int));
-        ifs.read(as_bytes(ns.free_slip_bot), sizeof(int));
-        ifs.read(as_bytes(ns.free_slip_top), sizeof(int));
-
-        ifs.read(as_bytes(ns.gamma), sizeof(Float));
-        ifs.read(as_bytes(ns.theta), sizeof(Float));
-        ifs.read(as_bytes(ns.beta), sizeof(Float));
-        ifs.read(as_bytes(ns.tolerance), sizeof(Float));
-        ifs.read(as_bytes(ns.maxiter), sizeof(unsigned int));
-        ifs.read(as_bytes(ns.ndem), sizeof(unsigned int));
-
-        ifs.read(as_bytes(ns.c_phi), sizeof(Float));
-        ifs.read(as_bytes(ns.c_v), sizeof(Float));
-        ifs.read(as_bytes(ns.dt_dem_fac), sizeof(Float));
-
-        for (i = 0; i<np; ++i) {
-            ifs.read(as_bytes(ns.f_d[i].x), sizeof(Float));
-            ifs.read(as_bytes(ns.f_d[i].y), sizeof(Float));
-            ifs.read(as_bytes(ns.f_d[i].z), sizeof(Float));
-        }
-        for (i = 0; i<np; ++i) {
-            ifs.read(as_bytes(ns.f_p[i].x), sizeof(Float));
-            ifs.read(as_bytes(ns.f_p[i].y), sizeof(Float));
-            ifs.read(as_bytes(ns.f_p[i].z), sizeof(Float));
-        }
-        for (i = 0; i<np; ++i) {
-            ifs.read(as_bytes(ns.f_v[i].x), sizeof(Float));
-            ifs.read(as_bytes(ns.f_v[i].y), sizeof(Float));
-            ifs.read(as_bytes(ns.f_v[i].z), sizeof(Float));
-        }
-        for (i = 0; i<np; ++i) {
-            ifs.read(as_bytes(ns.f_sum[i].x), sizeof(Float));
-            ifs.read(as_bytes(ns.f_sum[i].y), sizeof(Float));
-            ifs.read(as_bytes(ns.f_sum[i].z), sizeof(Float));
-        }
-
-        if (verbose == 1)
-            cout << "Done" << std::endl;
     }
 
     for (i = 0; i<np; ++i)
@@ -484,73 +545,127 @@ void DEM::writebin(const char *target)
             ofs.write(as_bytes(k.bonds_omega[i].z), sizeof(Float));
         }
 
-        if (navierstokes == 1) { // Navier Stokes flow
+        if (fluid == 1) {
 
-            ofs.write(as_bytes(params.mu), sizeof(params.mu));
+            ofs.write(as_bytes(cfd_solver), sizeof(int));
 
-            int x, y, z;
-            for (z=0; z<ns.nz; z++) {
-                for (y=0; y<ns.ny; y++) {
-                    for (x=0; x<ns.nx; x++) {
-                        i = idx(x,y,z);
+            if (cfd_solver == 0) { // Navier Stokes flow
 
-                        // Interpolated cell-center velocities
-                        ofs.write(as_bytes(ns.v[i].x), sizeof(Float));
-                        ofs.write(as_bytes(ns.v[i].y), sizeof(Float));
-                        ofs.write(as_bytes(ns.v[i].z), sizeof(Float));
+                ofs.write(as_bytes(params.mu), sizeof(params.mu));
 
-                        // Cell-face velocities
-                        //ofs.write(as_bytes(ns.v_x[vidx(x,y,z)]), sizeof(Float));
-                        //ofs.write(as_bytes(ns.v_y[vidx(x,y,z)]), sizeof(Float));
-                        //ofs.write(as_bytes(ns.v_z[vidx(x,y,z)]), sizeof(Float));
+                int x, y, z;
+                for (z=0; z<ns.nz; z++) {
+                    for (y=0; y<ns.ny; y++) {
+                        for (x=0; x<ns.nx; x++) {
+                            i = idx(x,y,z);
 
-                        ofs.write(as_bytes(ns.p[i]), sizeof(Float));
-                        ofs.write(as_bytes(ns.phi[i]), sizeof(Float));
-                        ofs.write(as_bytes(ns.dphi[i]), sizeof(Float));
+                            // Interpolated cell-center velocities
+                            ofs.write(as_bytes(ns.v[i].x), sizeof(Float));
+                            ofs.write(as_bytes(ns.v[i].y), sizeof(Float));
+                            ofs.write(as_bytes(ns.v[i].z), sizeof(Float));
+
+                            // Cell-face velocities
+                            //ofs.write(as_bytes(ns.v_x[vidx(x,y,z)]), sizeof(Float));
+                            //ofs.write(as_bytes(ns.v_y[vidx(x,y,z)]), sizeof(Float));
+                            //ofs.write(as_bytes(ns.v_z[vidx(x,y,z)]), sizeof(Float));
+
+                            ofs.write(as_bytes(ns.p[i]), sizeof(Float));
+                            ofs.write(as_bytes(ns.phi[i]), sizeof(Float));
+                            ofs.write(as_bytes(ns.dphi[i]), sizeof(Float));
+                        }
                     }
                 }
-            }
 
-            ofs.write(as_bytes(params.rho_f), sizeof(Float));
-            ofs.write(as_bytes(ns.p_mod_A), sizeof(Float));
-            ofs.write(as_bytes(ns.p_mod_f), sizeof(Float));
-            ofs.write(as_bytes(ns.p_mod_phi), sizeof(Float));
+                ofs.write(as_bytes(params.rho_f), sizeof(Float));
+                ofs.write(as_bytes(ns.p_mod_A), sizeof(Float));
+                ofs.write(as_bytes(ns.p_mod_f), sizeof(Float));
+                ofs.write(as_bytes(ns.p_mod_phi), sizeof(Float));
 
-            ofs.write(as_bytes(ns.bc_bot), sizeof(int));
-            ofs.write(as_bytes(ns.bc_top), sizeof(int));
-            ofs.write(as_bytes(ns.free_slip_bot), sizeof(int));
-            ofs.write(as_bytes(ns.free_slip_top), sizeof(int));
+                ofs.write(as_bytes(ns.bc_bot), sizeof(int));
+                ofs.write(as_bytes(ns.bc_top), sizeof(int));
+                ofs.write(as_bytes(ns.free_slip_bot), sizeof(int));
+                ofs.write(as_bytes(ns.free_slip_top), sizeof(int));
 
-            ofs.write(as_bytes(ns.gamma), sizeof(Float));
-            ofs.write(as_bytes(ns.theta), sizeof(Float));
-            ofs.write(as_bytes(ns.beta), sizeof(Float));
-            ofs.write(as_bytes(ns.tolerance), sizeof(Float));
-            ofs.write(as_bytes(ns.maxiter), sizeof(unsigned int));
-            ofs.write(as_bytes(ns.ndem), sizeof(unsigned int));
+                ofs.write(as_bytes(ns.gamma), sizeof(Float));
+                ofs.write(as_bytes(ns.theta), sizeof(Float));
+                ofs.write(as_bytes(ns.beta), sizeof(Float));
+                ofs.write(as_bytes(ns.tolerance), sizeof(Float));
+                ofs.write(as_bytes(ns.maxiter), sizeof(unsigned int));
+                ofs.write(as_bytes(ns.ndem), sizeof(unsigned int));
 
-            ofs.write(as_bytes(ns.c_phi), sizeof(Float));
-            ofs.write(as_bytes(ns.c_v), sizeof(Float));
-            ofs.write(as_bytes(ns.dt_dem_fac), sizeof(Float));
+                ofs.write(as_bytes(ns.c_phi), sizeof(Float));
+                ofs.write(as_bytes(ns.c_v), sizeof(Float));
+                ofs.write(as_bytes(ns.dt_dem_fac), sizeof(Float));
 
-            for (i = 0; i<np; ++i) {
-                ofs.write(as_bytes(ns.f_d[i].x), sizeof(Float));
-                ofs.write(as_bytes(ns.f_d[i].y), sizeof(Float));
-                ofs.write(as_bytes(ns.f_d[i].z), sizeof(Float));
-            }
-            for (i = 0; i<np; ++i) {
-                ofs.write(as_bytes(ns.f_p[i].x), sizeof(Float));
-                ofs.write(as_bytes(ns.f_p[i].y), sizeof(Float));
-                ofs.write(as_bytes(ns.f_p[i].z), sizeof(Float));
-            }
-            for (i = 0; i<np; ++i) {
-                ofs.write(as_bytes(ns.f_v[i].x), sizeof(Float));
-                ofs.write(as_bytes(ns.f_v[i].y), sizeof(Float));
-                ofs.write(as_bytes(ns.f_v[i].z), sizeof(Float));
-            }
-            for (i = 0; i<np; ++i) {
-                ofs.write(as_bytes(ns.f_sum[i].x), sizeof(Float));
-                ofs.write(as_bytes(ns.f_sum[i].y), sizeof(Float));
-                ofs.write(as_bytes(ns.f_sum[i].z), sizeof(Float));
+                for (i = 0; i<np; ++i) {
+                    ofs.write(as_bytes(ns.f_d[i].x), sizeof(Float));
+                    ofs.write(as_bytes(ns.f_d[i].y), sizeof(Float));
+                    ofs.write(as_bytes(ns.f_d[i].z), sizeof(Float));
+                }
+                for (i = 0; i<np; ++i) {
+                    ofs.write(as_bytes(ns.f_p[i].x), sizeof(Float));
+                    ofs.write(as_bytes(ns.f_p[i].y), sizeof(Float));
+                    ofs.write(as_bytes(ns.f_p[i].z), sizeof(Float));
+                }
+                for (i = 0; i<np; ++i) {
+                    ofs.write(as_bytes(ns.f_v[i].x), sizeof(Float));
+                    ofs.write(as_bytes(ns.f_v[i].y), sizeof(Float));
+                    ofs.write(as_bytes(ns.f_v[i].z), sizeof(Float));
+                }
+                for (i = 0; i<np; ++i) {
+                    ofs.write(as_bytes(ns.f_sum[i].x), sizeof(Float));
+                    ofs.write(as_bytes(ns.f_sum[i].y), sizeof(Float));
+                    ofs.write(as_bytes(ns.f_sum[i].z), sizeof(Float));
+                }
+
+            } else if (cfd_solver == 1) {    // Darcy flow
+
+                ofs.write(as_bytes(params.mu), sizeof(params.mu));
+
+                int x, y, z;
+                for (z=0; z<darcy.nz; z++) {
+                    for (y=0; y<darcy.ny; y++) {
+                        for (x=0; x<darcy.nx; x++) {
+                            i = idx(x,y,z);
+
+                            // Interpolated cell-center velocities
+                            ofs.write(as_bytes(darcy.v[i].x), sizeof(Float));
+                            ofs.write(as_bytes(darcy.v[i].y), sizeof(Float));
+                            ofs.write(as_bytes(darcy.v[i].z), sizeof(Float));
+
+                            // Cell-face velocities
+                            //ofs.write(as_bytes(darcy.v_x[vidx(x,y,z)]), sizeof(Float));
+                            //ofs.write(as_bytes(darcy.v_y[vidx(x,y,z)]), sizeof(Float));
+                            //ofs.write(as_bytes(darcy.v_z[vidx(x,y,z)]), sizeof(Float));
+
+                            ofs.write(as_bytes(darcy.p[i]), sizeof(Float));
+                            ofs.write(as_bytes(darcy.phi[i]), sizeof(Float));
+                            ofs.write(as_bytes(darcy.dphi[i]), sizeof(Float));
+                        }
+                    }
+                }
+
+                ofs.write(as_bytes(params.rho_f), sizeof(Float));
+                ofs.write(as_bytes(darcy.p_mod_A), sizeof(Float));
+                ofs.write(as_bytes(darcy.p_mod_f), sizeof(Float));
+                ofs.write(as_bytes(darcy.p_mod_phi), sizeof(Float));
+
+                ofs.write(as_bytes(darcy.bc_bot), sizeof(int));
+                ofs.write(as_bytes(darcy.bc_top), sizeof(int));
+                ofs.write(as_bytes(darcy.free_slip_bot), sizeof(int));
+                ofs.write(as_bytes(darcy.free_slip_top), sizeof(int));
+
+                ofs.write(as_bytes(darcy.tolerance), sizeof(Float));
+                ofs.write(as_bytes(darcy.maxiter), sizeof(unsigned int));
+                ofs.write(as_bytes(darcy.c_phi), sizeof(Float));
+
+                for (i = 0; i<np; ++i) {
+                    ofs.write(as_bytes(darcy.f_d[i].x), sizeof(Float));
+                    ofs.write(as_bytes(darcy.f_d[i].y), sizeof(Float));
+                    ofs.write(as_bytes(darcy.f_d[i].z), sizeof(Float));
+                }
+                ofs.write(as_bytes(darcy.beta_f), sizeof(Float));
+                ofs.write(as_bytes(darcy.k_c), sizeof(Float));
             }
         }
 
