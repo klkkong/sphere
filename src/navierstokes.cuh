@@ -2290,7 +2290,6 @@ __global__ void findPredNSvelocities(
     const unsigned int ndem,                           // in
     const unsigned int wall0_iz,                       // in
     const Float   c_v,                                 // in
-    const Float   c_a,                                 // in
     Float* __restrict__ dev_ns_v_p_x,           // out
     Float* __restrict__ dev_ns_v_p_y,           // out
     Float* __restrict__ dev_ns_v_p_z)           // out
@@ -2429,7 +2428,7 @@ __global__ void findPredNSvelocities(
                 + diffusion_term
                 + gravity_term
                 + porosity_term
-                + c_a*advection_term);
+                + advection_term);
 
         //// Neumann BCs
         if ((z == 0 && bc_bot == 1) || (z > nz-1 && bc_top == 1))
@@ -2471,9 +2470,9 @@ __global__ void findPredNSvelocities(
                c_v*porosity_term.x,
                c_v*porosity_term.y,
                c_v*porosity_term.z,
-               c_v*c_a*advection_term.x,
-               c_v*c_a*advection_term.y,
-               c_v*c_a*advection_term.z);
+               c_v*advection_term.x,
+               c_v*advection_term.y,
+               c_v*advection_term.z);
 #endif
 
         // Save the predicted velocity

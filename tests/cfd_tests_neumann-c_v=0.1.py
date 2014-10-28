@@ -18,7 +18,6 @@ orig.initFluid(mu = 8.9e-4)
 #orig.initFluid(mu = 0.0)
 orig.initTemporal(total = 0.05, file_dt = 0.005, dt = 1.0e-4)
 orig.c_v[0] = 0.1
-orig.c_a[0] = 0.0
 #orig.c_phi[0] = 0.1
 py = sphere.sim(sid = orig.sid, fluid = True)
 orig.bc_bot[0] = 1      # No-flow BC at bottom (Neumann)
@@ -54,7 +53,6 @@ orig.initTemporal(total = 0.5, file_dt = 0.05, dt = 1.0e-4)
 py = sphere.sim(sid = orig.sid, fluid = True)
 orig.g[2] = -10.0
 orig.c_v[0] = 0.1
-orig.c_a[0] = 0.0
 orig.bc_bot[0] = 1      # No-flow BC at bottom (Neumann)
 #orig.run(dry=True)
 orig.run(verbose=False)

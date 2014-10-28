@@ -296,7 +296,7 @@ void DEM::readbin(const char *target)
 
         ifs.read(as_bytes(ns.c_phi), sizeof(Float));
         ifs.read(as_bytes(ns.c_v), sizeof(Float));
-        ifs.read(as_bytes(ns.c_a), sizeof(Float));
+        ifs.read(as_bytes(ns.dt_dem_fac), sizeof(Float));
 
         for (i = 0; i<np; ++i) {
             ifs.read(as_bytes(ns.f_d[i].x), sizeof(Float));
@@ -530,7 +530,7 @@ void DEM::writebin(const char *target)
 
             ofs.write(as_bytes(ns.c_phi), sizeof(Float));
             ofs.write(as_bytes(ns.c_v), sizeof(Float));
-            ofs.write(as_bytes(ns.c_a), sizeof(Float));
+            ofs.write(as_bytes(ns.dt_dem_fac), sizeof(Float));
 
             for (i = 0; i<np; ++i) {
                 ofs.write(as_bytes(ns.f_d[i].x), sizeof(Float));

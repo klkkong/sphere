@@ -1321,7 +1321,6 @@ __host__ void DEM::startTime()
                         ns.ndem,
                         wall0_iz,
                         ns.c_v,
-                        ns.c_a,
                         dev_ns_v_p_x,
                         dev_ns_v_p_y,
                         dev_ns_v_p_z);

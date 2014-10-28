@@ -206,17 +206,17 @@ for c in numpy.arange(len(velfacvals)):
 
     if smoothed_results:
         ax1.plot(shear_strain[c][1:], friction_smooth[c][1:], \
-                label='$c_\\dot{\\gamma}$ = %.2f' % (velfacvals[c]), linewidth=1, alpha=0.5)
+                label='velfac = %.1f' % (velfacvals[c]), linewidth=1, alpha=0.5)
     else:
         ax1.plot(shear_strain[c][1:], friction[c][1:], \
-                label='$c_\\dot{\\gamma}$ = %.2f' % (velfacvals[c]), linewidth=1, alpha=0.5)
+                label='velfac = %.1f' % (velfacvals[c]), linewidth=1, alpha=0.5)
 
     ax2.plot(shear_strain[c][1:], dilation[c][1:], \
-            label='$c_\\dot{\\gamma}$ = %.2f' % (velfacvals[c]), linewidth=1, alpha=0.5)
+            label='velfac = %.1f' % (velfacvals[c]), linewidth=1, alpha=0.5)
 
     if zflow and fluid:
         ax3.plot(shear_strain[c][1:], v_f_z_mean[c][1:],
-            label='$c_\\dot{\\gamma}$ = %.2f' % (velfacvals[c]), linewidth=1, alpha=0.5)
+            label='velfac = %.1f' % (velfacvals[c]), linewidth=1, alpha=0.5)
 
 
     '''

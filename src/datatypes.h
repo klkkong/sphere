@@ -141,7 +141,7 @@ struct NavierStokes {
     unsigned int ndem;      // Solver parameter: DEM time steps per CFD step
     Float   c_phi;          // Porosity scaling coefficient
     Float   c_v;            // Fluid velocity scaling coefficient
-    Float   c_a;            // Fluid advection scaling coefficient
+    Float   dt_dem_fac;     // DEM-CFD time scaling coefficient
     Float4* f_d;            // Drag force on particles
     Float4* f_p;            // Pressure force on particles
     Float4* f_v;            // Viscous force on particles

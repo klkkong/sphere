@@ -19,7 +19,7 @@ numpy.seterr(all='warn', over='raise')
 
 # Sphere version number. This field should correspond to the value in
 # `../src/constants.h`.
-VERSION=1.06
+VERSION=1.07
 
 class sim:
     '''
@@ -337,8 +337,8 @@ class sim:
             # Fluid velocity scaling factor
             self.c_v = numpy.ones(1, dtype=numpy.float64)
 
-            # Advection scaling factor
-            self.c_a = numpy.ones(1, dtype=numpy.float64)
+            # DEM-CFD time scaling factor
+            self.dt_dem_fac = numpy.ones(1, dtype=numpy.float64)
 
             ## Interaction forces
             self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
@@ -608,7 +608,7 @@ class sim:
                 return(84)
             elif (self.c_v != other.c_v):
                 print(85)
-            elif (self.c_a != other.c_a):
+            elif (self.dt_dem_fac != other.dt_dem_fac):
                 print(85)
                 return(85)
             elif (self.f_d != other.f_d).any():
@@ -1031,11 +1031,15 @@ class sim:
                     self.ndem = 1
 
                 if self.version >= 1.04:
-                    self.c_phi = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    self.c_phi = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
                     self.c_v =\
                       numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                    if self.version >= 1.06:
+                    if self.version == 1.06:
                         self.c_a =\
+                                numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    elif self.version >= 1.07:
+                        self.dt_dem_fac =\
                                 numpy.fromfile(fh, dtype=numpy.float64, count=1)
                     else:
                         self.c_a = numpy.ones(1, dtype=numpy.float64)
@@ -1230,7 +1234,7 @@ class sim:
 
                 fh.write(self.c_phi.astype(numpy.float64))
                 fh.write(self.c_v.astype(numpy.float64))
-                fh.write(self.c_a.astype(numpy.float64))
+                fh.write(self.dt_dem_fac.astype(numpy.float64))
 
                 for i in numpy.arange(self.np):
                     fh.write(self.f_d[i,:].astype(numpy.float64))
@@ -2776,7 +2780,7 @@ class sim:
 
         self.c_phi = numpy.ones(1, dtype=numpy.float64)
         self.c_v = numpy.ones(1, dtype=numpy.float64)
-        self.c_a = numpy.ones(1, dtype=numpy.float64)
+        self.dt_dem_fac = numpy.ones(1, dtype=numpy.float64)
 
         self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
         self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
