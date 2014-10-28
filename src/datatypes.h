@@ -165,6 +165,7 @@ struct Darcy {
     int     free_slip_top;  // 0: no, 1: yes
     Float   tolerance;      // Solver parameter: Max residual tolerance
     unsigned int maxiter;   // Solver parameter: Max iterations to perform
+    unsigned int ndem;      // Solver parameter: DEM time steps per CFD step
     Float   c_phi;          // Porosity scaling coefficient
     Float4* f_p;            // Pressure force on particles
     Float   beta_f;         // Adiabatic fluid compressibility

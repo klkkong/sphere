@@ -368,6 +368,7 @@ void DEM::readbin(const char *target)
 
             ifs.read(as_bytes(darcy.tolerance), sizeof(Float));
             ifs.read(as_bytes(darcy.maxiter), sizeof(unsigned int));
+            ifs.read(as_bytes(darcy.ndem), sizeof(unsigned int));
             ifs.read(as_bytes(darcy.c_phi), sizeof(Float));
 
             for (i = 0; i<np; ++i) {
@@ -657,6 +658,7 @@ void DEM::writebin(const char *target)
 
                 ofs.write(as_bytes(darcy.tolerance), sizeof(Float));
                 ofs.write(as_bytes(darcy.maxiter), sizeof(unsigned int));
+                ofs.write(as_bytes(darcy.ndem), sizeof(unsigned int));
                 ofs.write(as_bytes(darcy.c_phi), sizeof(Float));
 
                 for (i = 0; i<np; ++i) {

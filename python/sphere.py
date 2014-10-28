@@ -373,6 +373,9 @@ class sim:
                 # The maximum number of iterations to perform per time step
                 self.maxiter = numpy.array(1e4)
 
+                # The number of DEM time steps to perform between CFD updates
+                self.ndem = numpy.array(1)
+
                 # Porosity scaling factor
                 self.c_phi = numpy.ones(1, dtype=numpy.float64)
 
@@ -680,6 +683,9 @@ class sim:
                 elif (self.maxiter != other.maxiter):
                     print(82)
                     return 82
+                elif (self.ndem != other.ndem):
+                    print(83)
+                    return 83
                 elif (self.c_phi != other.c_phi):
                     print(84)
                     return(84)
@@ -1168,6 +1174,7 @@ class sim:
                             numpy.fromfile(fh, dtype=numpy.uint32, count=1)
                     self.maxiter = \
                             numpy.fromfile(fh, dtype=numpy.uint32, count=1)
+                    self.ndem = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
                     self.c_phi = \
                             numpy.fromfile(fh, dtype=numpy.float64, count=1)
                     for i in numpy.arange(self.np[0]):
@@ -1355,6 +1362,7 @@ class sim:
 
                     fh.write(self.tolerance.astype(numpy.uint32))
                     fh.write(self.maxiter.astype(numpy.uint32))
+                    fh.write(self.ndem.astype(numpy.uint32))
                     fh.write(self.c_phi.astype(numpy.float64))
                     for i in numpy.arange(self.np):
                         fh.write(self.f_p[i,:].astype(numpy.float64))
@@ -2971,6 +2979,7 @@ class sim:
         elif self.cfd_solver[0] == 1:
             self.tolerance = numpy.array(1.0e-8)
             self.maxiter = numpy.array(1e4)
+            self.ndem = numpy.array(1)
             self.c_phi = numpy.ones(1, dtype=numpy.float64)
             self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
             self.beta_f = numpy.ones(1, dtype=numpy.float64)*4.5e-10
