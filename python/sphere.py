@@ -2626,23 +2626,16 @@ class sim:
 
                 g = numpy.max(numpy.abs(self.g))
 
-                # Hydraulic conductivity (K) [m/s]
-                self.K_c = self.k_c*self.rho_f*g/self.mu
-
                 # Bulk modulus of fluid
                 K = 1.0/self.beta_f[0]
 
-                # Hydraulic diffusivity (K/S_s) [m*m/s]
-                phi_bar = numpy.mean(self.phi)
-                alpha = self.K_c/(self.rho_f*g*(self.k_n[0] + phi_bar*K))
-
+                self.hydraulicDiffusivity()
                 self.cellSize()
 
-                return safety * 1.0/(2.0*alpha)*1.0/( \
+                return safety * 1.0/(2.0*self.D)*1.0/( \
                         1.0/(self.dx[0]**2) + \
                         1.0/(self.dx[1]**2) + \
                         1.0/(self.dx[2]**2))
-
 
     def cellSize(self):
         '''
@@ -2650,6 +2643,30 @@ class sim:
         These values are stored in `self.dx` and are NOT returned.
         '''
         self.dx = self.L/self.num
+
+    def hydraulicConductivity(self):
+        '''
+        Determine the hydraulic conductivity (K) [m/s] from the permeability
+        prefactor. This value is stored in `self.K_c`. This function only works
+        for the Darcy solver (`self.cfd_solver == 1`)
+        '''
+        if self.cfd_solver == 1:
+            self.K_c = self.k_c*self.rho_f*g/self.mu
+        else:
+            raise Exception('This function only works for the Darcy solver')
+
+    def hydraulicDiffusivity(self):
+        '''
+        Determine the hydraulic diffusivity (D) [m*m/s]. The result is stored in
+        `self.D`. This function only works for the Darcy solver
+        (`self.cfd_solver == 1`)
+        '''
+        if self.cfd_solver == 1:
+                self.hydraulicConductivity()
+                phi_bar = numpy.mean(self.phi)
+                alpha = self.K_c/(self.rho_f*g*(self.k_n[0] + phi_bar*K))
+        else:
+            raise Exception('This function only works for the Darcy solver')
 
     def initTemporal(self, total,
             current = 0.0,
