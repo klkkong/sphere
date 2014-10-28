@@ -148,6 +148,28 @@ struct NavierStokes {
     Float4* f_sum;          // Viscous force on particles
 };
 
+struct Darcy {
+    int     nx, ny, nz;     // Number of cells in each dimension
+    Float   dx, dy, dz;     // Cell length in each dim
+    Float*  p;              // Cell hydraulic pressures
+    Float3* v;              // Cell fluid velocity
+    Float*  phi;            // Cell porosity
+    Float*  dphi;           // Cell porosity change
+    Float*  norm;           // Normalized residual of epsilon updates
+    Float   p_mod_A;        // Pressure modulation amplitude at top
+    Float   p_mod_f;        // Pressure modulation frequency at top
+    Float   p_mod_phi;      // Pressure modulation phase at top
+    int     bc_bot;         // 0: Dirichlet, 1: Neumann
+    int     bc_top;         // 0: Dirichlet, 1: Neumann
+    int     free_slip_bot;  // 0: no, 1: yes
+    int     free_slip_top;  // 0: no, 1: yes
+    unsigned int maxiter;   // Solver parameter: Max iterations to perform
+    Float   c_phi;          // Porosity scaling coefficient
+    Float4* f_d;            // Drag force on particles
+    Float   beta_f;         // Adiabatic fluid compressibility
+    Float   k_c;            // Permeability prefactor in Kozeny-Carman eq.
+};
+
 // Image structure
 struct rgba {
     unsigned char r;  // Red
