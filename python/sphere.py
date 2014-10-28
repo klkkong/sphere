@@ -272,6 +272,11 @@ class sim:
 
         if self.fluid:
 
+            # Fluid solver type
+            # 0: Navier Stokes (fluid with inertia)
+            # 1: Stokes-Darcy (fluid without inertia)
+            self.cfd_solver = numpy.zeros(0)
+
             # Fluid dynamic viscosity [N/(m/s)]
             self.mu = numpy.zeros(1, dtype=numpy.float64)
 
@@ -546,7 +551,10 @@ class sim:
             return 64
 
         if self.fluid:
-            if (self.mu != other.mu):
+            if (self.cfd_solver != other.cfd_solver):
+                print(91)
+                return 91
+            elif (self.mu != other.mu):
                 print(65)
                 return 65
             elif ((self.v_f != other.v_f).any()):
@@ -963,6 +971,12 @@ class sim:
                 self.nb0 = numpy.zeros(1, dtype=numpy.uint32)
 
             if self.fluid:
+
+                if (self.version >= 2.0):
+                    self.cfd_solver = numpy.fromfile(fh, dtype=numpy.int32)
+                else:
+                    self.cfd_solver = numpy.zeros(1, dtype=numpy.int32)
+
                 self.mu = numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
                 self.v_f = numpy.empty(
@@ -1204,6 +1218,7 @@ class sim:
             fh.write(self.bonds_omega_t.astype(numpy.float64))
 
             if self.fluid:
+                fh.write(self.cfd_solver.astype(numpy.int32))
                 fh.write(self.mu.astype(numpy.float64))
                 for z in range(self.num[2]):
                     for y in range(self.num[1]):
@@ -2579,28 +2594,62 @@ class sim:
         :return type: float
         '''
 
-        dx_min = numpy.min(self.L/self.num)
-        dt_min_von_neumann = 0.5*dx_min**2/self.mu[0]
+        if self.fluid:
 
-        # Normalized velocities
-        v_norm = numpy.empty(self.num[0]*self.num[1]*self.num[2])
-        idx = 0
-        for x in numpy.arange(self.num[0]):
-            for y in numpy.arange(self.num[1]):
-                for z in numpy.arange(self.num[2]):
-                    v_norm[idx] = numpy.sqrt(self.v_f[x,y,z,:].dot(\
-                            self.v_f[x,y,z,:]))
-                    idx += 1
+            # Navier-Stokes
+            if self.cfd_solver[0] == 0:
+                dx_min = numpy.min(self.L/self.num)
+                dt_min_von_neumann = 0.5*dx_min**2/self.mu[0]
 
-        # Advection term. This term has to be reevaluated during the
-        # computations, as the fluid velocity changes.
-        v_max = numpy.amax(v_norm)
-        if v_max == 0:
-            v_max = 1.0e-7
+                # Normalized velocities
+                v_norm = numpy.empty(self.num[0]*self.num[1]*self.num[2])
+                idx = 0
+                for x in numpy.arange(self.num[0]):
+                    for y in numpy.arange(self.num[1]):
+                        for z in numpy.arange(self.num[2]):
+                            v_norm[idx] = numpy.sqrt(self.v_f[x,y,z,:].dot(\
+                                    self.v_f[x,y,z,:]))
+                            idx += 1
 
-        dt_min_cfl = dx_min/v_max
+                # Advection term. This term has to be reevaluated during the
+                # computations, as the fluid velocity changes.
+                v_max = numpy.amax(v_norm)
+                if v_max == 0:
+                    v_max = 1.0e-7
 
-        return numpy.min([dt_min_von_neumann, dt_min_cfl])*safety
+                dt_min_cfl = dx_min/v_max
+
+                return numpy.min([dt_min_von_neumann, dt_min_cfl])*safety
+
+            # Darcy
+            elif self.cfd_solver[0] == 1:
+
+                g = numpy.max(numpy.abs(self.g))
+
+                # Hydraulic conductivity (K) [m/s]
+                self.K_c = self.k_c*self.rho_f*g/self.mu
+
+                # Bulk modulus of fluid
+                K = 1.0/self.beta_f[0]
+
+                # Hydraulic diffusivity (K/S_s) [m*m/s]
+                phi_bar = numpy.mean(self.phi)
+                alpha = self.K_c/(self.rho_f*g*(self.k_n[0] + phi_bar*K))
+
+                self.cellSize()
+
+                return safety * 1.0/(2.0*alpha)*1.0/( \
+                        1.0/(self.dx[0]**2) + \
+                        1.0/(self.dx[1]**2) + \
+                        1.0/(self.dx[2]**2))
+
+
+    def cellSize(self):
+        '''
+        Calculate the particle sorting (and fluid) cell dimensions.
+        These values are stored in `self.dx` and are NOT returned.
+        '''
+        self.dx = self.L/self.num
 
     def initTemporal(self, total,
             current = 0.0,
