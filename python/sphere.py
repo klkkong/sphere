@@ -19,7 +19,7 @@ numpy.seterr(all='warn', over='raise')
 
 # Sphere version number. This field should correspond to the value in
 # `../src/constants.h`.
-VERSION=1.07
+VERSION=2.0
 
 class sim:
     '''
@@ -896,7 +896,7 @@ class sim:
             self.periodic = numpy.fromfile(fh, dtype=numpy.int32, count=1)
 
             # Per-particle vectors
-            for i in range(self.np):
+            for i in numpy.arange(self.np):
                 self.x[i,:] =\
                         numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
                 self.radius[i] =\
@@ -909,7 +909,7 @@ class sim:
                 self.xyzsum = numpy.fromfile(fh, dtype=numpy.float64,\
                         count=self.np*2).reshape(self.np,2)
 
-            for i in range(self.np):
+            for i in numpy.arange(self.np):
                 self.vel[i,:] =\
                         numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
                 self.fixvel[i] =\
@@ -968,11 +968,11 @@ class sim:
             self.w_devs  = numpy.empty(self.nw, dtype=numpy.float64)
 
             self.wmode   = numpy.fromfile(fh, dtype=numpy.int32, count=self.nw)
-            for i in range(self.nw):
+            for i in numpy.arange(self.nw):
                 self.w_n[i,:] =\
                         numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
                 self.w_x[i]   = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-            for i in range(self.nw):
+            for i in numpy.arange(self.nw):
                 self.w_m[i]   = numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.w_vel[i] = numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.w_force[i] =\
@@ -990,7 +990,7 @@ class sim:
                 self.sigma_b = numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.tau_b = numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.bonds = numpy.empty((self.nb0, 2), dtype=numpy.uint32)
-                for i in range(self.nb0):
+                for i in numpy.arange(self.nb0):
                     self.bonds[i,0] = numpy.fromfile(fh, dtype=numpy.uint32,
                             count=1)
                     self.bonds[i,1] = numpy.fromfile(fh, dtype=numpy.uint32,
@@ -1008,7 +1008,7 @@ class sim:
 
             if self.fluid:
 
-                if (self.version >= 2.0):
+                if self.version >= 2.0:
                     self.cfd_solver = numpy.fromfile(fh, dtype=numpy.int32)
                 else:
                     self.cfd_solver = numpy.zeros(1, dtype=numpy.int32)
@@ -1028,9 +1028,9 @@ class sim:
                         numpy.empty((self.num[0],self.num[1],self.num[2]),
                         dtype=numpy.float64)
 
-                for z in range(self.num[2]):
-                    for y in range(self.num[1]):
-                        for x in range(self.num[0]):
+                for z in numpy.arange(self.num[2]):
+                    for y in numpy.arange(self.num[1]):
+                        for x in numpy.arange(self.num[0]):
                             self.v_f[x,y,z,0] = \
                                     numpy.fromfile(fh, dtype=numpy.float64,\
                                     count=1)
@@ -1050,7 +1050,7 @@ class sim:
                                     numpy.fromfile(fh, dtype=numpy.float64,\
                                     count=1)
 
-                if (self.version >= 0.36):
+                if self.version >= 0.36:
                     self.rho_f =\
                             numpy.fromfile(fh, dtype=numpy.float64, count=1)
                     self.p_mod_A =\
@@ -1069,65 +1069,89 @@ class sim:
                     self.free_slip_top =\
                             numpy.fromfile(fh, dtype=numpy.int32, count=1)
 
-                self.gamma = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                self.theta = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                self.beta  = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                self.tolerance =\
-                        numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                self.maxiter = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
-                if self.version >= 1.01:
-                    self.ndem = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
-                else:
-                    self.ndem = 1
+                if self.version >= 2.0 and self.cfd_solver == 0:
+                    self.gamma = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    self.theta = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    self.beta  = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    self.tolerance =\
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    self.maxiter = \
+                            numpy.fromfile(fh, dtype=numpy.uint32, count=1)
+                    if self.version >= 1.01:
+                        self.ndem = \
+                                numpy.fromfile(fh, dtype=numpy.uint32, count=1)
+                    else:
+                        self.ndem = 1
 
-                if self.version >= 1.04:
+                    if self.version >= 1.04:
+                        self.c_phi = \
+                                numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                        self.c_v =\
+                          numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                        if self.version == 1.06:
+                            self.c_a =\
+                                    numpy.fromfile(fh, \
+                                    dtype=numpy.float64, count=1)
+                        elif self.version >= 1.07:
+                            self.dt_dem_fac =\
+                                    numpy.fromfile(fh, \
+                                    dtype=numpy.float64, count=1)
+                        else:
+                            self.c_a = numpy.ones(1, dtype=numpy.float64)
+                    else:
+                        self.c_phi = numpy.ones(1, dtype=numpy.float64)
+                        self.c_v = numpy.ones(1, dtype=numpy.float64)
+
+                    if self.version >= 1.05:
+                        self.f_d = numpy.empty_like(self.x)
+                        self.f_p = numpy.empty_like(self.x)
+                        self.f_v = numpy.empty_like(self.x)
+                        self.f_sum = numpy.empty_like(self.x)
+
+                        for i in numpy.arange(self.np[0]):
+                            self.f_d[i,:] = \
+                                    numpy.fromfile(fh, dtype=numpy.float64,
+                                            count=self.nd)
+                        for i in numpy.arange(self.np[0]):
+                            self.f_p[i,:] = \
+                                    numpy.fromfile(fh, dtype=numpy.float64,
+                                            count=self.nd)
+                        for i in numpy.arange(self.np[0]):
+                            self.f_v[i,:] = \
+                                    numpy.fromfile(fh, dtype=numpy.float64,
+                                            count=self.nd)
+                        for i in numpy.arange(self.np[0]):
+                            self.f_sum[i,:] = \
+                                    numpy.fromfile(fh, dtype=numpy.float64,
+                                            count=self.nd)
+                    else:
+                        self.f_d = numpy.zeros((self.np, self.nd),
+                                dtype=numpy.float64)
+                        self.f_p = numpy.zeros((self.np, self.nd),
+                                dtype=numpy.float64)
+                        self.f_v = numpy.zeros((self.np, self.nd),
+                                dtype=numpy.float64)
+                        self.f_sum = numpy.zeros((self.np, self.nd),
+                                dtype=numpy.float64)
+
+                elif self.version >= 2.0 and self.cfd_solver == 1:
+
+                    self.maxiter = \
+                            numpy.fromfile(fh, dtype=numpy.uint32, count=1)
                     self.c_phi = \
                             numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                    self.c_v =\
-                      numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                    if self.version == 1.06:
-                        self.c_a =\
-                                numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                    elif self.version >= 1.07:
-                        self.dt_dem_fac =\
-                                numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                    else:
-                        self.c_a = numpy.ones(1, dtype=numpy.float64)
-                else:
-                    self.c_phi = numpy.ones(1, dtype=numpy.float64)
-                    self.c_v = numpy.ones(1, dtype=numpy.float64)
-
-                if self.version >= 1.05:
-                    self.f_d = numpy.empty_like(self.x)
-                    self.f_p = numpy.empty_like(self.x)
-                    self.f_v = numpy.empty_like(self.x)
-                    self.f_sum = numpy.empty_like(self.x)
-
-                    for i in range(self.np[0]):
+                    for i in numpy.arange(self.np[0]):
                         self.f_d[i,:] = \
                                 numpy.fromfile(fh, dtype=numpy.float64,
                                         count=self.nd)
-                    for i in range(self.np[0]):
-                        self.f_p[i,:] = \
-                                numpy.fromfile(fh, dtype=numpy.float64,
-                                        count=self.nd)
-                    for i in range(self.np[0]):
-                        self.f_v[i,:] = \
-                                numpy.fromfile(fh, dtype=numpy.float64,
-                                        count=self.nd)
-                    for i in range(self.np[0]):
-                        self.f_sum[i,:] = \
-                                numpy.fromfile(fh, dtype=numpy.float64,
-                                        count=self.nd)
-                else:
-                    self.f_d = numpy.zeros((self.np, self.nd),
-                            dtype=numpy.float64)
-                    self.f_p = numpy.zeros((self.np, self.nd),
-                            dtype=numpy.float64)
-                    self.f_v = numpy.zeros((self.np, self.nd),
-                            dtype=numpy.float64)
-                    self.f_sum = numpy.zeros((self.np, self.nd),
-                            dtype=numpy.float64)
+                    self.beta_f = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+
+                    self.k_c = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
             if (self.version >= 1.02):
                 self.color =\
@@ -1181,14 +1205,14 @@ class sim:
             fh.write(self.periodic.astype(numpy.uint32))
 
             # Per-particle vectors
-            for i in range(self.np):
+            for i in numpy.arange(self.np):
                 fh.write(self.x[i,:].astype(numpy.float64))
                 fh.write(self.radius[i].astype(numpy.float64))
 
             if (self.np[0] > 0):
                 fh.write(self.xyzsum.astype(numpy.float64))
 
-            for i in range(self.np):
+            for i in numpy.arange(self.np):
                 fh.write(self.vel[i,:].astype(numpy.float64))
                 fh.write(self.fixvel[i].astype(numpy.float64))
 
@@ -1227,13 +1251,13 @@ class sim:
             fh.write(self.V_b.astype(numpy.float64))
 
             fh.write(self.nw.astype(numpy.uint32))
-            for i in range(self.nw):
+            for i in numpy.arange(self.nw):
                 fh.write(self.wmode[i].astype(numpy.int32))
-            for i in range(self.nw):
+            for i in numpy.arange(self.nw):
                 fh.write(self.w_n[i,:].astype(numpy.float64))
                 fh.write(self.w_x[i].astype(numpy.float64))
 
-            for i in range(self.nw):
+            for i in numpy.arange(self.nw):
                 fh.write(self.w_m[i].astype(numpy.float64))
                 fh.write(self.w_vel[i].astype(numpy.float64))
                 fh.write(self.w_force[i].astype(numpy.float64))
@@ -1245,7 +1269,7 @@ class sim:
             fh.write(self.nb0.astype(numpy.uint32))
             fh.write(self.sigma_b.astype(numpy.float64))
             fh.write(self.tau_b.astype(numpy.float64))
-            for i in range(self.nb0):
+            for i in numpy.arange(self.nb0):
                 fh.write(self.bonds[i,0].astype(numpy.uint32))
                 fh.write(self.bonds[i,1].astype(numpy.uint32))
             fh.write(self.bonds_delta_n.astype(numpy.float64))
@@ -1254,11 +1278,12 @@ class sim:
             fh.write(self.bonds_omega_t.astype(numpy.float64))
 
             if self.fluid:
+
                 fh.write(self.cfd_solver.astype(numpy.int32))
                 fh.write(self.mu.astype(numpy.float64))
-                for z in range(self.num[2]):
-                    for y in range(self.num[1]):
-                        for x in range(self.num[0]):
+                for z in numpy.arange(self.num[2]):
+                    for y in numpy.arange(self.num[1]):
+                        for x in numpy.arange(self.num[0]):
                             fh.write(self.v_f[x,y,z,0].astype(numpy.float64))
                             fh.write(self.v_f[x,y,z,1].astype(numpy.float64))
                             fh.write(self.v_f[x,y,z,2].astype(numpy.float64))
@@ -1276,25 +1301,42 @@ class sim:
                 fh.write(self.free_slip_bot.astype(numpy.int32))
                 fh.write(self.free_slip_top.astype(numpy.int32))
 
-                fh.write(self.gamma.astype(numpy.float64))
-                fh.write(self.theta.astype(numpy.float64))
-                fh.write(self.beta.astype(numpy.float64))
-                fh.write(self.tolerance.astype(numpy.float64))
-                fh.write(self.maxiter.astype(numpy.uint32))
-                fh.write(self.ndem.astype(numpy.uint32))
+                # Navier Stokes
+                if self.cfd_solver[0] == 0:
+                    fh.write(self.gamma.astype(numpy.float64))
+                    fh.write(self.theta.astype(numpy.float64))
+                    fh.write(self.beta.astype(numpy.float64))
+                    fh.write(self.tolerance.astype(numpy.float64))
+                    fh.write(self.maxiter.astype(numpy.uint32))
+                    fh.write(self.ndem.astype(numpy.uint32))
 
-                fh.write(self.c_phi.astype(numpy.float64))
-                fh.write(self.c_v.astype(numpy.float64))
-                fh.write(self.dt_dem_fac.astype(numpy.float64))
+                    fh.write(self.c_phi.astype(numpy.float64))
+                    fh.write(self.c_v.astype(numpy.float64))
+                    fh.write(self.dt_dem_fac.astype(numpy.float64))
 
-                for i in numpy.arange(self.np):
-                    fh.write(self.f_d[i,:].astype(numpy.float64))
-                for i in numpy.arange(self.np):
-                    fh.write(self.f_p[i,:].astype(numpy.float64))
-                for i in numpy.arange(self.np):
-                    fh.write(self.f_v[i,:].astype(numpy.float64))
-                for i in numpy.arange(self.np):
-                    fh.write(self.f_sum[i,:].astype(numpy.float64))
+                    for i in numpy.arange(self.np):
+                        fh.write(self.f_d[i,:].astype(numpy.float64))
+                    for i in numpy.arange(self.np):
+                        fh.write(self.f_p[i,:].astype(numpy.float64))
+                    for i in numpy.arange(self.np):
+                        fh.write(self.f_v[i,:].astype(numpy.float64))
+                    for i in numpy.arange(self.np):
+                        fh.write(self.f_sum[i,:].astype(numpy.float64))
+
+                # Darcy
+                elif self.cfd_solver[0] == 1:
+
+                    fh.write(self.maxiter.astype(numpy.uint32))
+                    fh.write(self.c_phi.astype(numpy.float64))
+                    for i in numpy.arange(self.np):
+                        fh.write(self.f_d[i,:].astype(numpy.float64))
+                    fh.write(self.beta_f.astype(numpy.float64))
+                    fh.write(self.k_c.astype(numpy.float64))
+
+                else:
+                    raise Exception('Value of cfd_solver not understood (' + \
+                            str(self.cfd_solver[0]) + ')')
+
 
             fh.write(self.color.astype(numpy.int32))
 
