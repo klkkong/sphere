@@ -163,6 +163,7 @@ struct Darcy {
     int     bc_top;         // 0: Dirichlet, 1: Neumann
     int     free_slip_bot;  // 0: no, 1: yes
     int     free_slip_top;  // 0: no, 1: yes
+    Float   tolerance;      // Solver parameter: Max residual tolerance
     unsigned int maxiter;   // Solver parameter: Max iterations to perform
     Float   c_phi;          // Porosity scaling coefficient
     Float4* f_d;            // Drag force on particles

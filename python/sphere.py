@@ -367,6 +367,9 @@ class sim:
             # Darcy
             elif self.cfd_solver[0] == 1:
 
+                # Tolerance criteria for the normalized max. residual
+                self.tolerance = numpy.array(1.0e-8)
+
                 # The maximum number of iterations to perform per time step
                 self.maxiter = numpy.array(1e4)
 
@@ -1139,6 +1142,8 @@ class sim:
 
                 elif self.version >= 2.0 and self.cfd_solver == 1:
 
+                    self.tolerance = \
+                            numpy.fromfile(fh, dtype=numpy.uint32, count=1)
                     self.maxiter = \
                             numpy.fromfile(fh, dtype=numpy.uint32, count=1)
                     self.c_phi = \
@@ -1326,6 +1331,7 @@ class sim:
                 # Darcy
                 elif self.cfd_solver[0] == 1:
 
+                    fh.write(self.tolerance.astype(numpy.uint32))
                     fh.write(self.maxiter.astype(numpy.uint32))
                     fh.write(self.c_phi.astype(numpy.float64))
                     for i in numpy.arange(self.np):
@@ -2941,6 +2947,7 @@ class sim:
             self.f_sum = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
 
         elif self.cfd_solver[0] == 1:
+            self.tolerance = numpy.array(1.0e-8)
             self.maxiter = numpy.array(1e4)
             self.c_phi = numpy.ones(1, dtype=numpy.float64)
             self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
