@@ -1061,7 +1061,6 @@ __global__ void findDarcyPermeabilityGradients(
         // read values
         __syncthreads();
         const Float k_xn = dev_darcy_k[d_idx(x-1,y,z)];
-        //const Float k    = dev_darcy_k[cellidx];
         const Float k_xp = dev_darcy_k[d_idx(x+1,y,z)];
         const Float k_yn = dev_darcy_k[d_idx(x,y-1,z)];
         const Float k_yp = dev_darcy_k[d_idx(x,y+1,z)];
@@ -1082,7 +1081,6 @@ __global__ void findDarcyPermeabilityGradients(
 
 __global__ void updateDarcySolution(
         const Float*  __restrict__ dev_darcy_p_old,   // in
-        //const Float*  __restrict__ dev_darcy_phi,     // in
         const Float*  __restrict__ dev_darcy_div_v_p, // in
         const Float*  __restrict__ dev_darcy_k,       // in
         const Float3* __restrict__ dev_darcy_grad_k,  // in
