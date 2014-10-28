@@ -166,7 +166,7 @@ struct Darcy {
     Float   tolerance;      // Solver parameter: Max residual tolerance
     unsigned int maxiter;   // Solver parameter: Max iterations to perform
     Float   c_phi;          // Porosity scaling coefficient
-    Float4* f_d;            // Drag force on particles
+    Float4* f_p;            // Pressure force on particles
     Float   beta_f;         // Adiabatic fluid compressibility
     Float   k_c;            // Permeability prefactor in Kozeny-Carman eq.
 };

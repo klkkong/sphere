@@ -377,7 +377,7 @@ class sim:
                 self.c_phi = numpy.ones(1, dtype=numpy.float64)
 
                 # Interaction forces
-                self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+                self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
 
                 # Adiabatic fluid compressibility [1/Pa].
                 # Fluid bulk modulus = 1/self.beta_f
@@ -683,7 +683,7 @@ class sim:
                 elif (self.c_phi != other.c_phi):
                     print(84)
                     return(84)
-                elif (self.f_d != other.f_d).any():
+                elif (self.f_p != other.f_p).any():
                     print(86)
                     return(86)
                 elif (self.beta_f != other.beta_f):
@@ -1171,7 +1171,7 @@ class sim:
                     self.c_phi = \
                             numpy.fromfile(fh, dtype=numpy.float64, count=1)
                     for i in numpy.arange(self.np[0]):
-                        self.f_d[i,:] = \
+                        self.f_p[i,:] = \
                                 numpy.fromfile(fh, dtype=numpy.float64,
                                         count=self.nd)
                     self.beta_f = \
@@ -1357,7 +1357,7 @@ class sim:
                     fh.write(self.maxiter.astype(numpy.uint32))
                     fh.write(self.c_phi.astype(numpy.float64))
                     for i in numpy.arange(self.np):
-                        fh.write(self.f_d[i,:].astype(numpy.float64))
+                        fh.write(self.f_p[i,:].astype(numpy.float64))
                     fh.write(self.beta_f.astype(numpy.float64))
                     fh.write(self.k_c.astype(numpy.float64))
 
