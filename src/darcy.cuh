@@ -985,7 +985,14 @@ __global__ void findDarcyPermeabilities(
 
         __syncthreads();
         const Float phi = dev_darcy_phi[cellidx];
+
+        // avoid division by zero
+        if (phi > 0.9999)
+            phi = 0.9999;
+
         const Float k = k_c*pow(phi,3)/pow(1.0 - phi, 2);
+
+        __syncthreads();
         dev_darcy_k[cellidx] = k;
     }
 }
@@ -1020,11 +1027,11 @@ __global__ void findDarcyParticleVelocityDivergence(
         Float v_p_zp = dev_darcy_v_p_z[d_vidx(x,y,z+1)];
 
         // cell dimensions
-        const Float dx = devC_params.L[0] / devC_params.num[0];
-        const Float dy = devC_params.L[1] / devC_params.num[1];
-        const Float dz = devC_params.L[2] / devC_params.num[2];
+        const Float dx = devC_params.L[0]/nx;
+        const Float dy = devC_params.L[1]/ny;
+        const Float dz = devC_params.L[2]/nz;
 
-        // calculate the divergence
+        // calculate the divergence using first order central finite differences
         const Float div_v_p =
             (xp - xn)/dx +
             (yp - yn)/dy +
@@ -1147,7 +1154,7 @@ __global__ void updateDarcySolution(
             + dt/(beta_f*phi*mu)*(k*laplace_p_old + dot(grad_k, grad_p_old))
             - dt/(beta_f*phi)*div_v_p;
 
-        // normalized residual
+        // normalized residual, avoid division by zero
         const Float res_norm = (p_new - p)*(p_new - p)/(p_new*p_new + 1.0e-16);
 
         // save new pressure and the residual
