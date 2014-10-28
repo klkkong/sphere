@@ -307,7 +307,10 @@ class DEM {
         void initDarcyMem();
         unsigned int darcyCells();
         unsigned int darcyCellsVelocity();
+        void transferDarcyToGlobalDeviceMemory(int statusmsg);
+        void transferDarcyFromGlobalDeviceMemory(int statusmsg);
         void freeDarcyMem();
+        void freeDarcyMemDev();
         unsigned int d_idx(const int x, const int y, const int z);
         unsigned int d_vidx(const int x, const int y, const int z);
         void checkDarcyStability();
