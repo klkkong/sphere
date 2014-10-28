@@ -15,9 +15,13 @@ void DEM::diagnostics()
     checkValues();
 
     // Clean up memory before exiting
-    if (navierstokes == 1) {
+    if (fluid == 1 && cfd_solver == 0) {
         freeNSmemDev();
         freeNSmem();
+    }
+    if (fluid == 1 && cfd_solver == 1) {
+        freeDarcyMemDev();
+        freeDarcyMem();
     }
     freeGlobalDeviceMemory();
     // CPU memory freed upon object destruction

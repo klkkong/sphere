@@ -136,7 +136,7 @@ void DEM::checkDarcyStability()
         for (y=0; y<darcy.ny; ++y) {
             for (z=0; z<darcy.nz; ++z) {
 
-                v = darcy.v[idx(x,y,z)];
+                v = darcy.v[d_idx(x,y,z)];
 
                 // Check the advection term using the Courant-Friedrichs-Lewy
                 // condition
@@ -180,13 +180,13 @@ void DEM::printDarcyArray(FILE* stream, Float* arr)
                 if (x > -1 && x < darcy.nx &&
                         y > -1 && y < darcy.ny &&
                         z > -1 && z < darcy.nz) {
-                    fprintf(stream, "%f\t", arr[idx(x,y,z)]);
+                    fprintf(stream, "%f\t", arr[d_idx(x,y,z)]);
                 } else { // ghost node
                     if (color_output) {
                         fprintf(stream, "\x1b[30;1m%f\x1b[0m\t",
-                                arr[idx(x,y,z)]);
+                                arr[d_idx(x,y,z)]);
                     } else {
-                        fprintf(stream, "%f\t", arr[idx(x,y,z)]);
+                        fprintf(stream, "%f\t", arr[d_idx(x,y,z)]);
                     }
                 }
             }
@@ -211,9 +211,9 @@ void DEM::printDarcyArray(FILE* stream, Float3* arr)
         for (y=0; y<darcy.ny; y++) {
             for (x=0; x<darcy.nx; x++) {
                 fprintf(stream, "%f,%f,%f\t",
-                        arr[idx(x,y,z)].x,
-                        arr[idx(x,y,z)].y,
-                        arr[idx(x,y,z)].z);
+                        arr[d_idx(x,y,z)].x,
+                        arr[d_idx(x,y,z)].y,
+                        arr[d_idx(x,y,z)].z);
             }
             fprintf(stream, "\n");
         }
@@ -247,7 +247,7 @@ double DEM::avgNormResDarcy()
     for (int z=0; z<grid.num[2]; ++z) {
         for (int y=0; y<grid.num[1]; ++y) {
             for (int x=0; x<grid.num[0]; ++x) {
-                norm_res = static_cast<double>(darcy.norm[idx(x,y,z)]);
+                norm_res = static_cast<double>(darcy.norm[d_idx(x,y,z)]);
                 if (norm_res != norm_res) {
                     std::cerr << "\nError: normalized residual is NaN ("
                         << norm_res << ") in cell "
@@ -276,7 +276,7 @@ double DEM::maxNormResDarcy()
     for (int z=0; z<grid.num[2]; ++z) {
         for (int y=0; y<grid.num[1]; ++y) {
             for (int x=0; x<grid.num[0]; ++x) {
-                norm_res = static_cast<double>(darcy.norm[idx(x,y,z)]);
+                norm_res = static_cast<double>(darcy.norm[d_idx(x,y,z)]);
                 if (norm_res != norm_res) {
                     std::cerr << "\nError: normalized residual is NaN ("
                         << norm_res << ") in cell "
