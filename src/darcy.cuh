@@ -701,7 +701,7 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
                                                   + 2.0*d*R + 6.0*r*R
                                                   - 3.0*R*R) );
                                         v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
-                                        d_avg += 2.0*r;
+                                        d_avg += r+r;
                                         n++;
                                     }
 
@@ -709,7 +709,7 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
                                     if (d <= R - r) {
                                         void_volume -= 4.0/3.0*M_PI*r*r*r;
                                         v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
-                                        d_avg += 2.0*r;
+                                        d_avg += r+r;
                                         n++;
                                     }
                                 }
@@ -898,9 +898,9 @@ __global__ void findDarcyPermeabilityGradients(
 
         // gradient approximated by first-order central difference
         const Float3 grad_k = MAKE_FLOAT3(
-                (k_xp - k_xn)/(2.0*dx),
-                (k_yp - k_yn)/(2.0*dy),
-                (k_zp - k_zn)/(2.0*dz));
+                (k_xp - k_xn)/(dx+dx),
+                (k_yp - k_yn)/(dy+dy),
+                (k_zp - k_zn)/(dz+dz));
 
         // write result
         __syncthreads();
@@ -967,15 +967,15 @@ __global__ void updateDarcySolution(
 
         // laplacian approximated by second-order central difference
         const Float laplace_p =
-            (p_xp - 2.0*p + p_xn)/(dx*dx) +
-            (p_yp - 2.0*p + p_yn)/(dy*dy) +
-            (p_zp - 2.0*p + p_zn)/(dz*dz);
+            (p_xp - p+p + p_xn)/(dx*dx) +
+            (p_yp - p+p + p_yn)/(dy*dy) +
+            (p_zp - p+p + p_zn)/(dz*dz);
 
         // gradient approximated by first-order central difference
         const Float3 grad_p = MAKE_FLOAT3(
-                (p_xp - p_xn)/(2.0*dx),
-                (p_yp - p_yn)/(2.0*dy),
-                (p_zp - p_zn)/(2.0*dz));
+                (p_xp - p_xn)/(dx+dx),
+                (p_yp - p_yn)/(dy+dy),
+                (p_zp - p_zn)/(dz+dz));
 
         // find new value for p
         Float p_new = p
