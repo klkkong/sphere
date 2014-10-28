@@ -1032,15 +1032,11 @@ __global__ void findDarcyParticleVelocityDivergence(
     }
 }
 
-__global__ void updateDarcySolution(
-        const Float* __restrict__ dev_darcy_p_old,   // in
-        const Float* __restrict__ dev_darcy_phi,     // in
-        const Float* __restrict__ dev_darcy_div_v_p, // in
-        const Float* __restrict__ dev_darcy_k,       // in
-        const Float beta_f,                          // in
-        const Float mu,                              // in
-        Float* __restrict__ dev_darcy_p,             // out
-        Float* __restrict__ dev_darcy_norm)          // out
+// Find the spatial gradients of the permeability. To be used in the pressure
+// diffusion term in updateDarcySolution.
+__global__ void findDarcyPermeabilityGradients(
+        const Float*  __restrict__ dev_darcy_k,   // in
+        Float3* __restrict__ dev_darcy_grad_k)    // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -1052,6 +1048,11 @@ __global__ void updateDarcySolution(
     const unsigned int ny = devC_grid.num[1];
     const unsigned int nz = devC_grid.num[2];
 
+    // Cell size
+    const Float dx = devC_grid.L[0]/nx;
+    const Float dy = devC_grid.L[1]/ny;
+    const Float dz = devC_grid.L[2]/nz;
+
     if (x < nx && y < ny && z < nz) {
 
         // 1D thread index
@@ -1059,12 +1060,88 @@ __global__ void updateDarcySolution(
 
         // read values
         __syncthreads();
+        const Float k_xn = dev_darcy_k[d_idx(x-1,y,z)];
+        //const Float k    = dev_darcy_k[cellidx];
+        const Float k_xp = dev_darcy_k[d_idx(x+1,y,z)];
+        const Float k_yn = dev_darcy_k[d_idx(x,y-1,z)];
+        const Float k_yp = dev_darcy_k[d_idx(x,y+1,z)];
+        const Float k_zn = dev_darcy_k[d_idx(x,y,z-1)];
+        const Float k_zp = dev_darcy_k[d_idx(x,y,z+1)];
 
-        // find div(k*grad(p_old))
+        // gradient approximated by first-order central difference
+        const Float3 grad_k = MAKE_FLOAT3(
+                (k_xp - k_xn)/(2.0*dx),
+                (k_yp - k_yn)/(2.0*dy),
+                (k_zp - k_zn)/(2.0*dz));
+
+        // write result
+        __syncthreads();
+        dev_darcy_grad_k[cellidx] = grad_k;
+    }
+}
+
+__global__ void updateDarcySolution(
+        const Float*  __restrict__ dev_darcy_p_old,   // in
+        const Float*  __restrict__ dev_darcy_phi,     // in
+        const Float*  __restrict__ dev_darcy_div_v_p, // in
+        const Float*  __restrict__ dev_darcy_k,       // in
+        const Float3* __restrict__ dev_darcy_grad_k,  // in
+        const Float beta_f,                           // in
+        const Float mu,                               // in
+        Float* __restrict__ dev_darcy_p,              // out
+        Float* __restrict__ dev_darcy_norm)           // out
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    // Cell size
+    const Float dx = devC_grid.L[0]/nx;
+    const Float dy = devC_grid.L[1]/ny;
+    const Float dz = devC_grid.L[2]/nz;
+
+    if (x < nx && y < ny && z < nz) {
+
+        // 1D thread index
+        const unsigned int cellidx = d_idx(x,y,z);
+
+        // read values
+        __syncthreads();
+        const Float  k      = dev_darcy_k[cellidx];
+        const Float3 grad_k = dev_darcy_grad_k[cellidx];
+
+        const Float p_old_xn = dev_darcy_p_old[d_idx(x-1,y,z)];
+        const Float p_old    = dev_darcy_p_old[cellidx];
+        const Float p_old_xp = dev_darcy_p_old[d_idx(x+1,y,z)];
+        const Float p_old_yn = dev_darcy_p_old[d_idx(x,y-1,z)];
+        const Float p_old_yp = dev_darcy_p_old[d_idx(x,y+1,z)];
+        const Float p_old_zn = dev_darcy_p_old[d_idx(x,y,z-1)];
+        const Float p_old_zp = dev_darcy_p_old[d_idx(x,y,z+1)];
+
+        // find div(k*grad(p_old)). Using vector identities:
+        // div(k*grad(p_old)) = k*laplace(p_old) + dot(grad(k), grad(p_old))
+
+        // laplacian approximated by second-order central difference
+        const Float laplace_p_old =
+            (p_old_xp - 2.0*p_old + p_old_xn)/(dx*dx) +
+            (p_old_yp - 2.0*p_old + p_old_yn)/(dy*dy) +
+            (p_old_zp - 2.0*p_old + p_old_zn)/(dz*dz);
+
+        // gradient approximated by first-order central difference
+        const Float3 grad_p_old = MAKE_FLOAT3(
+                (p_old_xp - p_old_xn)/(2.0*dx),
+                (p_old_yp - p_old_yn)/(2.0*dy),
+                (p_old_zp - p_old_zn)/(2.0*dz));
 
         // find new value for p
         const Float p_new = p_old
-            + dt/(beta_f*phi*mu)*div_k_grad_p
+            + dt/(beta_f*phi*mu)*(k*laplace_p_old + dot(grad_k, grad_p_old))
             - dt/(beta_f*phi)*div_v_p;
 
         // normalized residual
