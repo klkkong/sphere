@@ -1309,7 +1309,7 @@ __global__ void findPorositiesVelocitiesDiametersSpherical(
             dev_ns_vp_avg[cellidx] = v_avg;
             dev_ns_d_avg[cellidx]  = d_avg;
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
             (void)checkFiniteFloat("phi", x, y, z, phi);
             (void)checkFiniteFloat("dphi", x, y, z, dphi);
             (void)checkFiniteFloat3("v_avg", x, y, z, v_avg);
@@ -1526,7 +1526,7 @@ __global__ void findPorositiesVelocitiesDiametersSphericalGradient(
             dev_ns_vp_avg[cellidx] = v_avg;
             dev_ns_d_avg[cellidx]  = d_avg;
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
             (void)checkFiniteFloat("phi", x, y, z, phi);
             (void)checkFiniteFloat("dphi", x, y, z, dphi);
             (void)checkFiniteFloat3("v_avg", x, y, z, v_avg);
@@ -1578,7 +1578,7 @@ __global__ void setUpperPressureNS(
         dev_ns_epsilon_new[cellidx] = epsilon;
         dev_ns_p[cellidx] = new_pressure;
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
         (void)checkFiniteFloat("epsilon", x, y, z, epsilon);
         (void)checkFiniteFloat("new_pressure", x, y, z, new_pressure);
 #endif
@@ -1715,7 +1715,7 @@ __device__ Float3 divergence_tensor(
         (t_yz_yp - t_yz_yn)/dy +
         (t_zz_zp - t_zz_zn)/dz);
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
     (void)checkFiniteFloat3("div_tensor", x, y, z, div_tensor);
 #endif
     return div_tensor;
@@ -1755,7 +1755,7 @@ __global__ void findNSgradientsDev(
         __syncthreads();
         dev_vectorfield[cellidx] = grad;
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
         (void)checkFiniteFloat3("grad", x, y, z, grad);
 #endif
     }
@@ -1799,7 +1799,7 @@ __global__ void findvvOuterProdNS(
         dev_ns_v_prod[cellidx6+4] = v.y*v.z;
         dev_ns_v_prod[cellidx6+5] = v.z*v.z;
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
         (void)checkFiniteFloat("v_prod[0]", x, y, z, v.x*v.x);
         (void)checkFiniteFloat("v_prod[1]", x, y, z, v.x*v.y);
         (void)checkFiniteFloat("v_prod[2]", x, y, z, v.x*v.z);
@@ -1892,7 +1892,7 @@ __global__ void findNSstressTensor(
         dev_ns_tau[cellidx6+4] = tau_yz;
         dev_ns_tau[cellidx6+5] = tau_zz;
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
         (void)checkFiniteFloat("tau_xx", x, y, z, tau_xx);
         (void)checkFiniteFloat("tau_xy", x, y, z, tau_xy);
         (void)checkFiniteFloat("tau_xz", x, y, z, tau_xz);
@@ -2036,7 +2036,7 @@ __global__ void findNSdivphiviv(
         //printf("div(phi*v*v) [%d,%d,%d] = %f, %f, %f\n", x,y,z,
         //div_phi_vi_v.x, div_phi_vi_v.y, div_phi_vi_v.z);
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
         (void)checkFiniteFloat3("div_phi_vi_v", x, y, z, div_phi_vi_v);
 #endif
     }
@@ -2175,7 +2175,7 @@ __global__ void findNSdivphitau(
         __syncthreads();
         dev_ns_div_phi_tau[cellidx] = div_phi_tau;
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
         (void)checkFiniteFloat3("div_phi_tau", x, y, z, div_phi_tau);
 #endif
     }
@@ -2263,7 +2263,7 @@ __global__ void findNSdivphivv(
         __syncthreads();
         dev_ns_div_phi_v_v[cellidx] = div;
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
         (void)checkFiniteFloat3("div_phi_v_v", x, y, z, div);
 #endif
     }
@@ -2481,7 +2481,7 @@ __global__ void findPredNSvelocities(
         dev_ns_v_p_y[fidx] = v_p.y;
         dev_ns_v_p_z[fidx] = v_p.z;
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
         (void)checkFiniteFloat3("v_p", x, y, z, v_p);
 #endif
     }
@@ -2603,7 +2603,7 @@ __global__ void findNSforcing(
         __syncthreads();
         dev_ns_f[cellidx] = f;
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
         (void)checkFiniteFloat("f", x, y, z, f);
 #endif
     }
@@ -2666,7 +2666,7 @@ __global__ void smoothing(
           " e_zn = %f, e_zp = %f\n", x,y,z, e_xn, e_xp,
           e_yn, e_yp, e_zn, e_zp);*/
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
         (void)checkFiniteFloat("e_smooth", x, y, z, e_smooth);
 #endif
     }
@@ -2775,7 +2775,7 @@ __global__ void jacobiIterationNS(
         dev_ns_epsilon_new[cellidx] = e_relax;
         dev_ns_norm[cellidx] = res_norm;
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
         (void)checkFiniteFloat("e_new", x, y, z, e_new);
         (void)checkFiniteFloat("e_relax", x, y, z, e_relax);
         //(void)checkFiniteFloat("res_norm", x, y, z, res_norm);
@@ -2866,7 +2866,7 @@ __global__ void findNormalizedResiduals(
         __syncthreads();
         dev_ns_norm[cellidx] = res_norm;
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
         checkFiniteFloat("res_norm", x, y, z, res_norm);
 #endif
     }
@@ -2902,7 +2902,7 @@ __global__ void updateNSpressure(
         __syncthreads();
         dev_ns_p[cellidx] = p;
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
         checkFiniteFloat("p", x, y, z, p);
 #endif
     }
@@ -3043,7 +3043,7 @@ __global__ void updateNSvelocity(
         dev_ns_v_y[cellidx] = v.y;
         dev_ns_v_z[cellidx] = v.z;
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
         checkFiniteFloat3("v", x, y, z, v);
 #endif
     }
@@ -3112,7 +3112,7 @@ __global__ void findAvgParticleVelocityDiameter(
         dev_ns_vp_avg[cellidx] = v_avg;
         dev_ns_d_avg[cellidx]  = d_avg;
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
         checkFiniteFloat3("v_avg", x, y, z, v_avg);
         checkFiniteFloat("d_avg", x, y, z, d_avg);
 #endif
@@ -3233,7 +3233,7 @@ __global__ void findInteractionForce(
         __syncthreads();
         const Float3 f_pf = f_d + f_p + f_v;
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
         /*
           printf("\nfindInteractionForce %d [%d,%d,%d]\n"
           "\tV_p = %f Re=%f Cd=%f chi=%f\n"
@@ -3325,7 +3325,7 @@ __global__ void applyInteractionForceToFluid(
 
         const Float3 F_pf = fi/(dx*dy*dz);
 
-#ifdef CHECK_NS_FINITE
+#ifdef CHECK_FLUID_FINITE
         checkFiniteFloat3("F_pf", x, y, z, F_pf);
 #endif
         //printf("F_pf [%d,%d,%d] = %f,%f,%f\n", x,y,z, F_pf.x, F_pf.y, F_pf.z);

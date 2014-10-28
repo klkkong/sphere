@@ -38,7 +38,7 @@ const int conv_log_interval = 4;
 #define CFD_DEM_COUPLING
 
 // Check for nan/inf values in fluid solver kernels
-#define CHECK_NS_FINITE
+#define CHECK_FLUID_FINITE
 
 // Enable reporting of velocity prediction components to stdout
 //#define REPORT_V_P_COMPONENTS
