@@ -263,7 +263,7 @@ class DEM {
         unsigned int idx(const int x, const int y, const int z); // pres. nodes
         unsigned int vidx(const int x, const int y, const int z); // vel. nodes
 
-        // Initialize Darcy values and arrays
+        // Initialize Navier Stokes values and arrays
         void initNS();
 
         // Clean up Navier Stokes arrays
@@ -304,6 +304,8 @@ class DEM {
         Float*  dev_darcy_norm;      // Normalized residual of epsilon values
         Float4* dev_darcy_f_d;       // Drag force on particles
         Float*  dev_darcy_k;         // Cell hydraulic permeability
+        Float3* dev_darcy_grad_k;    // Spatial gradient of permeability
+        Float3* dev_darcy_div_v_p;   // Divergence of particle velocities
 
         // Darcy functions
         void initDarcyMem();

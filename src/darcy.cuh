@@ -32,7 +32,9 @@ void DEM::initDarcyMemDev(void)
     cudaMalloc((void**)&dev_darcy_dphi, memSizeF);  // cell porosity change
     cudaMalloc((void**)&dev_darcy_norm, memSizeF);  // normalized residual
     cudaMalloc((void**)&dev_darcy_f_p, sizeof(Float4)*np); // pressure force
-    cudaMalloc((void**)&dev_darcy_k, memSizeF);     // hydraulic permeability
+    cudaMalloc((void**)&dev_darcy_k, memSizeF);        // hydraulic permeability
+    cudaMalloc((void**)&dev_darcy_grad_k, memSizeF3);  // grad(permeability)
+    cudaMalloc((void**)&dev_darcy_div_v_p, memSizeF3); // divergence(v_p)
 
     checkForCudaErrors("End of initDarcyMemDev");
 }
@@ -45,12 +47,13 @@ void DEM::freeDarcyMemDev()
     cudaFree(dev_darcy_v);
     cudaFree(dev_darcy_vp_avg);
     cudaFree(dev_darcy_d_avg);
-    cudaFree(dev_darcy_F_pf);
     cudaFree(dev_darcy_phi);
     cudaFree(dev_darcy_dphi);
     cudaFree(dev_darcy_norm);
     cudaFree(dev_darcy_f_p);
     cudaFree(dev_darcy_k);
+    cudaFree(dev_darcy_grad_k);
+    cudaFree(dev_darcy_div_v_p);
 }
 
 // Transfer to device
