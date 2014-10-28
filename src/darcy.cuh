@@ -1082,7 +1082,7 @@ __global__ void findDarcyPermeabilityGradients(
 
 __global__ void updateDarcySolution(
         const Float*  __restrict__ dev_darcy_p_old,   // in
-        const Float*  __restrict__ dev_darcy_phi,     // in
+        //const Float*  __restrict__ dev_darcy_phi,     // in
         const Float*  __restrict__ dev_darcy_div_v_p, // in
         const Float*  __restrict__ dev_darcy_k,       // in
         const Float3* __restrict__ dev_darcy_grad_k,  // in
@@ -1124,6 +1124,8 @@ __global__ void updateDarcySolution(
         const Float p_old_zn = dev_darcy_p_old[d_idx(x,y,z-1)];
         const Float p_old_zp = dev_darcy_p_old[d_idx(x,y,z+1)];
 
+        const Float div_v_p = dev_darcy_div_v_p[cellidx];
+
         // find div(k*grad(p_old)). Using vector identities:
         // div(k*grad(p_old)) = k*laplace(p_old) + dot(grad(k), grad(p_old))
 
@@ -1152,9 +1154,6 @@ __global__ void updateDarcySolution(
         dev_darcy_p[cellidx]    = p_new;
         dev_darcy_norm[cellidx] = res_norm;
     }
-}
-
-
 }
 
 // Print final heads and free memory
