@@ -23,6 +23,7 @@ void DEM::initDarcyMemDev(void)
     unsigned int memSizeFface = sizeof(Float)*darcyCellsVelocity();
 
     cudaMalloc((void**)&dev_darcy_p, memSizeF);     // hydraulic pressure
+    cudaMalloc((void**)&dev_darcy_p_old, memSizeF); // prev. hydraulic pressure
     cudaMalloc((void**)&dev_darcy_v, memSizeF*3);   // cell hydraulic velocity
     cudaMalloc((void**)&dev_darcy_v_p, memSizeF*3); // predicted cell velocity
     cudaMalloc((void**)&dev_darcy_vp_avg, memSizeF*3); // avg. particle velocity
@@ -31,6 +32,7 @@ void DEM::initDarcyMemDev(void)
     cudaMalloc((void**)&dev_darcy_dphi, memSizeF);  // cell porosity change
     cudaMalloc((void**)&dev_darcy_norm, memSizeF);  // normalized residual
     cudaMalloc((void**)&dev_darcy_f_p, sizeof(Float4)*np); // pressure force
+    cudaMalloc((void**)&dev_darcy_k, memSizeF);     // hydraulic permeability
 
     checkForCudaErrors("End of initDarcyMemDev");
 }
@@ -39,6 +41,7 @@ void DEM::initDarcyMemDev(void)
 void DEM::freeDarcyMemDev()
 {
     cudaFree(dev_darcy_p);
+    cudaFree(dev_darcy_p_old);
     cudaFree(dev_darcy_v);
     cudaFree(dev_darcy_vp_avg);
     cudaFree(dev_darcy_d_avg);
@@ -47,6 +50,7 @@ void DEM::freeDarcyMemDev()
     cudaFree(dev_darcy_dphi);
     cudaFree(dev_darcy_norm);
     cudaFree(dev_darcy_f_p);
+    cudaFree(dev_darcy_k);
 }
 
 // Transfer to device
@@ -953,6 +957,127 @@ __global__ void findDarcyNormalizedResiduals(
         checkFiniteFloat("res_norm", x, y, z, res_norm);
 #endif
     }
+}
+
+// Find the cell permeabilities from the Kozeny-Carman equation
+__global__ void findDarcyPermeabilities(
+        const Float k_c,                            // in
+        const Float* __restrict__ dev_darcy_phi,    // in
+        Float* __restrict__ dev_darcy_k)            // out
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    if (x < nx && y < ny && z < nz) {
+
+        // 1D thread index
+        const unsigned int cellidx = d_idx(x,y,z);
+
+        __syncthreads();
+        const Float phi = dev_darcy_phi[cellidx];
+        const Float k = k_c*pow(phi,3)/pow(1.0 - phi, 2);
+        dev_darcy_k[cellidx] = k;
+    }
+}
+
+// Find the particle velocity divergence at the cell center from the average
+// particle velocities on the cell faces
+__global__ void findDarcyParticleVelocityDivergence(
+        const Float* __restrict__ dev_darcy_v_p_x,  // in
+        const Float* __restrict__ dev_darcy_v_p_y,  // in
+        const Float* __restrict__ dev_darcy_v_p_z,  // in
+        Float* __restrict__ dev_darcy_div_v_p)      // out
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    if (x < nx && y < ny && z < nz) {
+
+        // read values
+        __syncthreads();
+        Float v_p_xn = dev_darcy_v_p_x[d_vidx(x,y,z)];
+        Float v_p_xp = dev_darcy_v_p_x[d_vidx(x+1,y,z)];
+        Float v_p_yn = dev_darcy_v_p_y[d_vidx(x,y,z)];
+        Float v_p_yp = dev_darcy_v_p_y[d_vidx(x,y+1,z)];
+        Float v_p_zn = dev_darcy_v_p_z[d_vidx(x,y,z)];
+        Float v_p_zp = dev_darcy_v_p_z[d_vidx(x,y,z+1)];
+
+        // cell dimensions
+        const Float dx = devC_params.L[0] / devC_params.num[0];
+        const Float dy = devC_params.L[1] / devC_params.num[1];
+        const Float dz = devC_params.L[2] / devC_params.num[2];
+
+        // calculate the divergence
+        const Float div_v_p =
+            (xp - xn)/dx +
+            (yp - yn)/dy +
+            (zp - zn)/dz;
+
+        __syncthreads();
+        dev_darcy_div_v_p[d_idx(x,y,z)] = div_v_p;
+    }
+}
+
+__global__ void updateDarcySolution(
+        const Float* __restrict__ dev_darcy_p_old,   // in
+        const Float* __restrict__ dev_darcy_phi,     // in
+        const Float* __restrict__ dev_darcy_div_v_p, // in
+        const Float* __restrict__ dev_darcy_k,       // in
+        const Float beta_f,                          // in
+        const Float mu,                              // in
+        Float* __restrict__ dev_darcy_p,             // out
+        Float* __restrict__ dev_darcy_norm)          // out
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    if (x < nx && y < ny && z < nz) {
+
+        // 1D thread index
+        const unsigned int cellidx = d_idx(x,y,z);
+
+        // read values
+        __syncthreads();
+
+        // find div(k*grad(p_old))
+
+        // find new value for p
+        const Float p_new = p_old
+            + dt/(beta_f*phi*mu)*div_k_grad_p
+            - dt/(beta_f*phi)*div_v_p;
+
+        // normalized residual
+        const Float res_norm = (p_new - p)*(p_new - p)/(p_new*p_new + 1.0e-16);
+
+        // save new pressure and the residual
+        __syncthreads();
+        dev_darcy_p[cellidx]    = p_new;
+        dev_darcy_norm[cellidx] = res_norm;
+    }
+}
+
+
 }
 
 // Print final heads and free memory

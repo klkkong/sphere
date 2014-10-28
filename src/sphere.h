@@ -295,6 +295,7 @@ class DEM {
 
         // Darcy values, device
         Float*  dev_darcy_p;         // Cell hydraulic pressure
+        Float*  dev_darcy_p_old;     // Cell hydraulic pressure
         Float3* dev_darcy_v;         // Cell fluid velocity
         Float3* dev_darcy_vp_avg;    // Average particle velocity in cell
         Float*  dev_darcy_d_avg;     // Average particle diameter in cell
@@ -302,6 +303,7 @@ class DEM {
         Float*  dev_darcy_dphi;      // Cell porosity change
         Float*  dev_darcy_norm;      // Normalized residual of epsilon values
         Float4* dev_darcy_f_d;       // Drag force on particles
+        Float*  dev_darcy_k;         // Cell hydraulic permeability
 
         // Darcy functions
         void initDarcyMem();
