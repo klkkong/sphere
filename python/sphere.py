@@ -632,44 +632,66 @@ class sim:
             elif (self.free_slip_top != other.free_slip_top):
                 print(77)
                 return 77
-            elif (self.gamma != other.gamma):
-                print(78)
-                return 78
-            elif (self.theta != other.theta):
-                print(79)
-                return 79
-            elif (self.beta != other.beta):
-                print(80)
-                return 80
-            elif (self.tolerance != other.tolerance):
-                print(81)
-                return 81
-            elif (self.maxiter != other.maxiter):
-                print(82)
-                return 82
-            elif (self.ndem != other.ndem):
-                print(83)
-                return 83
-            elif (self.c_phi != other.c_phi):
-                print(84)
-                return(84)
-            elif (self.c_v != other.c_v):
-                print(85)
-            elif (self.dt_dem_fac != other.dt_dem_fac):
-                print(85)
-                return(85)
-            elif (self.f_d != other.f_d).any():
-                print(86)
-                return(86)
-            elif (self.f_p != other.f_p).any():
-                print(87)
-                return(87)
-            elif (self.f_v != other.f_v).any():
-                print(88)
-                return(88)
-            elif (self.f_sum != other.f_sum).any():
-                print(89)
-                return(89)
+
+            if (self.cfd_solver == 0):
+                if (self.gamma != other.gamma):
+                    print(78)
+                    return 78
+                elif (self.theta != other.theta):
+                    print(79)
+                    return 79
+                elif (self.beta != other.beta):
+                    print(80)
+                    return 80
+                elif (self.tolerance != other.tolerance):
+                    print(81)
+                    return 81
+                elif (self.maxiter != other.maxiter):
+                    print(82)
+                    return 82
+                elif (self.ndem != other.ndem):
+                    print(83)
+                    return 83
+                elif (self.c_phi != other.c_phi):
+                    print(84)
+                    return(84)
+                elif (self.c_v != other.c_v):
+                    print(85)
+                elif (self.dt_dem_fac != other.dt_dem_fac):
+                    print(85)
+                    return(85)
+                elif (self.f_d != other.f_d).any():
+                    print(86)
+                    return(86)
+                elif (self.f_p != other.f_p).any():
+                    print(87)
+                    return(87)
+                elif (self.f_v != other.f_v).any():
+                    print(88)
+                    return(88)
+                elif (self.f_sum != other.f_sum).any():
+                    print(89)
+                    return(89)
+
+            if (self.cfd_solver == 1):
+                if (self.tolerance != other.tolerance):
+                    print(81)
+                    return 81
+                elif (self.maxiter != other.maxiter):
+                    print(82)
+                    return 82
+                elif (self.c_phi != other.c_phi):
+                    print(84)
+                    return(84)
+                elif (self.f_d != other.f_d).any():
+                    print(86)
+                    return(86)
+                elif (self.beta_f != other.beta_f):
+                    print(87)
+                    return(87)
+                elif (self.k_c != other.k_c):
+                    print(88)
+                    return(88)
 
         if ((self.color != other.color)).any():
             print(90)
