@@ -40,9 +40,18 @@ class sim:
     :type sid: str
     :param fluid: Setup fluid simulation (default = False)
     :type fluid: bool
+    :param cfd_solver: Fluid solver to use if fluid == True. 0: Navier-Stokes
+        (default), 1: Darcy.
+    :type cfd_solver: int
     '''
 
-    def __init__(self, sid = 'unnamed', np = 0, nd = 3, nw = 0, fluid = False):
+    def __init__(self,
+            sid = 'unnamed',
+            np = 0,
+            nd = 3,
+            nw = 0,
+            fluid = False,
+            cfd_solver = 0):
 
         # Sphere version number
         self.version = numpy.ones(1, dtype=numpy.float64)*VERSION
@@ -275,7 +284,7 @@ class sim:
             # Fluid solver type
             # 0: Navier Stokes (fluid with inertia)
             # 1: Stokes-Darcy (fluid without inertia)
-            self.cfd_solver = numpy.zeros(0)
+            self.cfd_solver = numpy.zeros(1, dtype=numpy.int32)
 
             # Fluid dynamic viscosity [N/(m/s)]
             self.mu = numpy.zeros(1, dtype=numpy.float64)
@@ -316,40 +325,67 @@ class sim:
 
             ## Solver parameters
 
-            # Smoothing parameter, should be in the range [0.0;1.0[.
-            # 0.0 = no smoothing.
-            self.gamma = numpy.array(0.0)
+            # Navier-Stokes
+            if self.cfd_solver[0] == 0:
 
-            # Under-relaxation parameter, should be in the range ]0.0;1.0].
-            # 1.0 = no under-relaxation
-            self.theta = numpy.array(1.0)
+                # Smoothing parameter, should be in the range [0.0;1.0[.
+                # 0.0 = no smoothing.
+                self.gamma = numpy.array(0.0)
 
-            # Velocity projection parameter, should be in the range [0.0;1.0]
-            self.beta = numpy.array(0.0)
+                # Under-relaxation parameter, should be in the range ]0.0;1.0].
+                # 1.0 = no under-relaxation
+                self.theta = numpy.array(1.0)
 
-            # Tolerance criteria for the normalized max. residual
-            self.tolerance = numpy.array(1.0e-8)
+                # Velocity projection parameter, should be in the range
+                # [0.0;1.0]
+                self.beta = numpy.array(0.0)
 
-            # The maximum number of iterations to perform per time step
-            self.maxiter = numpy.array(1e4)
+                # Tolerance criteria for the normalized max. residual
+                self.tolerance = numpy.array(1.0e-8)
 
-            # The number of DEM time steps to perform between CFD updates
-            self.ndem = numpy.array(1)
+                # The maximum number of iterations to perform per time step
+                self.maxiter = numpy.array(1e4)
 
-            # Porosity scaling factor
-            self.c_phi = numpy.ones(1, dtype=numpy.float64)
+                # The number of DEM time steps to perform between CFD updates
+                self.ndem = numpy.array(1)
 
-            # Fluid velocity scaling factor
-            self.c_v = numpy.ones(1, dtype=numpy.float64)
+                # Porosity scaling factor
+                self.c_phi = numpy.ones(1, dtype=numpy.float64)
 
-            # DEM-CFD time scaling factor
-            self.dt_dem_fac = numpy.ones(1, dtype=numpy.float64)
+                # Fluid velocity scaling factor
+                self.c_v = numpy.ones(1, dtype=numpy.float64)
 
-            ## Interaction forces
-            self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-            self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-            self.f_v = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-            self.f_sum = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+                # DEM-CFD time scaling factor
+                self.dt_dem_fac = numpy.ones(1, dtype=numpy.float64)
+
+                ## Interaction forces
+                self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+                self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+                self.f_v = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+                self.f_sum = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+
+            # Darcy
+            elif self.cfd_solver[0] == 1:
+
+                # The maximum number of iterations to perform per time step
+                self.maxiter = numpy.array(1e4)
+
+                # Porosity scaling factor
+                self.c_phi = numpy.ones(1, dtype=numpy.float64)
+
+                # Interaction forces
+                self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+
+                # Adiabatic fluid compressibility [1/Pa].
+                # Fluid bulk modulus = 1/self.beta_f
+                self.beta_f = numpy.ones(1, dtype=numpy.float64)*4.5e-10
+
+                # Hydraulic permeability prefactor [m*m]
+                self.k_c = numpy.ones(1, dtype=numpy.float64)*4.6e-10
+
+            else:
+                raise Exception('Value of cfd_solver not understood (' + \
+                        str(self.cfd_solver[0]) + ')')
 
         # Particle color marker
         self.color = numpy.zeros(self.np, dtype=numpy.int32)
@@ -2650,7 +2686,7 @@ class sim:
         prefactor. This value is stored in `self.K_c`. This function only works
         for the Darcy solver (`self.cfd_solver == 1`)
         '''
-        if self.cfd_solver == 1:
+        if self.cfd_solver[0] == 1:
             self.K_c = self.k_c*self.rho_f*g/self.mu
         else:
             raise Exception('This function only works for the Darcy solver')
@@ -2659,9 +2695,9 @@ class sim:
         '''
         Determine the hydraulic diffusivity (D) [m*m/s]. The result is stored in
         `self.D`. This function only works for the Darcy solver
-        (`self.cfd_solver == 1`)
+        (`self.cfd_solver[0] == 1`)
         '''
-        if self.cfd_solver == 1:
+        if self.cfd_solver[0] == 1:
                 self.hydraulicConductivity()
                 phi_bar = numpy.mean(self.phi)
                 alpha = self.K_c/(self.rho_f*g*(self.k_n[0] + phi_bar*K))
@@ -2773,7 +2809,7 @@ class sim:
         self.initFluid()
 
     def initFluid(self, mu = 8.9e-4, rho = 1.0e3, p = 1.0,
-            hydrostatic = True):
+            hydrostatic = True, cfd_solver = 0):
         '''
         Initialize the fluid arrays and the fluid viscosity. The default value
         of ``mu`` equals the dynamic viscosity of water at 25 degrees Celcius.
@@ -2791,6 +2827,9 @@ class sim:
             created if a gravitational acceleration along :math:`z` previously
             has been specified
         :type hydrostatic: bool
+        :param cfd_solver: Solver to use for the computational fluid dynamics.
+            Accepted values: 0 (Navier Stokes, default) and 1 (Darcy).
+        :type cfd_solver: int
         '''
         self.fluid = True
         self.mu = numpy.ones(1, dtype=numpy.float64) * mu
@@ -2837,21 +2876,38 @@ class sim:
         self.free_slip_bot = numpy.ones(1, dtype=numpy.int32)
         self.free_slip_top = numpy.ones(1, dtype=numpy.int32)
 
-        self.gamma = numpy.array(0.0)
-        self.theta = numpy.array(1.0)
-        self.beta = numpy.array(0.0)
-        self.tolerance = numpy.array(1.0e-8)
-        self.maxiter = numpy.array(1e4)
-        self.ndem = numpy.array(1)
+        # Fluid solver type
+        # 0: Navier Stokes (fluid with inertia)
+        # 1: Stokes-Darcy (fluid without inertia)
+        self.cfd_solver = numpy.ones(1)*cfd_solver
 
-        self.c_phi = numpy.ones(1, dtype=numpy.float64)
-        self.c_v = numpy.ones(1, dtype=numpy.float64)
-        self.dt_dem_fac = numpy.ones(1, dtype=numpy.float64)
+        if self.cfd_solver[0] == 0:
+            self.gamma = numpy.array(0.0)
+            self.theta = numpy.array(1.0)
+            self.beta = numpy.array(0.0)
+            self.tolerance = numpy.array(1.0e-8)
+            self.maxiter = numpy.array(1e4)
+            self.ndem = numpy.array(1)
 
-        self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-        self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-        self.f_v = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-        self.f_sum = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+            self.c_phi = numpy.ones(1, dtype=numpy.float64)
+            self.c_v = numpy.ones(1, dtype=numpy.float64)
+            self.dt_dem_fac = numpy.ones(1, dtype=numpy.float64)
+
+            self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+            self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+            self.f_v = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+            self.f_sum = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+
+        elif self.cfd_solver[0] == 1:
+            self.maxiter = numpy.array(1e4)
+            self.c_phi = numpy.ones(1, dtype=numpy.float64)
+            self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+            self.beta_f = numpy.ones(1, dtype=numpy.float64)*4.5e-10
+            self.k_c = numpy.ones(1, dtype=numpy.float64)*4.6e-10
+
+        else:
+            raise Exception('Value of cfd_solver not understood (' + \
+                    str(self.cfd_solver[0]) + ')')
 
     def setFluidBottomNoFlow(self):
         '''
