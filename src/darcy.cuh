@@ -74,6 +74,8 @@ void DEM::transferDarcyToGlobalDeviceMemory(int statusmsg)
     cudaMemcpy(dev_darcy_v, darcy.v, memSizeF*3, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_darcy_phi, darcy.phi, memSizeF, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_darcy_dphi, darcy.dphi, memSizeF, cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_darcy_f_p, darcy.f_p, sizeof(Float4)*np,
+            cudaMemcpyHostToDevice);
 
     checkForCudaErrors("End of transferDarcyToGlobalDeviceMemory");
     //if (verbose == 1 && statusmsg == 1)
@@ -214,11 +216,11 @@ __global__ void findDarcyPorosities(
         const unsigned int* __restrict__ dev_cellStart,   // in
         const unsigned int* __restrict__ dev_cellEnd,     // in
         const Float4* __restrict__ dev_x_sorted,          // in
-        Float*  __restrict__ dev_darcy_phi,               // in + out
-        Float*  __restrict__ dev_darcy_dphi,              // out
         const unsigned int iteration,                     // in
         const unsigned int np,                            // in
-        const Float c_phi)                                // in
+        const Float c_phi,                                // in
+        Float*  __restrict__ dev_darcy_phi,               // in + out
+        Float*  __restrict__ dev_darcy_dphi)              // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -410,8 +412,58 @@ __global__ void findDarcyPorosities(
     }
 }
 
+// Find the particle velocity divergence at the cell center from the average
+// particle velocities on the cell faces
+__global__ void findDarcyParticleVelocityDivergence(
+        const Float* __restrict__ dev_darcy_v_p_x,  // in
+        const Float* __restrict__ dev_darcy_v_p_y,  // in
+        const Float* __restrict__ dev_darcy_v_p_z,  // in
+        Float* __restrict__ dev_darcy_div_v_p)      // out
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    if (x < nx && y < ny && z < nz) {
+
+        // read values
+        __syncthreads();
+        Float v_p_xn = dev_darcy_v_p_x[d_vidx(x,y,z)];
+        Float v_p_xp = dev_darcy_v_p_x[d_vidx(x+1,y,z)];
+        Float v_p_yn = dev_darcy_v_p_y[d_vidx(x,y,z)];
+        Float v_p_yp = dev_darcy_v_p_y[d_vidx(x,y+1,z)];
+        Float v_p_zn = dev_darcy_v_p_z[d_vidx(x,y,z)];
+        Float v_p_zp = dev_darcy_v_p_z[d_vidx(x,y,z+1)];
+
+        // cell dimensions
+        const Float dx = devC_grid.L[0]/nx;
+        const Float dy = devC_grid.L[1]/ny;
+        const Float dz = devC_grid.L[2]/nz;
+
+        // calculate the divergence using first order central finite differences
+        const Float div_v_p =
+            (v_p_xp - v_p_xn)/dx +
+            (v_p_yp - v_p_yn)/dy +
+            (v_p_zp - v_p_zn)/dz;
+
+        __syncthreads();
+        dev_darcy_div_v_p[d_idx(x,y,z)] = div_v_p;
+
+#ifdef CHECK_FLUID_FINITE
+        checkFiniteFloat("div_v_p", x, y, z, div_v_p);
+#endif
+    }
+}
+
 // Find particle-fluid interaction force as outlined by Zhou et al. 2010, and
-// originally by Gidaspow 1992.
+// originally by Gidaspow 1992. All terms other than the pressure force are
+// neglected. The buoyancy force is included.
 __global__ void findDarcyPressureForce(
     const Float4* __restrict__ dev_x,           // in
     const Float*  __restrict__ dev_darcy_p,     // in
@@ -444,12 +496,12 @@ __global__ void findDarcyPressureForce(
         // read fluid information
         __syncthreads();
         const Float phi = dev_darcy_phi[cellidx];
-        const Float p_xn = dev_darcy_p[d_idx(x-1,y,z)];
-        const Float p_xp = dev_darcy_p[d_idx(x+1,y,z)];
-        const Float p_yn = dev_darcy_p[d_idx(x,y-1,z)];
-        const Float p_yp = dev_darcy_p[d_idx(x,y+1,z)];
-        const Float p_zn = dev_darcy_p[d_idx(x,y,z-1)];
-        const Float p_zp = dev_darcy_p[d_idx(x,y,z+1)];
+        const Float p_xn = dev_darcy_p[d_idx(i_x-1,i_y,i_z)];
+        const Float p_xp = dev_darcy_p[d_idx(i_x+1,i_y,i_z)];
+        const Float p_yn = dev_darcy_p[d_idx(i_x,i_y-1,i_z)];
+        const Float p_yp = dev_darcy_p[d_idx(i_x,i_y+1,i_z)];
+        const Float p_zn = dev_darcy_p[d_idx(i_x,i_y,i_z-1)];
+        const Float p_zp = dev_darcy_p[d_idx(i_x,i_y,i_z+1)];
 
         // find particle volume (radius in x.w)
         const Float V = 4.0/3.0*M_PI*x.w*x.w*x.w;
@@ -460,8 +512,14 @@ __global__ void findDarcyPressureForce(
                 (p_yp - p_yn)/(dy + dy),
                 (p_zp - p_zn)/(dz + dz));
 
-        // find pressure gradient force
-        const Float3 f_p = -1.0*grad_p*V_p/(1.0 - phi);
+        // find pressure gradient force plus buoyancy force.
+        // buoyancy force = weight of displaced fluid
+        // f_b = -rho_f*V*g
+        const Float3 f_p = -1.0*grad_p*V/(1.0 - phi);
+            - devC_params.rho_f*V*MAKE_FLOAT3(
+                    devC_params.g[0],
+                    devC_params.g[1],
+                    devC_params.g[2]);
 
 #ifdef CHECK_FLUID_FINITE
         checkFiniteFloat3("f_p", i_x, i_y, i_z, f_p);
@@ -508,55 +566,6 @@ __global__ void findDarcyPermeabilities(
 
 #ifdef CHECK_FLUID_FINITE
         checkFiniteFloat("k", x, y, z, k);
-#endif
-    }
-}
-
-// Find the particle velocity divergence at the cell center from the average
-// particle velocities on the cell faces
-__global__ void findDarcyParticleVelocityDivergence(
-        const Float* __restrict__ dev_darcy_v_p_x,  // in
-        const Float* __restrict__ dev_darcy_v_p_y,  // in
-        const Float* __restrict__ dev_darcy_v_p_z,  // in
-        Float* __restrict__ dev_darcy_div_v_p)      // out
-{
-    // 3D thread index
-    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
-    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
-    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
-
-    // Grid dimensions
-    const unsigned int nx = devC_grid.num[0];
-    const unsigned int ny = devC_grid.num[1];
-    const unsigned int nz = devC_grid.num[2];
-
-    if (x < nx && y < ny && z < nz) {
-
-        // read values
-        __syncthreads();
-        Float v_p_xn = dev_darcy_v_p_x[d_vidx(x,y,z)];
-        Float v_p_xp = dev_darcy_v_p_x[d_vidx(x+1,y,z)];
-        Float v_p_yn = dev_darcy_v_p_y[d_vidx(x,y,z)];
-        Float v_p_yp = dev_darcy_v_p_y[d_vidx(x,y+1,z)];
-        Float v_p_zn = dev_darcy_v_p_z[d_vidx(x,y,z)];
-        Float v_p_zp = dev_darcy_v_p_z[d_vidx(x,y,z+1)];
-
-        // cell dimensions
-        const Float dx = devC_grid.L[0]/nx;
-        const Float dy = devC_grid.L[1]/ny;
-        const Float dz = devC_grid.L[2]/nz;
-
-        // calculate the divergence using first order central finite differences
-        const Float div_v_p =
-            (v_p_xp - v_p_xn)/dx +
-            (v_p_yp - v_p_yn)/dy +
-            (v_p_zp - v_p_zn)/dz;
-
-        __syncthreads();
-        dev_darcy_div_v_p[d_idx(x,y,z)] = div_v_p;
-
-#ifdef CHECK_FLUID_FINITE
-        checkFiniteFloat("div_v_p", x, y, z, div_v_p);
 #endif
     }
 }
@@ -623,7 +632,6 @@ __global__ void updateDarcySolution(
         const Float*  __restrict__ dev_darcy_dphi,     // in
         const Float3* __restrict__ dev_darcy_grad_k,  // in
         const Float beta_f,                           // in
-        const Float mu,                               // in
         const int bc_bot,                             // in
         const int bc_top,                             // in
         const unsigned int ndem,                      // in
@@ -690,7 +698,8 @@ __global__ void updateDarcySolution(
 
         // find new value for p from Goren et al 2011 eq. 15 or 18
         Float p_new = p
-            + devC_dt*ndem/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
+            + devC_dt*ndem/(beta_f*phi*devC_params.mu)
+            *(k*laplace_p + dot(grad_k, grad_p))
             //- devC_dt*ndem/(beta_f*phi)*div_v_p; // div(v_p) as forcing
             - dphi*ndem/(beta_f*phi*(1.0-phi));    // porosity change as forcing
 
@@ -714,11 +723,10 @@ __global__ void updateDarcySolution(
 }
 
 // Find cell velocities
-__global__ void findDarcyVelocitiesDev(
+__global__ void findDarcyVelocities(
         const Float* __restrict__ dev_darcy_p,      // in
         const Float* __restrict__ dev_darcy_phi,    // in
         const Float* __restrict__ dev_darcy_k,      // in
-        const Float mu,                             // in
         Float3* __restrict__ dev_darcy_v)           // out
 {
     // 3D thread index
@@ -766,7 +774,7 @@ __global__ void findDarcyVelocitiesDev(
 
         // calculate velocity
         //const Float3 v = q/phi;
-        const Float3 v = (-k/mu * grad_p)/phi;
+        const Float3 v = (-k/devC_params.mu * grad_p)/phi;
 
         // Save velocity
         __syncthreads();

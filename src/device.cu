@@ -1031,35 +1031,37 @@ __host__ void DEM::startTime()
 
         // Solve fluid flow through the grid
         if (fluid == 1) {
-            checkForCudaErrorsIter("Before findPorositiesDev", iter);
-            // Find cell porosities, average particle velocities, and average
-            // particle diameters. These are needed for predicting the fluid
-            // velocities
-            if (PROFILING == 1)
-                startTimer(&kernel_tic);
-            findPorositiesVelocitiesDiametersSpherical
-            //findPorositiesVelocitiesDiametersSphericalGradient
-                <<<dimGridFluid, dimBlockFluid>>>(
-                        dev_cellStart,
-                        dev_cellEnd,
-                        dev_x_sorted,
-                        dev_vel_sorted,
-                        dev_ns_phi,
-                        dev_ns_dphi,
-                        dev_ns_vp_avg,
-                        dev_ns_d_avg,
-                        iter,
-                        np,
-                        ns.c_phi);
-            cudaThreadSynchronize();
-            if (PROFILING == 1)
-                stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                        &t_findPorositiesDev);
-            checkForCudaErrorsIter("Post findPorositiesDev", iter);
 
-#ifdef CFD_DEM_COUPLING
             // Navier-Stokes solution
             if (cfd_solver == 0) {
+
+                checkForCudaErrorsIter("Before findPorositiesDev", iter);
+                // Find cell porosities, average particle velocities, and average
+                // particle diameters. These are needed for predicting the fluid
+                // velocities
+                if (PROFILING == 1)
+                    startTimer(&kernel_tic);
+                findPorositiesVelocitiesDiametersSpherical
+                //findPorositiesVelocitiesDiametersSphericalGradient
+                    <<<dimGridFluid, dimBlockFluid>>>(
+                            dev_cellStart,
+                            dev_cellEnd,
+                            dev_x_sorted,
+                            dev_vel_sorted,
+                            dev_ns_phi,
+                            dev_ns_dphi,
+                            dev_ns_vp_avg,
+                            dev_ns_d_avg,
+                            iter,
+                            np,
+                            ns.c_phi);
+                cudaThreadSynchronize();
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_findPorositiesDev);
+                checkForCudaErrorsIter("Post findPorositiesDev", iter);
+
+#ifdef CFD_DEM_COUPLING
                 /*if (params.nu <= 0.0) {
                   std::cerr << "Error! The fluid needs a positive viscosity "
                   "value in order to simulate particle-fluid interaction."
@@ -1696,7 +1698,163 @@ __host__ void DEM::startTime()
             // Darcy solution
             else if (cfd_solver == 1) { 
 
+                if (PROFILING == 1)
+                    startTimer(&kernel_tic);
+                findDarcyPorosities<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_cellStart,
+                        dev_cellEnd,
+                        dev_x_sorted,
+                        iter,
+                        np,
+                        darcy.c_phi,
+                        dev_darcy_phi,
+                        dev_darcy_dphi);
+                cudaThreadSynchronize();
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_findPorositiesDev);
+                checkForCudaErrorsIter("Post findDarcyPorosities", iter);
 
+                if (np > 0) {
+
+                    setDarcyGhostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_darcy_p, darcy.bc_bot, darcy.bc_top);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post setDarcyGhostNodes("
+                            "dev_darcy_p) before findDarcyPressureForce", iter);
+
+                    findDarcyPressureForce<<<dimGrid, dimBlock>>>(
+                            dev_x,
+                            dev_darcy_p,
+                            dev_darcy_phi,
+                            dev_force,
+                            dev_darcy_f_p);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post findDarcyPressureForce",
+                            iter);
+                }
+
+                findDarcyPermeabilities<<<dimGridFluid, dimBlockFluid>>>(
+                        darcy.k_c, dev_darcy_phi, dev_darcy_k);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post findDarcyPermeabilities",
+                        iter);
+
+                setDarcyGhostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                        dev_darcy_k, darcy.bc_bot, darcy.bc_top);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post setDarcyGhostNodes(dev_darcy_k)",
+                        iter);
+
+                findDarcyPermeabilityGradients<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_darcy_k, dev_darcy_grad_k);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post findDarcyPermeabilityGradients",
+                        iter);
+
+                if (iter == 0) {
+                    setDarcyNormZero<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_darcy_norm);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post setDarcyNormZero", iter);
+                }
+
+                // Solve the system of epsilon using a Jacobi iterative solver.
+                // The average normalized residual is initialized to a large
+                // value.
+                //double avg_norm_res;
+                double max_norm_res;
+
+                // Write a log file of the normalized residuals during the
+                // Jacobi iterations
+                std::ofstream reslog;
+                if (write_res_log == 1)
+                    reslog.open("max_res_norm.dat");
+
+                for (unsigned int nijac = 0; nijac<ns.maxiter; ++nijac) {
+
+                    setDarcyGhostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_darcy_p, darcy.bc_bot, darcy.bc_top);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post setDarcyGhostNodes("
+                            "dev_darcy_p) in Jacobi loop", iter);
+
+                    updateDarcySolution<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_darcy_p,
+                            dev_darcy_k,
+                            dev_darcy_phi,
+                            dev_darcy_dphi,
+                            dev_darcy_grad_k,
+                            darcy.beta_f,
+                            darcy.bc_bot,
+                            darcy.bc_top,
+                            darcy.ndem,
+                            dev_darcy_p_new,
+                            dev_darcy_norm);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post updateDarcySolution", iter);
+
+                    // Copy new values to current values
+                    copyValues<Float><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_darcy_p_new,
+                            dev_darcy_p);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post copyValues(p_new -> p)", iter);
+
+
+                    if (nijac % nijacnorm == 0) {
+                        // Read the normalized residuals from the device
+                        transferNSnormFromGlobalDeviceMemory();
+
+                        // Write the normalized residuals to the terminal
+                        //printNSarray(stdout, ns.norm, "norm");
+
+                        // Find the maximum value of the normalized residuals
+                        max_norm_res = maxNormResDarcy();
+
+                        // Write the Jacobi iteration number and maximum value
+                        // of the normalized residual to the log file
+                        if (write_res_log == 1)
+                            reslog << nijac << '\t' << max_norm_res
+                                << std::endl;
+
+
+                        if (max_norm_res < darcy.tolerance) {
+
+                            if (write_conv_log == 1 &&
+                                    iter % conv_log_interval == 0)
+                                convlog << iter << '\t' << nijac << std::endl;
+
+                            break;  // solution has converged, exit Jacobi loop
+                        }
+
+                        if (nijac >= darcy.maxiter-1) {
+
+                            if (write_conv_log == 1)
+                                convlog << iter << '\t' << nijac << std::endl;
+
+                            std::cerr << "\nIteration " << iter << ", time " 
+                                << iter*time.dt << " s: "
+                                "Error, the pressure solution in the fluid "
+                                "calculations did not converge. Try increasing "
+                                "the value of 'darcy.maxiter' ("
+                                << darcy.maxiter
+                                << ") or increase 'darcy.tolerance' ("
+                                << darcy.tolerance << ")." << std::endl;
+                        }
+                    }
+
+                    if (write_res_log == 1)
+                        reslog.close();
+
+                    findDarcyVelocities<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_darcy_p,
+                            dev_darcy_phi,
+                            dev_darcy_k,
+                            dev_darcy_v);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post findDarcyVelocities", iter);
+                }
             }
         }
 
