@@ -1818,9 +1818,11 @@ __host__ void DEM::startTime()
                             reslog << nijac << '\t' << max_norm_res
                                 << std::endl;
 
+                        if (write_conv_log == 1 &&
+                                iter % conv_log_interval == 0)
+                            convlog << iter << '\t' << nijac << std::endl;
 
                         if (max_norm_res < darcy.tolerance) {
-
                             if (write_conv_log == 1 &&
                                     iter % conv_log_interval == 0)
                                 convlog << iter << '\t' << nijac << std::endl;
