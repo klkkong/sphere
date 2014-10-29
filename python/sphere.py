@@ -4907,7 +4907,7 @@ class sim:
         plt.ylabel('Jacobi iterations')
         plt.plot(conv[:,0], conv[:,1])
         plt.grid()
-        plt.savefig('../output/' + self.sid + '-conv.' + graphics_format)
+        plt.savefig(self.sid + '-conv.' + graphics_format)
         plt.clf()
         plt.close(fig)
 
