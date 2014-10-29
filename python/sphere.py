@@ -1171,8 +1171,9 @@ class sim:
 
                 elif self.version >= 2.0 and self.cfd_solver == 1:
 
+                    print("Reading Darcy specific values!")
                     self.tolerance = \
-                            numpy.fromfile(fh, dtype=numpy.uint32, count=1)
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
                     self.maxiter = \
                             numpy.fromfile(fh, dtype=numpy.uint32, count=1)
                     self.ndem = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
@@ -1360,8 +1361,9 @@ class sim:
 
                 # Darcy
                 elif self.cfd_solver[0] == 1:
+                    print("Writing Darcy specific values!")
 
-                    fh.write(self.tolerance.astype(numpy.uint32))
+                    fh.write(self.tolerance.astype(numpy.float64))
                     fh.write(self.maxiter.astype(numpy.uint32))
                     fh.write(self.ndem.astype(numpy.uint32))
                     fh.write(self.c_phi.astype(numpy.float64))
