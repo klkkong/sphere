@@ -34,7 +34,7 @@ void DEM::initDarcyMemDev(void)
     cudaMalloc((void**)&dev_darcy_f_p, sizeof(Float4)*np); // pressure force
     cudaMalloc((void**)&dev_darcy_k, memSizeF);        // hydraulic permeability
     cudaMalloc((void**)&dev_darcy_grad_k, memSizeF3);  // grad(permeability)
-    cudaMalloc((void**)&dev_darcy_div_v_p, memSizeF3); // divergence(v_p)
+    //cudaMalloc((void**)&dev_darcy_div_v_p, memSizeF3); // divergence(v_p)
 
     checkForCudaErrors("End of initDarcyMemDev");
 }
@@ -53,7 +53,7 @@ void DEM::freeDarcyMemDev()
     cudaFree(dev_darcy_f_p);
     cudaFree(dev_darcy_k);
     cudaFree(dev_darcy_grad_k);
-    cudaFree(dev_darcy_div_v_p);
+    //cudaFree(dev_darcy_div_v_p);
 }
 
 // Transfer to device
@@ -915,9 +915,10 @@ __global__ void findDarcyPermeabilityGradients(
 // bc = 0: Dirichlet, 1: Neumann
 __global__ void updateDarcySolution(
         const Float*  __restrict__ dev_darcy_p,       // in
-        const Float*  __restrict__ dev_darcy_div_v_p, // in
+        //const Float*  __restrict__ dev_darcy_div_v_p, // in
         const Float*  __restrict__ dev_darcy_k,       // in
         const Float*  __restrict__ dev_darcy_phi,     // in
+        const Float*  __restrict__ dev_darcy_dphi,     // in
         const Float3* __restrict__ dev_darcy_grad_k,  // in
         const Float beta_f,                           // in
         const Float mu,                               // in
@@ -952,6 +953,7 @@ __global__ void updateDarcySolution(
         const Float  k      = dev_darcy_k[cellidx];
         const Float3 grad_k = dev_darcy_grad_k[cellidx];
         const Float  phi    = dev_darcy_phi[cellidx];
+        const Float  dphi   = dev_darcy_dphi[cellidx];
 
         const Float p_xn = dev_darcy_p[d_idx(x-1,y,z)];
         const Float p    = dev_darcy_p[cellidx];
@@ -961,7 +963,7 @@ __global__ void updateDarcySolution(
         Float p_zn = dev_darcy_p[d_idx(x,y,z-1)];
         Float p_zp = dev_darcy_p[d_idx(x,y,z+1)];
 
-        const Float div_v_p = dev_darcy_div_v_p[cellidx];
+        //const Float div_v_p = dev_darcy_div_v_p[cellidx];
 
         // Neumann BCs
         if (z == 0 && bc_bot == 1)
@@ -984,10 +986,11 @@ __global__ void updateDarcySolution(
                 (p_yp - p_yn)/(dy+dy),
                 (p_zp - p_zn)/(dz+dz));
 
-        // find new value for p
+        // find new value for p from Goren et al 2011 eq. 15 or 18
         Float p_new = p
             + devC_dt*ndem/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
-            - devC_dt*ndem/(beta_f*phi)*div_v_p;
+            //- devC_dt*ndem/(beta_f*phi)*div_v_p; // div(v_p) as forcing
+            - dphi*ndem/(beta_f*phi*(1.0-phi));    // porosity change as forcing
 
         // Dirichlet BCs
         if ((z == 0 && bc_bot == 0) || (z == nz-1 && bc_top == 0))
