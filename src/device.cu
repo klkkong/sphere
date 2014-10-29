@@ -1771,7 +1771,7 @@ __host__ void DEM::startTime()
                 if (write_res_log == 1)
                     reslog.open("max_res_norm.dat");
 
-                for (unsigned int nijac = 0; nijac<ns.maxiter; ++nijac) {
+                for (unsigned int nijac = 0; nijac<darcy.maxiter; ++nijac) {
 
                     setDarcyGhostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                             dev_darcy_p, darcy.bc_bot, darcy.bc_top);
