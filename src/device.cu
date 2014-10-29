@@ -1820,7 +1820,7 @@ __host__ void DEM::startTime()
                         if (max_norm_res <= darcy.tolerance) {
                             if (write_conv_log == 1
                                     && iter % conv_log_interval == 0)
-                                convlog << iter << '\t' << nijac << std::endl;
+                                convlog << iter+1 << '\t' << nijac << std::endl;
 
                             break;  // solution has converged, exit Jacobi loop
                         }
@@ -1829,7 +1829,7 @@ __host__ void DEM::startTime()
                     if (nijac == darcy.maxiter-1) {
 
                         if (write_conv_log == 1)
-                            convlog << iter << '\t' << nijac << std::endl;
+                            convlog << iter+1 << '\t' << nijac << std::endl;
 
                         std::cerr << "\nIteration " << iter << ", time " 
                             << iter*time.dt << " s: "
