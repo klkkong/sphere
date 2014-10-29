@@ -25,15 +25,14 @@ void DEM::initDarcyMemDev(void)
     cudaMalloc((void**)&dev_darcy_p, memSizeF);     // hydraulic pressure
     cudaMalloc((void**)&dev_darcy_p_new, memSizeF); // updated pressure
     cudaMalloc((void**)&dev_darcy_v, memSizeF*3);   // cell hydraulic velocity
-    cudaMalloc((void**)&dev_darcy_v_p, memSizeF*3); // predicted cell velocity
-    cudaMalloc((void**)&dev_darcy_vp_avg, memSizeF*3); // avg. particle velocity
-    cudaMalloc((void**)&dev_darcy_d_avg, memSizeF); // avg. particle diameter
+    //cudaMalloc((void**)&dev_darcy_vp_avg, memSizeF*3); // avg. particle velocity
+    //cudaMalloc((void**)&dev_darcy_d_avg, memSizeF); // avg. particle diameter
     cudaMalloc((void**)&dev_darcy_phi, memSizeF);   // cell porosity
     cudaMalloc((void**)&dev_darcy_dphi, memSizeF);  // cell porosity change
     cudaMalloc((void**)&dev_darcy_norm, memSizeF);  // normalized residual
     cudaMalloc((void**)&dev_darcy_f_p, sizeof(Float4)*np); // pressure force
     cudaMalloc((void**)&dev_darcy_k, memSizeF);        // hydraulic permeability
-    cudaMalloc((void**)&dev_darcy_grad_k, memSizeF3);  // grad(permeability)
+    cudaMalloc((void**)&dev_darcy_grad_k, memSizeF*3);  // grad(permeability)
     //cudaMalloc((void**)&dev_darcy_div_v_p, memSizeF3); // divergence(v_p)
 
     checkForCudaErrors("End of initDarcyMemDev");
@@ -45,8 +44,8 @@ void DEM::freeDarcyMemDev()
     cudaFree(dev_darcy_p);
     cudaFree(dev_darcy_p_new);
     cudaFree(dev_darcy_v);
-    cudaFree(dev_darcy_vp_avg);
-    cudaFree(dev_darcy_d_avg);
+    //cudaFree(dev_darcy_vp_avg);
+    //cudaFree(dev_darcy_d_avg);
     cudaFree(dev_darcy_phi);
     cudaFree(dev_darcy_dphi);
     cudaFree(dev_darcy_norm);
@@ -611,7 +610,7 @@ __global__ void findDarcyPorosities(
 
             Float d, r;
             Float phi = 1.00;
-            Float4 v;
+            //Float4 v;
             unsigned int n = 0;
 
             //Float3 v_avg = MAKE_FLOAT3(0.0, 0.0, 0.0);
@@ -673,7 +672,7 @@ __global__ void findDarcyPorosities(
                                     // Read particle position and radius
                                     __syncthreads();
                                     xr = dev_x_sorted[i];
-                                    v  = dev_vel_sorted[i];
+                                    //v  = dev_vel_sorted[i];
                                     r = xr.w;
 
                                     // Find center distance
@@ -995,11 +994,11 @@ __global__ void updateDarcySolution(
 
         // save new pressure and the residual
         __syncthreads();
-        dev_darcy_p[cellidx]    = p_new;
-        dev_darcy_norm[cellidx] = res_norm;
+        dev_darcy_p_new[cellidx] = p_new;
+        dev_darcy_norm[cellidx]  = res_norm;
 
 #ifdef CHECK_FLUID_FINITE
-        checkFiniteFloat("p", x, y, z, p);
+        checkFiniteFloat("p_new", x, y, z, p_new);
         checkFiniteFloat("res_norm", x, y, z, res_norm);
 #endif
     }

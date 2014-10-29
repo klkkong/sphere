@@ -295,10 +295,10 @@ class DEM {
 
         // Darcy values, device
         Float*  dev_darcy_p;         // Cell hydraulic pressure
-        Float*  dev_darcy_p_old;     // Cell hydraulic pressure
+        Float*  dev_darcy_p_new;     // Updated cell hydraulic pressure
         Float3* dev_darcy_v;         // Cell fluid velocity
-        Float3* dev_darcy_vp_avg;    // Average particle velocity in cell
-        Float*  dev_darcy_d_avg;     // Average particle diameter in cell
+        //Float3* dev_darcy_vp_avg;    // Average particle velocity in cell
+        //Float*  dev_darcy_d_avg;     // Average particle diameter in cell
         Float*  dev_darcy_phi;       // Cell porosity
         Float*  dev_darcy_dphi;      // Cell porosity change
         Float*  dev_darcy_norm;      // Normalized residual of epsilon values
@@ -309,6 +309,7 @@ class DEM {
 
         // Darcy functions
         void initDarcyMem();
+        void initDarcyMemDev();
         unsigned int darcyCells();
         unsigned int darcyCellsVelocity();
         void transferDarcyToGlobalDeviceMemory(int statusmsg);
@@ -329,6 +330,7 @@ class DEM {
         void writeDarcyArray(Float* arr, const char* filename);
         void writeDarcyArray(Float3* arr, const char* filename);
         void endDarcy();
+        void endDarcyDev();
 
 
     public:
