@@ -2904,7 +2904,7 @@ class sim:
         self.initFluid()
 
     def initFluid(self, mu = 8.9e-4, rho = 1.0e3, p = 1.0,
-            hydrostatic = True, cfd_solver = 0):
+            hydrostatic = False, cfd_solver = 0):
         '''
         Initialize the fluid arrays and the fluid viscosity. The default value
         of ``mu`` equals the dynamic viscosity of water at 25 degrees Celcius.
