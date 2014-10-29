@@ -1807,7 +1807,7 @@ __host__ void DEM::startTime()
                         transferDarcyNormFromGlobalDeviceMemory();
 
                         // Write the normalized residuals to the terminal
-                        printNSarray(stdout, ns.norm, "norm");
+                        //printDarcyArray(stdout, darcy.norm, "norm");
 
                         // Find the maximum value of the normalized residuals
                         max_norm_res = maxNormResDarcy();
