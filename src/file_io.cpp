@@ -627,7 +627,7 @@ void DEM::writebin(const char *target)
                 for (z=0; z<darcy.nz; z++) {
                     for (y=0; y<darcy.ny; y++) {
                         for (x=0; x<darcy.nx; x++) {
-                            i = idx(x,y,z);
+                            i = d_idx(x,y,z);
 
                             // Interpolated cell-center velocities
                             ofs.write(as_bytes(darcy.v[i].x), sizeof(Float));
