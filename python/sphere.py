@@ -1171,7 +1171,6 @@ class sim:
 
                 elif self.version >= 2.0 and self.cfd_solver == 1:
 
-                    print("Reading Darcy specific values!")
                     self.tolerance = \
                             numpy.fromfile(fh, dtype=numpy.float64, count=1)
                     self.maxiter = \
@@ -1179,6 +1178,7 @@ class sim:
                     self.ndem = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
                     self.c_phi = \
                             numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    self.f_p = numpy.empty_like(self.x)
                     for i in numpy.arange(self.np[0]):
                         self.f_p[i,:] = \
                                 numpy.fromfile(fh, dtype=numpy.float64,
@@ -1361,7 +1361,6 @@ class sim:
 
                 # Darcy
                 elif self.cfd_solver[0] == 1:
-                    print("Writing Darcy specific values!")
 
                     fh.write(self.tolerance.astype(numpy.float64))
                     fh.write(self.maxiter.astype(numpy.uint32))
