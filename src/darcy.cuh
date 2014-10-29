@@ -154,163 +154,10 @@ __global__ void setDarcyNormZero(Float* __restrict__ dev_darcy_norm)
     }
 }
 
-
-// Copy the values from one cell to another
-__device__ void copyDarcyValsDev(
-        const unsigned int read,
-        const unsigned int write,
-        Float*  __restrict__ dev_darcy_p,
-        Float3* __restrict__ dev_darcy_v,
-        Float*  __restrict__ dev_darcy_phi,
-        Float*  __restrict__ dev_darcy_dphi)
-{
-    // Coalesced read
-    const Float  p       = dev_darcy_p[read];
-    const Float3 v       = dev_darcy_v[read];
-    const Float  phi     = dev_darcy_phi[read];
-    const Float  dphi    = dev_darcy_dphi[read];
-
-    // Coalesced write
-    __syncthreads();
-    dev_darcy_p[write]       = p;
-    dev_darcy_v[write]       = v;
-    dev_darcy_phi[write]     = phi;
-    dev_darcy_dphi[write]    = dphi;
-}
-
-
-// Update ghost nodes from their parent cell values. The edge (diagonal) cells
-// are not written since they are not read. Launch this kernel for all cells in
-// the grid
-__global__ void setDarcyGhostNodesDev(
-        Float*  __restrict__ dev_darcy_p,
-        Float3* __restrict__ dev_darcy_v,
-        Float*  __restrict__ dev_darcy_phi,
-        Float*  __restrict__ dev_darcy_dphi,
-        Float*  __restrict__ dev_darcy_epsilon)
-{
-    // 3D thread index
-    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
-    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
-    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
-
-    // Grid dimensions
-    const unsigned int nx = devC_grid.num[0];
-    const unsigned int ny = devC_grid.num[1];
-    const unsigned int nz = devC_grid.num[2];
-
-    // 1D thread index
-    const unsigned int cellidx = d_idx(x,y,z);
-
-    // 1D position of ghost node
-    unsigned int writeidx;
-
-    // check that we are not outside the fluid grid
-    if (x < nx && y < ny && z < nz) {
-
-        if (x == 0) {
-            writeidx = d_idx(nx,y,z);
-            copyDarcyValsDev(cellidx, writeidx,
-                    dev_darcy_p, dev_darcy_v,
-                    dev_darcy_phi, dev_darcy_dphi);
-        }
-        if (x == nx-1) {
-            writeidx = d_idx(-1,y,z);
-            copyDarcyValsDev(cellidx, writeidx,
-                    dev_darcy_p, dev_darcy_v,
-                    dev_darcy_phi, dev_darcy_dphi);
-        }
-
-        if (y == 0) {
-            writeidx = d_idx(x,ny,z);
-            copyDarcyValsDev(cellidx, writeidx,
-                    dev_darcy_p, dev_darcy_v,
-                    dev_darcy_phi, dev_darcy_dphi);
-        }
-        if (y == ny-1) {
-            writeidx = d_idx(x,-1,z);
-            copyDarcyValsDev(cellidx, writeidx,
-                    dev_darcy_p, dev_darcy_v,
-                    dev_darcy_phi, dev_darcy_dphi);
-        }
-
-        // Z boundaries fixed
-        if (z == 0) {
-            writeidx = d_idx(x,y,-1);
-            copyDarcyValsDev(cellidx, writeidx,
-                    dev_darcy_p, dev_darcy_v,
-                    dev_darcy_phi, dev_darcy_dphi);
-        }
-        if (z == nz-1) {
-            writeidx = d_idx(x,y,nz);
-            copyDarcyValsDev(cellidx, writeidx,
-                    dev_darcy_p, dev_darcy_v,
-                    dev_darcy_phi, dev_darcy_dphi);
-        }
-
-        // Z boundaries periodic
-        /*if (z == 0) {
-          writeidx = d_idx(x,y,nz);
-          copyNSvalsDev(cellidx, writeidx,
-          dev_ns_p,
-          dev_ns_v, dev_ns_v_p,
-          dev_ns_phi, dev_ns_dphi,
-          dev_ns_epsilon);
-          }
-          if (z == nz-1) {
-          writeidx = d_idx(x,y,-1);
-          copyNSvalsDev(cellidx, writeidx,
-          dev_ns_p,
-          dev_ns_v, dev_ns_v_p,
-          dev_ns_phi, dev_ns_dphi,
-          dev_ns_epsilon);
-          }*/
-    }
-}
-
 // Update a field in the ghost nodes from their parent cell values. The edge
 // (diagonal) cells are not written since they are not read. Launch this kernel
 // for all cells in the grid using
 // setDarcyGhostNodes<datatype><<<.. , ..>>>( .. );
-    template<typename T>
-__global__ void setDarcyGhostNodes(T* __restrict__ dev_scalarfield)
-{
-    // 3D thread index
-    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
-    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
-    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
-
-    // Grid dimensions
-    const unsigned int nx = devC_grid.num[0];
-    const unsigned int ny = devC_grid.num[1];
-    const unsigned int nz = devC_grid.num[2];
-
-    // check that we are not outside the fluid grid
-    if (x < nx && y < ny && z < nz) {
-
-        const T val = dev_scalarfield[d_idx(x,y,z)];
-
-        if (x == 0)
-            dev_scalarfield[d_idx(nx,y,z)] = val;
-        if (x == nx-1)
-            dev_scalarfield[d_idx(-1,y,z)] = val;
-
-        if (y == 0)
-            dev_scalarfield[d_idx(x,ny,z)] = val;
-        if (y == ny-1)
-            dev_scalarfield[d_idx(x,-1,z)] = val;
-
-        if (z == 0)
-            dev_scalarfield[d_idx(x,y,-1)] = val;     // Dirichlet
-        //dev_scalarfield[d_idx(x,y,nz)] = val;    // Periodic -z
-        if (z == nz-1)
-            dev_scalarfield[d_idx(x,y,nz)] = val;     // Dirichlet
-        //dev_scalarfield[d_idx(x,y,-1)] = val;    // Periodic +z
-    }
-}
-
-// Update a field in the ghost nodes from their parent cell values. The edge
-// (diagonal) cells are not written since they are not read.
     template<typename T>
 __global__ void setDarcyGhostNodes(
         T* __restrict__ dev_scalarfield,
@@ -334,231 +181,30 @@ __global__ void setDarcyGhostNodes(
 
         // x
         if (x == 0)
-            dev_scalarfield[d_idx(nx,y,z)] = val;
+            dev_scalarfield[idx(nx,y,z)] = val;
         if (x == nx-1)
-            dev_scalarfield[d_idx(-1,y,z)] = val;
+            dev_scalarfield[idx(-1,y,z)] = val;
 
         // y
         if (y == 0)
-            dev_scalarfield[d_idx(x,ny,z)] = val;
+            dev_scalarfield[idx(x,ny,z)] = val;
         if (y == ny-1)
-            dev_scalarfield[d_idx(x,-1,z)] = val;
+            dev_scalarfield[idx(x,-1,z)] = val;
 
         // z
         if (z == 0 && bc_bot == 0)
-            dev_scalarfield[d_idx(x,y,-1)] = val;     // Dirichlet
-        //if (z == 1 && bc_bot == 1)
+            dev_scalarfield[idx(x,y,-1)] = val;     // Dirichlet
         if (z == 0 && bc_bot == 1)
-            dev_scalarfield[d_idx(x,y,-1)] = val;     // Neumann
+            dev_scalarfield[idx(x,y,-1)] = val;     // Neumann
         if (z == 0 && bc_bot == 2)
-            dev_scalarfield[d_idx(x,y,nz)] = val;     // Periodic -z
+            dev_scalarfield[idx(x,y,nz)] = val;     // Periodic -z
 
         if (z == nz-1 && bc_top == 0)
-            dev_scalarfield[d_idx(x,y,nz)] = val;     // Dirichlet
+            dev_scalarfield[idx(x,y,nz)] = val;     // Dirichlet
         if (z == nz-2 && bc_top == 1)
-            dev_scalarfield[d_idx(x,y,nz)] = val;     // Neumann
+            dev_scalarfield[idx(x,y,nz)] = val;     // Neumann
         if (z == nz-1 && bc_top == 2)
-            dev_scalarfield[d_idx(x,y,-1)] = val;     // Periodic +z
-    }
-}
-
-// Update a field in the ghost nodes from their parent cell values. The edge
-// (diagonal) cells are not written since they are not read.
-// Launch per face.
-// According to Griebel et al. 1998 "Numerical Simulation in Fluid Dynamics"
-    template<typename T>
-__global__ void setDarcyGhostNodesFace(
-        T* __restrict__ dev_scalarfield_x,
-        T* __restrict__ dev_scalarfield_y,
-        T* __restrict__ dev_scalarfield_z,
-        const int bc_bot,
-        const int bc_top)
-{
-    // 3D thread index
-    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
-    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
-    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
-
-    // Grid dimensions
-    const unsigned int nx = devC_grid.num[0];
-    const unsigned int ny = devC_grid.num[1];
-    const unsigned int nz = devC_grid.num[2];
-
-    // check that we are not outside the fluid grid
-    //if (x <= nx && y <= ny && z <= nz) {
-    if (x < nx && y < ny && z < nz) {
-
-        const T val_x = dev_scalarfield_x[d_vidx(x,y,z)];
-        const T val_y = dev_scalarfield_y[d_vidx(x,y,z)];
-        const T val_z = dev_scalarfield_z[d_vidx(x,y,z)];
-
-        // x (periodic)
-        if (x == 0) {
-            dev_scalarfield_x[d_vidx(nx,y,z)] = val_x;
-            dev_scalarfield_y[d_vidx(nx,y,z)] = val_y;
-            dev_scalarfield_z[d_vidx(nx,y,z)] = val_z;
-        }
-        if (x == 1) {
-            dev_scalarfield_x[d_vidx(nx+1,y,z)] = val_x;
-        }
-        if (x == nx-1) {
-            dev_scalarfield_x[d_vidx(-1,y,z)] = val_x;
-            dev_scalarfield_y[d_vidx(-1,y,z)] = val_y;
-            dev_scalarfield_z[d_vidx(-1,y,z)] = val_z;
-        }
-
-        // z ghost nodes at x = -1 and z = nz,
-        // equal to the ghost node at x = nx-1 and z = nz
-        if (z == nz-1 && x == nx-1 && bc_top == 0) // Dirichlet +z
-            dev_scalarfield_z[d_vidx(-1,y,nz)] = val_z;
-
-        if (z == nz-1 && x == nx-1 && (bc_top == 1 || bc_top == 2)) //Neumann +z
-            dev_scalarfield_z[d_vidx(-1,y,nz)] = 0.0;
-
-        if (z == 0 && x == nx-1 && bc_top == 3) // Periodic +z
-            dev_scalarfield_z[d_vidx(-1,y,nz)] = val_z;
-
-        // z ghost nodes at y = -1 and z = nz,
-        // equal to the ghost node at y = ny-1 and z = nz
-        if (z == nz-1 && y == ny-1 && bc_top == 0) // Dirichlet +z
-            dev_scalarfield_z[d_vidx(x,-1,nz)] = val_z;
-
-        if (z == nz-1 && y == ny-1 && (bc_top == 1 || bc_top == 2)) //Neumann +z
-            dev_scalarfield_z[d_vidx(x,-1,nz)] = 0.0;
-
-        if (z == 0 && y == ny-1 && bc_top == 3) // Periodic +z
-            dev_scalarfield_z[d_vidx(x,-1,nz)] = val_z;
-
-
-        // x ghost nodes at x = nx and z = -1,
-        // equal to the ghost nodes at x = 0 and z = -1
-        // Dirichlet, Neumann free slip or periodic -z
-        if (z == 0 && x == 0 && (bc_bot == 0 || bc_bot == 1 || bc_bot == 3))
-            dev_scalarfield_x[d_vidx(nx,y,-1)] = val_x;
-
-        if (z == 0 && x == 0 && bc_bot == 2) // Neumann no slip -z
-            dev_scalarfield_x[d_vidx(nx,y,-1)] = -val_x;
-
-        // y ghost nodes at y = ny and z = -1,
-        // equal to the ghost node at x = 0 and z = -1
-        // Dirichlet, Neumann free slip or periodic -z
-        if (z == 0 && y == 0 && (bc_bot == 0 || bc_bot == 1 || bc_bot == 3))
-            dev_scalarfield_y[d_vidx(x,ny,-1)] = val_y;
-
-        if (z == 0 && y == 0 && bc_bot == 2) // Neumann no slip -z
-            dev_scalarfield_y[d_vidx(x,ny,-1)] = -val_y;
-
-
-        // z ghost nodes at x = nx and z = nz
-        // equal to the ghost node at x = 0 and z = nz
-        if (z == nz-1 && x == 0 && (bc_top == 0 || bc_top == 3)) // D. or p. +z
-            dev_scalarfield_z[d_vidx(nx,y,nz)] = val_z;
-
-        if (z == nz-1 && x == 0 && (bc_top == 1 || bc_top == 2)) // N. +z
-            dev_scalarfield_z[d_vidx(nx,y,nz)] = 0.0;
-
-        // z ghost nodes at y = ny and z = nz
-        // equal to the ghost node at y = 0 and z = nz
-        if (z == nz-1 && y == 0 && (bc_top == 0 || bc_top == 3)) // D. or p. +z
-            dev_scalarfield_z[d_vidx(x,ny,nz)] = val_z;
-
-        if (z == nz-1 && y == 0 && (bc_top == 1 || bc_top == 2)) // N. +z
-            dev_scalarfield_z[d_vidx(x,ny,nz)] = 0.0;
-
-
-        // x ghost nodes at x = nx and z = nz,
-        // equal to the ghost nodes at x = 0 and z = nz
-        // Dirichlet, Neumann free slip or periodic +z
-        if (z == nz-1 && x == 0 && (bc_bot == 0 || bc_bot == 1 || bc_bot == 3))
-            dev_scalarfield_x[d_vidx(nx,y,nz)] = val_x;
-
-        if (z == nz-1 && x == 0 && bc_bot == 2) // Neumann no slip -z
-            dev_scalarfield_x[d_vidx(nx,y,nz)] = -val_x;
-
-        // y ghost nodes at y = ny and z = nz,
-        // equal to the ghost nodes at y = 0 and z = nz
-        // Dirichlet, Neumann free slip or periodic +z
-        if (z == nz-1 && y == 0 && (bc_bot == 0 || bc_bot == 1 || bc_bot == 3))
-            dev_scalarfield_y[d_vidx(x,ny,nz)] = val_y;
-
-        if (z == nz-1 && y == 0 && bc_bot == 2) // Neumann no slip -z
-            dev_scalarfield_y[d_vidx(x,ny,nz)] = -val_y;
-
-
-        // y (periodic)
-        if (y == 0) {
-            dev_scalarfield_x[d_vidx(x,ny,z)] = val_x;
-            dev_scalarfield_y[d_vidx(x,ny,z)] = val_y;
-            dev_scalarfield_z[d_vidx(x,ny,z)] = val_z;
-        }
-        if (y == 1) {
-            dev_scalarfield_y[d_vidx(x,ny+1,z)] = val_y;
-        }
-        if (y == ny-1) {
-            dev_scalarfield_x[d_vidx(x,-1,z)] = val_x;
-            dev_scalarfield_y[d_vidx(x,-1,z)] = val_y;
-            dev_scalarfield_z[d_vidx(x,-1,z)] = val_z;
-        }
-
-        // z
-        if (z == 0 && bc_bot == 0) {
-            dev_scalarfield_x[d_vidx(x,y,-1)] = val_y;     // Dirichlet -z
-            dev_scalarfield_y[d_vidx(x,y,-1)] = val_x;     // Dirichlet -z
-            dev_scalarfield_z[d_vidx(x,y,-1)] = val_z;     // Dirichlet -z
-        }
-        if (z == 0 && bc_bot == 1) {
-            //dev_scalarfield_x[d_vidx(x,y,-1)] = val_x;   // Neumann free slip -z
-            //dev_scalarfield_y[d_vidx(x,y,-1)] = val_y;   // Neumann free slip -z
-            //dev_scalarfield_z[d_vidx(x,y,-1)] = val_z;   // Neumann free slip -z
-            dev_scalarfield_x[d_vidx(x,y,-1)] = val_x;     // Neumann free slip -z
-            dev_scalarfield_y[d_vidx(x,y,-1)] = val_y;     // Neumann free slip -z
-            dev_scalarfield_z[d_vidx(x,y,-1)] = 0.0;       // Neumann free slip -z
-        }
-        if (z == 0 && bc_bot == 2) {
-            //dev_scalarfield_x[d_vidx(x,y,-1)] = val_x;     // Neumann no slip -z
-            //dev_scalarfield_y[d_vidx(x,y,-1)] = val_y;     // Neumann no slip -z
-            //dev_scalarfield_z[d_vidx(x,y,-1)] = val_z;     // Neumann no slip -z
-            dev_scalarfield_x[d_vidx(x,y,-1)] = -val_x;    // Neumann no slip -z
-            dev_scalarfield_y[d_vidx(x,y,-1)] = -val_y;    // Neumann no slip -z
-            dev_scalarfield_z[d_vidx(x,y,-1)] = 0.0;       // Neumann no slip -z
-        }
-        if (z == 0 && bc_bot == 3) {
-            dev_scalarfield_x[d_vidx(x,y,nz)] = val_x;     // Periodic -z
-            dev_scalarfield_y[d_vidx(x,y,nz)] = val_y;     // Periodic -z
-            dev_scalarfield_z[d_vidx(x,y,nz)] = val_z;     // Periodic -z
-        }
-        if (z == 1 && bc_bot == 3) {
-            dev_scalarfield_z[d_vidx(x,y,nz+1)] = val_z;   // Periodic -z
-        }
-
-        if (z == nz-1 && bc_top == 0) {
-            dev_scalarfield_z[d_vidx(x,y,nz)] = val_z;     // Dirichlet +z
-        }
-        if (z == nz-1 && bc_top == 1) {
-            //dev_scalarfield_x[d_vidx(x,y,nz)] = val_x;   // Neumann free slip +z
-            //dev_scalarfield_y[d_vidx(x,y,nz)] = val_y;   // Neumann free slip +z
-            //dev_scalarfield_z[d_vidx(x,y,nz)] = val_z;   // Neumann free slip +z
-            //dev_scalarfield_z[d_vidx(x,y,nz+1)] = val_z; // Neumann free slip +z
-            dev_scalarfield_x[d_vidx(x,y,nz)] = val_x;     // Neumann free slip +z
-            dev_scalarfield_y[d_vidx(x,y,nz)] = val_y;     // Neumann free slip +z
-            dev_scalarfield_z[d_vidx(x,y,nz)] = 0.0;     // Neumann free slip +z
-            dev_scalarfield_z[d_vidx(x,y,nz+1)] = 0.0;   // Neumann free slip +z
-        }
-        if (z == nz-1 && bc_top == 2) {
-            //dev_scalarfield_x[d_vidx(x,y,nz)] = val_x;     // Neumann no slip +z
-            //dev_scalarfield_y[d_vidx(x,y,nz)] = val_y;     // Neumann no slip +z
-            //dev_scalarfield_z[d_vidx(x,y,nz)] = val_z;     // Neumann no slip +z
-            //dev_scalarfield_z[d_vidx(x,y,nz+1)] = val_z;   // Neumann no slip +z
-            dev_scalarfield_x[d_vidx(x,y,nz)] = -val_x;    // Neumann no slip +z
-            dev_scalarfield_y[d_vidx(x,y,nz)] = -val_y;    // Neumann no slip +z
-            dev_scalarfield_z[d_vidx(x,y,nz)] = 0.0;       // Neumann no slip +z
-            dev_scalarfield_z[d_vidx(x,y,nz+1)] = 0.0;     // Neumann no slip +z
-        }
-        if (z == nz-1 && bc_top == 3) {
-            dev_scalarfield_x[d_vidx(x,y,-1)] = val_x;     // Periodic +z
-            dev_scalarfield_y[d_vidx(x,y,-1)] = val_y;     // Periodic +z
-            dev_scalarfield_z[d_vidx(x,y,-1)] = val_z;     // Periodic +z
-        }
+            dev_scalarfield[idx(x,y,-1)] = val;     // Periodic +z
     }
 }
 
@@ -761,6 +407,69 @@ __global__ void findDarcyPorosities(
             //dev_darcy_vp_avg[cellidx] = MAKE_FLOAT3(0.0, 0.0, 0.0);
             //dev_darcy_d_avg[cellidx]  = 0.0;
         }
+    }
+}
+
+// Find particle-fluid interaction force as outlined by Zhou et al. 2010, and
+// originally by Gidaspow 1992.
+__global__ void findDarcyPressureForce(
+    const Float4* __restrict__ dev_x,           // in
+    const Float*  __restrict__ dev_darcy_p,     // in
+    const Float*  __restrict__ dev_darcy_phi,   // in
+    Float4* __restrict__ dev_force,             // out
+    Float4* __restrict__ dev_darcy_f_p)         // out
+{
+    unsigned int i = threadIdx.x + blockIdx.x*blockDim.x; // Particle index
+
+    if (i < devC_np) {
+
+        // read particle information
+        __syncthreads();
+        const Float4 x = dev_x[i];
+
+        // determine fluid cell containing the particle
+        const unsigned int i_x =
+            floor((x.x - devC_grid.origo[0])/(devC_grid.L[0]/devC_grid.num[0]));
+        const unsigned int i_y =
+            floor((x.y - devC_grid.origo[1])/(devC_grid.L[1]/devC_grid.num[1]));
+        const unsigned int i_z =
+            floor((x.z - devC_grid.origo[2])/(devC_grid.L[2]/devC_grid.num[2]));
+        const unsigned int cellidx = d_idx(i_x, i_y, i_z);
+
+        // determine cell dimensions
+        const Float dx = devC_grid.L[0]/devC_grid.num[0];
+        const Float dy = devC_grid.L[1]/devC_grid.num[1];
+        const Float dz = devC_grid.L[2]/devC_grid.num[2];
+
+        // read fluid information
+        __syncthreads();
+        const Float phi = dev_darcy_phi[cellidx];
+        const Float p_xn = dev_darcy_p[d_idx(x-1,y,z)];
+        const Float p_xp = dev_darcy_p[d_idx(x+1,y,z)];
+        const Float p_yn = dev_darcy_p[d_idx(x,y-1,z)];
+        const Float p_yp = dev_darcy_p[d_idx(x,y+1,z)];
+        const Float p_zn = dev_darcy_p[d_idx(x,y,z-1)];
+        const Float p_zp = dev_darcy_p[d_idx(x,y,z+1)];
+
+        // find particle volume (radius in x.w)
+        const Float V = 4.0/3.0*M_PI*x.w*x.w*x.w;
+
+        // determine pressure gradient from first order central difference
+        const Float3 grad_p = MAKE_FLOAT3(
+                (p_xp - p_xn)/(dx + dx),
+                (p_yp - p_yn)/(dy + dy),
+                (p_zp - p_zn)/(dz + dz));
+
+        // find pressure gradient force
+        const Float3 f_p = -1.0*grad_p*V_p/(1.0 - phi);
+
+#ifdef CHECK_FLUID_FINITE
+        checkFiniteFloat3("f_p", i_x, i_y, i_z, f_p);
+#endif
+        // save force
+        __syncthreads();
+        dev_force[i]    += MAKE_FLOAT4(f_p.x, f_p.y, f_p.z, 0.0);
+        dev_darcy_f_p[i] = MAKE_FLOAT4(f_p.x, f_p.y, f_p.z, 0.0);
     }
 }
 
