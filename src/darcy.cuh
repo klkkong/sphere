@@ -715,9 +715,16 @@ __global__ void updateDarcySolution(
         dev_darcy_p_new[cellidx] = p_new;
         dev_darcy_norm[cellidx]  = res_norm;
 
+        printf("%d,%d,%d\tp = % f\tp_new = % f\tres_norm = % f\n",
+                x,y,z,
+                p,
+                p_new,
+                res_norm);
+
+
 #ifdef CHECK_FLUID_FINITE
-        checkFiniteFloat("p_new", x, y, z, p_new);
-        checkFiniteFloat("res_norm", x, y, z, res_norm);
+        //checkFiniteFloat("p_new", x, y, z, p_new);
+        //checkFiniteFloat("res_norm", x, y, z, res_norm);
 #endif
     }
 }

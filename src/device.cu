@@ -1804,7 +1804,7 @@ __host__ void DEM::startTime()
 
                     if (nijac % nijacnorm == 0) {
                         // Read the normalized residuals from the device
-                        transferNSnormFromGlobalDeviceMemory();
+                        transferDarcyNormFromGlobalDeviceMemory();
 
                         // Write the normalized residuals to the terminal
                         //printNSarray(stdout, ns.norm, "norm");
