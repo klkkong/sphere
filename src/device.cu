@@ -1829,21 +1829,21 @@ __host__ void DEM::startTime()
 
                             break;  // solution has converged, exit Jacobi loop
                         }
+                    }
 
-                        if (nijac >= darcy.maxiter-1) {
+                    if (nijac == darcy.maxiter-1) {
 
-                            if (write_conv_log == 1)
-                                convlog << iter << '\t' << nijac << std::endl;
+                        if (write_conv_log == 1)
+                            convlog << iter << '\t' << nijac << std::endl;
 
-                            std::cerr << "\nIteration " << iter << ", time " 
-                                << iter*time.dt << " s: "
-                                "Error, the pressure solution in the fluid "
-                                "calculations did not converge. Try increasing "
-                                "the value of 'darcy.maxiter' ("
-                                << darcy.maxiter
-                                << ") or increase 'darcy.tolerance' ("
-                                << darcy.tolerance << ")." << std::endl;
-                        }
+                        std::cerr << "\nIteration " << iter << ", time " 
+                            << iter*time.dt << " s: "
+                            "Error, the pressure solution in the fluid "
+                            "calculations did not converge. Try increasing "
+                            "the value of 'darcy.maxiter' ("
+                            << darcy.maxiter
+                            << ") or increase 'darcy.tolerance' ("
+                            << darcy.tolerance << ")." << std::endl;
                     }
 
                     if (write_res_log == 1)
