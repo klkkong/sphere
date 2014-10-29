@@ -241,8 +241,8 @@ void DEM::checkValues(void)
 
         checkIfNaN(x, "position", i);
         checkIfNaN(vel, "velocity", i);
-        checkIfNaN(angpos, "angular position", i);
-        checkIfNaN(angvel, "angular velocity", i);
+        //checkIfNaN(angpos, "angular position", i);
+        //checkIfNaN(angvel, "angular velocity", i);
 
         // Check that all particles are inside of the grid
         if (x.x < grid.origo[0] ||

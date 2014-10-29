@@ -65,12 +65,13 @@ void DEM::transferDarcyToGlobalDeviceMemory(int statusmsg)
     //std::cout << "  Transfering fluid data to the device:           ";
 
     // memory size for a scalar field
-    unsigned int memSizeF  = sizeof(Float)*NScells();
+    unsigned int memSizeF  = sizeof(Float)*darcyCells();
 
     //writeNSarray(ns.p, "ns.p.txt");
 
     cudaMemcpy(dev_darcy_p, darcy.p, memSizeF, cudaMemcpyHostToDevice);
-    checkForCudaErrors("transferNStoGlobalDeviceMemory after first cudaMemcpy");
+    checkForCudaErrors("transferDarcytoGlobalDeviceMemory after first "
+            "cudaMemcpy");
     cudaMemcpy(dev_darcy_v, darcy.v, memSizeF*3, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_darcy_phi, darcy.phi, memSizeF, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_darcy_dphi, darcy.dphi, memSizeF, cudaMemcpyHostToDevice);

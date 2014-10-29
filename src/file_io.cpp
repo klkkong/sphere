@@ -342,10 +342,10 @@ void DEM::readbin(const char *target)
             if (verbose == 1)
                 cout << "  - Reading fluid values:\t\t\t  ";
 
-            for (z = 0; z<grid.num[2]; ++z) {
-                for (y = 0; y<grid.num[1]; ++y) {
-                    for (x = 0; x<grid.num[0]; ++x) {
-                        i = idx(x,y,z);
+            for (z = 0; z<darcy.nz; ++z) {
+                for (y = 0; y<darcy.ny; ++y) {
+                    for (x = 0; x<darcy.nx; ++x) {
+                        i = d_idx(x,y,z);
                         ifs.read(as_bytes(darcy.v[i].x), sizeof(Float));
                         ifs.read(as_bytes(darcy.v[i].y), sizeof(Float));
                         ifs.read(as_bytes(darcy.v[i].z), sizeof(Float));
