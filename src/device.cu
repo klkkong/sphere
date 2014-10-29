@@ -1801,7 +1801,6 @@ __host__ void DEM::startTime()
                     cudaThreadSynchronize();
                     checkForCudaErrorsIter("Post copyValues(p_new -> p)", iter);
 
-
                     if (nijac % nijacnorm == 0) {
                         // Read the normalized residuals from the device
                         transferDarcyNormFromGlobalDeviceMemory();
@@ -1818,13 +1817,9 @@ __host__ void DEM::startTime()
                             reslog << nijac << '\t' << max_norm_res
                                 << std::endl;
 
-                        if (write_conv_log == 1 &&
-                                iter % conv_log_interval == 0)
-                            convlog << iter << '\t' << nijac << std::endl;
-
-                        if (max_norm_res < darcy.tolerance) {
-                            if (write_conv_log == 1 &&
-                                    iter % conv_log_interval == 0)
+                        if (max_norm_res <= darcy.tolerance) {
+                            if (write_conv_log == 1
+                                    && iter % conv_log_interval == 0)
                                 convlog << iter << '\t' << nijac << std::endl;
 
                             break;  // solution has converged, exit Jacobi loop
