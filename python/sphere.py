@@ -1840,6 +1840,17 @@ class sim:
         else:
             Re.SetNumberOfTuples(grid.GetNumberOfPoints())
 
+        # Find permeabilities if the Darcy solver is used
+        if self.cfd_solver[0] == 1:
+            self.findPermeabilities()
+            k = vtk.vtkDoubleArray()
+            k.SetName("Permeability [m*m]")
+            k.SetNumberOfComponents(1)
+            if cell_centered:
+                k.SetNumberOfTuples(grid.GetNumberOfCells())
+            else:
+                k.SetNumberOfTuples(grid.GetNumberOfPoints())
+
         # insert values
         for z in range(self.num[2]):
             for y in range(self.num[1]):
@@ -1850,6 +1861,8 @@ class sim:
                     poros.SetValue(idx, self.phi[x,y,z])
                     dporos.SetValue(idx, self.dphi[x,y,z])
                     Re.SetValue(idx, self.Re[x,y,z])
+                    if self.cfd_solver[0] == 1:
+                        k.SetValue(idx, self.k[x,y,z])
 
         # add pres array to grid
         if cell_centered:
@@ -1858,12 +1871,14 @@ class sim:
             grid.GetCellData().AddArray(poros)
             grid.GetCellData().AddArray(dporos)
             grid.GetCellData().AddArray(Re)
+            grid.GetCellData().AddArray(k)
         else:
             grid.GetPointData().AddArray(pres)
             grid.GetPointData().AddArray(vel)
             grid.GetPointData().AddArray(poros)
             grid.GetPointData().AddArray(dporos)
             grid.GetPointData().AddArray(Re)
+            grid.GetPointData().AddArray(k)
 
         # write VTK XML image data file
         writer = vtk.vtkXMLImageDataWriter()
@@ -3050,6 +3065,17 @@ class sim:
         :func:`setFluidTopNoFlow()`
         '''
         self.bc_top[0] = 0
+
+    def findPermeabilities(self):
+        '''
+        Calculates the hydrological permeabilities from the Kozeny-Carman
+        relationship. These values are only relevant when the Darcy solver is
+        used (`self.cfd_solver = 1`). The permeability pre-factor `self.k_c`
+        and the assemblage porosities must be set beforehand. The former values
+        are set if a file from the `output/` folder is read using
+        `self.readbin`.
+        '''
+        self.k = self.k_c * self.phi**3/(1.0 - self.phi**2)
 
     def defaultParams(self,
             mu_s = 0.5,
