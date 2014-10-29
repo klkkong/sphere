@@ -93,9 +93,7 @@ void DEM::transferDarcyFromGlobalDeviceMemory(int statusmsg)
     cudaMemcpy(darcy.p, dev_darcy_p, memSizeF, cudaMemcpyDeviceToHost);
     checkForCudaErrors("In transferDarcyFromGlobalDeviceMemory, dev_darcy_p", 0);
     cudaMemcpy(darcy.v, dev_darcy_v, memSizeF*3, cudaMemcpyDeviceToHost);
-    cudaMemcpy(darcy.v_x, dev_darcy_v_x, memSizeF, cudaMemcpyDeviceToHost);
-    cudaMemcpy(darcy.v_y, dev_darcy_v_y, memSizeF, cudaMemcpyDeviceToHost);
-    cudaMemcpy(darcy.v_z, dev_darcy_v_z, memSizeF, cudaMemcpyDeviceToHost);
+    cudaMemcpy(darcy.k, dev_darcy_k, memSizeF, cudaMemcpyDeviceToHost);
     cudaMemcpy(darcy.phi, dev_darcy_phi, memSizeF, cudaMemcpyDeviceToHost);
     cudaMemcpy(darcy.dphi, dev_darcy_dphi, memSizeF, cudaMemcpyDeviceToHost);
     cudaMemcpy(darcy.norm, dev_darcy_norm, memSizeF, cudaMemcpyDeviceToHost);
@@ -795,7 +793,7 @@ __global__ void findDarcyPermeabilities(
         const unsigned int cellidx = d_idx(x,y,z);
 
         __syncthreads();
-        const Float phi = dev_darcy_phi[cellidx];
+        Float phi = dev_darcy_phi[cellidx];
 
         // avoid division by zero
         if (phi > 0.9999)
@@ -842,21 +840,21 @@ __global__ void findDarcyParticleVelocityDivergence(
         Float v_p_zp = dev_darcy_v_p_z[d_vidx(x,y,z+1)];
 
         // cell dimensions
-        const Float dx = devC_params.L[0]/nx;
-        const Float dy = devC_params.L[1]/ny;
-        const Float dz = devC_params.L[2]/nz;
+        const Float dx = devC_grid.L[0]/nx;
+        const Float dy = devC_grid.L[1]/ny;
+        const Float dz = devC_grid.L[2]/nz;
 
         // calculate the divergence using first order central finite differences
         const Float div_v_p =
-            (xp - xn)/dx +
-            (yp - yn)/dy +
-            (zp - zn)/dz;
+            (v_p_xp - v_p_xn)/dx +
+            (v_p_yp - v_p_yn)/dy +
+            (v_p_zp - v_p_zn)/dz;
 
         __syncthreads();
         dev_darcy_div_v_p[d_idx(x,y,z)] = div_v_p;
 
 #ifdef CHECK_FLUID_FINITE
-        checkFiniteFloat3("div_v_p", x, y, z, div_v_p);
+        checkFiniteFloat("div_v_p", x, y, z, div_v_p);
 #endif
     }
 }
@@ -919,11 +917,13 @@ __global__ void updateDarcySolution(
         const Float*  __restrict__ dev_darcy_p,       // in
         const Float*  __restrict__ dev_darcy_div_v_p, // in
         const Float*  __restrict__ dev_darcy_k,       // in
+        const Float*  __restrict__ dev_darcy_phi,     // in
         const Float3* __restrict__ dev_darcy_grad_k,  // in
         const Float beta_f,                           // in
         const Float mu,                               // in
         const int bc_bot,                             // in
         const int bc_top,                             // in
+        const unsigned int ndem,                      // in
         Float* __restrict__ dev_darcy_p_new,          // out
         Float* __restrict__ dev_darcy_norm)           // out
 {
@@ -951,16 +951,23 @@ __global__ void updateDarcySolution(
         __syncthreads();
         const Float  k      = dev_darcy_k[cellidx];
         const Float3 grad_k = dev_darcy_grad_k[cellidx];
+        const Float  phi    = dev_darcy_phi[cellidx];
 
         const Float p_xn = dev_darcy_p[d_idx(x-1,y,z)];
         const Float p    = dev_darcy_p[cellidx];
         const Float p_xp = dev_darcy_p[d_idx(x+1,y,z)];
         const Float p_yn = dev_darcy_p[d_idx(x,y-1,z)];
         const Float p_yp = dev_darcy_p[d_idx(x,y+1,z)];
-        const Float p_zn = dev_darcy_p[d_idx(x,y,z-1)];
-        const Float p_zp = dev_darcy_p[d_idx(x,y,z+1)];
+        Float p_zn = dev_darcy_p[d_idx(x,y,z-1)];
+        Float p_zp = dev_darcy_p[d_idx(x,y,z+1)];
 
         const Float div_v_p = dev_darcy_div_v_p[cellidx];
+
+        // Neumann BCs
+        if (z == 0 && bc_bot == 1)
+            p_zn = p;
+        if (z == nz-1 && bc_top == 1)
+            p_zp = p;
 
         // find div(k*grad(p)). Using vector identities:
         // div(k*grad(p)) = k*laplace(p) + dot(grad(k), grad(p))
@@ -979,13 +986,12 @@ __global__ void updateDarcySolution(
 
         // find new value for p
         Float p_new = p
-            + dt/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
-            - dt/(beta_f*phi)*div_v_p;
+            + devC_dt*ndem/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
+            - devC_dt*ndem/(beta_f*phi)*div_v_p;
 
         // Dirichlet BCs
         if ((z == 0 && bc_bot == 0) || (z == nz-1 && bc_top == 0))
             p_new = p;
-
 
         // normalized residual, avoid division by zero
         const Float res_norm = (p_new - p)*(p_new - p)/(p_new*p_new + 1.0e-16);
@@ -1048,9 +1054,6 @@ __global__ void findDarcyVelocitiesDev(
 
         // Flux [m/s]: q = -k/nu * dH
         // Pore velocity [m/s]: v = q/n
-
-        __syncthreads();
-        const Float phi = dev_d_phi[cellidx];
 
         // calculate flux
         //const Float3 q = -k/mu*grad_p;

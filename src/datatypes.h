@@ -153,6 +153,7 @@ struct Darcy {
     Float   dx, dy, dz;     // Cell length in each dim
     Float*  p;              // Cell hydraulic pressures
     Float3* v;              // Cell fluid velocity
+    Float*  k;              // Cell hydraulic permeability
     Float*  phi;            // Cell porosity
     Float*  dphi;           // Cell porosity change
     Float*  norm;           // Normalized residual of epsilon updates
