@@ -21,7 +21,7 @@ DEM::DEM(const std::string inputbin,
          const int transferConstMem,
          const int fluidFlow,
          const int device)
-: verbose(verbosity), navierstokes(fluidFlow), device(device)
+: verbose(verbosity), fluid(fluidFlow), device(device)
 {
     using std::cout;
     using std::cerr;
@@ -50,8 +50,16 @@ DEM::DEM(const std::string inputbin,
     if (dry == 1)
         exit(0);
 
-    if (navierstokes == 1) {
-        initNS();
+    if (fluid == 1) {
+        if (cfd_solver == 0)
+            initNS();
+        else if (cfd_solver == 1)
+            initDarcy();
+        else {
+            std::cerr << "DEM::DEM Error: Value of cfd_solver not understood ("
+                << cfd_solver << ")" << std::endl;
+            exit(1);
+        }
     }
 
     if (initCuda == 1) {
@@ -64,8 +72,17 @@ DEM::DEM(const std::string inputbin,
             transferToConstantDeviceMemory();
         }
 
-        if (navierstokes == 1) {
-            initNSmemDev();
+        if (fluid == 1) {
+            if (cfd_solver == 0)
+                initNSmemDev();
+            else if (cfd_solver == 1)
+                initDarcyMemDev();
+            else {
+                std::cerr
+                    << "DEM::DEM Error: Value of cfd_solver not understood ("
+                    << cfd_solver << ")" << std::endl;
+                exit(1);
+            }
         }
 
         // Allocate device memory for particle variables,
