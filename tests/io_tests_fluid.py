@@ -14,11 +14,11 @@ orig.initFluid()
 orig.initTemporal(current=0.0, total=0.0)
 orig.time_total=2.0*orig.time_dt
 orig.time_file_dt = orig.time_dt
-orig.writebin(verbose=False)
+orig.writebin()
 
 # Test Python IO routines
 py = sphere.sim(fluid=True)
-py.readbin("../input/" + orig.sid + ".bin", verbose=False)
+py.readbin("../input/" + orig.sid + ".bin")
 compare(orig, py, "Python IO:")
 
 # Test C++ IO routines
@@ -26,12 +26,12 @@ orig.run()
 #orig.run(dry=True)
 #orig.run(verbose=True, hideinputfile=False, cudamemcheck=True)
 cpp = sphere.sim(fluid=True)
-cpp.readbin("../output/" + orig.sid + ".output00000.bin", verbose=False)
+cpp.readbin("../output/" + orig.sid + ".output00000.bin")
 compare(orig, cpp, "C++ IO:   ")
 
 # Test CUDA IO routines
 cuda = sphere.sim(fluid=True)
-cuda.readbin("../output/" + orig.sid + ".output00001.bin", verbose=False)
+cuda.readbin("../output/" + orig.sid + ".output00001.bin")
 cuda.time_current = orig.time_current
 cuda.time_step_count = orig.time_step_count
 compareNumpyArraysClose(orig.v_f, cuda.v_f, "cuda.v_f:", tolerance=1e-5)
@@ -65,11 +65,11 @@ orig.initFluid(cfd_solver = 1)
 orig.initTemporal(current=0.0, total=0.0)
 orig.time_total=2.0*orig.time_dt
 orig.time_file_dt = orig.time_dt
-orig.writebin(verbose=False)
+orig.writebin()
 
 # Test Python IO routines
 py = sphere.sim(fluid=True)
-py.readbin("../input/" + orig.sid + ".bin", verbose=False)
+py.readbin("../input/" + orig.sid + ".bin")
 compare(orig, py, "Python IO:")
 
 # Test C++ IO routines
@@ -77,12 +77,12 @@ orig.run()
 #orig.run(dry=True)
 #orig.run(verbose=True, hideinputfile=False, cudamemcheck=True)
 cpp = sphere.sim(fluid=True)
-cpp.readbin("../output/" + orig.sid + ".output00000.bin", verbose=False)
+cpp.readbin("../output/" + orig.sid + ".output00000.bin")
 compare(orig, cpp, "C++ IO:   ")
 
 # Test CUDA IO routines
 cuda = sphere.sim(fluid=True)
-cuda.readbin("../output/" + orig.sid + ".output00001.bin", verbose=False)
+cuda.readbin("../output/" + orig.sid + ".output00001.bin")
 cuda.time_current = orig.time_current
 cuda.time_step_count = orig.time_step_count
 compareNumpyArraysClose(orig.v_f, cuda.v_f, "cuda.v_f:", tolerance=1e-5)

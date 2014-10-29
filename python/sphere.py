@@ -1040,7 +1040,8 @@ class sim:
             if self.fluid:
 
                 if self.version >= 2.0:
-                    self.cfd_solver = numpy.fromfile(fh, dtype=numpy.int32)
+                    self.cfd_solver = numpy.fromfile(fh, dtype=numpy.int32,
+                            count=1)
                 else:
                     self.cfd_solver = numpy.zeros(1, dtype=numpy.int32)
 
