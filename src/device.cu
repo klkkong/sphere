@@ -1583,7 +1583,7 @@ __host__ void DEM::startTime()
                         if (max_norm_res < ns.tolerance) {
 
                             if (write_conv_log == 1 && iter % conv_log_interval == 0)
-                                convlog << iter << '\t' << nijac << std::endl;
+                                convlog << iter+1 << '\t' << nijac << std::endl;
 
                             setNSghostNodes<Float>
                                 <<<dimGridFluid, dimBlockFluid>>>(
@@ -1626,7 +1626,7 @@ __host__ void DEM::startTime()
                         if (nijac >= ns.maxiter-1) {
 
                             if (write_conv_log == 1)
-                                convlog << iter << '\t' << nijac << std::endl;
+                                convlog << iter+1 << '\t' << nijac << std::endl;
 
                             std::cerr << "\nIteration " << iter << ", time " 
                                 << iter*time.dt << " s: "

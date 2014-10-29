@@ -1871,14 +1871,16 @@ class sim:
             grid.GetCellData().AddArray(poros)
             grid.GetCellData().AddArray(dporos)
             grid.GetCellData().AddArray(Re)
-            grid.GetCellData().AddArray(k)
+            if self.cfd_solver[0] == 1:
+                grid.GetCellData().AddArray(k)
         else:
             grid.GetPointData().AddArray(pres)
             grid.GetPointData().AddArray(vel)
             grid.GetPointData().AddArray(poros)
             grid.GetPointData().AddArray(dporos)
             grid.GetPointData().AddArray(Re)
-            grid.GetPointData().AddArray(k)
+            if self.cfd_solver[0] == 1:
+                grid.GetPointData().AddArray(k)
 
         # write VTK XML image data file
         writer = vtk.vtkXMLImageDataWriter()
