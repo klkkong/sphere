@@ -21,26 +21,14 @@ void DEM::initDarcyMem()
     darcy.ny = grid.num[1];
     darcy.nz = grid.num[2];
     unsigned int ncells = darcyCells();
-    unsigned int ncells_st = darcyCellsVelocity();
+    //unsigned int ncells_st = darcyCellsVelocity();
 
     darcy.p     = new Float[ncells];     // hydraulic pressure
     darcy.v     = new Float3[ncells];    // hydraulic velocity
-    //darcy.v_x   = new Float[ncells_st];  // hydraulic velocity in staggered grid
-    //darcy.v_y   = new Float[ncells_st];  // hydraulic velocity in staggered grid
-    //darcy.v_z   = new Float[ncells_st];  // hydraulic velocity in staggered grid
-    //darcy.v_p   = new Float3[ncells];    // predicted hydraulic velocity
-    //darcy.v_p_x = new Float[ncells_st];  // pred. hydraulic velocity in st. grid
-    //darcy.v_p_y = new Float[ncells_st];  // pred. hydraulic velocity in st. grid
-    //darcy.v_p_z = new Float[ncells_st];  // pred. hydraulic velocity in st. grid
     darcy.phi   = new Float[ncells];     // porosity
     darcy.dphi  = new Float[ncells];     // porosity change
     darcy.norm  = new Float[ncells];     // normalized residual of epsilon
-    //darcy.epsilon = new Float[ncells];   // normalized residual of epsilon
-    //darcy.epsilon_new = new Float[ncells]; // normalized residual of epsilon
-    darcy.f_d = new Float4[np]; // drag force on particles
-    //darcy.f_p = new Float4[np]; // pressure force on particles
-    //darcy.f_v = new Float4[np]; // viscous force on particles
-    //darcy.f_sum = new Float4[np]; // sum of fluid forces on particles
+    darcy.f_p   = new Float4[np];        // pressure force on particles
 }
 
 unsigned int DEM::darcyCells()
@@ -65,22 +53,10 @@ void DEM::freeDarcyMem()
 {
     delete[] darcy.p;
     delete[] darcy.v;
-    //delete[] darcy.v_x;
-    //delete[] darcy.v_y;
-    //delete[] darcy.v_z;
-    //delete[] darcy.v_p;
-    //delete[] darcy.v_p_x;
-    //delete[] darcy.v_p_y;
-    //delete[] darcy.v_p_z;
     delete[] darcy.phi;
     delete[] darcy.dphi;
     delete[] darcy.norm;
-    //delete[] darcy.epsilon;
-    //delete[] darcy.epsilon_new;
-    delete[] darcy.f_d;
-    //delete[] darcy.f_p;
-    //delete[] darcy.f_v;
-    //delete[] darcy.f_sum;
+    delete[] darcy.f_p;
 }
 
 // 3D index to 1D index
@@ -172,10 +148,10 @@ void DEM::printDarcyArray(FILE* stream, Float* arr)
         for (y=-1; y<=darcy.ny; y++) {
             for (x=-1; x<=darcy.nx; x++) {
 
-    // hide ghost nodes
-    /*for (z=0; z<darcy.nz; z++) {
-        for (y=0; y<darcy.ny; y++) {
-            for (x=0; x<darcy.nx; x++) {*/
+                // hide ghost nodes
+                /*for (z=0; z<darcy.nz; z++) {
+                  for (y=0; y<darcy.ny; y++) {
+                  for (x=0; x<darcy.nx; x++) {*/
 
                 if (x > -1 && x < darcy.nx &&
                         y > -1 && y < darcy.ny &&
@@ -191,167 +167,167 @@ void DEM::printDarcyArray(FILE* stream, Float* arr)
                 }
             }
             fprintf(stream, "\n");
-        }
-        fprintf(stream, "\n");
-    }
-}
-
-// Overload printDarcyArray to add optional description
-void DEM::printDarcyArray(FILE* stream, Float* arr, std::string desc)
-{
-    std::cout << "\n" << desc << ":\n";
-    printDarcyArray(stream, arr);
-}
-
-// Print array values to file stream (stdout, stderr, other file)
-void DEM::printDarcyArray(FILE* stream, Float3* arr)
-{
-    int x, y, z;
-    for (z=0; z<darcy.nz; z++) {
-        for (y=0; y<darcy.ny; y++) {
-            for (x=0; x<darcy.nx; x++) {
-                fprintf(stream, "%f,%f,%f\t",
-                        arr[d_idx(x,y,z)].x,
-                        arr[d_idx(x,y,z)].y,
-                        arr[d_idx(x,y,z)].z);
             }
             fprintf(stream, "\n");
-        }
-        fprintf(stream, "\n");
-    }
-}
-
-// Overload printDarcyArray to add optional description
-void DEM::printDarcyArray(FILE* stream, Float3* arr, std::string desc)
-{
-    std::cout << "\n" << desc << ":\n";
-    printDarcyArray(stream, arr);
-}
-
-// Returns the mean particle radius
-Float DEM::meanRadius()
-{
-    unsigned int i;
-    Float r_sum;
-    for (i=0; i<np; ++i)
-        r_sum += k.x[i].w;
-    return r_sum/((Float)np);
-}
-
-// Returns the average value of the normalized residuals
-double DEM::avgNormResDarcy()
-{
-    double norm_res_sum, norm_res;
-
-    // do not consider the values of the ghost nodes
-    for (int z=0; z<grid.num[2]; ++z) {
-        for (int y=0; y<grid.num[1]; ++y) {
-            for (int x=0; x<grid.num[0]; ++x) {
-                norm_res = static_cast<double>(darcy.norm[d_idx(x,y,z)]);
-                if (norm_res != norm_res) {
-                    std::cerr << "\nError: normalized residual is NaN ("
-                        << norm_res << ") in cell "
-                        << x << "," << y << "," << z << std::endl;
-                    std::cerr << "\tt = " << time.current << ", iter = "
-                        << int(time.current/time.dt) << std::endl;
-                    std::cerr << "This often happens if the system has become "
-                        "unstable." << std::endl;
-                    exit(1);
-                }
-                norm_res_sum += norm_res;
             }
-        }
-    }
-    return norm_res_sum/(grid.num[0]*grid.num[1]*grid.num[2]);
-}
-
-
-// Returns the average value of the normalized residuals
-double DEM::maxNormResDarcy()
-{
-    double max_norm_res = -1.0e9; // initialized to a small number
-    double norm_res;
-
-    // do not consider the values of the ghost nodes
-    for (int z=0; z<grid.num[2]; ++z) {
-        for (int y=0; y<grid.num[1]; ++y) {
-            for (int x=0; x<grid.num[0]; ++x) {
-                norm_res = static_cast<double>(darcy.norm[d_idx(x,y,z)]);
-                if (norm_res != norm_res) {
-                    std::cerr << "\nError: normalized residual is NaN ("
-                        << norm_res << ") in cell "
-                        << x << "," << y << "," << z << std::endl;
-                    std::cerr << "\tt = " << time.current << ", iter = "
-                        << int(time.current/time.dt) << std::endl;
-                    std::cerr << "This often happens if the system has become "
-                        "unstable." << std::endl;
-                    exit(1);
-                }
-                if (norm_res > max_norm_res)
-                    max_norm_res = norm_res;
             }
-        }
-    }
-    return max_norm_res;
-}
 
-// Initialize fluid parameters
-void DEM::initDarcy()
-{
-    // Cell size 
-    darcy.dx = grid.L[0]/darcy.nx;
-    darcy.dy = grid.L[1]/darcy.ny;
-    darcy.dz = grid.L[2]/darcy.nz;
+            // Overload printDarcyArray to add optional description
+            void DEM::printDarcyArray(FILE* stream, Float* arr, std::string desc)
+            {
+                std::cout << "\n" << desc << ":\n";
+                printDarcyArray(stream, arr);
+            }
 
-    if (verbose == 1) {
-        std::cout << "  - Fluid grid dimensions: "
-            << darcy.nx << "*"
-            << darcy.ny << "*"
-            << darcy.nz << std::endl;
-        std::cout << "  - Fluid grid cell size: "
-            << darcy.dx << "*"
-            << darcy.dy << "*"
-            << darcy.dz << std::endl;
-    }
-}
+            // Print array values to file stream (stdout, stderr, other file)
+            void DEM::printDarcyArray(FILE* stream, Float3* arr)
+            {
+                int x, y, z;
+                for (z=0; z<darcy.nz; z++) {
+                    for (y=0; y<darcy.ny; y++) {
+                        for (x=0; x<darcy.nx; x++) {
+                            fprintf(stream, "%f,%f,%f\t",
+                                    arr[d_idx(x,y,z)].x,
+                                    arr[d_idx(x,y,z)].y,
+                                    arr[d_idx(x,y,z)].z);
+                        }
+                        fprintf(stream, "\n");
+                    }
+                    fprintf(stream, "\n");
+                }
+            }
 
-// Write values in scalar field to file
-void DEM::writeDarcyArray(Float* array, const char* filename)
-{
-    FILE* file;
-    if ((file = fopen(filename,"w"))) {
-        printDarcyArray(file, array);
-        fclose(file);
-    } else {
-        fprintf(stderr, "Error, could not open %s.\n", filename);
-    }
-}
+            // Overload printDarcyArray to add optional description
+            void DEM::printDarcyArray(FILE* stream, Float3* arr, std::string desc)
+            {
+                std::cout << "\n" << desc << ":\n";
+                printDarcyArray(stream, arr);
+            }
 
-// Write values in vector field to file
-void DEM::writeDarcyArray(Float3* array, const char* filename)
-{
-    FILE* file;
-    if ((file = fopen(filename,"w"))) {
-        printDarcyArray(file, array);
-        fclose(file);
-    } else {
-        fprintf(stderr, "Error, could not open %s.\n", filename);
-    }
-}
+            // Returns the mean particle radius
+            Float DEM::meanRadius()
+            {
+                unsigned int i;
+                Float r_sum;
+                for (i=0; i<np; ++i)
+                    r_sum += k.x[i].w;
+                return r_sum/((Float)np);
+            }
+
+            // Returns the average value of the normalized residuals
+            double DEM::avgNormResDarcy()
+            {
+                double norm_res_sum, norm_res;
+
+                // do not consider the values of the ghost nodes
+                for (int z=0; z<grid.num[2]; ++z) {
+                    for (int y=0; y<grid.num[1]; ++y) {
+                        for (int x=0; x<grid.num[0]; ++x) {
+                            norm_res = static_cast<double>(darcy.norm[d_idx(x,y,z)]);
+                            if (norm_res != norm_res) {
+                                std::cerr << "\nError: normalized residual is NaN ("
+                                    << norm_res << ") in cell "
+                                    << x << "," << y << "," << z << std::endl;
+                                std::cerr << "\tt = " << time.current << ", iter = "
+                                    << int(time.current/time.dt) << std::endl;
+                                std::cerr << "This often happens if the system has become "
+                                    "unstable." << std::endl;
+                                exit(1);
+                            }
+                            norm_res_sum += norm_res;
+                        }
+                    }
+                }
+                return norm_res_sum/(grid.num[0]*grid.num[1]*grid.num[2]);
+            }
 
 
-// Print final heads and free memory
-void DEM::endDarcy()
-{
-    // Write arrays to stdout/text files for debugging
-    //writeDarcyArray(darcy.phi, "ns_phi.txt");
+            // Returns the average value of the normalized residuals
+            double DEM::maxNormResDarcy()
+            {
+                double max_norm_res = -1.0e9; // initialized to a small number
+                double norm_res;
 
-    //printDarcyArray(stdout, darcy.K, "darcy.K");
-    //printDarcyArray(stdout, darcy.H, "darcy.H");
-    //printDarcyArray(stdout, darcy.H_new, "darcy.H_new");
-    //printDarcyArray(stdout, darcy.V, "darcy.V");
+                // do not consider the values of the ghost nodes
+                for (int z=0; z<grid.num[2]; ++z) {
+                    for (int y=0; y<grid.num[1]; ++y) {
+                        for (int x=0; x<grid.num[0]; ++x) {
+                            norm_res = static_cast<double>(darcy.norm[d_idx(x,y,z)]);
+                            if (norm_res != norm_res) {
+                                std::cerr << "\nError: normalized residual is NaN ("
+                                    << norm_res << ") in cell "
+                                    << x << "," << y << "," << z << std::endl;
+                                std::cerr << "\tt = " << time.current << ", iter = "
+                                    << int(time.current/time.dt) << std::endl;
+                                std::cerr << "This often happens if the system has become "
+                                    "unstable." << std::endl;
+                                exit(1);
+                            }
+                            if (norm_res > max_norm_res)
+                                max_norm_res = norm_res;
+                        }
+                    }
+                }
+                return max_norm_res;
+            }
 
-    freeDarcyMem();
-}
+            // Initialize fluid parameters
+            void DEM::initDarcy()
+            {
+                // Cell size 
+                darcy.dx = grid.L[0]/darcy.nx;
+                darcy.dy = grid.L[1]/darcy.ny;
+                darcy.dz = grid.L[2]/darcy.nz;
 
-// vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
+                if (verbose == 1) {
+                    std::cout << "  - Fluid grid dimensions: "
+                        << darcy.nx << "*"
+                        << darcy.ny << "*"
+                        << darcy.nz << std::endl;
+                    std::cout << "  - Fluid grid cell size: "
+                        << darcy.dx << "*"
+                        << darcy.dy << "*"
+                        << darcy.dz << std::endl;
+                }
+            }
+
+            // Write values in scalar field to file
+            void DEM::writeDarcyArray(Float* array, const char* filename)
+            {
+                FILE* file;
+                if ((file = fopen(filename,"w"))) {
+                    printDarcyArray(file, array);
+                    fclose(file);
+                } else {
+                    fprintf(stderr, "Error, could not open %s.\n", filename);
+                }
+            }
+
+            // Write values in vector field to file
+            void DEM::writeDarcyArray(Float3* array, const char* filename)
+            {
+                FILE* file;
+                if ((file = fopen(filename,"w"))) {
+                    printDarcyArray(file, array);
+                    fclose(file);
+                } else {
+                    fprintf(stderr, "Error, could not open %s.\n", filename);
+                }
+            }
+
+
+            // Print final heads and free memory
+            void DEM::endDarcy()
+            {
+                // Write arrays to stdout/text files for debugging
+                //writeDarcyArray(darcy.phi, "ns_phi.txt");
+
+                //printDarcyArray(stdout, darcy.K, "darcy.K");
+                //printDarcyArray(stdout, darcy.H, "darcy.H");
+                //printDarcyArray(stdout, darcy.H_new, "darcy.H_new");
+                //printDarcyArray(stdout, darcy.V, "darcy.V");
+
+                freeDarcyMem();
+            }
+
+            // vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
