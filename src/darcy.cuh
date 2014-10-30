@@ -405,8 +405,8 @@ __global__ void findDarcyPorosities(
             //}
             //dev_darcy_phi[cellidx]  = phi;
             //dev_darcy_dphi[cellidx] = dphi;
-            dev_darcy_phi[cellidx]  = 1.0;
-            dev_darcy_dphi[cellidx] = 0.0;
+            dev_darcy_phi[cellidx]  = 0.9;
+            dev_darcy_dphi[cellidx] = 0.1;
 
             //dev_darcy_vp_avg[cellidx] = MAKE_FLOAT3(0.0, 0.0, 0.0);
             //dev_darcy_d_avg[cellidx]  = 0.0;
@@ -656,10 +656,9 @@ __global__ void findDarcyPermeabilityGradients(
 // bc = 0: Dirichlet, 1: Neumann
 __global__ void updateDarcySolution(
         const Float*  __restrict__ dev_darcy_p,       // in
-        //const Float*  __restrict__ dev_darcy_div_v_p, // in
         const Float*  __restrict__ dev_darcy_k,       // in
         const Float*  __restrict__ dev_darcy_phi,     // in
-        const Float*  __restrict__ dev_darcy_dphi,     // in
+        const Float*  __restrict__ dev_darcy_dphi,    // in
         const Float3* __restrict__ dev_darcy_grad_k,  // in
         const Float beta_f,                           // in
         const int bc_bot,                             // in
@@ -730,9 +729,11 @@ __global__ void updateDarcySolution(
         const Float diffusion_term =
             devC_dt*ndem/(beta_f*phi*devC_params.mu)
             *(k*laplace_p + dot(grad_k, grad_p));
+
         const Float forcing_term = 
             //- devC_dt*ndem/(beta_f*phi)*div_v_p; // div(v_p) as forcing
-            - dphi*ndem/(beta_f*phi*(1.0-phi));    // porosity change as forcing
+            //- dphi*ndem/(beta_f*phi*(1.0 - phi));  // porosity change as forcing
+            - dphi/(beta_f*phi*(1.0 - phi));  // porosity change as forcing
         Float p_new = p + diffusion_term + forcing_term;
 
         // Dirichlet BCs
@@ -742,20 +743,23 @@ __global__ void updateDarcySolution(
         // normalized residual, avoid division by zero
         const Float res_norm = (p_new - p)*(p_new - p)/(p_new*p_new + 1.0e-16);
 
-        /*printf("\n%d,%d,%d updateDarcySolution\n"
+        printf("\n%d,%d,%d updateDarcySolution\n"
                 "p         = %e\n"
                 "diffusion = %e\n"
                 "forcing   = %e\n"
                 "grad_p    = %e, %e, %e\n"
                 "laplace_p = %e\n"
                 "dphi      = %f\n"
+                "phi       = %f\n"
+                "beta_f    = %e\n"
                 "p_new     = %e\n"
                 "res_norm  = %e\n",
                 x,y,z,
                 p, diffusion_term, forcing_term,
                 grad_p.x, grad_p.y, grad_p.z,
                 laplace_p,
-                dphi, p_new, res_norm);*/
+                dphi, phi, beta_f,
+                p_new, res_norm);
 
         // save new pressure and the residual
         __syncthreads();
