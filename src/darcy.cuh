@@ -499,6 +499,7 @@ __global__ void findDarcyPressureForce(
         __syncthreads();
         const Float phi = dev_darcy_phi[cellidx];
         const Float p_xn = dev_darcy_p[d_idx(i_x-1,i_y,i_z)];
+        //const Float p    = dev_darcy_p[cellidx];
         const Float p_xp = dev_darcy_p[d_idx(i_x+1,i_y,i_z)];
         const Float p_yn = dev_darcy_p[d_idx(i_x,i_y-1,i_z)];
         const Float p_yp = dev_darcy_p[d_idx(i_x,i_y+1,i_z)];
@@ -522,6 +523,16 @@ __global__ void findDarcyPressureForce(
                     devC_params.g[0],
                     devC_params.g[1],
                     devC_params.g[2]);
+
+        /*printf("%d,%d,%d findPF:\n"
+                "\tphi    = %f\n"
+                "\tp      = %f\n"
+                "\tgrad_p = % f, % f, % f\n"
+                "\tf_p    = % f, % f, % f\n",
+                i_x, i_y, i_z,
+                phi, p,
+                grad_p.x, grad_p.y, grad_p.z,
+                f_p.x, f_p.y, f_p.z);*/
 
 #ifdef CHECK_FLUID_FINITE
         checkFiniteFloat3("f_p", i_x, i_y, i_z, f_p);
@@ -562,6 +573,12 @@ __global__ void findDarcyPermeabilities(
             phi = 0.9999;
 
         const Float k = k_c*pow(phi,3)/pow(1.0 - phi, 2);
+
+        printf("%d,%d,%d findK:\n"
+                "\tphi    = %f\n"
+                "\tk      = %f\n",
+                x, y, z,
+                phi, k);
 
         __syncthreads();
         dev_darcy_k[cellidx] = k;

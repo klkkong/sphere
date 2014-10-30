@@ -1844,16 +1844,19 @@ __host__ void DEM::startTime()
                     if (write_res_log == 1)
                         reslog.close();
 
-                    findDarcyVelocities<<<dimGridFluid, dimBlockFluid>>>(
-                            dev_darcy_p,
-                            dev_darcy_phi,
-                            dev_darcy_k,
-                            dev_darcy_v);
-                    cudaThreadSynchronize();
-                    checkForCudaErrorsIter("Post findDarcyVelocities", iter);
+                    //break; // end after first iteration
                 }
+
+                findDarcyVelocities<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_darcy_p,
+                        dev_darcy_phi,
+                        dev_darcy_k,
+                        dev_darcy_v);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post findDarcyVelocities", iter);
             }
         }
+        //break; // end after first iteration
 
         if (np > 0) {
             // Update particle kinematics
