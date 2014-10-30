@@ -298,6 +298,31 @@ void DEM::checkValues(void)
         cerr << "Error: rho = " << params.rho << " kg/m3" << endl;
         exit(1);
     }
+
+    if (fluid == 1) {
+        if (params.rho_f <= 0.0) {
+            cerr << "Error: rho = " << params.rho << " kg/m3" << endl;
+            exit(1);
+        }
+
+        // Darcy tests
+        if (cfd_solver == 1) {
+            if (params.mu <= 0.0) {
+                cerr << "Error: mu = " << params.mu << " Pa s" << endl;
+                exit(1);
+            }
+
+            if (darcy.beta_f <= 0.0) {
+                cerr << "Error: beta_f = " << darcy.beta_f << " 1/Pa" << endl;
+                exit(1);
+            }
+
+            if (darcy.k_c <= 0.0) {
+                cerr << "Error: k_c = " << darcy.k_c << " m*m" << endl;
+                exit(1);
+            }
+        }
+    }
 }
 
 
