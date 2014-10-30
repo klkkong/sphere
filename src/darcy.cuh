@@ -405,7 +405,7 @@ __global__ void findDarcyPorosities(
             //}
             //dev_darcy_phi[cellidx]  = phi;
             //dev_darcy_dphi[cellidx] = dphi;
-            dev_darcy_phi[cellidx]  = 1.0;
+            dev_darcy_phi[cellidx]  = 0.999;
             dev_darcy_dphi[cellidx] = 0.0;
 
             //dev_darcy_vp_avg[cellidx] = MAKE_FLOAT3(0.0, 0.0, 0.0);
