@@ -572,13 +572,16 @@ __global__ void findDarcyPermeabilities(
         if (phi > 0.9999)
             phi = 0.9999;
 
-        const Float k = k_c*pow(phi,3)/pow(1.0 - phi, 2);
+        Float k = k_c*pow(phi,3)/pow(1.0 - phi, 2);
 
         /*printf("%d,%d,%d findK:\n"
                 "\tphi    = %f\n"
                 "\tk      = %e\n",
                 x, y, z,
                 phi, k);*/
+
+        // limit permeability to 0.9 m*m
+        k = fmin(0.9, k);
 
         __syncthreads();
         dev_darcy_k[cellidx] = k;
