@@ -377,9 +377,9 @@ __global__ void findDarcyPorosities(
             //printf("%d,%d,%d\tphi = %f dphi = %f v_avg = %f,%f,%f d_avg = %f\n",
             //       x,y,z, phi, dphi, v_avg.x, v_avg.y, v_avg.z, d_avg);
 
-            // Save porosity, porosity change, average velocity and average diameter
+            // Save porosity and porosity change
             __syncthreads();
-            phi = 0.5; dphi = 0.0; // disable porosity effects
+            //phi = 0.5; dphi = 0.0; // disable porosity effects
             const unsigned int cellidx = d_idx(x,y,z);
             dev_darcy_phi[cellidx]  = phi*c_phi;
             dev_darcy_dphi[cellidx] = dphi*c_phi;
