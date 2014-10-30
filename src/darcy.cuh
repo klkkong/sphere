@@ -714,11 +714,11 @@ __global__ void updateDarcySolution(
         // find div(k*grad(p)). Using vector identities:
         // div(k*grad(p)) = k*laplace(p) + dot(grad(k), grad(p))
 
-        // laplacian approximated by second-order central difference
+        // discrete laplacian by a finite difference seven-point stencil
         const Float laplace_p =
-            (p_xp - p+p + p_xn)/(dx*dx) +
-            (p_yp - p+p + p_yn)/(dy*dy) +
-            (p_zp - p+p + p_zn)/(dz*dz);
+            (p_xp - (p+p) + p_xn)/(dx*dx) +
+            (p_yp - (p+p) + p_yn)/(dy*dy) +
+            (p_zp - (p+p) + p_zn)/(dz*dz);
 
         // gradient approximated by first-order central difference
         const Float3 grad_p = MAKE_FLOAT3(
@@ -727,7 +727,8 @@ __global__ void updateDarcySolution(
                 (p_zp - p_zn)/(dz+dz));
 
         // find new value for p from Goren et al 2011 eq. 15 or 18
-        const Float diffusion_term = devC_dt*ndem/(beta_f*phi*devC_params.mu)
+        const Float diffusion_term =
+            devC_dt*ndem/(beta_f*phi*devC_params.mu)
             *(k*laplace_p + dot(grad_k, grad_p));
         const Float forcing_term = 
             //- devC_dt*ndem/(beta_f*phi)*div_v_p; // div(v_p) as forcing
