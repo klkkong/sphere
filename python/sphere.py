@@ -3077,7 +3077,8 @@ class sim:
         are set if a file from the `output/` folder is read using
         `self.readbin`.
         '''
-        self.k = self.k_c * self.phi**3/(1.0 - self.phi**2)
+        phi = numpy.clip(self.phi, 0.1, 0.9)
+        self.k = self.k_c * phi**3/(1.0 - phi**2)
 
     def defaultParams(self,
             mu_s = 0.5,
