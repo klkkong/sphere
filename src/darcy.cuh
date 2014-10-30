@@ -574,11 +574,11 @@ __global__ void findDarcyPermeabilities(
 
         const Float k = k_c*pow(phi,3)/pow(1.0 - phi, 2);
 
-        printf("%d,%d,%d findK:\n"
+        /*printf("%d,%d,%d findK:\n"
                 "\tphi    = %f\n"
-                "\tk      = %f\n",
+                "\tk      = %e\n",
                 x, y, z,
-                phi, k);
+                phi, k);*/
 
         __syncthreads();
         dev_darcy_k[cellidx] = k;
@@ -633,6 +633,17 @@ __global__ void findDarcyPermeabilityGradients(
         // write result
         __syncthreads();
         dev_darcy_grad_k[cellidx] = grad_k;
+
+        /*printf("%d,%d,%d findK:\n"
+                "\tk_x     = %e, %e\n"
+                "\tk_y     = %e, %e\n"
+                "\tk_z     = %e, %e\n"
+                "\tgrad(k) = %e, %e, %e\n",
+                x, y, z,
+                k_xn, k_xp,
+                k_yn, k_yp,
+                k_zn, k_zp,
+                grad_k.x, grad_k.y, grad_k.z);*/
 
 #ifdef CHECK_FLUID_FINITE
         checkFiniteFloat3("grad_k", x, y, z, grad_k);

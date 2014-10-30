@@ -2,6 +2,7 @@
 from pytestutils import *
 import sphere
 
+'''
 #### Input/output tests ####
 print("### Fluid input/output tests - Navier Stokes CFD solver ###")
 
@@ -46,9 +47,7 @@ if numpy.max(numpy.abs(cuda.vel - orig.vel)) < 1.0e-5:
     cuda.xyzsum = orig.xyzsum
     cuda.force = orig.force
 compare(orig, cuda, "CUDA IO:  ")
-
-# Remove temporary files
-cleanup(orig)
+'''
 
 
 
@@ -58,6 +57,7 @@ print("### Fluid input/output tests - Darcy CFD solver ###")
 
 # Generate data in python
 orig = sphere.sim(np=100, sid="test-initgrid-fluid", fluid=True)
+orig.cleanup()
 orig.generateRadii(histogram=False, radius_mean=1.0)
 orig.defaultParams()
 orig.initRandomGridPos()

@@ -1844,7 +1844,7 @@ __host__ void DEM::startTime()
                     if (write_res_log == 1)
                         reslog.close();
 
-                    //break; // end after first iteration
+                    break; // end after first iteration
                 }
 
                 findDarcyVelocities<<<dimGridFluid, dimBlockFluid>>>(
@@ -1856,7 +1856,7 @@ __host__ void DEM::startTime()
                 checkForCudaErrorsIter("Post findDarcyVelocities", iter);
             }
         }
-        //break; // end after first iteration
+        break; // end after first iteration
 
         if (np > 0) {
             // Update particle kinematics
