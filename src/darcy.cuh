@@ -748,6 +748,8 @@ __global__ void updateDarcySolution(
 
         printf("\n%d,%d,%d updateDarcySolution\n"
                 "p         = %e\n"
+                "p_new     = %e\n"
+                "p_z       = %e, %e\n"
                 "diffusion = %e\n"
                 "forcing   = %e\n"
                 "grad_p    = %e, %e, %e\n"
@@ -755,14 +757,15 @@ __global__ void updateDarcySolution(
                 "dphi      = %f\n"
                 "phi       = %f\n"
                 "beta_f    = %e\n"
-                "p_new     = %e\n"
                 "res_norm  = %e\n",
                 x,y,z,
-                p, diffusion_term, forcing_term,
+                p, p_new,
+                p_zn, p_zp,
+                diffusion_term, forcing_term,
                 grad_p.x, grad_p.y, grad_p.z,
                 laplace_p,
                 dphi, phi, beta_f,
-                p_new, res_norm);
+                res_norm);
 
         // save new pressure and the residual
         __syncthreads();
