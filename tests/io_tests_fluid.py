@@ -2,7 +2,6 @@
 from pytestutils import *
 import sphere
 
-'''
 #### Input/output tests ####
 print("### Fluid input/output tests - Navier Stokes CFD solver ###")
 
@@ -24,7 +23,7 @@ py.readbin("../input/" + orig.sid + ".bin")
 compare(orig, py, "Python IO:")
 
 # Test C++ IO routines
-orig.run()
+orig.run(verbose=False)
 #orig.run(dry=True)
 #orig.run(verbose=True, hideinputfile=False, cudamemcheck=True)
 cpp = sphere.sim(fluid=True)
@@ -47,8 +46,6 @@ if numpy.max(numpy.abs(cuda.vel - orig.vel)) < 1.0e-5:
     cuda.xyzsum = orig.xyzsum
     cuda.force = orig.force
 compare(orig, cuda, "CUDA IO:  ")
-'''
-
 
 
 
@@ -75,7 +72,7 @@ py.readbin("../input/" + orig.sid + ".bin")
 compare(orig, py, "Python IO:")
 
 # Test C++ IO routines
-orig.run()
+orig.run(verbose=False)
 #orig.run(dry=True)
 #orig.run(verbose=True, hideinputfile=False, cudamemcheck=True)
 cpp = sphere.sim(fluid=True)
