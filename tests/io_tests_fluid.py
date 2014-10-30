@@ -19,7 +19,7 @@ orig.writebin()
 
 # Test Python IO routines
 py = sphere.sim(fluid=True)
-py.readbin("../input/" + orig.sid + ".bin")
+py.readbin("../input/" + orig.sid + ".bin", verbose=False)
 compare(orig, py, "Python IO:")
 
 # Test C++ IO routines
@@ -27,12 +27,12 @@ orig.run(verbose=False)
 #orig.run(dry=True)
 #orig.run(verbose=True, hideinputfile=False, cudamemcheck=True)
 cpp = sphere.sim(fluid=True)
-cpp.readbin("../output/" + orig.sid + ".output00000.bin")
+cpp.readbin("../output/" + orig.sid + ".output00000.bin", verbose=False)
 compare(orig, cpp, "C++ IO:   ")
 
 # Test CUDA IO routines
 cuda = sphere.sim(fluid=True)
-cuda.readbin("../output/" + orig.sid + ".output00001.bin")
+cuda.readbin("../output/" + orig.sid + ".output00001.bin", verbose=False)
 cuda.time_current = orig.time_current
 cuda.time_step_count = orig.time_step_count
 compareNumpyArraysClose(orig.v_f, cuda.v_f, "cuda.v_f:", tolerance=1e-5)
@@ -68,7 +68,7 @@ orig.writebin()
 
 # Test Python IO routines
 py = sphere.sim(fluid=True)
-py.readbin("../input/" + orig.sid + ".bin")
+py.readbin("../input/" + orig.sid + ".bin", verbose=False)
 compare(orig, py, "Python IO:")
 
 # Test C++ IO routines
@@ -76,12 +76,12 @@ orig.run(verbose=False)
 #orig.run(dry=True)
 #orig.run(verbose=True, hideinputfile=False, cudamemcheck=True)
 cpp = sphere.sim(fluid=True)
-cpp.readbin("../output/" + orig.sid + ".output00000.bin")
+cpp.readbin("../output/" + orig.sid + ".output00000.bin", verbose=False)
 compare(orig, cpp, "C++ IO:   ")
 
 # Test CUDA IO routines
 cuda = sphere.sim(fluid=True)
-cuda.readbin("../output/" + orig.sid + ".output00001.bin")
+cuda.readbin("../output/" + orig.sid + ".output00001.bin", verbose=False)
 cuda.time_current = orig.time_current
 cuda.time_step_count = orig.time_step_count
 compareNumpyArraysClose(orig.v_f, cuda.v_f, "cuda.v_f:", tolerance=1e-5)
