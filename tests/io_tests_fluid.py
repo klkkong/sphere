@@ -15,7 +15,7 @@ orig.initFluid()
 orig.initTemporal(current=0.0, total=0.0)
 orig.time_total=2.0*orig.time_dt
 orig.time_file_dt = orig.time_dt
-orig.writebin()
+orig.writebin(verbose=False)
 
 # Test Python IO routines
 py = sphere.sim(fluid=True)
@@ -64,7 +64,7 @@ orig.setMaxIterations(10)
 orig.initTemporal(current=0.0, total=0.0)
 orig.time_total=2.0*orig.time_dt
 orig.time_file_dt = orig.time_dt
-orig.writebin()
+orig.writebin(verbose=False)
 
 # Test Python IO routines
 py = sphere.sim(fluid=True)
