@@ -519,10 +519,10 @@ __global__ void findDarcyPressureForce(
         // buoyancy force = weight of displaced fluid
         // f_b = -rho_f*V*g
         const Float3 f_p = -1.0*grad_p*V/(1.0 - phi);
-            - devC_params.rho_f*V*MAKE_FLOAT3(
-                    devC_params.g[0],
-                    devC_params.g[1],
-                    devC_params.g[2]);
+            //- devC_params.rho_f*V*MAKE_FLOAT3(
+                    //devC_params.g[0],
+                    //devC_params.g[1],
+                    //devC_params.g[2]);
 
         /*printf("%d,%d,%d findPF:\n"
                 "\tphi    = %f\n"
@@ -727,11 +727,12 @@ __global__ void updateDarcySolution(
                 (p_zp - p_zn)/(dz+dz));
 
         // find new value for p from Goren et al 2011 eq. 15 or 18
-        Float p_new = p
-            + devC_dt*ndem/(beta_f*phi*devC_params.mu)
-            *(k*laplace_p + dot(grad_k, grad_p))
+        const Float diffusion_term = devC_dt*ndem/(beta_f*phi*devC_params.mu)
+            *(k*laplace_p + dot(grad_k, grad_p));
+        const Float forcing_term = 
             //- devC_dt*ndem/(beta_f*phi)*div_v_p; // div(v_p) as forcing
             - dphi*ndem/(beta_f*phi*(1.0-phi));    // porosity change as forcing
+        Float p_new = p + diffusion_term + forcing_term;
 
         // Dirichlet BCs
         if ((z == 0 && bc_bot == 0) || (z == nz-1 && bc_top == 0))
@@ -739,6 +740,21 @@ __global__ void updateDarcySolution(
 
         // normalized residual, avoid division by zero
         const Float res_norm = (p_new - p)*(p_new - p)/(p_new*p_new + 1.0e-16);
+
+        printf("\n%d,%d,%d updateDarcySolution\n"
+                "p         = %e\n"
+                "diffusion = %e\n"
+                "forcing   = %e\n"
+                "grad_p    = %e, %e, %e\n"
+                "laplace_p = %e\n"
+                "dphi      = %f\n"
+                "p_new     = %e\n"
+                "res_norm  = %e\n",
+                x,y,z,
+                p, diffusion_term, forcing_term,
+                grad_p.x, grad_p.y, grad_p.z,
+                laplace_p,
+                dphi, p_new, res_norm);
 
         // save new pressure and the residual
         __syncthreads();
