@@ -128,7 +128,6 @@ for it in range(1,py.status()): # gradient should be smooth in all output files
 # Fast pressure modulation test
 orig.time_total[0] = 1.0e-2
 orig.time_file_dt[0] = 0.101*orig.time_total[0]
-orig.mu[0] = 0.0 # dont let diffusion add transient effects
 orig.setFluidPressureModulation(A=1.0, f=1.0/orig.time_total[0])
 #orig.plotPrescribedFluidPressures()
 orig.run(verbose=False)
