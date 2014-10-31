@@ -758,7 +758,7 @@ __global__ void updateDarcySolution(
                 "p_z       = %e, %e\n"
                 "diffusion = %e\n"
                 "k         = %e\n"
-                "diff_fac  = %e\n"
+                //"diff_fac  = %e\n"
                 "forcing   = %e\n"
                 "grad_p    = %e, %e, %e\n"
                 "grad_k    = %e, %e, %e\n"
@@ -776,7 +776,7 @@ __global__ void updateDarcySolution(
                 p_zn, p_zp,
                 diffusion_term,
                 k,
-                diff_fac,
+                //diff_fac,
                 forcing_term,
                 grad_p.x, grad_p.y, grad_p.z,
                 grad_k.x, grad_k.y, grad_k.z,
