@@ -552,7 +552,7 @@ void DEM::writebin(const char *target)
 
             if (cfd_solver == 0) { // Navier Stokes flow
 
-                ofs.write(as_bytes(params.mu), sizeof(params.mu));
+                ofs.write(as_bytes(ns.mu), sizeof(Float));
 
                 int x, y, z;
                 for (z=0; z<ns.nz; z++) {
@@ -577,7 +577,7 @@ void DEM::writebin(const char *target)
                     }
                 }
 
-                ofs.write(as_bytes(params.rho_f), sizeof(Float));
+                ofs.write(as_bytes(ns.rho_f), sizeof(Float));
                 ofs.write(as_bytes(ns.p_mod_A), sizeof(Float));
                 ofs.write(as_bytes(ns.p_mod_f), sizeof(Float));
                 ofs.write(as_bytes(ns.p_mod_phi), sizeof(Float));
@@ -621,7 +621,7 @@ void DEM::writebin(const char *target)
 
             } else if (cfd_solver == 1) {    // Darcy flow
 
-                ofs.write(as_bytes(params.mu), sizeof(params.mu));
+                ofs.write(as_bytes(darcy.mu), sizeof(Float));
 
                 int x, y, z;
                 for (z=0; z<darcy.nz; z++) {
@@ -646,7 +646,7 @@ void DEM::writebin(const char *target)
                     }
                 }
 
-                ofs.write(as_bytes(params.rho_f), sizeof(Float));
+                ofs.write(as_bytes(darcy.rho_f), sizeof(Float));
                 ofs.write(as_bytes(darcy.p_mod_A), sizeof(Float));
                 ofs.write(as_bytes(darcy.p_mod_f), sizeof(Float));
                 ofs.write(as_bytes(darcy.p_mod_phi), sizeof(Float));

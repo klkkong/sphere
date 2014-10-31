@@ -230,10 +230,6 @@ __global__ void checkConstantValues(int* dev_equal,
         *dev_equal = 28; // Not ok
     if (dev_params->nb0 != devC_params.nb0)
         *dev_equal = 29; // Not ok
-    if (dev_params->mu != devC_params.mu)
-        *dev_equal = 30; // Not ok
-    if (dev_params->rho_f != devC_params.rho_f)
-        *dev_equal = 31; // Not ok
 }
 
 // Copy the constant data components to device memory,
@@ -884,7 +880,11 @@ __host__ void DEM::startTime()
     // Index of dynamic top wall (if it exists)
     unsigned int wall0_iz = 10000000;
     // weight of fluid between two cells in z direction
-    const Float dp_dz = fabs(params.rho_f*params.g[2]*grid.L[2]/grid.num[2]);
+    Float dp_dz;
+    if (cfd_solver == 0)
+        dp_dz = fabs(ns.rho_f*params.g[2]*grid.L[2]/grid.num[2]);
+    else if (cfd_solver == 1)
+        dp_dz = fabs(darcy.rho_f*params.g[2]*grid.L[2]/grid.num[2]);
     //std::cout << "dp_dz = " << dp_dz << std::endl;
 
     // Write a log file of the number of iterations it took before
@@ -1127,6 +1127,7 @@ __host__ void DEM::startTime()
                         dev_ns_v_x,
                         dev_ns_v_y,
                         dev_ns_v_z,
+                        ns.mu,
                         dev_ns_div_tau_x,
                         dev_ns_div_tau_y,
                         dev_ns_div_tau_z);
@@ -1171,6 +1172,8 @@ __host__ void DEM::startTime()
                             dev_ns_div_tau_y,
                             dev_ns_div_tau_z,
                             //ns.c_v,
+                            ns.mu,
+                            ns.rho_f,
                             dev_ns_f_pf,
                             dev_force,
                             dev_ns_f_d,
@@ -1365,6 +1368,8 @@ __host__ void DEM::startTime()
                             ns.ndem,
                             wall0_iz,
                             ns.c_v,
+                            ns.mu,
+                            ns.rho_f,
                             dev_ns_v_p_x,
                             dev_ns_v_p_y,
                             dev_ns_v_p_z);
@@ -1511,6 +1516,7 @@ __host__ void DEM::startTime()
                                 nijac,
                                 ns.ndem,
                                 ns.c_v,
+                                ns.rho_f,
                                 dev_ns_f1,
                                 dev_ns_f2,
                                 dev_ns_f);
@@ -1693,6 +1699,7 @@ __host__ void DEM::startTime()
                             ns.bc_top,
                             ns.ndem,
                             ns.c_v,
+                            ns.rho_f,
                             wall0_iz,
                             iter,
                             dev_ns_v_x,
@@ -1815,6 +1822,7 @@ __host__ void DEM::startTime()
                             dev_darcy_dphi,
                             dev_darcy_grad_k,
                             darcy.beta_f,
+                            darcy.mu,
                             darcy.bc_bot,
                             darcy.bc_top,
                             darcy.ndem,
@@ -1880,6 +1888,7 @@ __host__ void DEM::startTime()
                         dev_darcy_p,
                         dev_darcy_phi,
                         dev_darcy_k,
+                        darcy.mu,
                         dev_darcy_v);
                 cudaThreadSynchronize();
                 checkForCudaErrorsIter("Post findDarcyVelocities", iter);

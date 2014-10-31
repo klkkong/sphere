@@ -665,6 +665,7 @@ __global__ void updateDarcySolution(
         const Float*  __restrict__ dev_darcy_dphi,    // in
         const Float3* __restrict__ dev_darcy_grad_k,  // in
         const Float beta_f,                           // in
+        const Float mu,                               // in
         const int bc_bot,                             // in
         const int bc_top,                             // in
         const unsigned int ndem,                      // in
@@ -732,7 +733,7 @@ __global__ void updateDarcySolution(
         // find new value for p from Goren et al 2011 eq. 15 or 18.
         // the diffusivity shouldn't exceed 0.1
         const Float diffusion_term =
-            devC_dt*ndem/(beta_f*phi*devC_params.mu)
+            devC_dt*ndem/(beta_f*phi*mu)
             *(k*laplace_p + dot(grad_k, grad_p));
 
         const Float forcing_term = 
@@ -810,6 +811,7 @@ __global__ void findDarcyVelocities(
         const Float* __restrict__ dev_darcy_p,      // in
         const Float* __restrict__ dev_darcy_phi,    // in
         const Float* __restrict__ dev_darcy_k,      // in
+        const Float mu,                             // in
         Float3* __restrict__ dev_darcy_v)           // out
 {
     // 3D thread index
@@ -857,7 +859,7 @@ __global__ void findDarcyVelocities(
 
         // calculate velocity
         //const Float3 v = q/phi;
-        const Float3 v = (-k/devC_params.mu * grad_p)/phi;
+        const Float3 v = (-k/mu * grad_p)/phi;
 
         // Save velocity
         __syncthreads();

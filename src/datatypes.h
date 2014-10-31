@@ -96,8 +96,6 @@ struct Params {
     Float tau_b;          // Bond shear strength
     Float devs_A;         // Amplitude of modulations in normal stress
     Float devs_f;         // Frequency of modulations in normal stress
-    Float mu;             // Fluid dynamic viscosity
-    Float rho_f;          // Fluid density
 };
 
 // Structure containing wall parameters
@@ -146,6 +144,8 @@ struct NavierStokes {
     Float4* f_p;            // Pressure force on particles
     Float4* f_v;            // Viscous force on particles
     Float4* f_sum;          // Viscous force on particles
+    Float   mu;             // Fluid dynamic viscosity
+    Float   rho_f;          // Fluid density
 };
 
 struct Darcy {
@@ -171,6 +171,8 @@ struct Darcy {
     Float4* f_p;            // Pressure force on particles
     Float   beta_f;         // Adiabatic fluid compressibility
     Float   k_c;            // Permeability prefactor in Kozeny-Carman eq.
+    Float   mu;             // Fluid dynamic viscosity
+    Float   rho_f;          // Fluid density
 };
 
 // Image structure
