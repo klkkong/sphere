@@ -580,8 +580,9 @@ __global__ void findDarcyPermeabilities(
                 x, y, z,
                 phi, k);*/
 
-        // limit permeability to 0.9 m*m
-        k = fmin(0.9, k);
+        // limit permeability [m*m]
+        // K_gravel = 3.0e-2 m/s => k_gravel = 2.7e-9 m*m
+        k = fmin(2.7e-9, k);
 
         __syncthreads();
         dev_darcy_k[cellidx] = k;
@@ -728,15 +729,18 @@ __global__ void updateDarcySolution(
                 (p_yp - p_yn)/(dy+dy),
                 (p_zp - p_zn)/(dz+dz));
 
-        // find new value for p from Goren et al 2011 eq. 15 or 18
+        // find new value for p from Goren et al 2011 eq. 15 or 18.
+        // the diffusivity shouldn't exceed 0.1
         const Float diffusion_term =
             devC_dt*ndem/(beta_f*phi*devC_params.mu)
             *(k*laplace_p + dot(grad_k, grad_p));
 
         const Float forcing_term = 
             //- devC_dt*ndem/(beta_f*phi)*div_v_p; // div(v_p) as forcing
-            //- dphi*ndem/(beta_f*phi*(1.0 - phi));  // porosity change as forcing
+            //- dphi*ndem/(beta_f*phi*(1.0 - phi));// porosity change as forcing
             - dphi/(beta_f*phi*(1.0 - phi));  // porosity change as forcing
+
+        // updated pressure value
         Float p_new = p + diffusion_term + forcing_term;
 
         // Dirichlet BCs
@@ -749,22 +753,38 @@ __global__ void updateDarcySolution(
         printf("\n%d,%d,%d updateDarcySolution\n"
                 "p         = %e\n"
                 "p_new     = %e\n"
+                "p_x       = %e, %e\n"
+                "p_y       = %e, %e\n"
                 "p_z       = %e, %e\n"
                 "diffusion = %e\n"
+                "k         = %e\n"
+                "diff_fac  = %e\n"
                 "forcing   = %e\n"
                 "grad_p    = %e, %e, %e\n"
+                "grad_k    = %e, %e, %e\n"
                 "laplace_p = %e\n"
                 "dphi      = %f\n"
                 "phi       = %f\n"
                 "beta_f    = %e\n"
+                "mu        = %e\n"
+                "dt        = %e\n"
                 "res_norm  = %e\n",
                 x,y,z,
                 p, p_new,
+                p_xn, p_xp,
+                p_yn, p_yp,
                 p_zn, p_zp,
-                diffusion_term, forcing_term,
+                diffusion_term,
+                k,
+                diff_fac,
+                forcing_term,
                 grad_p.x, grad_p.y, grad_p.z,
+                grad_k.x, grad_k.y, grad_k.z,
                 laplace_p,
-                dphi, phi, beta_f,
+                dphi, phi,
+                beta_f,
+                devC_params.mu,
+                devC_dt,
                 res_norm);
 
         // save new pressure and the residual
