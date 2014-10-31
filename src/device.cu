@@ -1811,13 +1811,13 @@ __host__ void DEM::startTime()
 
                 if (walls.nw > 0 && walls.wmode[0] == 1) {
                     wall0_iz = walls.nx->w/(grid.L[2]/grid.num[2]);
-                    setDarcyTopWallPressure<<<dimGridFluid, dimBlockFluid>>>(
+                    /*setDarcyTopWallPressure<<<dimGridFluid, dimBlockFluid>>>(
                             new_pressure,
                             wall0_iz,
                             dev_darcy_p);
                     cudaThreadSynchronize();
                     checkForCudaErrorsIter("Post setDarcyTopWallPressure",
-                            iter);
+                            iter);*/
                 }
 
                 if (PROFILING == 1)

@@ -567,7 +567,7 @@ __global__ void setDarcyTopPressure(
 }
 
 // Set the pressure at the top wall to new_pressure
-__global__ void setDarcyTopPressure(
+__global__ void setDarcyTopWallPressure(
     const Float new_pressure,
     const unsigned int wall0_iz,
     Float* __restrict__ dev_darcy_p)
