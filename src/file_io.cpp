@@ -269,7 +269,7 @@ void DEM::readbin(const char *target)
 
             initNSmem();
 
-            ifs.read(as_bytes(params.mu), sizeof(params.mu));
+            ifs.read(as_bytes(ns.mu), sizeof(Float));
 
             if (verbose == 1)
                 cout << "  - Reading fluid values:\t\t\t  ";
@@ -288,7 +288,7 @@ void DEM::readbin(const char *target)
                 }
             }
 
-            ifs.read(as_bytes(params.rho_f), sizeof(Float));
+            ifs.read(as_bytes(ns.rho_f), sizeof(Float));
             ifs.read(as_bytes(ns.p_mod_A), sizeof(Float));
             ifs.read(as_bytes(ns.p_mod_f), sizeof(Float));
             ifs.read(as_bytes(ns.p_mod_phi), sizeof(Float));
@@ -337,7 +337,7 @@ void DEM::readbin(const char *target)
 
             initDarcyMem();
 
-            ifs.read(as_bytes(params.mu), sizeof(params.mu));
+            ifs.read(as_bytes(darcy.mu), sizeof(Float));
 
             if (verbose == 1)
                 cout << "  - Reading fluid values:\t\t\t  ";
@@ -356,7 +356,7 @@ void DEM::readbin(const char *target)
                 }
             }
 
-            ifs.read(as_bytes(params.rho_f), sizeof(Float));
+            ifs.read(as_bytes(darcy.rho_f), sizeof(Float));
             ifs.read(as_bytes(darcy.p_mod_A), sizeof(Float));
             ifs.read(as_bytes(darcy.p_mod_f), sizeof(Float));
             ifs.read(as_bytes(darcy.p_mod_phi), sizeof(Float));
