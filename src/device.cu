@@ -2252,31 +2252,31 @@ __host__ void DEM::startTime()
                 << t_updateNSvelocityPressure/1000.0 << " s"
                 << "\t(" << 100.0*t_updateNSvelocityPressure/t_sum << " %)\n";
         } else if (fluid == 1 && cfd_solver == 1) {
-            cout << "  - findDarcyPorosities:\t\t:" <<
+            cout << "  - findDarcyPorosities:\t" <<
                 t_findDarcyPorosities/1000.0 << " s" << "\t(" <<
                 100.0*t_findDarcyPorosities/t_sum << " %)\n"
-                << "  - setDarcyGhostNodes:\t\t:" <<
+                << "  - setDarcyGhostNodes:\t\t" <<
                 t_setDarcyGhostNodes/1000.0 << " s" << "\t(" <<
                 100.0*t_setDarcyGhostNodes/t_sum << " %)\n"
-                << "  - findDarcyPressureForce:\t\t:" <<
+                << "  - findDarcyPressureForce:\t" <<
                 t_findDarcyPressureForce/1000.0 << " s" << "\t(" <<
                 100.0*t_findDarcyPressureForce/t_sum << " %)\n"
-                << "  - setDarcyTopPressure:\t\t:" <<
+                << "  - setDarcyTopPressure:\t" <<
                 t_setDarcyTopPressure/1000.0 << " s" << "\t(" <<
                 100.0*t_setDarcyTopPressure/t_sum << " %)\n"
-                << "  - findDarcyPermeabilities:\t\t:" <<
+                << "  - findDarcyPermeabilities:\t" <<
                 t_findDarcyPermeabilities/1000.0 << " s" << "\t(" <<
                 100.0*t_findDarcyPermeabilities/t_sum << " %)\n"
-                << "  - findDarcyPermeabilityGradients:\t:" <<
+                << "  - findDarcyPermeabilityGrads:\t" <<
                 t_findDarcyPermeabilityGradients/1000.0 << " s" << "\t(" <<
                 100.0*t_findDarcyPermeabilityGradients/t_sum << " %)\n"
-                << "  - updateDarcySolution:\t\t:" <<
+                << "  - updateDarcySolution:\tt" <<
                 t_updateDarcySolution/1000.0 << " s" << "\t(" <<
                 100.0*t_updateDarcySolution/t_sum << " %)\n"
-                << "  - copyValues:\t\t:" <<
+                << "  - copyValues:\t\t\t" <<
                 t_copyValues/1000.0 << " s" << "\t(" <<
                 100.0*t_copyValues/t_sum << " %)\n"
-                << "  - findDarcyVelocities:\t\t:" <<
+                << "  - findDarcyVelocities:\t" <<
                 t_findDarcyVelocities/1000.0 << " s" << "\t(" <<
                 100.0*t_findDarcyVelocities/t_sum << " %)" << std::endl;
         }
