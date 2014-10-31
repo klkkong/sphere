@@ -566,6 +566,30 @@ __global__ void setDarcyTopPressure(
     }
 }
 
+// Set the pressure at the top wall to new_pressure
+__global__ void setDarcyTopPressure(
+    const Float new_pressure,
+    const unsigned int wall0_iz,
+    Float* __restrict__ dev_darcy_p)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+    
+    // check that the thread is located at the top boundary
+    if (x < devC_grid.num[0] &&
+        y < devC_grid.num[1] &&
+        z == wall0_iz) {
+
+        const unsigned int cellidx = idx(x,y,z);
+
+        // Write the new pressure the top boundary cells
+        __syncthreads();
+        dev_darcy_p[cellidx] = new_pressure;
+    }
+}
+
 
 // Find the cell permeabilities from the Kozeny-Carman equation
 __global__ void findDarcyPermeabilities(
@@ -692,6 +716,7 @@ __global__ void updateDarcySolution(
         const int bc_bot,                             // in
         const int bc_top,                             // in
         const unsigned int ndem,                      // in
+        const unsigned int wall0_iz,                  // in
         Float* __restrict__ dev_darcy_p_new,          // out
         Float* __restrict__ dev_darcy_norm)           // out
 {
@@ -768,7 +793,9 @@ __global__ void updateDarcySolution(
         Float p_new = p + diffusion_term + forcing_term;
 
         // Dirichlet BCs
-        if ((z == 0 && bc_bot == 0) || (z == nz-1 && bc_top == 0))
+        if ((z == 0 && bc_bot == 0) ||
+                (z == nz-1 && bc_top == 0) ||
+                (z == wall0_iz))
             p_new = p;
 
         // normalized residual, avoid division by zero
