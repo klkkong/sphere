@@ -1770,6 +1770,21 @@ __host__ void DEM::startTime()
                             iter);
                 }
 
+
+                // Modulate the pressures at the upper boundary cells
+                if ((darcy.p_mod_A > 1.0e-5 || darcy.p_mod_A < -1.0e-5) &&
+                        darcy.p_mod_f > 1.0e-7) {
+                    // original pressure
+                    Float new_pressure = darcy.p[idx(0,0,darcy.nz-1)] // orig p
+                        + darcy.p_mod_A*sin(2.0*M_PI*darcy.p_mod_f*time.current
+                                + darcy.p_mod_phi);
+                    setDarcyTopPressure<<<dimGridFluid, dimBlockFluid>>>(
+                            new_pressure,
+                            dev_darcy_p);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post setUpperPressureNS", iter);
+                }
+
                 findDarcyPermeabilities<<<dimGridFluid, dimBlockFluid>>>(
                         darcy.k_c, dev_darcy_phi, dev_darcy_k);
                 cudaThreadSynchronize();

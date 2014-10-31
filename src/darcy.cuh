@@ -544,6 +544,29 @@ __global__ void findDarcyPressureForce(
     }
 }
 
+// Set the pressure at the top boundary to new_pressure
+__global__ void setDarcyTopPressure(
+    const Float new_pressure, Float* __restrict__ dev_darcy_p)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+    
+    // check that the thread is located at the top boundary
+    if (x < devC_grid.num[0] &&
+        y < devC_grid.num[1] &&
+        z == devC_grid.num[2]-1) {
+
+        const unsigned int cellidx = idx(x,y,z);
+
+        // Write the new pressure the top boundary cells
+        __syncthreads();
+        dev_darcy_p[cellidx] = new_pressure;
+    }
+}
+
+
 // Find the cell permeabilities from the Kozeny-Carman equation
 __global__ void findDarcyPermeabilities(
         const Float k_c,                            // in

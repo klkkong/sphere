@@ -105,7 +105,6 @@ if (it[0,1] < 700 and it[1,1] < 250 and (it[2:,1] < 20).all()):
 else:
     print("Convergence rate (2/2):\t" + failed())
 
-'''
 # Slow pressure modulation test
 orig.time_total[0] = 1.0e-1
 orig.time_file_dt[0] = 0.101*orig.time_total[0]
@@ -125,7 +124,6 @@ for it in range(1,py.status()): # gradient should be smooth in all output files
             ideal_grad_p_z - py.p_f[0,0,:],\
             'Slow pressure modulation (' + 
             str(it+1) + '/' + str(py.status()) + '):', tolerance=1.0e-1)
-'''
 
 '''
 # Fast pressure modulation test

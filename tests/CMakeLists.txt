@@ -35,3 +35,6 @@ add_test(fluid_particle_interaction ${PYTHON_EXECUTABLE}
 
 add_test(cfd_tests_darcy ${PYTHON_EXECUTABLE} 
     ${CMAKE_CURRENT_BINARY_DIR}/cfd_tests_darcy.py)
+
+add_test(cfd_tests_neumann_darcy ${PYTHON_EXECUTABLE} 
+    ${CMAKE_CURRENT_BINARY_DIR}/cfd_tests_neumann_darcy.py)
