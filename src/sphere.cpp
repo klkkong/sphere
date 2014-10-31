@@ -300,15 +300,24 @@ void DEM::checkValues(void)
     }
 
     if (fluid == 1) {
-        if (params.rho_f <= 0.0) {
-            cerr << "Error: rho = " << params.rho << " kg/m3" << endl;
-            exit(1);
+
+        // Navier-Stokes tests
+        if (cfd_solver == 0) {
+            if (ns.rho_f <= 0.0) {
+                cerr << "Error: rho = " << params.rho << " kg/m3" << endl;
+                exit(1);
+            }
         }
 
         // Darcy tests
-        if (cfd_solver == 1) {
-            if (params.mu <= 0.0) {
-                cerr << "Error: mu = " << params.mu << " Pa s" << endl;
+        else if (cfd_solver == 1) {
+            if (darcy.rho_f <= 0.0) {
+                cerr << "Error: rho_f = " << darcy.rho_f << " kg/m3" << endl;
+                exit(1);
+            }
+
+            if (darcy.mu <= 0.0) {
+                cerr << "Error: mu = " << darcy.mu << " Pa s" << endl;
                 exit(1);
             }
 
@@ -321,6 +330,10 @@ void DEM::checkValues(void)
                 cerr << "Error: k_c = " << darcy.k_c << " m*m" << endl;
                 exit(1);
             }
+        } else {
+            cerr << "Solver type value not understood (cfd_solver = "
+                << cfd_solver << endl;
+            exit(1);
         }
     }
 }
