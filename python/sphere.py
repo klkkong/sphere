@@ -1554,27 +1554,30 @@ class sim:
             fh.write('        </DataArray>\n')
 
             if self.fluid:
-                # Fluid interaction force
-                fh.write('        <DataArray type="Float32" ' 
-                        + 'Name="Fluid force total" '
-                        + 'NumberOfComponents="3" format="ascii">\n')
-                fh.write('          ')
-                for i in range(self.np):
-                    fh.write('%f %f %f ' % \
-                            (self.f_sum[i,0], self.f_sum[i,1], self.f_sum[i,2]))
-                fh.write('\n')
-                fh.write('        </DataArray>\n')
 
-                # Fluid drag force
-                fh.write('        <DataArray type="Float32" '
-                        + 'Name="Fluid drag force" '
-                        + 'NumberOfComponents="3" format="ascii">\n')
-                fh.write('          ')
-                for i in range(self.np):
-                    fh.write('%f %f %f ' % \
-                            (self.f_d[i,0], self.f_d[i,1], self.f_d[i,2]))
-                fh.write('\n')
-                fh.write('        </DataArray>\n')
+                if self.cfd_solver == 0:  # Navier Stokes
+                    # Fluid interaction force
+                    fh.write('        <DataArray type="Float32" ' 
+                            + 'Name="Fluid force total" '
+                            + 'NumberOfComponents="3" format="ascii">\n')
+                    fh.write('          ')
+                    for i in range(self.np):
+                        fh.write('%f %f %f ' % \
+                                (self.f_sum[i,0], self.f_sum[i,1], \
+                                self.f_sum[i,2]))
+                    fh.write('\n')
+                    fh.write('        </DataArray>\n')
+
+                    # Fluid drag force
+                    fh.write('        <DataArray type="Float32" '
+                            + 'Name="Fluid drag force" '
+                            + 'NumberOfComponents="3" format="ascii">\n')
+                    fh.write('          ')
+                    for i in range(self.np):
+                        fh.write('%f %f %f ' % \
+                                (self.f_d[i,0], self.f_d[i,1], self.f_d[i,2]))
+                    fh.write('\n')
+                    fh.write('        </DataArray>\n')
 
                 # Fluid pressure force
                 fh.write('        <DataArray type="Float32" '
@@ -1587,16 +1590,17 @@ class sim:
                 fh.write('\n')
                 fh.write('        </DataArray>\n')
 
-                # Fluid viscous force
-                fh.write('        <DataArray type="Float32" '
-                        + 'Name="Fluid viscous force" '
-                        + 'NumberOfComponents="3" format="ascii">\n')
-                fh.write('          ')
-                for i in range(self.np):
-                    fh.write('%f %f %f ' % \
-                            (self.f_v[i,0], self.f_v[i,1], self.f_v[i,2]))
-                fh.write('\n')
-                fh.write('        </DataArray>\n')
+                if self.cfd_solver == 0:  # Navier Stokes
+                    # Fluid viscous force
+                    fh.write('        <DataArray type="Float32" '
+                            + 'Name="Fluid viscous force" '
+                            + 'NumberOfComponents="3" format="ascii">\n')
+                    fh.write('          ')
+                    for i in range(self.np):
+                        fh.write('%f %f %f ' % \
+                                (self.f_v[i,0], self.f_v[i,1], self.f_v[i,2]))
+                    fh.write('\n')
+                    fh.write('        </DataArray>\n')
 
             # fixvel
             fh.write('        <DataArray type="Float32" Name="FixedVel" '
