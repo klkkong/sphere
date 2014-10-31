@@ -1898,6 +1898,7 @@ __host__ void DEM::startTime()
                             darcy.bc_bot,
                             darcy.bc_top,
                             darcy.ndem,
+                            wall0_iz,
                             dev_darcy_p_new,
                             dev_darcy_norm);
                     cudaThreadSynchronize();
