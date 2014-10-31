@@ -86,7 +86,7 @@ orig.time_file_dt[0] = orig.time_total[0]/10.0
 orig.run(verbose=False)
 py.readlast(verbose = False)
 ideal_grad_p_z = numpy.linspace(orig.p_f[0,0,0], orig.p_f[0,0,-1], orig.num[2])
-py.writeVTKall()
+#py.writeVTKall()
 compareNumpyArraysClose(numpy.zeros((1,orig.num[2])),\
         ideal_grad_p_z - py.p_f[0,0,:],\
         "Pressure gradient (long test):", tolerance=1.0e-2)
@@ -106,9 +106,9 @@ else:
     print("Convergence rate (2/2):\t" + failed())
 
 # Slow pressure modulation test
+orig.cleanup()
 orig.time_total[0] = 1.0e-1
 orig.time_file_dt[0] = 0.101*orig.time_total[0]
-orig.mu[0] = 0.0 # dont let diffusion add transient effects
 orig.setFluidPressureModulation(A=1.0, f=1.0/orig.time_total[0])
 #orig.plotPrescribedFluidPressures()
 orig.run(verbose=False)
@@ -117,7 +117,7 @@ orig.run(verbose=False)
 #py.plotFluidDiffAdvPresZ()
 #py.writeVTKall()
 for it in range(1,py.status()): # gradient should be smooth in all output files
-    py.readstep(it)
+    py.readstep(it, verbose=False)
     ideal_grad_p_z =\
             numpy.linspace(py.p_f[0,0,0], py.p_f[0,0,-1], py.num[2])
     compareNumpyArraysClose(numpy.zeros((1,py.num[2])),\
@@ -147,4 +147,4 @@ for it in range(1,py.status()+1): # gradient should be smooth in all output file
             str(it) + '/' + str(py.status()) + '):', tolerance=5.0e-1)
 '''
 
-#cleanup(orig)
+cleanup(orig)
