@@ -19,7 +19,8 @@ sim.initTemporal(total=0.01, file_dt=0.001)
 #sim.time_file_dt[0] = sim.time_dt[0]
 #sim.time_total[0] = sim.time_dt[0]
 
-sim.run(verbose=False)
+#sim.run(verbose=False)
+sim.run()
 #sim.run(dry=True)
 #sim.run(cudamemcheck=True)
 #sim.writeVTKall()

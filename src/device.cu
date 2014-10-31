@@ -868,6 +868,16 @@ __host__ void DEM::startTime()
     double t_jacobiIterationNS = 0.0;
     double t_updateNSvelocityPressure = 0.0;
 
+    double t_findDarcyPorosities = 0.0;
+    double t_setDarcyGhostNodes = 0.0;
+    double t_findDarcyPressureForce = 0.0;
+    double t_setDarcyTopPressure = 0.0;
+    double t_findDarcyPermeabilities = 0.0;
+    double t_findDarcyPermeabilityGradients = 0.0;
+    double t_updateDarcySolution = 0.0;
+    double t_copyValues = 0.0;
+    double t_findDarcyVelocities = 0.0;
+
     if (PROFILING == 1) {
         cudaEventCreate(&kernel_tic);
         cudaEventCreate(&kernel_toc);
@@ -1748,17 +1758,24 @@ __host__ void DEM::startTime()
                 cudaThreadSynchronize();
                 if (PROFILING == 1)
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                            &t_findPorositiesDev);
+                            &t_findDarcyPorosities);
                 checkForCudaErrorsIter("Post findDarcyPorosities", iter);
 
                 if (np > 0) {
 
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
                     setDarcyGhostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                             dev_darcy_p, darcy.bc_bot, darcy.bc_top);
                     cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_setDarcyGhostNodes);
                     checkForCudaErrorsIter("Post setDarcyGhostNodes("
                             "dev_darcy_p) before findDarcyPressureForce", iter);
 
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
                     findDarcyPressureForce<<<dimGrid, dimBlock>>>(
                             dev_x,
                             dev_darcy_p,
@@ -1766,10 +1783,12 @@ __host__ void DEM::startTime()
                             dev_force,
                             dev_darcy_f_p);
                     cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_findDarcyPressureForce);
                     checkForCudaErrorsIter("Post findDarcyPressureForce",
                             iter);
                 }
-
 
                 // Modulate the pressures at the upper boundary cells
                 if ((darcy.p_mod_A > 1.0e-5 || darcy.p_mod_A < -1.0e-5) &&
@@ -1778,28 +1797,48 @@ __host__ void DEM::startTime()
                     Float new_pressure = darcy.p[idx(0,0,darcy.nz-1)] // orig p
                         + darcy.p_mod_A*sin(2.0*M_PI*darcy.p_mod_f*time.current
                                 + darcy.p_mod_phi);
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
                     setDarcyTopPressure<<<dimGridFluid, dimBlockFluid>>>(
                             new_pressure,
                             dev_darcy_p);
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_setDarcyTopPressure);
                     cudaThreadSynchronize();
                     checkForCudaErrorsIter("Post setUpperPressureNS", iter);
                 }
 
+                if (PROFILING == 1)
+                    startTimer(&kernel_tic);
                 findDarcyPermeabilities<<<dimGridFluid, dimBlockFluid>>>(
                         darcy.k_c, dev_darcy_phi, dev_darcy_k);
                 cudaThreadSynchronize();
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_findDarcyPermeabilities);
                 checkForCudaErrorsIter("Post findDarcyPermeabilities",
                         iter);
 
+                if (PROFILING == 1)
+                    startTimer(&kernel_tic);
                 setDarcyGhostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                         dev_darcy_k, darcy.bc_bot, darcy.bc_top);
                 cudaThreadSynchronize();
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_setDarcyGhostNodes);
                 checkForCudaErrorsIter("Post setDarcyGhostNodes(dev_darcy_k)",
                         iter);
 
+                if (PROFILING == 1)
+                    startTimer(&kernel_tic);
                 findDarcyPermeabilityGradients<<<dimGridFluid, dimBlockFluid>>>(
                         dev_darcy_k, dev_darcy_grad_k);
                 cudaThreadSynchronize();
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_findDarcyPermeabilityGradients);
                 checkForCudaErrorsIter("Post findDarcyPermeabilityGradients",
                         iter);
 
@@ -1824,12 +1863,19 @@ __host__ void DEM::startTime()
 
                 for (unsigned int nijac = 0; nijac<darcy.maxiter; ++nijac) {
 
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
                     setDarcyGhostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                             dev_darcy_p, darcy.bc_bot, darcy.bc_top);
                     cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_setDarcyGhostNodes);
                     checkForCudaErrorsIter("Post setDarcyGhostNodes("
                             "dev_darcy_p) in Jacobi loop", iter);
 
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
                     updateDarcySolution<<<dimGridFluid, dimBlockFluid>>>(
                             dev_darcy_p,
                             dev_darcy_k,
@@ -1844,13 +1890,21 @@ __host__ void DEM::startTime()
                             dev_darcy_p_new,
                             dev_darcy_norm);
                     cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_updateDarcySolution);
                     checkForCudaErrorsIter("Post updateDarcySolution", iter);
 
                     // Copy new values to current values
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
                     copyValues<Float><<<dimGridFluid, dimBlockFluid>>>(
                             dev_darcy_p_new,
                             dev_darcy_p);
                     cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_copyValues);
                     checkForCudaErrorsIter("Post copyValues(p_new -> p)", iter);
 
                     if (nijac % nijacnorm == 0) {
@@ -1899,6 +1953,8 @@ __host__ void DEM::startTime()
                     //break; // end after first iteration
                 }
 
+                if (PROFILING == 1)
+                    startTimer(&kernel_tic);
                 findDarcyVelocities<<<dimGridFluid, dimBlockFluid>>>(
                         dev_darcy_p,
                         dev_darcy_phi,
@@ -1906,6 +1962,9 @@ __host__ void DEM::startTime()
                         darcy.mu,
                         dev_darcy_v);
                 cudaThreadSynchronize();
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_findDarcyVelocities);
                 checkForCudaErrorsIter("Post findDarcyVelocities", iter);
             }
         }
@@ -2135,7 +2194,11 @@ __host__ void DEM::startTime()
             t_findNSstressTensor +
             t_findNSdivphiviv + t_findNSdivtau + t_findPredNSvelocities +
             t_setNSepsilon + t_setNSdirichlet + t_setNSghostNodesDev +
-            t_findNSforcing + t_jacobiIterationNS + t_updateNSvelocityPressure;
+            t_findNSforcing + t_jacobiIterationNS + t_updateNSvelocityPressure +
+            t_findDarcyPorosities + t_setDarcyGhostNodes +
+            t_findDarcyPressureForce + t_setDarcyTopPressure +
+            t_findDarcyPermeabilities + t_findDarcyPermeabilityGradients +
+            t_updateDarcySolution + t_copyValues + t_findDarcyVelocities;
 
         cout << "\nKernel profiling statistics:\n"
             << "  - calcParticleCellID:\t\t" << t_calcParticleCellID/1000.0
@@ -2164,28 +2227,58 @@ __host__ void DEM::startTime()
             << "\t(" << 100.0*t_integrateWalls/t_sum << " %)\n";
         if (fluid == 1 && cfd_solver == 0) {
             cout << "  - findPorositiesDev:\t\t" << t_findPorositiesDev/1000.0
-            << " s" << "\t(" << 100.0*t_findPorositiesDev/t_sum << " %)\n"
-            << "  - findNSstressTensor:\t\t" << t_findNSstressTensor/1000.0
-            << " s" << "\t(" << 100.0*t_findNSstressTensor/t_sum << " %)\n"
-            << "  - findNSdivphiviv:\t\t" << t_findNSdivphiviv/1000.0
-            << " s" << "\t(" << 100.0*t_findNSdivphiviv/t_sum << " %)\n"
-            << "  - findNSdivtau:\t\t" << t_findNSdivtau/1000.0
-            << " s" << "\t(" << 100.0*t_findNSdivtau/t_sum << " %)\n"
-            << "  - findPredNSvelocities:\t" << t_findPredNSvelocities/1000.0
-            << " s" << "\t(" << 100.0*t_findPredNSvelocities/t_sum << " %)\n"
-            << "  - setNSepsilon:\t\t" << t_setNSepsilon/1000.0
-            << " s" << "\t(" << 100.0*t_setNSepsilon/t_sum << " %)\n"
-            << "  - setNSdirichlet:\t\t" << t_setNSdirichlet/1000.0
-            << " s" << "\t(" << 100.0*t_setNSdirichlet/t_sum << " %)\n"
-            << "  - setNSghostNodesDev:\t\t" << t_setNSghostNodesDev/1000.0
-            << " s" << "\t(" << 100.0*t_setNSghostNodesDev/t_sum << " %)\n"
-            << "  - findNSforcing:\t\t" << t_findNSforcing/1000.0 << " s"
-            << "\t(" << 100.0*t_findNSforcing/t_sum << " %)\n"
-            << "  - jacobiIterationNS:\t\t" << t_jacobiIterationNS/1000.0 << " s"
-            << "\t(" << 100.0*t_jacobiIterationNS/t_sum << " %)\n"
-            << "  - updateNSvelocityPressure:\t"
-            << t_updateNSvelocityPressure/1000.0 << " s"
-            << "\t(" << 100.0*t_updateNSvelocityPressure/t_sum << " %)\n";
+                << " s" << "\t(" << 100.0*t_findPorositiesDev/t_sum << " %)\n"
+                << "  - findNSstressTensor:\t\t" << t_findNSstressTensor/1000.0
+                << " s" << "\t(" << 100.0*t_findNSstressTensor/t_sum << " %)\n"
+                << "  - findNSdivphiviv:\t\t" << t_findNSdivphiviv/1000.0
+                << " s" << "\t(" << 100.0*t_findNSdivphiviv/t_sum << " %)\n"
+                << "  - findNSdivtau:\t\t" << t_findNSdivtau/1000.0
+                << " s" << "\t(" << 100.0*t_findNSdivtau/t_sum << " %)\n"
+                << "  - findPredNSvelocities:\t" <<
+                t_findPredNSvelocities/1000.0 << " s" << "\t(" <<
+                100.0*t_findPredNSvelocities/t_sum << " %)\n"
+                << "  - setNSepsilon:\t\t" << t_setNSepsilon/1000.0
+                << " s" << "\t(" << 100.0*t_setNSepsilon/t_sum << " %)\n"
+                << "  - setNSdirichlet:\t\t" << t_setNSdirichlet/1000.0
+                << " s" << "\t(" << 100.0*t_setNSdirichlet/t_sum << " %)\n"
+                << "  - setNSghostNodesDev:\t\t" << t_setNSghostNodesDev/1000.0
+                << " s" << "\t(" << 100.0*t_setNSghostNodesDev/t_sum << " %)\n"
+                << "  - findNSforcing:\t\t" << t_findNSforcing/1000.0 << " s"
+                << "\t(" << 100.0*t_findNSforcing/t_sum << " %)\n"
+                << "  - jacobiIterationNS:\t\t" << t_jacobiIterationNS/1000.0
+                << " s"
+                << "\t(" << 100.0*t_jacobiIterationNS/t_sum << " %)\n"
+                << "  - updateNSvelocityPressure:\t"
+                << t_updateNSvelocityPressure/1000.0 << " s"
+                << "\t(" << 100.0*t_updateNSvelocityPressure/t_sum << " %)\n";
+        } else if (fluid == 1 && cfd_solver == 1) {
+            cout << "  - findDarcyPorosities:\t\t:" <<
+                t_findDarcyPorosities/1000.0 << " s" << "\t(" <<
+                100.0*t_findDarcyPorosities/t_sum << " %)\n"
+                << "  - setDarcyGhostNodes:\t\t:" <<
+                t_setDarcyGhostNodes/1000.0 << " s" << "\t(" <<
+                100.0*t_setDarcyGhostNodes/t_sum << " %)\n"
+                << "  - findDarcyPressureForce:\t\t:" <<
+                t_findDarcyPressureForce/1000.0 << " s" << "\t(" <<
+                100.0*t_findDarcyPressureForce/t_sum << " %)\n"
+                << "  - setDarcyTopPressure:\t\t:" <<
+                t_setDarcyTopPressure/1000.0 << " s" << "\t(" <<
+                100.0*t_setDarcyTopPressure/t_sum << " %)\n"
+                << "  - findDarcyPermeabilities:\t\t:" <<
+                t_findDarcyPermeabilities/1000.0 << " s" << "\t(" <<
+                100.0*t_findDarcyPermeabilities/t_sum << " %)\n"
+                << "  - findDarcyPermeabilityGradients:\t:" <<
+                t_findDarcyPermeabilityGradients/1000.0 << " s" << "\t(" <<
+                100.0*t_findDarcyPermeabilityGradients/t_sum << " %)\n"
+                << "  - updateDarcySolution:\t\t:" <<
+                t_updateDarcySolution/1000.0 << " s" << "\t(" <<
+                100.0*t_updateDarcySolution/t_sum << " %)\n"
+                << "  - copyValues:\t\t:" <<
+                t_copyValues/1000.0 << " s" << "\t(" <<
+                100.0*t_copyValues/t_sum << " %)\n"
+                << "  - findDarcyVelocities:\t\t:" <<
+                t_findDarcyVelocities/1000.0 << " s" << "\t(" <<
+                100.0*t_findDarcyVelocities/t_sum << " %)" << std::endl;
         }
     }
 
