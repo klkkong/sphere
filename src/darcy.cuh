@@ -856,6 +856,42 @@ __global__ void updateDarcySolution(
     }
 }
 
+__global__ void findNewPressure(
+        const Float* __restrict__ dev_darcy_dp,     // in
+        Float* __restrict__ dev_darcy_p)            // in+out
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    // Check that we are not outside the fluid grid
+    if (x < nx && y < ny && z < nz) {
+
+        const unsigned int cellidx = d_idx(x,y,z);
+
+        const Float dp = dev_darcy_dp[cellidx];
+
+        // save new pressure
+        __syncthreads();
+        dev_darcy_p[cellidx] += dp;
+
+        /*printf("%d,%d,%d\tp = % f\tp_new = % f\tres_norm = % f\n",
+                x,y,z,
+                p,
+                p_new,
+                res_norm);*/
+
+#ifdef CHECK_FLUID_FINITE
+        checkFiniteFloat("p", x, y, z, p);
+#endif
+}
+
 // Find cell velocities
 __global__ void findDarcyVelocities(
         const Float* __restrict__ dev_darcy_p,      // in
