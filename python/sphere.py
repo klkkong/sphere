@@ -2712,7 +2712,7 @@ class sim:
         self.mu_ws[0] = 0.0
         self.mu_wd[0] = 0.0
 
-    def largestFluidTimeStep(self, safety=0.01):
+    def largestFluidTimeStep(self, safety=0.5):
         '''
         Finds and returns the largest time step in the fluid phase by von
         Neumann and Courant-Friedrichs-Lewy analysis given the current
@@ -2761,6 +2761,18 @@ class sim:
             # Darcy
             elif self.cfd_solver[0] == 1:
 
+                # Determine on the base of the diffusivity coefficient
+                # components
+                self.cellSize()
+                self.hydraulicPermeability()
+                alpha_max = numpy.max(self.k/(self.beta_f*0.9*self.mu))
+                return safety * 1.0/(2.0*alpha_max)*1.0/(
+                        1.0/(self.dx[0]**2) + \
+                        1.0/(self.dx[1]**2) + \
+                        1.0/(self.dx[2]**2))
+
+                '''
+                # Determine value on the base of the hydraulic conductivity
                 g = numpy.max(numpy.abs(self.g))
 
                 # Bulk modulus of fluid
@@ -2773,6 +2785,7 @@ class sim:
                         1.0/(self.dx[0]**2) + \
                         1.0/(self.dx[1]**2) + \
                         1.0/(self.dx[2]**2))
+                '''
 
     def cellSize(self):
         '''
@@ -2789,6 +2802,21 @@ class sim:
         '''
         if self.cfd_solver[0] == 1:
             self.K_c = self.k_c*self.rho_f*g/self.mu
+        else:
+            raise Exception('This function only works for the Darcy solver')
+
+    def hydraulicPermeability(self, phi_min = 0.1, phi_max = 0.9):
+        '''
+        Determine the hydraulic permeability (k) [m*m] from the Kozeny-Carman
+        relationship, using the permeability prefactor (`self.k_c`), and the
+        range of valid porosities set in `src/darcy.cuh`, by default in the
+        range 0.1 to 0.9.
+
+        This function is only valid for the Darcy solver (`self.cfd_solver ==
+        1`).
+        '''
+        if self.cfd_solver[0] == 1:
+            self.findPermeabilities()
         else:
             raise Exception('This function only works for the Darcy solver')
 
