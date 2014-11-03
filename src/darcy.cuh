@@ -854,6 +854,7 @@ __global__ void updateDarcySolution(
         // normalized residual, avoid division by zero
         const Float res_norm = (p_new - p)*(p_new - p)/(p_new*p_new + 1.0e-16);
 
+#ifdef REPORT_FORCING_TERMS
         printf("\n%d,%d,%d updateDarcySolution\n"
                 "dpdt        = %e\n"
                 "p           = %e\n"
@@ -868,6 +869,7 @@ __global__ void updateDarcySolution(
                 f,
                 f_transient, f_forcing, f_diff,
                 res_norm);
+#endif
 
         // save new pressure and the residual
         __syncthreads();

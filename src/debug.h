@@ -20,7 +20,7 @@ const unsigned int nijacnorm = 10;
 // 0: False, 1: True
 const int write_res_log = 0;
 
-// Report epsilon values during Jacobi iterations to stdout
+// Report pressure (epsilon) values during Jacobi iterations to stdout
 //#define REPORT_EPSILON
 //#define REPORT_MORE_EPSILON
 

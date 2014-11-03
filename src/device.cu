@@ -1960,10 +1960,12 @@ __host__ void DEM::startTime()
                                 &t_copyValues);
                     checkForCudaErrorsIter("Post copyValues(p_new -> p)", iter);
 
+#ifdef REPORT_EPSILON
                     std::cout << "\n###### JACOBI ITERATION "
                         << nijac << " after copyValues ######" << std::endl;
                     transferDarcyPressuresFromGlobalDeviceMemory();
                     printDarcyArray(stdout, darcy.p, "p");
+#endif
 
                     if (nijac % nijacnorm == 0) {
                         // Read the normalized residuals from the device
