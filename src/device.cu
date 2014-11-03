@@ -875,6 +875,7 @@ __host__ void DEM::startTime()
     double t_setDarcyTopPressure = 0.0;
     double t_findDarcyPermeabilities = 0.0;
     double t_findDarcyPermeabilityGradients = 0.0;
+    //double t_findDarcyForcing = 0.0;
     double t_updateDarcySolution = 0.0;
     double t_copyValues = 0.0;
     double t_findDarcyVelocities = 0.0;
@@ -1795,7 +1796,7 @@ __host__ void DEM::startTime()
                 if ((darcy.p_mod_A > 1.0e-5 || darcy.p_mod_A < -1.0e-5) &&
                         darcy.p_mod_f > 1.0e-7) {
                     // original pressure
-                    Float new_pressure = darcy.p[idx(0,0,darcy.nz-1)] // orig p
+                    Float new_pressure = darcy.p[d_idx(0,0,darcy.nz-1)] //orig p
                         + darcy.p_mod_A*sin(2.0*M_PI*darcy.p_mod_f*time.current
                                 + darcy.p_mod_phi);
                     if (PROFILING == 1)
