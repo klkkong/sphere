@@ -2283,7 +2283,7 @@ __host__ void DEM::startTime()
                 << "  - findDarcyPermeabilityGrads:\t" <<
                 t_findDarcyPermeabilityGradients/1000.0 << " s" << "\t(" <<
                 100.0*t_findDarcyPermeabilityGradients/t_sum << " %)\n"
-                << "  - updateDarcySolution:\tt" <<
+                << "  - updateDarcySolution:\t" <<
                 t_updateDarcySolution/1000.0 << " s" << "\t(" <<
                 100.0*t_updateDarcySolution/t_sum << " %)\n"
                 << "  - copyValues:\t\t\t" <<
