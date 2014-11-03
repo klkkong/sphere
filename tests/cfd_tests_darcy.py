@@ -30,8 +30,8 @@ py.readlast(verbose = False)
 compareNumpyArrays(ones, py.p_f, "Conservation of pressure:")
 
 # Convergence rate (1/3)
-#it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
-#compare(it[:,1].sum(), 0.0, "Convergence rate (1/3):\t")
+it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
+compare(it[:,1].sum(), 0.0, "Convergence rate (1/3):\t")
 
 # Fluid flow should be very small
 if ((numpy.abs(py.v_f[:,:,:,:]) < 1.0e-6).all()):
@@ -71,12 +71,12 @@ else:
     raise Exception("Failed")
 
 # Convergence rate (2/3)
-# This test passes with BETA=0.0 and tolerance=1.0e-9
-#it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
-#if ((it[0:6,1] < 1000).all() and (it[6:,1] < 20).all()):
-    #print("Convergence rate (2/3):\t" + passed())
-#else:
-    #print("Convergence rate (2/3):\t" + failed())
+ This test passes with BETA=0.0 and tolerance=1.0e-9
+it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
+if ((it[0:6,1] < 1000).all() and (it[6:,1] < 20).all()):
+    print("Convergence rate (2/3):\t" + passed())
+else:
+    print("Convergence rate (2/3):\t" + failed())
 
 # Long test
 '''
