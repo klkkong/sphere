@@ -1,5 +1,5 @@
-// navierstokes.cuh
-// CUDA implementation of porous flow
+// darcy.cuh
+// CUDA implementation of Darcy porous flow
 
 #include <iostream>
 #include <cuda.h>
