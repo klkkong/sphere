@@ -13,11 +13,10 @@ print("### CFD tests - Dirichlet BCs ###")
 orig = sphere.sim(np = 0, nd = 3, nw = 0, sid = "cfdtest", fluid = True)
 cleanup(orig)
 orig.defaultParams()
-orig.addParticle([0.5,0.5,0.5], 0.05)
-orig.defineWorldBoundaries([1.0,1.0,1.0])
+orig.defineWorldBoundaries([1.0,1.0,1.0], dx=0.1)
 orig.initFluid(cfd_solver = 1)
 #orig.initFluid(mu = 8.9e-4)
-orig.initTemporal(total = 0.2, file_dt = 0.01)
+orig.initTemporal(total = 0.2, file_dt = 0.01, dt = 1.0e-7)
 #orig.g[2] = -10.0
 orig.time_file_dt = orig.time_dt*0.99
 orig.time_total = orig.time_dt*10
@@ -30,9 +29,9 @@ ones = numpy.ones((orig.num))
 py.readlast(verbose = False)
 compareNumpyArrays(ones, py.p_f, "Conservation of pressure:")
 
-# Convergence rate (1/2)
-it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
-compare(it[:,1].sum(), 0.0, "Convergence rate (1/2):\t")
+# Convergence rate (1/3)
+#it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
+#compare(it[:,1].sum(), 0.0, "Convergence rate (1/3):\t")
 
 # Fluid flow should be very small
 if ((numpy.abs(py.v_f[:,:,:,:]) < 1.0e-6).all()):
@@ -71,15 +70,16 @@ else:
     print("Flow field:\t\t" + failed())
     raise Exception("Failed")
 
-# Convergence rate (2/2)
+# Convergence rate (2/3)
 # This test passes with BETA=0.0 and tolerance=1.0e-9
-it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
-if ((it[0:6,1] < 1000).all() and (it[6:,1] < 20).all()):
-    print("Convergence rate (2/2):\t" + passed())
-else:
-    print("Convergence rate (2/2):\t" + failed())
+#it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
+#if ((it[0:6,1] < 1000).all() and (it[6:,1] < 20).all()):
+    #print("Convergence rate (2/3):\t" + passed())
+#else:
+    #print("Convergence rate (2/3):\t" + failed())
 
 # Long test
+'''
 orig.p_f[:,:,-1] = 1.1
 orig.time_total[0] = 0.1
 orig.time_file_dt[0] = orig.time_total[0]/10.0
@@ -97,13 +97,13 @@ if ((py.v_f[:,:,:,2] < 0.0).all() and (py.v_f[:,:,:,0:1] < 1.0e-7).all()):
 else:
     print("Flow field:\t\t" + failed())
 
-# Convergence rate (2/2)
+# Convergence rate (3/3)
 # This test passes with BETA=0.0 and tolerance=1.0e-9
-it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
-if (it[0,1] < 700 and it[1,1] < 250 and (it[2:,1] < 20).all()):
-    print("Convergence rate (2/2):\t" + passed())
-else:
-    print("Convergence rate (2/2):\t" + failed())
+#it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
+#if (it[0,1] < 700 and it[1,1] < 250 and (it[2:,1] < 20).all()):
+    #print("Convergence rate (3/3):\t" + passed())
+#else:
+    #print("Convergence rate (3/3):\t" + failed())
 
 # Slow pressure modulation test
 orig.cleanup()
@@ -124,6 +124,7 @@ for it in range(1,py.status()): # gradient should be smooth in all output files
             ideal_grad_p_z - py.p_f[0,0,:],\
             'Slow pressure modulation (' + 
             str(it+1) + '/' + str(py.status()) + '):', tolerance=1.0e-1)
+            '''
 
 # Fast pressure modulation test
 orig.time_total[0] = 1.0e-2
