@@ -13,7 +13,8 @@ print("### CFD tests - Dirichlet BCs ###")
 orig = sphere.sim(np = 0, nd = 3, nw = 0, sid = "cfdtest", fluid = True)
 cleanup(orig)
 orig.defaultParams()
-orig.defineWorldBoundaries([1.0,1.0,1.0], dx=0.1)
+#orig.defineWorldBoundaries([1.0,1.0,1.0], dx=0.1)
+orig.defineWorldBoundaries([0.4,0.3,0.4], dx=0.1)
 orig.initFluid(cfd_solver = 1)
 #orig.initFluid(mu = 8.9e-4)
 orig.initTemporal(total = 0.2, file_dt = 0.01, dt = 1.0e-7)
@@ -21,10 +22,11 @@ orig.initTemporal(total = 0.2, file_dt = 0.01, dt = 1.0e-7)
 orig.time_file_dt = orig.time_dt*0.99
 orig.time_total = orig.time_dt*10
 #orig.run(dry=True)
-orig.run(verbose=False)
+#orig.run(verbose=False)
 #orig.run(verbose=True)
 py = sphere.sim(sid = orig.sid, fluid = True)
 
+'''
 ones = numpy.ones((orig.num))
 py.readlast(verbose = False)
 compareNumpyArrays(ones, py.p_f, "Conservation of pressure:")
@@ -42,17 +44,16 @@ else:
     print(numpy.mean(py.v_f))
     print(numpy.max(py.v_f))
     raise Exception("Failed")
+'''
 
 
 # Add pressure gradient
 # This test passes with BETA=0.0 and tolerance=1.0e-9
-orig.deleteAllParticles()
-#orig.defineWorldBoundaries([0.3,0.3,0.3], dx=0.1)
-orig.initFluid(cfd_solver = 1)
 orig.p_f[:,:,-1] = 1.1
-#orig.time_file_dt = orig.time_dt*0.99
-#orig.time_total = orig.time_dt*1
-#orig.setMaxIterations(10)
+orig.cleanup()
+orig.time_file_dt = orig.time_dt*0.99
+orig.time_total = orig.time_dt*1
+orig.setMaxIterations(10)
 orig.run(verbose=False)
 #orig.run(verbose=True)
 py.readlast(verbose = False)

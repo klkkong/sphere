@@ -116,6 +116,14 @@ void DEM::transferDarcyNormFromGlobalDeviceMemory()
     checkForCudaErrors("End of transferDarcyNormFromGlobalDeviceMemory");
 }
 
+// Transfer the pressures from device to host
+void DEM::transferDarcyPressuresFromGlobalDeviceMemory()
+{
+    cudaMemcpy(darcy.p, dev_darcy_p, sizeof(Float)*darcyCells(),
+            cudaMemcpyDeviceToHost);
+    checkForCudaErrors("End of transferDarcyNormFromGlobalDeviceMemory");
+}
+
 // Get linear index from 3D grid position
 __inline__ __device__ unsigned int d_idx(
         const int x, const int y, const int z)
@@ -812,40 +820,14 @@ __global__ void updateDarcySolution(
         const Float res_norm = (p_new - p)*(p_new - p)/(p_new*p_new + 1.0e-16);
 
         /*printf("\n%d,%d,%d updateDarcySolution\n"
+                "p_old     = %e\n"
                 "p         = %e\n"
                 "p_new     = %e\n"
-                "p_x       = %e, %e\n"
-                "p_y       = %e, %e\n"
-                "p_z       = %e, %e\n"
-                "diffusion = %e\n"
-                "k         = %e\n"
-                //"diff_fac  = %e\n"
-                "forcing   = %e\n"
-                "grad_p    = %e, %e, %e\n"
-                "grad_k    = %e, %e, %e\n"
-                "laplace_p = %e\n"
-                "dphi      = %f\n"
-                "phi       = %f\n"
-                "beta_f    = %e\n"
-                "mu        = %e\n"
-                "dt        = %e\n"
+                "f         = %e\n"
                 "res_norm  = %e\n",
                 x,y,z,
-                p, p_new,
-                p_xn, p_xp,
-                p_yn, p_yp,
-                p_zn, p_zp,
-                diffusion_term,
-                k,
-                //diff_fac,
-                forcing_term,
-                grad_p.x, grad_p.y, grad_p.z,
-                grad_k.x, grad_k.y, grad_k.z,
-                laplace_p,
-                dphi, phi,
-                beta_f,
-                devC_params.mu,
-                devC_dt,
+                p_old, p, p_new,
+                f,
                 res_norm);*/
 
         // save new pressure and the residual
@@ -944,9 +926,9 @@ __global__ void findDarcyVelocities(
 
         // approximate pressure gradient with first order central differences
         const Float3 grad_p = MAKE_FLOAT3(
-                (p_xp - p_xn)/(dx+dx),
-                (p_yp - p_yn)/(dy+dy),
-                (p_zp - p_zn)/(dz+dz));
+                (p_xp - p_xn)/(dx + dx),
+                (p_yp - p_yn)/(dy + dy),
+                (p_zp - p_zn)/(dz + dz));
 
         // Flux [m/s]: q = -k/nu * dH
         // Pore velocity [m/s]: v = q/n

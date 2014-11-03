@@ -1936,6 +1936,11 @@ __host__ void DEM::startTime()
                                 &t_copyValues);
                     checkForCudaErrorsIter("Post copyValues(p_new -> p)", iter);
 
+                    std::cout << "\n###### JACOBI ITERATION "
+                        << nijac << " after copyValues ######" << std::endl;
+                    transferDarcyPressuresFromGlobalDeviceMemory();
+                    printDarcyArray(stdout, darcy.p, "p");
+
                     if (nijac % nijacnorm == 0) {
                         // Read the normalized residuals from the device
                         transferDarcyNormFromGlobalDeviceMemory();
