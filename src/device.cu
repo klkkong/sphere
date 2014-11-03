@@ -1864,7 +1864,7 @@ __host__ void DEM::startTime()
                 // The average normalized residual is initialized to a large
                 // value.
                 //double avg_norm_res;
-                double max_norm_res;
+                //double max_norm_res;
 
                 // Write a log file of the normalized residuals during the
                 // Jacobi iterations

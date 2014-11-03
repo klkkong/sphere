@@ -888,8 +888,9 @@ __global__ void findNewPressure(
                 res_norm);*/
 
 #ifdef CHECK_FLUID_FINITE
-        checkFiniteFloat("p", x, y, z, p);
+        checkFiniteFloat("dp", x, y, z, dp);
 #endif
+    }
 }
 
 // Find cell velocities
