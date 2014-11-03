@@ -3034,6 +3034,7 @@ class sim:
             self.c_phi = numpy.ones(1, dtype=numpy.float64)
             self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
             self.beta_f = numpy.ones(1, dtype=numpy.float64)*4.5e-10
+            self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
             self.k_c = numpy.ones(1, dtype=numpy.float64)*4.6e-10
 
         else:
