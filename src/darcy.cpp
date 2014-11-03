@@ -85,6 +85,28 @@ unsigned int DEM::d_vidx(
     return (x+1) + (darcy.nx+3)*(y+1) + (darcy.nx+3)*(darcy.ny+3)*(z+1); // with ghost nodes
 }
 
+Float DEM::largestDarcyPermeability()
+{
+    Float k_max = 0.0;
+    for (unsigned int z=0; z<grid.num[2]; z++)
+        for (unsigned int y=0; y<grid.num[1]; y++)
+            for (unsigned int x=0; x<grid.num[0]; x++)
+                if (darcy.k[d_idx(x,y,z)] > k_max)
+                    k_max = darcy.k[d_idx(x,y,z)];
+    return k_max;
+}
+
+Float DEM::smallestDarcyPorosity()
+{
+    Float phi_min = 10.0;
+    for (unsigned int z=0; z<grid.num[2]; z++)
+        for (unsigned int y=0; y<grid.num[1]; y++)
+            for (unsigned int x=0; x<grid.num[0]; x++)
+                if (darcy.phi[d_idx(x,y,z)] < phi_min)
+                    phi_min = darcy.phi[d_idx(x,y,z)];
+    return phi_min;
+}
+
 // Determine if the FTCS (forward time, central space) solution of the Navier
 // Stokes equations is unstable
 void DEM::checkDarcyStability()
@@ -94,42 +116,18 @@ void DEM::checkDarcyStability()
     const Float dy = grid.L[1]/grid.num[1];
     const Float dz = grid.L[2]/grid.num[2];
 
-    // The smallest grid spacing
-    const Float dmin = fmin(dx, fmin(dy, dz));
+    const Float alpha_max = largestDarcyPermeability()
+        /(darcy.beta_f*smallestDarcyPorosity()*darcy.mu);
 
     // Check the diffusion term using von Neumann stability analysis
-    if (darcy.mu*time.dt/(dmin*dmin) > 0.5) {
+    //if (darcy.mu*time.dt/(dmin*dmin) > 0.5) {
+    if (time.dt >= 1.0/(2.0*alpha_max) *
+            1.0/(1.0/(dx*dx) + 1.0/(dy*dy) + 1.0/(dz*dz))) {
         std::cerr << "Error: The time step is too large to ensure stability in "
             "the diffusive term of the fluid momentum equation.\n"
-            "Decrease the viscosity, decrease the time step, and/or increase "
+            "Increase the viscosity, decrease the time step, and/or increase "
             "the fluid grid cell size." << std::endl;
         exit(1);
-    }
-
-    int x,y,z;
-    Float3 v;
-    for (x=0; x<darcy.nx; ++x) {
-        for (y=0; y<darcy.ny; ++y) {
-            for (z=0; z<darcy.nz; ++z) {
-
-                v = darcy.v[d_idx(x,y,z)];
-
-                // Check the advection term using the Courant-Friedrichs-Lewy
-                // condition
-                if (v.x*time.dt/dx + v.y*time.dt/dy + v.z*time.dt/dz > 1.0) {
-                    std::cerr << "Error: The time step is too large to ensure "
-                        "stability in the advective term of the fluid momentum "
-                        "equation.\n"
-                        "This is caused by too high fluid velocities. "
-                        "You can try to decrease the time step, and/or "
-                        "increase the fluid grid cell size.\n"
-                        "v(" << x << ',' << y << ',' << z << ") = ["
-                        << v.x << ',' << v.y << ',' << v.z << "] m/s"
-                        << std::endl;
-                    exit(1);
-                }
-            }
-        }
     }
 }
 

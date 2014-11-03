@@ -309,6 +309,8 @@ class DEM {
 
         // Darcy functions
         void initDarcyMem();
+        Float largestDarcyPermeability();
+        Float smallestDarcyPorosity();
         void initDarcyMemDev();
         unsigned int darcyCells();
         unsigned int darcyCellsVelocity();

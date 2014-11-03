@@ -718,6 +718,7 @@ __host__ void DEM::transferFromGlobalDeviceMemory()
     }
     else if (fluid == 1 && cfd_solver == 1) {
         transferDarcyFromGlobalDeviceMemory(0);
+        checkDarcyStability();
     }
 
     //checkForCudaErrors("End of transferFromGlobalDeviceMemory");
