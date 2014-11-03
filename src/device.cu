@@ -1876,6 +1876,20 @@ __host__ void DEM::startTime()
 
                 for (unsigned int nijac = 0; nijac<darcy.maxiter; ++nijac) {
 
+                    if (nijac == 0) {
+                        if (PROFILING == 1)
+                            startTimer(&kernel_tic);
+                        copyValues<Float><<<dimGridFluid, dimBlockFluid>>>(
+                                dev_darcy_p,
+                                dev_darcy_p_old);
+                        cudaThreadSynchronize();
+                        if (PROFILING == 1)
+                            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                    &t_copyValues);
+                        checkForCudaErrorsIter("Post copyValues(p -> p_old)",
+                                iter);
+                    }
+
                     if (PROFILING == 1)
                         startTimer(&kernel_tic);
                     setDarcyGhostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
@@ -1890,6 +1904,7 @@ __host__ void DEM::startTime()
                     if (PROFILING == 1)
                         startTimer(&kernel_tic);
                     updateDarcySolution<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_darcy_p_old,
                             dev_darcy_p,
                             dev_darcy_k,
                             dev_darcy_phi,

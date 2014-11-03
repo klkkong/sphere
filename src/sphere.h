@@ -294,6 +294,7 @@ class DEM {
         Darcy darcy;
 
         // Darcy values, device
+        Float*  dev_darcy_p_old;     // Previous cell hydraulic pressure
         Float*  dev_darcy_p;         // Cell hydraulic pressure
         Float*  dev_darcy_p_new;     // Updated cell hydraulic pressure
         Float3* dev_darcy_v;         // Cell fluid velocity

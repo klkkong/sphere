@@ -22,6 +22,7 @@ void DEM::initDarcyMemDev(void)
     // size of cell-face arrays in staggered grid discretization
     //unsigned int memSizeFface = sizeof(Float)*darcyCellsVelocity();
 
+    cudaMalloc((void**)&dev_darcy_p_old, memSizeF); // old pressure
     cudaMalloc((void**)&dev_darcy_p, memSizeF);     // hydraulic pressure
     cudaMalloc((void**)&dev_darcy_p_new, memSizeF); // updated pressure
     cudaMalloc((void**)&dev_darcy_v, memSizeF*3);   // cell hydraulic velocity
@@ -41,6 +42,7 @@ void DEM::initDarcyMemDev(void)
 // Free memory
 void DEM::freeDarcyMemDev()
 {
+    cudaFree(dev_darcy_p_old);
     cudaFree(dev_darcy_p);
     cudaFree(dev_darcy_p_new);
     cudaFree(dev_darcy_v);
@@ -707,6 +709,7 @@ __global__ void findDarcyPermeabilityGradients(
 // dev_darcy_p_new.
 // bc = 0: Dirichlet, 1: Neumann
 __global__ void updateDarcySolution(
+        const Float*  __restrict__ dev_darcy_p_old,   // in
         const Float*  __restrict__ dev_darcy_p,       // in
         const Float*  __restrict__ dev_darcy_k,       // in
         const Float*  __restrict__ dev_darcy_phi,     // in
@@ -748,13 +751,27 @@ __global__ void updateDarcySolution(
         const Float  phi    = dev_darcy_phi[cellidx];
         const Float  dphi   = dev_darcy_dphi[cellidx];
 
-        const Float p_xn = dev_darcy_p[d_idx(x-1,y,z)];
-        const Float p    = dev_darcy_p[cellidx];
-        const Float p_xp = dev_darcy_p[d_idx(x+1,y,z)];
-        const Float p_yn = dev_darcy_p[d_idx(x,y-1,z)];
-        const Float p_yp = dev_darcy_p[d_idx(x,y+1,z)];
+        const Float p_old = dev_darcy_p_old[cellidx];
+
+        const Float p_xn  = dev_darcy_p[d_idx(x-1,y,z)];
+        const Float p     = dev_darcy_p[cellidx];
+        const Float p_xp  = dev_darcy_p[d_idx(x+1,y,z)];
+        const Float p_yn  = dev_darcy_p[d_idx(x,y-1,z)];
+        const Float p_yp  = dev_darcy_p[d_idx(x,y+1,z)];
         Float p_zn = dev_darcy_p[d_idx(x,y,z-1)];
         Float p_zp = dev_darcy_p[d_idx(x,y,z+1)];
+
+        // gradient approximated by first-order central difference
+        const Float3 grad_p = MAKE_FLOAT3(
+                (p_xp - p_xn)/(dx+dx),
+                (p_yp - p_yn)/(dy+dy),
+                (p_zp - p_zn)/(dz+dz));
+
+        // find forcing function value
+        const Float f = 
+            beta_f*phi*mu/k*(p - p_old)/devC_dt  // transient term
+            + mu/((1.0 - phi)*k)*dphi/devC_dt    // particle forcing term
+            - dot(grad_p, grad_k)/k;             // diffusive term
 
         //const Float div_v_p = dev_darcy_div_v_p[cellidx];
 
@@ -764,34 +781,26 @@ __global__ void updateDarcySolution(
         if (z == nz-1 && bc_top == 1)
             p_zp = p;
 
-        // find div(k*grad(p)). Using vector identities:
-        // div(k*grad(p)) = k*laplace(p) + dot(grad(k), grad(p))
+        // New value of epsilon in 3D update, derived by rearranging the
+        // 3d discrete finite difference Laplacian
+        const Float dxdx = dx*dx;
+        const Float dydy = dy*dy;
+        const Float dzdz = dz*dz;
+        Float p_new
+            = (-dxdx*dydy*dzdz*f
+               + dydy*dzdz*(p_xn + p_xp)
+               + dxdx*dzdz*(p_yn + p_yp)
+               + dxdx*dydy*(p_zn + p_zp))
+            /(2.0*(dxdx*dydy + dxdx*dzdz + dydy*dzdz));
 
-        // discrete laplacian by a finite difference seven-point stencil
-        const Float laplace_p =
-            (p_xp - (p+p) + p_xn)/(dx*dx) +
-            (p_yp - (p+p) + p_yn)/(dy*dy) +
-            (p_zp - (p+p) + p_zn)/(dz*dz);
+        // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
+        // grid if the wall isn't dynamic
+        if (z == wall0_iz)
+            p_new = p;
 
-        // gradient approximated by first-order central difference
-        const Float3 grad_p = MAKE_FLOAT3(
-                (p_xp - p_xn)/(dx+dx),
-                (p_yp - p_yn)/(dy+dy),
-                (p_zp - p_zn)/(dz+dz));
-
-        // find new value for p from Goren et al 2011 eq. 15 or 18.
-        // the diffusivity shouldn't exceed 0.1
-        const Float diffusion_term =
-            devC_dt*ndem/(beta_f*phi*mu)
-            *(k*laplace_p + dot(grad_k, grad_p));
-
-        const Float forcing_term = 
-            //- devC_dt*ndem/(beta_f*phi)*div_v_p; // div(v_p) as forcing
-            //- dphi*ndem/(beta_f*phi*(1.0 - phi));// porosity change as forcing
-            - dphi/(beta_f*phi*(1.0 - phi));  // porosity change as forcing
-
-        // updated pressure value
-        Float p_new = p + diffusion_term + forcing_term;
+        // Neumann BC at dynamic top wall
+        //if (z == wall0_iz + 1)
+            //p_new = p_zn + dp_dz;
 
         // Dirichlet BCs
         if ((z == 0 && bc_bot == 0) ||
