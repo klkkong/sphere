@@ -22,6 +22,7 @@ void DEM::initDarcyMemDev(void)
     // size of cell-face arrays in staggered grid discretization
     //unsigned int memSizeFface = sizeof(Float)*darcyCellsVelocity();
 
+    cudaMalloc((void**)&dev_darcy_dpdt, memSizeF);  // Backwards Euler gradient
     cudaMalloc((void**)&dev_darcy_p_old, memSizeF); // old pressure
     cudaMalloc((void**)&dev_darcy_p, memSizeF);     // hydraulic pressure
     cudaMalloc((void**)&dev_darcy_p_new, memSizeF); // updated pressure
@@ -42,6 +43,7 @@ void DEM::initDarcyMemDev(void)
 // Free memory
 void DEM::freeDarcyMemDev()
 {
+    cudaFree(dev_darcy_dpdt);
     cudaFree(dev_darcy_p_old);
     cudaFree(dev_darcy_p);
     cudaFree(dev_darcy_p_new);
@@ -153,7 +155,8 @@ __inline__ __device__ unsigned int d_vidx(
 
 // The normalized residuals are given an initial value of 0, since the values at
 // the Dirichlet boundaries aren't written during the iterations.
-__global__ void setDarcyNormZero(Float* __restrict__ dev_darcy_norm)
+__global__ void setDarcyNormZero(
+        Float* __restrict__ dev_darcy_norm)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -163,7 +166,6 @@ __global__ void setDarcyNormZero(Float* __restrict__ dev_darcy_norm)
     // check that we are not outside the fluid grid
     if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
         __syncthreads();
-        const unsigned int cellidx = d_idx(x,y,z);
         dev_darcy_norm[d_idx(x,y,z)] = 0.0;
     }
 }
@@ -713,11 +715,44 @@ __global__ void findDarcyPermeabilityGradients(
     }
 }
 
+// Find the temporal gradient in pressure using the backwards Euler method
+__global__ void findDarcyPressureChange(
+        const Float* __restrict__ dev_darcy_p_old,
+        const Float* __restrict__ dev_darcy_p,
+        Float* __restrict__ dev_darcy_dpdt)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
+
+        // 1D thread index
+        const unsigned int cellidx = d_idx(x,y,z);
+
+        // read values
+        __syncthreads();
+        const Float p_old = dev_darcy_p_old[cellidx];
+        const Float p     = dev_darcy_p[cellidx];
+
+        const Float dpdt = (p - p_old)/devC_dt;
+
+        // write result
+        __syncthreads();
+        dev_darcy_dpdt[cellidx] = dpdt;
+
+#ifdef CHECK_FLUID_FINITE
+        checkFiniteFloat("dpdt", x, y, z, dpdt);
+#endif
+    }
+}
+
 // A single jacobi iteration where the pressure values are updated to
 // dev_darcy_p_new.
 // bc = 0: Dirichlet, 1: Neumann
 __global__ void updateDarcySolution(
-        const Float*  __restrict__ dev_darcy_p_old,   // in
+        const Float*  __restrict__ dev_darcy_dpdt,    // in
         const Float*  __restrict__ dev_darcy_p,       // in
         const Float*  __restrict__ dev_darcy_k,       // in
         const Float*  __restrict__ dev_darcy_phi,     // in
@@ -759,7 +794,7 @@ __global__ void updateDarcySolution(
         const Float  phi    = dev_darcy_phi[cellidx];
         const Float  dphi   = dev_darcy_dphi[cellidx];
 
-        const Float p_old = dev_darcy_p_old[cellidx];
+        const Float dpdt  = dev_darcy_dpdt[cellidx];
 
         const Float p_xn  = dev_darcy_p[d_idx(x-1,y,z)];
         const Float p     = dev_darcy_p[cellidx];
@@ -776,10 +811,10 @@ __global__ void updateDarcySolution(
                 (p_zp - p_zn)/(dz+dz));
 
         // find forcing function value
-        const Float f = 
-            beta_f*phi*mu/k*(p - p_old)/devC_dt  // transient term
-            + mu/((1.0 - phi)*k)*dphi/devC_dt    // particle forcing term
-            - dot(grad_p, grad_k)/k;             // diffusive term
+        const Float f_transient = beta_f*phi*mu/k*dpdt;
+        const Float f_forcing = mu/((1.0 - phi)*k)*dphi/devC_dt;
+        const Float f_diff = -1.0*dot(grad_p, grad_k)/k;
+        const Float f = f_transient + f_forcing + f_diff;
 
         //const Float div_v_p = dev_darcy_div_v_p[cellidx];
 
@@ -819,16 +854,20 @@ __global__ void updateDarcySolution(
         // normalized residual, avoid division by zero
         const Float res_norm = (p_new - p)*(p_new - p)/(p_new*p_new + 1.0e-16);
 
-        /*printf("\n%d,%d,%d updateDarcySolution\n"
-                "p_old     = %e\n"
-                "p         = %e\n"
-                "p_new     = %e\n"
-                "f         = %e\n"
-                "res_norm  = %e\n",
+        printf("\n%d,%d,%d updateDarcySolution\n"
+                "dpdt        = %e\n"
+                "p           = %e\n"
+                "p_new       = %e\n"
+                "f           = %e\n"
+                "f_transient = %e\n"
+                "f_forcing   = %e\n"
+                "f_diff      = %e\n"
+                "res_norm    = %e\n",
                 x,y,z,
-                p_old, p, p_new,
+                dpdt, p, p_new,
                 f,
-                res_norm);*/
+                f_transient, f_forcing, f_diff,
+                res_norm);
 
         // save new pressure and the residual
         __syncthreads();

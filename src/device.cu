@@ -875,7 +875,7 @@ __host__ void DEM::startTime()
     double t_setDarcyTopPressure = 0.0;
     double t_findDarcyPermeabilities = 0.0;
     double t_findDarcyPermeabilityGradients = 0.0;
-    //double t_findDarcyForcing = 0.0;
+    double t_findDarcyPressureChange = 0.0;
     double t_updateDarcySolution = 0.0;
     double t_copyValues = 0.0;
     double t_findDarcyVelocities = 0.0;
@@ -1860,7 +1860,31 @@ __host__ void DEM::startTime()
                             dev_darcy_norm);
                     cudaThreadSynchronize();
                     checkForCudaErrorsIter("Post setDarcyNormZero", iter);
+
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
+                    copyValues<Float><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_darcy_p,
+                            dev_darcy_p_old);
+                    cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_copyValues);
+                    checkForCudaErrorsIter("Post copyValues(p -> p_old)",
+                            iter);
                 }
+
+                if (PROFILING == 1)
+                    startTimer(&kernel_tic);
+                findDarcyPressureChange<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_darcy_p_old,
+                        dev_darcy_p,
+                        dev_darcy_dpdt);
+                cudaThreadSynchronize();
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_findDarcyPressureChange);
+                checkForCudaErrorsIter("Post findDarcyPressureChange", iter);
 
                 // Solve the system of epsilon using a Jacobi iterative solver.
                 // The average normalized residual is initialized to a large
@@ -1904,7 +1928,7 @@ __host__ void DEM::startTime()
                     if (PROFILING == 1)
                         startTimer(&kernel_tic);
                     updateDarcySolution<<<dimGridFluid, dimBlockFluid>>>(
-                            dev_darcy_p_old,
+                            dev_darcy_dpdt,
                             dev_darcy_p,
                             dev_darcy_k,
                             dev_darcy_phi,
@@ -2232,7 +2256,8 @@ __host__ void DEM::startTime()
             t_findDarcyPorosities + t_setDarcyGhostNodes +
             t_findDarcyPressureForce + t_setDarcyTopPressure +
             t_findDarcyPermeabilities + t_findDarcyPermeabilityGradients +
-            t_updateDarcySolution + t_copyValues + t_findDarcyVelocities;
+            t_findDarcyPressureChange + t_updateDarcySolution + t_copyValues +
+            t_findDarcyVelocities;
 
         cout << "\nKernel profiling statistics:\n"
             << "  - calcParticleCellID:\t\t" << t_calcParticleCellID/1000.0
@@ -2304,6 +2329,9 @@ __host__ void DEM::startTime()
                 << "  - findDarcyPermeabilityGrads:\t" <<
                 t_findDarcyPermeabilityGradients/1000.0 << " s" << "\t(" <<
                 100.0*t_findDarcyPermeabilityGradients/t_sum << " %)\n"
+                << "  - findDarcyPressureChange:\t" <<
+                t_findDarcyPressureChange/1000.0 << " s" << "\t(" <<
+                100.0*t_findDarcyPressureChange/t_sum << " %)\n"
                 << "  - updateDarcySolution:\t" <<
                 t_updateDarcySolution/1000.0 << " s" << "\t(" <<
                 100.0*t_updateDarcySolution/t_sum << " %)\n"
@@ -2316,7 +2344,7 @@ __host__ void DEM::startTime()
         }
     }
 
-    // Free GPU device memory  
+    // Free GPU device memory
     freeGlobalDeviceMemory();
     checkForCudaErrorsIter("After freeGlobalDeviceMemory()", iter);
 
