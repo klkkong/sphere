@@ -29,6 +29,7 @@ void DEM::initDarcyMem()
     darcy.dphi  = new Float[ncells];     // porosity change
     darcy.norm  = new Float[ncells];     // normalized residual of epsilon
     darcy.f_p   = new Float4[np];        // pressure force on particles
+    darcy.k     = new Float[ncells];     // hydraulic pressure
 }
 
 unsigned int DEM::darcyCells()
@@ -57,6 +58,7 @@ void DEM::freeDarcyMem()
     delete[] darcy.dphi;
     delete[] darcy.norm;
     delete[] darcy.f_p;
+    delete[] darcy.k;
 }
 
 // 3D index to 1D index
