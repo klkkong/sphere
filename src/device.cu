@@ -1872,7 +1872,7 @@ __host__ void DEM::startTime()
                 if (write_res_log == 1)
                     reslog.open("max_res_norm.dat");
 
-                for (unsigned int nijac = 0; nijac<darcy.maxiter; ++nijac) {
+                //for (unsigned int nijac = 0; nijac<darcy.maxiter; ++nijac) {
 
                     if (PROFILING == 1)
                         startTimer(&kernel_tic);
@@ -1919,7 +1919,7 @@ __host__ void DEM::startTime()
                                 &t_copyValues);
                     checkForCudaErrorsIter("Post copyValues(p_new -> p)", iter);
 
-                    if (nijac % nijacnorm == 0) {
+                    /*if (nijac % nijacnorm == 0) {
                         // Read the normalized residuals from the device
                         transferDarcyNormFromGlobalDeviceMemory();
 
@@ -1963,7 +1963,7 @@ __host__ void DEM::startTime()
                         reslog.close();
 
                     //break; // end after first iteration
-                }
+                }*/
 
                 if (PROFILING == 1)
                     startTimer(&kernel_tic);
