@@ -341,7 +341,7 @@ class sim:
                 self.beta = numpy.array(0.0)
 
                 # Tolerance criteria for the normalized max. residual
-                self.tolerance = numpy.array(1.0e-8)
+                self.tolerance = numpy.array(1.0e-3)
 
                 # The maximum number of iterations to perform per time step
                 self.maxiter = numpy.array(1e4)
@@ -368,7 +368,7 @@ class sim:
             elif self.cfd_solver[0] == 1:
 
                 # Tolerance criteria for the normalized max. residual
-                self.tolerance = numpy.array(1.0e-8)
+                self.tolerance = numpy.array(1.0e-3)
 
                 # The maximum number of iterations to perform per time step
                 self.maxiter = numpy.array(1e4)
@@ -3014,7 +3014,7 @@ class sim:
             self.gamma = numpy.array(0.0)
             self.theta = numpy.array(1.0)
             self.beta = numpy.array(0.0)
-            self.tolerance = numpy.array(1.0e-8)
+            self.tolerance = numpy.array(1.0e-3)
             self.maxiter = numpy.array(1e4)
             self.ndem = numpy.array(1)
 
@@ -3028,7 +3028,7 @@ class sim:
             self.f_sum = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
 
         elif self.cfd_solver[0] == 1:
-            self.tolerance = numpy.array(1.0e-8)
+            self.tolerance = numpy.array(1.0e-3)
             self.maxiter = numpy.array(1e4)
             self.ndem = numpy.array(1)
             self.c_phi = numpy.ones(1, dtype=numpy.float64)
@@ -5080,7 +5080,7 @@ class sim:
         the required value of the maximum normalized residual for the fluid
         solver.
 
-        The default and recommended value is 1.0e-8.
+        The default and recommended value is 1.0e-3.
 
         :param tolerance: The tolerance criteria for the maximal normalized
             residual
