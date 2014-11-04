@@ -1993,6 +1993,18 @@ __host__ void DEM::startTime()
                                     && iter % conv_log_interval == 0)
                                 convlog << iter+1 << '\t' << nijac << std::endl;
 
+                            if (PROFILING == 1)
+                                startTimer(&kernel_tic);
+                            setDarcyGhostNodes<Float>
+                                <<<dimGridFluid, dimBlockFluid>>>
+                                (dev_darcy_p, darcy.bc_bot, darcy.bc_top);
+                            cudaThreadSynchronize();
+                            if (PROFILING == 1)
+                                stopTimer(&kernel_tic, &kernel_toc,
+                                        &kernel_elapsed, &t_setDarcyGhostNodes);
+                            checkForCudaErrorsIter("Post setDarcyGhostNodes("
+                                    "dev_darcy_p) at Jacobi loop end", iter);
+
                             break;  // solution has converged, exit Jacobi loop
                         }
                     }
