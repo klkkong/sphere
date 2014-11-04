@@ -2864,7 +2864,8 @@ __global__ void findNormalizedResiduals(
 
         // Find the normalized residual value. A small value is added to the
         // denominator to avoid a divide by zero.
-        const Float res_norm = (e_new - e)*(e_new - e)/(e_new*e_new + 1.0e-16);
+        //const Float res_norm = (e_new - e)*(e_new - e)/(e_new*e_new + 1.0e-16);
+        const Float res_norm = (e_new - e)/(e + 1.0e-16);
 
         __syncthreads();
         dev_ns_norm[cellidx] = res_norm;
