@@ -22,11 +22,10 @@ orig.initTemporal(total = 0.2, file_dt = 0.01, dt = 1.0e-7)
 orig.time_file_dt = orig.time_dt*0.99
 orig.time_total = orig.time_dt*10
 #orig.run(dry=True)
-#orig.run(verbose=False)
+orig.run(verbose=False)
 #orig.run(verbose=True)
 py = sphere.sim(sid = orig.sid, fluid = True)
 
-'''
 ones = numpy.ones((orig.num))
 py.readlast(verbose = False)
 compareNumpyArrays(ones, py.p_f, "Conservation of pressure:")
@@ -44,7 +43,6 @@ else:
     print(numpy.mean(py.v_f))
     print(numpy.max(py.v_f))
     raise Exception("Failed")
-'''
 
 
 # Add pressure gradient
@@ -54,9 +52,8 @@ orig.setTolerance(1.0e-8)
 orig.cleanup()
 #orig.time_file_dt = orig.time_dt*0.99
 #orig.time_total = orig.time_dt*1
-#orig.setMaxIterations(10)
-#orig.run(verbose=False)
-orig.run(verbose=True)
+orig.run(verbose=False)
+#orig.run(verbose=True)
 py.readlast(verbose = False)
 ideal_grad_p_z = numpy.linspace(orig.p_f[0,0,0], orig.p_f[0,0,-1], orig.num[2])
 #orig.writeVTKall()
@@ -78,10 +75,11 @@ if ((it[0:6,1] < 1000).all() and (it[6:,1] < 20).all()):
     print("Convergence rate (2/3):\t" + passed())
 else:
     print("Convergence rate (2/3):\t" + failed())
+#'''
 
 # Long test
-'''
-orig.p_f[:,:,-1] = 1.1
+#'''
+#orig.p_f[:,:,-1] = 1.1
 orig.time_total[0] = 0.1
 orig.time_file_dt[0] = orig.time_total[0]/10.0
 orig.run(verbose=False)
@@ -100,12 +98,14 @@ else:
 
 # Convergence rate (3/3)
 # This test passes with BETA=0.0 and tolerance=1.0e-9
-#it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
-#if (it[0,1] < 700 and it[1,1] < 250 and (it[2:,1] < 20).all()):
-    #print("Convergence rate (3/3):\t" + passed())
-#else:
-    #print("Convergence rate (3/3):\t" + failed())
+it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
+if (it[0,1] < 700 and it[1,1] < 250 and (it[2:,1] < 20).all()):
+    print("Convergence rate (3/3):\t" + passed())
+else:
+    print("Convergence rate (3/3):\t" + failed())
+#'''
 
+'''
 # Slow pressure modulation test
 orig.cleanup()
 orig.time_total[0] = 1.0e-1
@@ -125,8 +125,9 @@ for it in range(1,py.status()): # gradient should be smooth in all output files
             ideal_grad_p_z - py.p_f[0,0,:],\
             'Slow pressure modulation (' + 
             str(it+1) + '/' + str(py.status()) + '):', tolerance=1.0e-1)
-            '''
+'''
 
+'''
 # Fast pressure modulation test
 orig.time_total[0] = 1.0e-2
 orig.time_file_dt[0] = 0.101*orig.time_total[0]
@@ -145,5 +146,6 @@ for it in range(1,py.status()+1): # gradient should be smooth in all output file
             ideal_grad_p_z - py.p_f[0,0,:],\
             'Fast pressure modulation (' + 
             str(it) + '/' + str(py.status()) + '):', tolerance=5.0e-1)
+'''
 
 cleanup(orig)

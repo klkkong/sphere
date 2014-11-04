@@ -235,7 +235,7 @@ double DEM::maxNormResDarcy()
     for (int z=0; z<grid.num[2]; ++z) {
         for (int y=0; y<grid.num[1]; ++y) {
             for (int x=0; x<grid.num[0]; ++x) {
-                norm_res = static_cast<double>(darcy.norm[d_idx(x,y,z)]);
+                norm_res = fabs(static_cast<double>(darcy.norm[d_idx(x,y,z)]));
                 if (norm_res != norm_res) {
                     std::cerr << "\nError: normalized residual is NaN ("
                         << norm_res << ") in cell "
