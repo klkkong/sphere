@@ -1510,8 +1510,6 @@ __host__ void DEM::startTime()
 
                     for (unsigned int nijac = 0; nijac<ns.maxiter; ++nijac) {
 
-                        //printf("### Jacobi iteration %d\n", nijac);
-
                         // Only grad(epsilon) changes during the Jacobi iterations.
                         // The remaining terms of the forcing function are only
                         // calculated during the first iteration.
@@ -1746,6 +1744,12 @@ __host__ void DEM::startTime()
             // Darcy solution
             else if (cfd_solver == 1) { 
 
+#if defined(REPORT_EPSILON) || defined(REPORT_FORCING_TERMS)
+                    std::cout
+                        << "\n\n@@@@@@ TIME STEP " << iter << " @@@"
+                        << std::endl;
+#endif
+
                 if (PROFILING == 1)
                     startTimer(&kernel_tic);
                 findDarcyPorosities<<<dimGridFluid, dimBlockFluid>>>(
@@ -1879,6 +1883,7 @@ __host__ void DEM::startTime()
                 findDarcyPressureChange<<<dimGridFluid, dimBlockFluid>>>(
                         dev_darcy_p_old,
                         dev_darcy_p,
+                        iter,
                         dev_darcy_dpdt);
                 cudaThreadSynchronize();
                 if (PROFILING == 1)

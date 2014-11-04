@@ -50,12 +50,13 @@ else:
 # Add pressure gradient
 # This test passes with BETA=0.0 and tolerance=1.0e-9
 orig.p_f[:,:,-1] = 1.1
+orig.setTolerance(1.0e-4)
 orig.cleanup()
-orig.time_file_dt = orig.time_dt*0.99
-orig.time_total = orig.time_dt*1
-orig.setMaxIterations(10)
-orig.run(verbose=False)
-#orig.run(verbose=True)
+#orig.time_file_dt = orig.time_dt*0.99
+#orig.time_total = orig.time_dt*1
+#orig.setMaxIterations(10)
+#orig.run(verbose=False)
+orig.run(verbose=True)
 py.readlast(verbose = False)
 ideal_grad_p_z = numpy.linspace(orig.p_f[0,0,0], orig.p_f[0,0,-1], orig.num[2])
 #orig.writeVTKall()

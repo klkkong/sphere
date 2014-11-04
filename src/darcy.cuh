@@ -719,6 +719,7 @@ __global__ void findDarcyPermeabilityGradients(
 __global__ void findDarcyPressureChange(
         const Float* __restrict__ dev_darcy_p_old,
         const Float* __restrict__ dev_darcy_p,
+        const unsigned int iter,
         Float* __restrict__ dev_darcy_dpdt)
 {
     // 3D thread index
@@ -736,7 +737,12 @@ __global__ void findDarcyPressureChange(
         const Float p_old = dev_darcy_p_old[cellidx];
         const Float p     = dev_darcy_p[cellidx];
 
-        const Float dpdt = (p - p_old)/devC_dt;
+        Float dpdt = (p - p_old)/devC_dt;
+
+        // Ignore the large initial pressure gradients caused by solver "warm
+        // up" towards hydrostatic pressure distribution
+        if (iter < 2)
+            dpdt = 0.0;
 
         // write result
         __syncthreads();
