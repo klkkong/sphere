@@ -34,8 +34,7 @@ sim.cleanup()
 sim.adjustUpperWall()
 sim.zeroKinematics()
 
-#sim.shear(1.0/20.0)
-sim.shear(0.0/20.0)
+sim.shear(1.0/20.0)
 
 if fluid:
     #sim.num[2] *= 2
