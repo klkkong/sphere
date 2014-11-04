@@ -748,6 +748,15 @@ __global__ void findDarcyPressureChange(
         __syncthreads();
         dev_darcy_dpdt[cellidx] = dpdt;
 
+        /*printf("%d,%d,%d\n"
+                "\tp_old = %e\n"
+                "\tp     = %e\n"
+                "\tdt    = %e\n"
+                "\tdpdt  = %e\n",
+                x,y,z,
+                p_old, p,
+                devC_dt, dpdt);*/
+
 #ifdef CHECK_FLUID_FINITE
         checkFiniteFloat("dpdt", x, y, z, dpdt);
 #endif
@@ -858,7 +867,8 @@ __global__ void updateDarcySolution(
             p_new = p;
 
         // normalized residual, avoid division by zero
-        const Float res_norm = (p_new - p)*(p_new - p)/(p_new*p_new + 1.0e-16);
+        //const Float res_norm = (p_new - p)*(p_new - p)/(p_new*p_new + 1.0e-16);
+        const Float res_norm = (p_new - p)/(p + 1.0e-16);
 
 #ifdef REPORT_FORCING_TERMS
         printf("\n%d,%d,%d updateDarcySolution\n"
@@ -871,7 +881,8 @@ __global__ void updateDarcySolution(
                 "f_diff      = %e\n"
                 "res_norm    = %e\n",
                 x,y,z,
-                dpdt, p, p_new,
+                dpdt,
+                p, p_new,
                 f,
                 f_transient, f_forcing, f_diff,
                 res_norm);
