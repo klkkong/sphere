@@ -767,7 +767,8 @@ __global__ void findDarcyPressureChange(
 // dev_darcy_p_new.
 // bc = 0: Dirichlet, 1: Neumann
 __global__ void updateDarcySolution(
-        const Float*  __restrict__ dev_darcy_dpdt,    // in
+        const Float*  __restrict__ dev_darcy_p_old,   // in
+        //const Float*  __restrict__ dev_darcy_dpdt,    // in
         const Float*  __restrict__ dev_darcy_p,       // in
         const Float*  __restrict__ dev_darcy_k,       // in
         const Float*  __restrict__ dev_darcy_phi,     // in
@@ -809,7 +810,9 @@ __global__ void updateDarcySolution(
         const Float  phi    = dev_darcy_phi[cellidx];
         const Float  dphi   = dev_darcy_dphi[cellidx];
 
-        const Float dpdt  = dev_darcy_dpdt[cellidx];
+        //const Float dpdt  = dev_darcy_dpdt[cellidx];
+
+        const Float p_old = dev_darcy_p_old[cellidx];
 
         const Float p_xn  = dev_darcy_p[d_idx(x-1,y,z)];
         const Float p     = dev_darcy_p[cellidx];
@@ -825,11 +828,16 @@ __global__ void updateDarcySolution(
                 (p_yp - p_yn)/(dy+dy),
                 (p_zp - p_zn)/(dz+dz));
 
+        const Float laplace_p =
+                (p_xp - (p+p) + p_xn)/(dx*dx) +
+                (p_yp - (p+p) + p_yn)/(dy*dy) +
+                (p_zp - (p+p) + p_zn)/(dz*dz);
+
         // find forcing function value
-        const Float f_transient = beta_f*phi*mu/k*dpdt;
+        /*const Float f_transient = beta_f*phi*mu/k*dpdt;
         const Float f_forcing = mu/((1.0 - phi)*k)*dphi/devC_dt;
         const Float f_diff = -1.0*dot(grad_p, grad_k)/k;
-        const Float f = f_transient + f_forcing + f_diff;
+        const Float f = f_transient + f_forcing + f_diff;*/
 
         //const Float div_v_p = dev_darcy_div_v_p[cellidx];
 
@@ -841,7 +849,7 @@ __global__ void updateDarcySolution(
 
         // New value of epsilon in 3D update, derived by rearranging the
         // 3d discrete finite difference Laplacian
-        const Float dxdx = dx*dx;
+        /*const Float dxdx = dx*dx;
         const Float dydy = dy*dy;
         const Float dzdz = dz*dz;
         Float p_new
@@ -849,7 +857,11 @@ __global__ void updateDarcySolution(
                + dydy*dzdz*(p_xn + p_xp)
                + dxdx*dzdz*(p_yn + p_yp)
                + dxdx*dydy*(p_zn + p_zp))
-            /(2.0*(dxdx*dydy + dxdx*dzdz + dydy*dzdz));
+            /(2.0*(dxdx*dydy + dxdx*dzdz + dydy*dzdz));*/
+
+        Float p_new = p_old
+            + devC_dt/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
+            - dphi/(beta_f*phi*(1.0 - phi));
 
         // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
         // grid if the wall isn't dynamic
