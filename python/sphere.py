@@ -3226,6 +3226,26 @@ class sim:
         # Debonding distance
         self.db[0] = (1.0 + theta/2.0) * self.V_b**(1.0/3.0)
 
+    def setStiffnessNormal(self, k_n):
+        '''
+        Set the elastic stiffness (`k_n`) in the normal direction of the
+        contact.
+
+        :param k_n: The elastic stiffness coefficient [N/m]
+        :type k_n: float
+        '''
+        self.k_n[0] = k_n
+
+    def setStiffnessTangential(self, k_t):
+        '''
+        Set the elastic stiffness (`k_t`) in the tangential direction of the
+        contact.
+
+        :param k_t: The elastic stiffness coefficient [N/m]
+        :type k_t: float
+        '''
+        self.k_t[0] = k_t
+
     def setDampingNormal(self, gamma, over_damping=False):
         '''
         Set the dampening coefficient (gamma) in the normal direction of the
