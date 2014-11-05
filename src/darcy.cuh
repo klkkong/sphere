@@ -378,7 +378,7 @@ __global__ void findDarcyPorosities(
             //}
 
             // Make sure that the porosity is in the interval [0.0;1.0]
-            phi = fmin(0.9, fmax(0.1, void_volume/cell_volume));
+            phi = fmin(0.99, fmax(0.01, void_volume/cell_volume));
             //phi = void_volume/cell_volume;
 
             Float dphi = phi - phi_0;
