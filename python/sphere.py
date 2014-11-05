@@ -708,7 +708,7 @@ class sim:
 
     def id(self, sid=''):
         '''
-        Returns or sets the simulation id/name, which will be used to identify
+        Returns or sets the simulation id/name, which is used to identify
         simulation files in the output folders.
 
         :param sid: The desired simulation id. If left blank the current
