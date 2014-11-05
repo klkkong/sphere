@@ -118,15 +118,16 @@ else:
 print("### Fluidization test: Transient, gravity, Dirichlet+Dirichlet BCs")
 #orig = sphere.sim('diffusivity-relax', fluid=False)
 orig = sphere.sim('cube-init', fluid=False)
-orig.readlast()
+orig.readlast(verbose=False)
 orig.id('darcy_fluidization')
 orig.cleanup()
 orig.initTemporal(total=0.005, file_dt=0.001)
 orig.initFluid(cfd_solver=1)
 orig.g[2] = -10.0
 
+mean_porosity = orig.bulkPorosity()
 fluidize_pressure = -(orig.rho - orig.rho_f) \
-        *(1.0 - numpy.mean(orig.phi))*numpy.abs(orig.g[2])
+        *(1.0 - mean_porosity)*numpy.abs(orig.g[2])
 
 fluid_pressure_gradient = numpy.array([0.1, 0.9, 1.1, 2.0])
 
@@ -139,7 +140,7 @@ for i in numpy.arange(fluid_pressure_gradient.size):
     orig.p_f[:,:,0] = base_p
     orig.p_f[:,:,-1] = base_p + dp
 
-    orig.run(verbose=False)
+    orig.run(verbose=True)
     #orig.writeVTKall()
     py = sphere.sim(sid = orig.sid, fluid = True)
     py.readlast(verbose=False)
