@@ -1516,7 +1516,7 @@ class sim:
                     + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('%f %f %f' % (self.x[i,0], self.x[i,1], self.x[i,2]))
+                fh.write('%f %f %f ' % (self.x[i,0], self.x[i,1], self.x[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
             fh.write('      </Points>\n')
