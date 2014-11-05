@@ -3627,29 +3627,36 @@ class sim:
         e = (V_t - V_s)/V_s
         return e
 
-    def bulkPorosity(self):
+    def bulkPorosity(self, trim=True):
         '''
-        Calculates the bulk porosity in the smallest axis-parallel cube.
+        Calculates the bulk porosity of the particle assemblage.
+
+        :param trim: Trim the total volume to the smallest axis-parallel cube
+            containing all particles.
+        :type trim: bool
 
         :returns: The bulk porosity, in [0:1]
         :return type: float
         '''
 
-        min_x = numpy.min(self.x[:,0] - self.radius)
-        min_y = numpy.min(self.x[:,1] - self.radius)
-        min_z = numpy.min(self.x[:,2] - self.radius)
-        max_x = numpy.max(self.x[:,0] + self.radius)
-        max_y = numpy.max(self.x[:,1] + self.radius)
-        max_z = numpy.max(self.x[:,2] + self.radius)
+        V_total = 0.0
+        if trim:
+            min_x = numpy.min(self.x[:,0] - self.radius)
+            min_y = numpy.min(self.x[:,1] - self.radius)
+            min_z = numpy.min(self.x[:,2] - self.radius)
+            max_x = numpy.max(self.x[:,0] + self.radius)
+            max_y = numpy.max(self.x[:,1] + self.radius)
+            max_z = numpy.max(self.x[:,2] + self.radius)
+            V_total = (max_x - min_x)*(max_y - min_y)*(max_z - min_z)
 
-        #if (self.nw == 0):
-            #V_total = self.L[0] * self.L[1] * self.L[2]
-        #elif (self.nw == 1):
-            #V_total = self.L[0] * self.L[1] * self.w_x[0]
-            #if (V_total <= 0.0):
-                #raise Exception("Could not determine total volume")
+        else:
+            if (self.nw == 0):
+                V_total = self.L[0] * self.L[1] * self.L[2]
+            elif (self.nw == 1):
+                V_total = self.L[0] * self.L[1] * self.w_x[0]
+                if (V_total <= 0.0):
+                    raise Exception("Could not determine total volume")
 
-        V_total = (max_x - min_x)*(max_y - min_y)*(max_z - min_z)
 
         # Find the volume of solids
         V_solid = numpy.sum(V_sphere(self.radius))

@@ -23,7 +23,7 @@ def testPorosities(sim):
     for slices in slicevals:
 
         # Find correct value of bulk porosity
-        n_bulk = sim.bulkPorosity()
+        n_bulk = sim.bulkPorosity(trim=False)
         #print("Bulk: " + str(n_bulk))
 
         porosity = sim.porosity(slices = slices)[0]
