@@ -96,8 +96,6 @@ struct Params {
     Float tau_b;          // Bond shear strength
     Float devs_A;         // Amplitude of modulations in normal stress
     Float devs_f;         // Frequency of modulations in normal stress
-    Float mu;             // Fluid dynamic viscosity
-    Float rho_f;          // Fluid density
 };
 
 // Structure containing wall parameters
@@ -146,6 +144,35 @@ struct NavierStokes {
     Float4* f_p;            // Pressure force on particles
     Float4* f_v;            // Viscous force on particles
     Float4* f_sum;          // Viscous force on particles
+    Float   mu;             // Fluid dynamic viscosity
+    Float   rho_f;          // Fluid density
+};
+
+struct Darcy {
+    int     nx, ny, nz;     // Number of cells in each dimension
+    Float   dx, dy, dz;     // Cell length in each dim
+    Float*  p;              // Cell hydraulic pressures
+    Float3* v;              // Cell fluid velocity
+    Float*  k;              // Cell hydraulic permeability
+    Float*  phi;            // Cell porosity
+    Float*  dphi;           // Cell porosity change
+    Float*  norm;           // Normalized residual of epsilon updates
+    Float   p_mod_A;        // Pressure modulation amplitude at top
+    Float   p_mod_f;        // Pressure modulation frequency at top
+    Float   p_mod_phi;      // Pressure modulation phase at top
+    int     bc_bot;         // 0: Dirichlet, 1: Neumann
+    int     bc_top;         // 0: Dirichlet, 1: Neumann
+    int     free_slip_bot;  // 0: no, 1: yes
+    int     free_slip_top;  // 0: no, 1: yes
+    Float   tolerance;      // Solver parameter: Max residual tolerance
+    unsigned int maxiter;   // Solver parameter: Max iterations to perform
+    unsigned int ndem;      // Solver parameter: DEM time steps per CFD step
+    Float   c_phi;          // Porosity scaling coefficient
+    Float4* f_p;            // Pressure force on particles
+    Float   beta_f;         // Adiabatic fluid compressibility
+    Float   k_c;            // Permeability prefactor in Kozeny-Carman eq.
+    Float   mu;             // Fluid dynamic viscosity
+    Float   rho_f;          // Fluid density
 };
 
 // Image structure

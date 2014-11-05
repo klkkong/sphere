@@ -3,7 +3,7 @@ import sphere
 
 init = sphere.sim('cube-init', np=1e2)
 
-init.generateRadii(psd='uni', radius_mean=0.01, radius_variance=0.002)
+init.generateRadii(psd='uni', mean=0.01, variance=0.002)
 
 init.periodicBoundariesXY()
 

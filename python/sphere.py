@@ -19,7 +19,7 @@ numpy.seterr(all='warn', over='raise')
 
 # Sphere version number. This field should correspond to the value in
 # `../src/constants.h`.
-VERSION=1.07
+VERSION=2.0
 
 class sim:
     '''
@@ -40,9 +40,18 @@ class sim:
     :type sid: str
     :param fluid: Setup fluid simulation (default = False)
     :type fluid: bool
+    :param cfd_solver: Fluid solver to use if fluid == True. 0: Navier-Stokes
+        (default), 1: Darcy.
+    :type cfd_solver: int
     '''
 
-    def __init__(self, sid = 'unnamed', np = 0, nd = 3, nw = 0, fluid = False):
+    def __init__(self,
+            sid = 'unnamed',
+            np = 0,
+            nd = 3,
+            nw = 0,
+            fluid = False,
+            cfd_solver = 0):
 
         # Sphere version number
         self.version = numpy.ones(1, dtype=numpy.float64)*VERSION
@@ -272,6 +281,11 @@ class sim:
 
         if self.fluid:
 
+            # Fluid solver type
+            # 0: Navier Stokes (fluid with inertia)
+            # 1: Stokes-Darcy (fluid without inertia)
+            self.cfd_solver = numpy.zeros(1, dtype=numpy.int32)
+
             # Fluid dynamic viscosity [N/(m/s)]
             self.mu = numpy.zeros(1, dtype=numpy.float64)
 
@@ -311,40 +325,73 @@ class sim:
 
             ## Solver parameters
 
-            # Smoothing parameter, should be in the range [0.0;1.0[.
-            # 0.0 = no smoothing.
-            self.gamma = numpy.array(0.0)
+            # Navier-Stokes
+            if self.cfd_solver[0] == 0:
 
-            # Under-relaxation parameter, should be in the range ]0.0;1.0].
-            # 1.0 = no under-relaxation
-            self.theta = numpy.array(1.0)
+                # Smoothing parameter, should be in the range [0.0;1.0[.
+                # 0.0 = no smoothing.
+                self.gamma = numpy.array(0.0)
 
-            # Velocity projection parameter, should be in the range [0.0;1.0]
-            self.beta = numpy.array(0.0)
+                # Under-relaxation parameter, should be in the range ]0.0;1.0].
+                # 1.0 = no under-relaxation
+                self.theta = numpy.array(1.0)
 
-            # Tolerance criteria for the normalized max. residual
-            self.tolerance = numpy.array(1.0e-8)
+                # Velocity projection parameter, should be in the range
+                # [0.0;1.0]
+                self.beta = numpy.array(0.0)
 
-            # The maximum number of iterations to perform per time step
-            self.maxiter = numpy.array(1e4)
+                # Tolerance criteria for the normalized max. residual
+                self.tolerance = numpy.array(1.0e-3)
 
-            # The number of DEM time steps to perform between CFD updates
-            self.ndem = numpy.array(1)
+                # The maximum number of iterations to perform per time step
+                self.maxiter = numpy.array(1e4)
 
-            # Porosity scaling factor
-            self.c_phi = numpy.ones(1, dtype=numpy.float64)
+                # The number of DEM time steps to perform between CFD updates
+                self.ndem = numpy.array(1)
 
-            # Fluid velocity scaling factor
-            self.c_v = numpy.ones(1, dtype=numpy.float64)
+                # Porosity scaling factor
+                self.c_phi = numpy.ones(1, dtype=numpy.float64)
 
-            # DEM-CFD time scaling factor
-            self.dt_dem_fac = numpy.ones(1, dtype=numpy.float64)
+                # Fluid velocity scaling factor
+                self.c_v = numpy.ones(1, dtype=numpy.float64)
 
-            ## Interaction forces
-            self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-            self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-            self.f_v = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-            self.f_sum = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+                # DEM-CFD time scaling factor
+                self.dt_dem_fac = numpy.ones(1, dtype=numpy.float64)
+
+                ## Interaction forces
+                self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+                self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+                self.f_v = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+                self.f_sum = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+
+            # Darcy
+            elif self.cfd_solver[0] == 1:
+
+                # Tolerance criteria for the normalized max. residual
+                self.tolerance = numpy.array(1.0e-3)
+
+                # The maximum number of iterations to perform per time step
+                self.maxiter = numpy.array(1e4)
+
+                # The number of DEM time steps to perform between CFD updates
+                self.ndem = numpy.array(1)
+
+                # Porosity scaling factor
+                self.c_phi = numpy.ones(1, dtype=numpy.float64)
+
+                # Interaction forces
+                self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+
+                # Adiabatic fluid compressibility [1/Pa].
+                # Fluid bulk modulus = 1/self.beta_f
+                self.beta_f = numpy.ones(1, dtype=numpy.float64)*4.5e-10
+
+                # Hydraulic permeability prefactor [m*m]
+                self.k_c = numpy.ones(1, dtype=numpy.float64)*4.6e-10
+
+            else:
+                raise Exception('Value of cfd_solver not understood (' + \
+                        str(self.cfd_solver[0]) + ')')
 
         # Particle color marker
         self.color = numpy.zeros(self.np, dtype=numpy.int32)
@@ -546,7 +593,10 @@ class sim:
             return 64
 
         if self.fluid:
-            if (self.mu != other.mu):
+            if (self.cfd_solver != other.cfd_solver):
+                print(91)
+                return 91
+            elif (self.mu != other.mu):
                 print(65)
                 return 65
             elif ((self.v_f != other.v_f).any()):
@@ -585,44 +635,69 @@ class sim:
             elif (self.free_slip_top != other.free_slip_top):
                 print(77)
                 return 77
-            elif (self.gamma != other.gamma):
-                print(78)
-                return 78
-            elif (self.theta != other.theta):
-                print(79)
-                return 79
-            elif (self.beta != other.beta):
-                print(80)
-                return 80
-            elif (self.tolerance != other.tolerance):
-                print(81)
-                return 81
-            elif (self.maxiter != other.maxiter):
-                print(82)
-                return 82
-            elif (self.ndem != other.ndem):
-                print(83)
-                return 83
-            elif (self.c_phi != other.c_phi):
-                print(84)
-                return(84)
-            elif (self.c_v != other.c_v):
-                print(85)
-            elif (self.dt_dem_fac != other.dt_dem_fac):
-                print(85)
-                return(85)
-            elif (self.f_d != other.f_d).any():
-                print(86)
-                return(86)
-            elif (self.f_p != other.f_p).any():
-                print(87)
-                return(87)
-            elif (self.f_v != other.f_v).any():
-                print(88)
-                return(88)
-            elif (self.f_sum != other.f_sum).any():
-                print(89)
-                return(89)
+
+            if (self.cfd_solver == 0):
+                if (self.gamma != other.gamma):
+                    print(78)
+                    return 78
+                elif (self.theta != other.theta):
+                    print(79)
+                    return 79
+                elif (self.beta != other.beta):
+                    print(80)
+                    return 80
+                elif (self.tolerance != other.tolerance):
+                    print(81)
+                    return 81
+                elif (self.maxiter != other.maxiter):
+                    print(82)
+                    return 82
+                elif (self.ndem != other.ndem):
+                    print(83)
+                    return 83
+                elif (self.c_phi != other.c_phi):
+                    print(84)
+                    return(84)
+                elif (self.c_v != other.c_v):
+                    print(85)
+                elif (self.dt_dem_fac != other.dt_dem_fac):
+                    print(85)
+                    return(85)
+                elif (self.f_d != other.f_d).any():
+                    print(86)
+                    return(86)
+                elif (self.f_p != other.f_p).any():
+                    print(87)
+                    return(87)
+                elif (self.f_v != other.f_v).any():
+                    print(88)
+                    return(88)
+                elif (self.f_sum != other.f_sum).any():
+                    print(89)
+                    return(89)
+
+            if (self.cfd_solver == 1):
+                if (self.tolerance != other.tolerance):
+                    print(81)
+                    return 81
+                elif (self.maxiter != other.maxiter):
+                    print(82)
+                    return 82
+                elif (self.ndem != other.ndem):
+                    print(83)
+                    return 83
+                elif (self.c_phi != other.c_phi):
+                    print(84)
+                    return(84)
+                elif (self.f_p != other.f_p).any():
+                    print(86)
+                    return(86)
+                elif (self.beta_f != other.beta_f):
+                    print(87)
+                    return(87)
+                elif (self.k_c != other.k_c):
+                    print(88)
+                    return(88)
 
         if ((self.color != other.color)).any():
             print(90)
@@ -631,15 +706,31 @@ class sim:
         # All equal
         return 0
 
-    def id(self, sid):
+    def id(self, sid=''):
         '''
-        Set the simulation id/name, which will be used to identify simulation
-        files in the output folders.
+        Returns or sets the simulation id/name, which is used to identify
+        simulation files in the output folders.
 
-        :param sid: The desired simulation id
+        :param sid: The desired simulation id. If left blank the current
+            simulation id will be returned.
         :type sid: str
+        :returns: The current simulation id if no new value is set.
+        :return type: str
         '''
-        self.sid = sid
+        if sid == '':
+            return self.sid
+        else:
+            self.sid = sid
+
+    def idAppend(self, string):
+        '''
+        Append a string to the simulation id/name, which is used to identify
+        simulation files in the output folders.
+
+        :param string: The string to append to the simulation id (`self.sid`).
+        :type string: str
+        '''
+        self.sid += string
 
     def addParticle(self,
             x,
@@ -852,7 +943,7 @@ class sim:
             self.periodic = numpy.fromfile(fh, dtype=numpy.int32, count=1)
 
             # Per-particle vectors
-            for i in range(self.np):
+            for i in numpy.arange(self.np):
                 self.x[i,:] =\
                         numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
                 self.radius[i] =\
@@ -865,7 +956,7 @@ class sim:
                 self.xyzsum = numpy.fromfile(fh, dtype=numpy.float64,\
                         count=self.np*2).reshape(self.np,2)
 
-            for i in range(self.np):
+            for i in numpy.arange(self.np):
                 self.vel[i,:] =\
                         numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
                 self.fixvel[i] =\
@@ -924,11 +1015,11 @@ class sim:
             self.w_devs  = numpy.empty(self.nw, dtype=numpy.float64)
 
             self.wmode   = numpy.fromfile(fh, dtype=numpy.int32, count=self.nw)
-            for i in range(self.nw):
+            for i in numpy.arange(self.nw):
                 self.w_n[i,:] =\
                         numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
                 self.w_x[i]   = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-            for i in range(self.nw):
+            for i in numpy.arange(self.nw):
                 self.w_m[i]   = numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.w_vel[i] = numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.w_force[i] =\
@@ -946,7 +1037,7 @@ class sim:
                 self.sigma_b = numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.tau_b = numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.bonds = numpy.empty((self.nb0, 2), dtype=numpy.uint32)
-                for i in range(self.nb0):
+                for i in numpy.arange(self.nb0):
                     self.bonds[i,0] = numpy.fromfile(fh, dtype=numpy.uint32,
                             count=1)
                     self.bonds[i,1] = numpy.fromfile(fh, dtype=numpy.uint32,
@@ -963,6 +1054,13 @@ class sim:
                 self.nb0 = numpy.zeros(1, dtype=numpy.uint32)
 
             if self.fluid:
+
+                if self.version >= 2.0:
+                    self.cfd_solver = numpy.fromfile(fh, dtype=numpy.int32,
+                            count=1)
+                else:
+                    self.cfd_solver = numpy.zeros(1, dtype=numpy.int32)
+
                 self.mu = numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
                 self.v_f = numpy.empty(
@@ -978,9 +1076,9 @@ class sim:
                         numpy.empty((self.num[0],self.num[1],self.num[2]),
                         dtype=numpy.float64)
 
-                for z in range(self.num[2]):
-                    for y in range(self.num[1]):
-                        for x in range(self.num[0]):
+                for z in numpy.arange(self.num[2]):
+                    for y in numpy.arange(self.num[1]):
+                        for x in numpy.arange(self.num[0]):
                             self.v_f[x,y,z,0] = \
                                     numpy.fromfile(fh, dtype=numpy.float64,\
                                     count=1)
@@ -1000,7 +1098,7 @@ class sim:
                                     numpy.fromfile(fh, dtype=numpy.float64,\
                                     count=1)
 
-                if (self.version >= 0.36):
+                if self.version >= 0.36:
                     self.rho_f =\
                             numpy.fromfile(fh, dtype=numpy.float64, count=1)
                     self.p_mod_A =\
@@ -1019,65 +1117,93 @@ class sim:
                     self.free_slip_top =\
                             numpy.fromfile(fh, dtype=numpy.int32, count=1)
 
-                self.gamma = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                self.theta = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                self.beta  = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                self.tolerance =\
-                        numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                self.maxiter = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
-                if self.version >= 1.01:
-                    self.ndem = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
-                else:
-                    self.ndem = 1
+                if self.version >= 2.0 and self.cfd_solver == 0:
+                    self.gamma = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    self.theta = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    self.beta  = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    self.tolerance =\
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    self.maxiter = \
+                            numpy.fromfile(fh, dtype=numpy.uint32, count=1)
+                    if self.version >= 1.01:
+                        self.ndem = \
+                                numpy.fromfile(fh, dtype=numpy.uint32, count=1)
+                    else:
+                        self.ndem = 1
 
-                if self.version >= 1.04:
+                    if self.version >= 1.04:
+                        self.c_phi = \
+                                numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                        self.c_v =\
+                          numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                        if self.version == 1.06:
+                            self.c_a =\
+                                    numpy.fromfile(fh, \
+                                    dtype=numpy.float64, count=1)
+                        elif self.version >= 1.07:
+                            self.dt_dem_fac =\
+                                    numpy.fromfile(fh, \
+                                    dtype=numpy.float64, count=1)
+                        else:
+                            self.c_a = numpy.ones(1, dtype=numpy.float64)
+                    else:
+                        self.c_phi = numpy.ones(1, dtype=numpy.float64)
+                        self.c_v = numpy.ones(1, dtype=numpy.float64)
+
+                    if self.version >= 1.05:
+                        self.f_d = numpy.empty_like(self.x)
+                        self.f_p = numpy.empty_like(self.x)
+                        self.f_v = numpy.empty_like(self.x)
+                        self.f_sum = numpy.empty_like(self.x)
+
+                        for i in numpy.arange(self.np[0]):
+                            self.f_d[i,:] = \
+                                    numpy.fromfile(fh, dtype=numpy.float64,
+                                            count=self.nd)
+                        for i in numpy.arange(self.np[0]):
+                            self.f_p[i,:] = \
+                                    numpy.fromfile(fh, dtype=numpy.float64,
+                                            count=self.nd)
+                        for i in numpy.arange(self.np[0]):
+                            self.f_v[i,:] = \
+                                    numpy.fromfile(fh, dtype=numpy.float64,
+                                            count=self.nd)
+                        for i in numpy.arange(self.np[0]):
+                            self.f_sum[i,:] = \
+                                    numpy.fromfile(fh, dtype=numpy.float64,
+                                            count=self.nd)
+                    else:
+                        self.f_d = numpy.zeros((self.np, self.nd),
+                                dtype=numpy.float64)
+                        self.f_p = numpy.zeros((self.np, self.nd),
+                                dtype=numpy.float64)
+                        self.f_v = numpy.zeros((self.np, self.nd),
+                                dtype=numpy.float64)
+                        self.f_sum = numpy.zeros((self.np, self.nd),
+                                dtype=numpy.float64)
+
+                elif self.version >= 2.0 and self.cfd_solver == 1:
+
+                    self.tolerance = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    self.maxiter = \
+                            numpy.fromfile(fh, dtype=numpy.uint32, count=1)
+                    self.ndem = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
                     self.c_phi = \
                             numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                    self.c_v =\
-                      numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                    if self.version == 1.06:
-                        self.c_a =\
-                                numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                    elif self.version >= 1.07:
-                        self.dt_dem_fac =\
-                                numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                    else:
-                        self.c_a = numpy.ones(1, dtype=numpy.float64)
-                else:
-                    self.c_phi = numpy.ones(1, dtype=numpy.float64)
-                    self.c_v = numpy.ones(1, dtype=numpy.float64)
-
-                if self.version >= 1.05:
-                    self.f_d = numpy.empty_like(self.x)
                     self.f_p = numpy.empty_like(self.x)
-                    self.f_v = numpy.empty_like(self.x)
-                    self.f_sum = numpy.empty_like(self.x)
-
-                    for i in range(self.np[0]):
-                        self.f_d[i,:] = \
-                                numpy.fromfile(fh, dtype=numpy.float64,
-                                        count=self.nd)
-                    for i in range(self.np[0]):
+                    for i in numpy.arange(self.np[0]):
                         self.f_p[i,:] = \
                                 numpy.fromfile(fh, dtype=numpy.float64,
                                         count=self.nd)
-                    for i in range(self.np[0]):
-                        self.f_v[i,:] = \
-                                numpy.fromfile(fh, dtype=numpy.float64,
-                                        count=self.nd)
-                    for i in range(self.np[0]):
-                        self.f_sum[i,:] = \
-                                numpy.fromfile(fh, dtype=numpy.float64,
-                                        count=self.nd)
-                else:
-                    self.f_d = numpy.zeros((self.np, self.nd),
-                            dtype=numpy.float64)
-                    self.f_p = numpy.zeros((self.np, self.nd),
-                            dtype=numpy.float64)
-                    self.f_v = numpy.zeros((self.np, self.nd),
-                            dtype=numpy.float64)
-                    self.f_sum = numpy.zeros((self.np, self.nd),
-                            dtype=numpy.float64)
+                    self.beta_f = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+
+                    self.k_c = \
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
             if (self.version >= 1.02):
                 self.color =\
@@ -1131,14 +1257,14 @@ class sim:
             fh.write(self.periodic.astype(numpy.uint32))
 
             # Per-particle vectors
-            for i in range(self.np):
+            for i in numpy.arange(self.np):
                 fh.write(self.x[i,:].astype(numpy.float64))
                 fh.write(self.radius[i].astype(numpy.float64))
 
             if (self.np[0] > 0):
                 fh.write(self.xyzsum.astype(numpy.float64))
 
-            for i in range(self.np):
+            for i in numpy.arange(self.np):
                 fh.write(self.vel[i,:].astype(numpy.float64))
                 fh.write(self.fixvel[i].astype(numpy.float64))
 
@@ -1177,13 +1303,13 @@ class sim:
             fh.write(self.V_b.astype(numpy.float64))
 
             fh.write(self.nw.astype(numpy.uint32))
-            for i in range(self.nw):
+            for i in numpy.arange(self.nw):
                 fh.write(self.wmode[i].astype(numpy.int32))
-            for i in range(self.nw):
+            for i in numpy.arange(self.nw):
                 fh.write(self.w_n[i,:].astype(numpy.float64))
                 fh.write(self.w_x[i].astype(numpy.float64))
 
-            for i in range(self.nw):
+            for i in numpy.arange(self.nw):
                 fh.write(self.w_m[i].astype(numpy.float64))
                 fh.write(self.w_vel[i].astype(numpy.float64))
                 fh.write(self.w_force[i].astype(numpy.float64))
@@ -1195,7 +1321,7 @@ class sim:
             fh.write(self.nb0.astype(numpy.uint32))
             fh.write(self.sigma_b.astype(numpy.float64))
             fh.write(self.tau_b.astype(numpy.float64))
-            for i in range(self.nb0):
+            for i in numpy.arange(self.nb0):
                 fh.write(self.bonds[i,0].astype(numpy.uint32))
                 fh.write(self.bonds[i,1].astype(numpy.uint32))
             fh.write(self.bonds_delta_n.astype(numpy.float64))
@@ -1204,10 +1330,12 @@ class sim:
             fh.write(self.bonds_omega_t.astype(numpy.float64))
 
             if self.fluid:
+
+                fh.write(self.cfd_solver.astype(numpy.int32))
                 fh.write(self.mu.astype(numpy.float64))
-                for z in range(self.num[2]):
-                    for y in range(self.num[1]):
-                        for x in range(self.num[0]):
+                for z in numpy.arange(self.num[2]):
+                    for y in numpy.arange(self.num[1]):
+                        for x in numpy.arange(self.num[0]):
                             fh.write(self.v_f[x,y,z,0].astype(numpy.float64))
                             fh.write(self.v_f[x,y,z,1].astype(numpy.float64))
                             fh.write(self.v_f[x,y,z,2].astype(numpy.float64))
@@ -1225,25 +1353,44 @@ class sim:
                 fh.write(self.free_slip_bot.astype(numpy.int32))
                 fh.write(self.free_slip_top.astype(numpy.int32))
 
-                fh.write(self.gamma.astype(numpy.float64))
-                fh.write(self.theta.astype(numpy.float64))
-                fh.write(self.beta.astype(numpy.float64))
-                fh.write(self.tolerance.astype(numpy.float64))
-                fh.write(self.maxiter.astype(numpy.uint32))
-                fh.write(self.ndem.astype(numpy.uint32))
+                # Navier Stokes
+                if self.cfd_solver[0] == 0:
+                    fh.write(self.gamma.astype(numpy.float64))
+                    fh.write(self.theta.astype(numpy.float64))
+                    fh.write(self.beta.astype(numpy.float64))
+                    fh.write(self.tolerance.astype(numpy.float64))
+                    fh.write(self.maxiter.astype(numpy.uint32))
+                    fh.write(self.ndem.astype(numpy.uint32))
 
-                fh.write(self.c_phi.astype(numpy.float64))
-                fh.write(self.c_v.astype(numpy.float64))
-                fh.write(self.dt_dem_fac.astype(numpy.float64))
+                    fh.write(self.c_phi.astype(numpy.float64))
+                    fh.write(self.c_v.astype(numpy.float64))
+                    fh.write(self.dt_dem_fac.astype(numpy.float64))
 
-                for i in numpy.arange(self.np):
-                    fh.write(self.f_d[i,:].astype(numpy.float64))
-                for i in numpy.arange(self.np):
-                    fh.write(self.f_p[i,:].astype(numpy.float64))
-                for i in numpy.arange(self.np):
-                    fh.write(self.f_v[i,:].astype(numpy.float64))
-                for i in numpy.arange(self.np):
-                    fh.write(self.f_sum[i,:].astype(numpy.float64))
+                    for i in numpy.arange(self.np):
+                        fh.write(self.f_d[i,:].astype(numpy.float64))
+                    for i in numpy.arange(self.np):
+                        fh.write(self.f_p[i,:].astype(numpy.float64))
+                    for i in numpy.arange(self.np):
+                        fh.write(self.f_v[i,:].astype(numpy.float64))
+                    for i in numpy.arange(self.np):
+                        fh.write(self.f_sum[i,:].astype(numpy.float64))
+
+                # Darcy
+                elif self.cfd_solver[0] == 1:
+
+                    fh.write(self.tolerance.astype(numpy.float64))
+                    fh.write(self.maxiter.astype(numpy.uint32))
+                    fh.write(self.ndem.astype(numpy.uint32))
+                    fh.write(self.c_phi.astype(numpy.float64))
+                    for i in numpy.arange(self.np):
+                        fh.write(self.f_p[i,:].astype(numpy.float64))
+                    fh.write(self.beta_f.astype(numpy.float64))
+                    fh.write(self.k_c.astype(numpy.float64))
+
+                else:
+                    raise Exception('Value of cfd_solver not understood (' + \
+                            str(self.cfd_solver[0]) + ')')
+
 
             fh.write(self.color.astype(numpy.int32))
 
@@ -1385,7 +1532,7 @@ class sim:
                     + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
-                fh.write('%f %f %f' % (self.x[i,0], self.x[i,1], self.x[i,2]))
+                fh.write('%f %f %f ' % (self.x[i,0], self.x[i,1], self.x[i,2]))
             fh.write('\n')
             fh.write('        </DataArray>\n')
             fh.write('      </Points>\n')
@@ -1423,27 +1570,30 @@ class sim:
             fh.write('        </DataArray>\n')
 
             if self.fluid:
-                # Fluid interaction force
-                fh.write('        <DataArray type="Float32" ' 
-                        + 'Name="Fluid force total" '
-                        + 'NumberOfComponents="3" format="ascii">\n')
-                fh.write('          ')
-                for i in range(self.np):
-                    fh.write('%f %f %f ' % \
-                            (self.f_sum[i,0], self.f_sum[i,1], self.f_sum[i,2]))
-                fh.write('\n')
-                fh.write('        </DataArray>\n')
 
-                # Fluid drag force
-                fh.write('        <DataArray type="Float32" '
-                        + 'Name="Fluid drag force" '
-                        + 'NumberOfComponents="3" format="ascii">\n')
-                fh.write('          ')
-                for i in range(self.np):
-                    fh.write('%f %f %f ' % \
-                            (self.f_d[i,0], self.f_d[i,1], self.f_d[i,2]))
-                fh.write('\n')
-                fh.write('        </DataArray>\n')
+                if self.cfd_solver == 0:  # Navier Stokes
+                    # Fluid interaction force
+                    fh.write('        <DataArray type="Float32" ' 
+                            + 'Name="Fluid force total" '
+                            + 'NumberOfComponents="3" format="ascii">\n')
+                    fh.write('          ')
+                    for i in range(self.np):
+                        fh.write('%f %f %f ' % \
+                                (self.f_sum[i,0], self.f_sum[i,1], \
+                                self.f_sum[i,2]))
+                    fh.write('\n')
+                    fh.write('        </DataArray>\n')
+
+                    # Fluid drag force
+                    fh.write('        <DataArray type="Float32" '
+                            + 'Name="Fluid drag force" '
+                            + 'NumberOfComponents="3" format="ascii">\n')
+                    fh.write('          ')
+                    for i in range(self.np):
+                        fh.write('%f %f %f ' % \
+                                (self.f_d[i,0], self.f_d[i,1], self.f_d[i,2]))
+                    fh.write('\n')
+                    fh.write('        </DataArray>\n')
 
                 # Fluid pressure force
                 fh.write('        <DataArray type="Float32" '
@@ -1456,16 +1606,17 @@ class sim:
                 fh.write('\n')
                 fh.write('        </DataArray>\n')
 
-                # Fluid viscous force
-                fh.write('        <DataArray type="Float32" '
-                        + 'Name="Fluid viscous force" '
-                        + 'NumberOfComponents="3" format="ascii">\n')
-                fh.write('          ')
-                for i in range(self.np):
-                    fh.write('%f %f %f ' % \
-                            (self.f_v[i,0], self.f_v[i,1], self.f_v[i,2]))
-                fh.write('\n')
-                fh.write('        </DataArray>\n')
+                if self.cfd_solver == 0:  # Navier Stokes
+                    # Fluid viscous force
+                    fh.write('        <DataArray type="Float32" '
+                            + 'Name="Fluid viscous force" '
+                            + 'NumberOfComponents="3" format="ascii">\n')
+                    fh.write('          ')
+                    for i in range(self.np):
+                        fh.write('%f %f %f ' % \
+                                (self.f_v[i,0], self.f_v[i,1], self.f_v[i,2]))
+                    fh.write('\n')
+                    fh.write('        </DataArray>\n')
 
             # fixvel
             fh.write('        <DataArray type="Float32" Name="FixedVel" '
@@ -1709,6 +1860,17 @@ class sim:
         else:
             Re.SetNumberOfTuples(grid.GetNumberOfPoints())
 
+        # Find permeabilities if the Darcy solver is used
+        if self.cfd_solver[0] == 1:
+            self.findPermeabilities()
+            k = vtk.vtkDoubleArray()
+            k.SetName("Permeability [m*m]")
+            k.SetNumberOfComponents(1)
+            if cell_centered:
+                k.SetNumberOfTuples(grid.GetNumberOfCells())
+            else:
+                k.SetNumberOfTuples(grid.GetNumberOfPoints())
+
         # insert values
         for z in range(self.num[2]):
             for y in range(self.num[1]):
@@ -1719,6 +1881,8 @@ class sim:
                     poros.SetValue(idx, self.phi[x,y,z])
                     dporos.SetValue(idx, self.dphi[x,y,z])
                     Re.SetValue(idx, self.Re[x,y,z])
+                    if self.cfd_solver[0] == 1:
+                        k.SetValue(idx, self.k[x,y,z])
 
         # add pres array to grid
         if cell_centered:
@@ -1727,12 +1891,16 @@ class sim:
             grid.GetCellData().AddArray(poros)
             grid.GetCellData().AddArray(dporos)
             grid.GetCellData().AddArray(Re)
+            if self.cfd_solver[0] == 1:
+                grid.GetCellData().AddArray(k)
         else:
             grid.GetPointData().AddArray(pres)
             grid.GetPointData().AddArray(vel)
             grid.GetPointData().AddArray(poros)
             grid.GetPointData().AddArray(dporos)
             grid.GetPointData().AddArray(Re)
+            if self.cfd_solver[0] == 1:
+                grid.GetPointData().AddArray(k)
 
         # write VTK XML image data file
         writer = vtk.vtkXMLImageDataWriter()
@@ -1804,9 +1972,9 @@ class sim:
         self.readbin(fn, verbose)
 
     def generateRadii(self, psd = 'logn',
-            radius_mean = 440e-6,
-            radius_variance = 8.8e-9,
-            histogram = True):
+            mean = 440e-6,
+            variance = 8.8e-9,
+            histogram = False):
         '''
         Draw random particle radii from a selected probability distribution.
         The larger the variance of radii is, the slower the computations will
@@ -1820,26 +1988,29 @@ class sim:
             ``logn``, which is a log-normal probability distribution, suitable
             for approximating well-sorted, coarse sediments. The other possible
             value is ``uni``, which is a uniform distribution from
-            ``radius_mean-radius_variance`` to ``radius_mean+radius_variance``.
+            ``mean - variance`` to ``mean + variance``.
         :type psd: str
-        :param radius_mean: The mean radius [m] (default = 440e-6 m)
-        :type radius_mean: float
-        :param radius_variance: The variance in the probability distribution
+        :param mean: The mean radius [m] (default = 440e-6 m)
+        :type mean: float
+        :param variance: The variance in the probability distribution
             [m].
-        :type radius_variance: float
+        :type variance: float
 
         See also: :func:`generateBimodalRadii()`.
         '''
 
         if psd == 'logn': # Log-normal probability distribution
             mu = math.log(\
-                    (radius_mean**2)/math.sqrt(radius_variance+radius_mean**2))
-            sigma = math.sqrt(math.log(radius_variance/(radius_mean**2)+1))
+                    (mean**2)/math.sqrt(variance+mean**2))
+            sigma = math.sqrt(math.log(variance/(mean**2)+1))
             self.radius = numpy.random.lognormal(mu, sigma, self.np)
-        if psd == 'uni':  # Uniform distribution
-            radius_min = radius_mean - radius_variance
-            radius_max = radius_mean + radius_variance
+        elif psd == 'uni':  # Uniform distribution
+            radius_min = mean - variance
+            radius_max = mean + variance
             self.radius = numpy.random.uniform(radius_min, radius_max, self.np)
+        else:
+            raise Exception('Particle size distribution type not understood (' 
+                    + str(psd) + '). Valid values are \'uni\' or \'logn\'')
 
         # Show radii as histogram
         if histogram:
@@ -2560,7 +2731,7 @@ class sim:
         self.mu_ws[0] = 0.0
         self.mu_wd[0] = 0.0
 
-    def largestFluidTimeStep(self, safety=0.01):
+    def largestFluidTimeStep(self, safety=0.5):
         '''
         Finds and returns the largest time step in the fluid phase by von
         Neumann and Courant-Friedrichs-Lewy analysis given the current
@@ -2579,28 +2750,107 @@ class sim:
         :return type: float
         '''
 
-        dx_min = numpy.min(self.L/self.num)
-        dt_min_von_neumann = 0.5*dx_min**2/self.mu[0]
+        if self.fluid:
 
-        # Normalized velocities
-        v_norm = numpy.empty(self.num[0]*self.num[1]*self.num[2])
-        idx = 0
-        for x in numpy.arange(self.num[0]):
-            for y in numpy.arange(self.num[1]):
-                for z in numpy.arange(self.num[2]):
-                    v_norm[idx] = numpy.sqrt(self.v_f[x,y,z,:].dot(\
-                            self.v_f[x,y,z,:]))
-                    idx += 1
+            # Navier-Stokes
+            if self.cfd_solver[0] == 0:
+                dx_min = numpy.min(self.L/self.num)
+                dt_min_von_neumann = 0.5*dx_min**2/self.mu[0]
 
-        # Advection term. This term has to be reevaluated during the
-        # computations, as the fluid velocity changes.
-        v_max = numpy.amax(v_norm)
-        if v_max == 0:
-            v_max = 1.0e-7
+                # Normalized velocities
+                v_norm = numpy.empty(self.num[0]*self.num[1]*self.num[2])
+                idx = 0
+                for x in numpy.arange(self.num[0]):
+                    for y in numpy.arange(self.num[1]):
+                        for z in numpy.arange(self.num[2]):
+                            v_norm[idx] = numpy.sqrt(self.v_f[x,y,z,:].dot(\
+                                    self.v_f[x,y,z,:]))
+                            idx += 1
 
-        dt_min_cfl = dx_min/v_max
+                # Advection term. This term has to be reevaluated during the
+                # computations, as the fluid velocity changes.
+                v_max = numpy.amax(v_norm)
+                if v_max == 0:
+                    v_max = 1.0e-7
 
-        return numpy.min([dt_min_von_neumann, dt_min_cfl])*safety
+                dt_min_cfl = dx_min/v_max
+
+                return numpy.min([dt_min_von_neumann, dt_min_cfl])*safety
+
+            # Darcy
+            elif self.cfd_solver[0] == 1:
+
+                # Determine on the base of the diffusivity coefficient
+                # components
+                self.cellSize()
+                self.hydraulicPermeability()
+                alpha_max = numpy.max(self.k/(self.beta_f*0.9*self.mu))
+                return safety * 1.0/(2.0*alpha_max)*1.0/(
+                        1.0/(self.dx[0]**2) + \
+                        1.0/(self.dx[1]**2) + \
+                        1.0/(self.dx[2]**2))
+
+                '''
+                # Determine value on the base of the hydraulic conductivity
+                g = numpy.max(numpy.abs(self.g))
+
+                # Bulk modulus of fluid
+                K = 1.0/self.beta_f[0]
+
+                self.hydraulicDiffusivity()
+                self.cellSize()
+
+                return safety * 1.0/(2.0*self.D)*1.0/( \
+                        1.0/(self.dx[0]**2) + \
+                        1.0/(self.dx[1]**2) + \
+                        1.0/(self.dx[2]**2))
+                '''
+
+    def cellSize(self):
+        '''
+        Calculate the particle sorting (and fluid) cell dimensions.
+        These values are stored in `self.dx` and are NOT returned.
+        '''
+        self.dx = self.L/self.num
+
+    def hydraulicConductivity(self):
+        '''
+        Determine the hydraulic conductivity (K) [m/s] from the permeability
+        prefactor. This value is stored in `self.K_c`. This function only works
+        for the Darcy solver (`self.cfd_solver == 1`)
+        '''
+        if self.cfd_solver[0] == 1:
+            self.K_c = self.k_c*self.rho_f*g/self.mu
+        else:
+            raise Exception('This function only works for the Darcy solver')
+
+    def hydraulicPermeability(self, phi_min = 0.1, phi_max = 0.9):
+        '''
+        Determine the hydraulic permeability (k) [m*m] from the Kozeny-Carman
+        relationship, using the permeability prefactor (`self.k_c`), and the
+        range of valid porosities set in `src/darcy.cuh`, by default in the
+        range 0.1 to 0.9.
+
+        This function is only valid for the Darcy solver (`self.cfd_solver ==
+        1`).
+        '''
+        if self.cfd_solver[0] == 1:
+            self.findPermeabilities()
+        else:
+            raise Exception('This function only works for the Darcy solver')
+
+    def hydraulicDiffusivity(self):
+        '''
+        Determine the hydraulic diffusivity (D) [m*m/s]. The result is stored in
+        `self.D`. This function only works for the Darcy solver
+        (`self.cfd_solver[0] == 1`)
+        '''
+        if self.cfd_solver[0] == 1:
+                self.hydraulicConductivity()
+                phi_bar = numpy.mean(self.phi)
+                alpha = self.K_c/(self.rho_f*g*(self.k_n[0] + phi_bar*K))
+        else:
+            raise Exception('This function only works for the Darcy solver')
 
     def initTemporal(self, total,
             current = 0.0,
@@ -2707,7 +2957,7 @@ class sim:
         self.initFluid()
 
     def initFluid(self, mu = 8.9e-4, rho = 1.0e3, p = 1.0,
-            hydrostatic = True):
+            hydrostatic = False, cfd_solver = 0):
         '''
         Initialize the fluid arrays and the fluid viscosity. The default value
         of ``mu`` equals the dynamic viscosity of water at 25 degrees Celcius.
@@ -2725,6 +2975,9 @@ class sim:
             created if a gravitational acceleration along :math:`z` previously
             has been specified
         :type hydrostatic: bool
+        :param cfd_solver: Solver to use for the computational fluid dynamics.
+            Accepted values: 0 (Navier Stokes, default) and 1 (Darcy).
+        :type cfd_solver: int
         '''
         self.fluid = True
         self.mu = numpy.ones(1, dtype=numpy.float64) * mu
@@ -2771,21 +3024,41 @@ class sim:
         self.free_slip_bot = numpy.ones(1, dtype=numpy.int32)
         self.free_slip_top = numpy.ones(1, dtype=numpy.int32)
 
-        self.gamma = numpy.array(0.0)
-        self.theta = numpy.array(1.0)
-        self.beta = numpy.array(0.0)
-        self.tolerance = numpy.array(1.0e-8)
-        self.maxiter = numpy.array(1e4)
-        self.ndem = numpy.array(1)
+        # Fluid solver type
+        # 0: Navier Stokes (fluid with inertia)
+        # 1: Stokes-Darcy (fluid without inertia)
+        self.cfd_solver = numpy.ones(1)*cfd_solver
 
-        self.c_phi = numpy.ones(1, dtype=numpy.float64)
-        self.c_v = numpy.ones(1, dtype=numpy.float64)
-        self.dt_dem_fac = numpy.ones(1, dtype=numpy.float64)
+        if self.cfd_solver[0] == 0:
+            self.gamma = numpy.array(0.0)
+            self.theta = numpy.array(1.0)
+            self.beta = numpy.array(0.0)
+            self.tolerance = numpy.array(1.0e-3)
+            self.maxiter = numpy.array(1e4)
+            self.ndem = numpy.array(1)
 
-        self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-        self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-        self.f_v = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-        self.f_sum = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+            self.c_phi = numpy.ones(1, dtype=numpy.float64)
+            self.c_v = numpy.ones(1, dtype=numpy.float64)
+            self.dt_dem_fac = numpy.ones(1, dtype=numpy.float64)
+
+            self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+            self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+            self.f_v = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+            self.f_sum = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+
+        elif self.cfd_solver[0] == 1:
+            self.tolerance = numpy.array(1.0e-3)
+            self.maxiter = numpy.array(1e4)
+            self.ndem = numpy.array(1)
+            self.c_phi = numpy.ones(1, dtype=numpy.float64)
+            self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+            self.beta_f = numpy.ones(1, dtype=numpy.float64)*4.5e-10
+            self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+            self.k_c = numpy.ones(1, dtype=numpy.float64)*4.6e-10
+
+        else:
+            raise Exception('Value of cfd_solver not understood (' + \
+                    str(self.cfd_solver[0]) + ')')
 
     def setFluidBottomNoFlow(self):
         '''
@@ -2846,6 +3119,18 @@ class sim:
         :func:`setFluidTopNoFlow()`
         '''
         self.bc_top[0] = 0
+
+    def findPermeabilities(self):
+        '''
+        Calculates the hydrological permeabilities from the Kozeny-Carman
+        relationship. These values are only relevant when the Darcy solver is
+        used (`self.cfd_solver = 1`). The permeability pre-factor `self.k_c`
+        and the assemblage porosities must be set beforehand. The former values
+        are set if a file from the `output/` folder is read using
+        `self.readbin`.
+        '''
+        phi = numpy.clip(self.phi, 0.1, 0.9)
+        self.k = self.k_c * phi**3/(1.0 - phi**2)
 
     def defaultParams(self,
             mu_s = 0.5,
@@ -2959,6 +3244,26 @@ class sim:
 
         # Debonding distance
         self.db[0] = (1.0 + theta/2.0) * self.V_b**(1.0/3.0)
+
+    def setStiffnessNormal(self, k_n):
+        '''
+        Set the elastic stiffness (`k_n`) in the normal direction of the
+        contact.
+
+        :param k_n: The elastic stiffness coefficient [N/m]
+        :type k_n: float
+        '''
+        self.k_n[0] = k_n
+
+    def setStiffnessTangential(self, k_t):
+        '''
+        Set the elastic stiffness (`k_t`) in the tangential direction of the
+        contact.
+
+        :param k_t: The elastic stiffness coefficient [N/m]
+        :type k_t: float
+        '''
+        self.k_t[0] = k_t
 
     def setDampingNormal(self, gamma, over_damping=False):
         '''
@@ -3324,18 +3629,27 @@ class sim:
 
     def bulkPorosity(self):
         '''
-        Calculates the bulk porosity
+        Calculates the bulk porosity in the smallest axis-parallel cube.
 
         :returns: The bulk porosity, in [0:1]
         :return type: float
         '''
 
-        if (self.nw == 0):
-            V_total = self.L[0] * self.L[1] * self.L[2]
-        elif (self.nw == 1):
-            V_total = self.L[0] * self.L[1] * self.w_x[0]
-            if (V_total <= 0.0):
-                raise Exception("Could not determine total volume")
+        min_x = numpy.min(self.x[:,0] - self.radius)
+        min_y = numpy.min(self.x[:,1] - self.radius)
+        min_z = numpy.min(self.x[:,2] - self.radius)
+        max_x = numpy.max(self.x[:,0] + self.radius)
+        max_y = numpy.max(self.x[:,1] + self.radius)
+        max_z = numpy.max(self.x[:,2] + self.radius)
+
+        #if (self.nw == 0):
+            #V_total = self.L[0] * self.L[1] * self.L[2]
+        #elif (self.nw == 1):
+            #V_total = self.L[0] * self.L[1] * self.w_x[0]
+            #if (V_total <= 0.0):
+                #raise Exception("Could not determine total volume")
+
+        V_total = (max_x - min_x)*(max_y - min_y)*(max_z - min_z)
 
         # Find the volume of solids
         V_solid = numpy.sum(V_sphere(self.radius))
@@ -4677,7 +4991,7 @@ class sim:
         plt.ylabel('Jacobi iterations')
         plt.plot(conv[:,0], conv[:,1])
         plt.grid()
-        plt.savefig('../output/' + self.sid + '-conv.' + graphics_format)
+        plt.savefig(self.sid + '-conv.' + graphics_format)
         plt.clf()
         plt.close(fig)
 
@@ -4814,7 +5128,7 @@ class sim:
         the required value of the maximum normalized residual for the fluid
         solver.
 
-        The default and recommended value is 1.0e-8.
+        The default and recommended value is 1.0e-3.
 
         :param tolerance: The tolerance criteria for the maximal normalized
             residual

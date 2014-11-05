@@ -24,6 +24,7 @@
 #include "integration.cuh"
 #include "raytracer.cuh"
 #include "navierstokes.cuh"
+#include "darcy.cuh"
 
 // Returns the number of cores per streaming multiprocessor, which is
 // a function of the device compute capability
@@ -170,40 +171,65 @@ __global__ void checkConstantValues(int* dev_equal,
 
     // Compare values between global- and constant
     // memory structures
-    if (dev_grid->origo[0] != devC_grid.origo[0] ||
-            dev_grid->origo[1] != devC_grid.origo[1] ||
-            dev_grid->origo[2] != devC_grid.origo[2] ||
-            dev_grid->L[0] != devC_grid.L[0] ||
-            dev_grid->L[1] != devC_grid.L[1] ||
-            dev_grid->L[2] != devC_grid.L[2] ||
-            dev_grid->num[0] != devC_grid.num[0] ||
-            dev_grid->num[1] != devC_grid.num[1] ||
-            dev_grid->num[2] != devC_grid.num[2] ||
-            dev_grid->periodic != devC_grid.periodic)
-        *dev_equal = 1; // Not ok
-
-    else if (dev_params->g[0] != devC_params.g[0] ||
-            dev_params->g[1] != devC_params.g[1] ||
-            dev_params->g[2] != devC_params.g[2] ||
-            dev_params->k_n != devC_params.k_n ||
-            dev_params->k_t != devC_params.k_t ||
-            dev_params->k_r != devC_params.k_r ||
-            dev_params->gamma_n != devC_params.gamma_n ||
-            dev_params->gamma_t != devC_params.gamma_t ||
-            dev_params->gamma_r != devC_params.gamma_r ||
-            dev_params->mu_s != devC_params.mu_s ||
-            dev_params->mu_d != devC_params.mu_d ||
-            dev_params->mu_r != devC_params.mu_r ||
-            dev_params->rho != devC_params.rho ||
-            dev_params->contactmodel != devC_params.contactmodel ||
-            dev_params->kappa != devC_params.kappa ||
-            dev_params->db != devC_params.db ||
-            dev_params->V_b != devC_params.V_b ||
-            dev_params->lambda_bar != devC_params.lambda_bar ||
-            dev_params->nb0 != devC_params.nb0 ||
-            dev_params->mu != devC_params.mu ||
-            dev_params->rho_f != devC_params.rho_f)
+    if (dev_grid->origo[0] != devC_grid.origo[0])
+        *dev_equal = 1;
+    if (dev_grid->origo[1] != devC_grid.origo[1])
         *dev_equal = 2; // Not ok
+    if (dev_grid->origo[2] != devC_grid.origo[2])
+        *dev_equal = 3; // Not ok
+    if (dev_grid->L[0] != devC_grid.L[0])
+        *dev_equal = 4; // Not ok
+    if (dev_grid->L[1] != devC_grid.L[1])
+        *dev_equal = 5; // Not ok
+    if (dev_grid->L[2] != devC_grid.L[2])
+        *dev_equal = 6; // Not ok
+    if (dev_grid->num[0] != devC_grid.num[0])
+        *dev_equal = 7; // Not ok
+    if (dev_grid->num[1] != devC_grid.num[1])
+        *dev_equal = 8; // Not ok
+    if (dev_grid->num[2] != devC_grid.num[2])
+        *dev_equal = 9; // Not ok
+    if (dev_grid->periodic != devC_grid.periodic)
+        *dev_equal = 10; // Not ok
+
+    if (dev_params->g[0] != devC_params.g[0])
+        *dev_equal = 11; // Not ok
+    if (dev_params->g[1] != devC_params.g[1])
+        *dev_equal = 12; // Not ok
+    if (dev_params->g[2] != devC_params.g[2])
+        *dev_equal = 13; // Not ok
+    if (dev_params->k_n != devC_params.k_n)
+        *dev_equal = 14; // Not ok
+    if (dev_params->k_t != devC_params.k_t)
+        *dev_equal = 15; // Not ok
+    if (dev_params->k_r != devC_params.k_r)
+        *dev_equal = 16; // Not ok
+    if (dev_params->gamma_n != devC_params.gamma_n)
+        *dev_equal = 17; // Not ok
+    if (dev_params->gamma_t != devC_params.gamma_t)
+        *dev_equal = 18; // Not ok
+    if (dev_params->gamma_r != devC_params.gamma_r)
+        *dev_equal = 19; // Not ok
+    if (dev_params->mu_s != devC_params.mu_s)
+        *dev_equal = 20; // Not ok
+    if (dev_params->mu_d != devC_params.mu_d)
+        *dev_equal = 21; // Not ok
+    if (dev_params->mu_r != devC_params.mu_r)
+        *dev_equal = 22; // Not ok
+    if (dev_params->rho != devC_params.rho)
+        *dev_equal = 23; // Not ok
+    if (dev_params->contactmodel != devC_params.contactmodel)
+        *dev_equal = 24; // Not ok
+    if (dev_params->kappa != devC_params.kappa)
+        *dev_equal = 25; // Not ok
+    if (dev_params->db != devC_params.db)
+        *dev_equal = 26; // Not ok
+    if (dev_params->V_b != devC_params.V_b)
+        *dev_equal = 27; // Not ok
+    if (dev_params->lambda_bar != devC_params.lambda_bar)
+        *dev_equal = 28; // Not ok
+    if (dev_params->nb0 != devC_params.nb0)
+        *dev_equal = 29; // Not ok
 }
 
 // Copy the constant data components to device memory,
@@ -524,8 +550,11 @@ __host__ void DEM::freeGlobalDeviceMemory()
     cudaFree(dev_walls_acc);
 
     // Fluid arrays
-    if (navierstokes == 1) {
+    if (fluid == 1 && cfd_solver == 0) {
         freeNSmemDev();
+    }
+    if (fluid == 1 && cfd_solver == 1) {
+        freeDarcyMemDev();
     }
 
     //checkForCudaErrors("During cudaFree calls");
@@ -604,11 +633,15 @@ __host__ void DEM::transferToGlobalDeviceMemory(int statusmsg)
                 sizeof(Float4)*walls.nw, cudaMemcpyHostToDevice);
 
     // Fluid arrays
-    if (navierstokes == 1) {
-        transferNStoGlobalDeviceMemory(1);
-    } else if (navierstokes != 0) {
-        std::cerr << "Error: navierstokes value not understood ("
-            << navierstokes << ")" << std::endl;
+    if (fluid == 1) {
+        if (cfd_solver == 0) {
+            transferNStoGlobalDeviceMemory(1);
+        } else if (cfd_solver == 1) {
+            transferDarcyToGlobalDeviceMemory(1);
+        } else {
+            std::cerr << "Error: cfd_solver value not understood ("
+                << cfd_solver << ")" << std::endl;
+        }
     }
 
     checkForCudaErrors("End of transferToGlobalDeviceMemory");
@@ -680,8 +713,12 @@ __host__ void DEM::transferFromGlobalDeviceMemory()
             sizeof(Float4)*walls.nw, cudaMemcpyDeviceToHost);
 
     // Fluid arrays
-    if (navierstokes == 1) {
+    if (fluid == 1 && cfd_solver == 0) {
         transferNSfromGlobalDeviceMemory(0);
+    }
+    else if (fluid == 1 && cfd_solver == 1) {
+        transferDarcyFromGlobalDeviceMemory(0);
+        checkDarcyStability();
     }
 
     //checkForCudaErrors("End of transferFromGlobalDeviceMemory");
@@ -733,7 +770,7 @@ __host__ void DEM::startTime()
             iDivUp(grid.num[0], dimBlockFluid.x),
             iDivUp(grid.num[1], dimBlockFluid.y),
             iDivUp(grid.num[2], dimBlockFluid.z));
-    if (dimGridFluid.z > 64 && navierstokes == 1) {
+    if (dimGridFluid.z > 64 && fluid == 1) {
         cerr << "Error: dimGridFluid.z > 64" << endl;
         exit(1);
     }
@@ -744,7 +781,7 @@ __host__ void DEM::startTime()
             iDivUp(grid.num[0]+1, dimBlockFluidFace.x),
             iDivUp(grid.num[1]+1, dimBlockFluidFace.y),
             iDivUp(grid.num[2]+1, dimBlockFluidFace.z));
-    if (dimGridFluidFace.z > 64 && navierstokes == 1) {
+    if (dimGridFluidFace.z > 64 && fluid == 1) {
         cerr << "Error: dimGridFluidFace.z > 64" << endl;
         exit(1);
     }
@@ -766,7 +803,7 @@ __host__ void DEM::startTime()
             << dimBlock.x << "*" << dimBlock.y << "*" << dimBlock.z << "\n"
             << "  - Shared memory required per block: " << smemSize << " bytes"
             << endl;
-        if (navierstokes == 1) {
+        if (fluid == 1) {
             cout << "  - Blocks per fluid grid: "
                 << dimGridFluid.x << "*" << dimGridFluid.y << "*" <<
                 dimGridFluid.z << "\n"
@@ -832,6 +869,17 @@ __host__ void DEM::startTime()
     double t_jacobiIterationNS = 0.0;
     double t_updateNSvelocityPressure = 0.0;
 
+    double t_findDarcyPorosities = 0.0;
+    double t_setDarcyGhostNodes = 0.0;
+    double t_findDarcyPressureForce = 0.0;
+    double t_setDarcyTopPressure = 0.0;
+    double t_findDarcyPermeabilities = 0.0;
+    double t_findDarcyPermeabilityGradients = 0.0;
+    //double t_findDarcyPressureChange = 0.0;
+    double t_updateDarcySolution = 0.0;
+    double t_copyValues = 0.0;
+    double t_findDarcyVelocities = 0.0;
+
     if (PROFILING == 1) {
         cudaEventCreate(&kernel_tic);
         cudaEventCreate(&kernel_toc);
@@ -844,7 +892,11 @@ __host__ void DEM::startTime()
     // Index of dynamic top wall (if it exists)
     unsigned int wall0_iz = 10000000;
     // weight of fluid between two cells in z direction
-    const Float dp_dz = fabs(params.rho_f*params.g[2]*grid.L[2]/grid.num[2]);
+    Float dp_dz;
+    if (cfd_solver == 0)
+        dp_dz = fabs(ns.rho_f*params.g[2]*grid.L[2]/grid.num[2]);
+    else if (cfd_solver == 1)
+        dp_dz = fabs(darcy.rho_f*params.g[2]*grid.L[2]/grid.num[2]);
     //std::cout << "dp_dz = " << dp_dz << std::endl;
 
     // Write a log file of the number of iterations it took before
@@ -1018,163 +1070,170 @@ __host__ void DEM::startTime()
             }
         }
 
-        // Solve Navier Stokes flow through the grid
-        if (navierstokes == 1) {
-            checkForCudaErrorsIter("Before findPorositiesDev", iter);
-            // Find cell porosities, average particle velocities, and average
-            // particle diameters. These are needed for predicting the fluid
-            // velocities
-            if (PROFILING == 1)
-                startTimer(&kernel_tic);
-            findPorositiesVelocitiesDiametersSpherical
-            //findPorositiesVelocitiesDiametersSphericalGradient
-                <<<dimGridFluid, dimBlockFluid>>>(
-                        dev_cellStart,
-                        dev_cellEnd,
-                        dev_x_sorted,
-                        dev_vel_sorted,
-                        dev_ns_phi,
-                        dev_ns_dphi,
-                        dev_ns_vp_avg,
-                        dev_ns_d_avg,
-                        iter,
-                        np,
-                        ns.c_phi);
-            cudaThreadSynchronize();
-            if (PROFILING == 1)
-                stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                        &t_findPorositiesDev);
-            checkForCudaErrorsIter("Post findPorositiesDev", iter);
+        // Solve fluid flow through the grid
+        if (fluid == 1) {
+
+            // Navier-Stokes solution
+            if (cfd_solver == 0) {
+
+                checkForCudaErrorsIter("Before findPorositiesDev", iter);
+                // Find cell porosities, average particle velocities, and average
+                // particle diameters. These are needed for predicting the fluid
+                // velocities
+                if (PROFILING == 1)
+                    startTimer(&kernel_tic);
+                findPorositiesVelocitiesDiametersSpherical
+                //findPorositiesVelocitiesDiametersSphericalGradient
+                    <<<dimGridFluid, dimBlockFluid>>>(
+                            dev_cellStart,
+                            dev_cellEnd,
+                            dev_x_sorted,
+                            dev_vel_sorted,
+                            dev_ns_phi,
+                            dev_ns_dphi,
+                            dev_ns_vp_avg,
+                            dev_ns_d_avg,
+                            iter,
+                            np,
+                            ns.c_phi);
+                cudaThreadSynchronize();
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_findPorositiesDev);
+                checkForCudaErrorsIter("Post findPorositiesDev", iter);
 
 #ifdef CFD_DEM_COUPLING
-            /*if (params.nu <= 0.0) {
-                std::cerr << "Error! The fluid needs a positive viscosity "
-                    "value in order to simulate particle-fluid interaction."
-                    << std::endl;
-                exit(1);
-            }*/
-            if (iter == 0) {
-                // set cell center ghost nodes
-                setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
-                    dev_ns_v, ns.bc_bot, ns.bc_top);
+                /*if (params.nu <= 0.0) {
+                  std::cerr << "Error! The fluid needs a positive viscosity "
+                  "value in order to simulate particle-fluid interaction."
+                  << std::endl;
+                  exit(1);
+                  }*/
+                if (iter == 0) {
+                    // set cell center ghost nodes
+                    setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_ns_v, ns.bc_bot, ns.bc_top);
 
-                // find cell face velocities
-                interpolateCenterToFace
+                    // find cell face velocities
+                    interpolateCenterToFace
+                        <<<dimGridFluidFace, dimBlockFluidFace>>>(
+                                dev_ns_v,
+                                dev_ns_v_x,
+                                dev_ns_v_y,
+                                dev_ns_v_z);
+                    cudaThreadSynchronize();
+                    checkForCudaErrors("Post interpolateCenterToFace");
+                }
+
+                setNSghostNodesFace<Float>
                     <<<dimGridFluidFace, dimBlockFluidFace>>>(
-                        dev_ns_v,
-                        dev_ns_v_x,
-                        dev_ns_v_y,
-                        dev_ns_v_z);
+                            dev_ns_v_x,
+                            dev_ns_v_y,
+                            dev_ns_v_z,
+                            ns.bc_bot,
+                            ns.bc_top);
                 cudaThreadSynchronize();
-                checkForCudaErrors("Post interpolateCenterToFace");
-            }
+                checkForCudaErrorsIter("Post setNSghostNodesFace", iter);
 
-            setNSghostNodesFace<Float>
-                <<<dimGridFluidFace, dimBlockFluidFace>>>(
-                    dev_ns_v_x,
-                    dev_ns_v_y,
-                    dev_ns_v_z,
-                    ns.bc_bot,
-                    ns.bc_top);
-            cudaThreadSynchronize();
-            checkForCudaErrorsIter("Post setNSghostNodesFace", iter);
-
-            findFaceDivTau<<<dimGridFluidFace, dimBlockFluidFace>>>(
-                dev_ns_v_x,
-                dev_ns_v_y,
-                dev_ns_v_z,
-                dev_ns_div_tau_x,
-                dev_ns_div_tau_y,
-                dev_ns_div_tau_z);
-            cudaThreadSynchronize();
-            checkForCudaErrorsIter("Post findFaceDivTau", iter);
-
-            setNSghostNodesFace<Float>
-                <<<dimGridFluidFace, dimBlockFluid>>>(
-                    dev_ns_div_tau_x,
-                    dev_ns_div_tau_y,
-                    dev_ns_div_tau_z,
-                    ns.bc_bot,
-                    ns.bc_top);
-            cudaThreadSynchronize();
-            checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_div_tau)",
-                                   iter);
-
-            setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
-                dev_ns_p, ns.bc_bot, ns.bc_top);
-            cudaThreadSynchronize();
-            checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_p)", iter);
-
-            setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
-                dev_ns_phi, ns.bc_bot, ns.bc_top);
-            cudaThreadSynchronize();
-            checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_p)", iter);
-
-
-            if (np > 0) {
-
-                // Per particle, find the fluid-particle interaction force f_pf
-                // and apply it to the particle
-                findInteractionForce<<<dimGrid, dimBlock>>>(
-                        dev_x,
-                        dev_vel,
-                        dev_ns_phi,
-                        dev_ns_p,
+                findFaceDivTau<<<dimGridFluidFace, dimBlockFluidFace>>>(
                         dev_ns_v_x,
                         dev_ns_v_y,
                         dev_ns_v_z,
+                        ns.mu,
                         dev_ns_div_tau_x,
                         dev_ns_div_tau_y,
-                        dev_ns_div_tau_z,
-                        //ns.c_v,
-                        dev_ns_f_pf,
-                        dev_force,
-                        dev_ns_f_d,
-                        dev_ns_f_p,
-                        dev_ns_f_v,
-                        dev_ns_f_sum);
+                        dev_ns_div_tau_z);
                 cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post findInteractionForce", iter);
+                checkForCudaErrorsIter("Post findFaceDivTau", iter);
+
+                setNSghostNodesFace<Float>
+                    <<<dimGridFluidFace, dimBlockFluid>>>(
+                            dev_ns_div_tau_x,
+                            dev_ns_div_tau_y,
+                            dev_ns_div_tau_z,
+                            ns.bc_bot,
+                            ns.bc_top);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_div_tau)",
+                        iter);
 
                 setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_p, ns.bc_bot, ns.bc_top);
                 cudaThreadSynchronize();
                 checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_p)", iter);
 
-                // Apply fluid-particle interaction force to the fluid
-                applyInteractionForceToFluid<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_gridParticleIndex,
-                        dev_cellStart,
-                        dev_cellEnd,
-                        dev_ns_f_pf,
-                        dev_ns_F_pf);
-                        //dev_ns_F_pf_x,
-                        //dev_ns_F_pf_y,
-                        //dev_ns_F_pf_z);
+                setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                        dev_ns_phi, ns.bc_bot, ns.bc_top);
                 cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post applyInteractionForceToFluid",
-                        iter);
+                checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_p)", iter);
 
-                setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_F_pf, ns.bc_bot, ns.bc_top);
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post setNSghostNodes(F_pf)", iter);
-            }
+
+                if (np > 0) {
+
+                    // Per particle, find the fluid-particle interaction force f_pf
+                    // and apply it to the particle
+                    findInteractionForce<<<dimGrid, dimBlock>>>(
+                            dev_x,
+                            dev_vel,
+                            dev_ns_phi,
+                            dev_ns_p,
+                            dev_ns_v_x,
+                            dev_ns_v_y,
+                            dev_ns_v_z,
+                            dev_ns_div_tau_x,
+                            dev_ns_div_tau_y,
+                            dev_ns_div_tau_z,
+                            //ns.c_v,
+                            ns.mu,
+                            ns.rho_f,
+                            dev_ns_f_pf,
+                            dev_force,
+                            dev_ns_f_d,
+                            dev_ns_f_p,
+                            dev_ns_f_v,
+                            dev_ns_f_sum);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post findInteractionForce", iter);
+
+                    setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_ns_p, ns.bc_bot, ns.bc_top);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post setNSghostNodes(dev_ns_p)", iter);
+
+                    // Apply fluid-particle interaction force to the fluid
+                    applyInteractionForceToFluid<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_gridParticleIndex,
+                            dev_cellStart,
+                            dev_cellEnd,
+                            dev_ns_f_pf,
+                            dev_ns_F_pf);
+                    //dev_ns_F_pf_x,
+                    //dev_ns_F_pf_y,
+                    //dev_ns_F_pf_z);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post applyInteractionForceToFluid",
+                            iter);
+
+                    setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_ns_F_pf, ns.bc_bot, ns.bc_top);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post setNSghostNodes(F_pf)", iter);
+                }
 #endif
 
-            if ((iter % ns.ndem) == 0) {
-                // Initial guess for the top epsilon values. These may be
-                // changed in setUpperPressureNS
-                // TODO: Check if this should only be set when top bc=Dirichlet
-                Float pressure = ns.p[idx(0,0,ns.nz-1)];
-                Float pressure_new = pressure; // Dirichlet
-                Float epsilon_value = pressure_new - ns.beta*pressure;
-                setNSepsilonTop<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_epsilon,
-                        dev_ns_epsilon_new,
-                        epsilon_value);
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post setNSepsilonTop", iter);
+                if ((iter % ns.ndem) == 0) {
+                    // Initial guess for the top epsilon values. These may be
+                    // changed in setUpperPressureNS
+                    // TODO: Check if this should only be set when top bc=Dirichlet
+                    Float pressure = ns.p[idx(0,0,ns.nz-1)];
+                    Float pressure_new = pressure; // Dirichlet
+                    Float epsilon_value = pressure_new - ns.beta*pressure;
+                    setNSepsilonTop<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_ns_epsilon,
+                            dev_ns_epsilon_new,
+                            epsilon_value);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post setNSepsilonTop", iter);
 
 #if defined(REPORT_EPSILON) || defined(REPORT_V_P_COMPONENTS) || defined(REPORT_V_C_COMPONENTS)
                     std::cout
@@ -1182,344 +1241,9 @@ __host__ void DEM::startTime()
                         << std::endl;
 #endif
 
-                // find cell containing top wall
-                if (walls.nw > 0 && walls.wmode[0] == 1) {
-                    wall0_iz = walls.nx->w/(grid.L[2]/grid.num[2]);
-                    setNSepsilonAtTopWall<<<dimGridFluid, dimBlockFluid>>>(
-                            dev_ns_epsilon,
-                            dev_ns_epsilon_new,
-                            wall0_iz,
-                            epsilon_value,
-                            dp_dz);
-                    cudaThreadSynchronize();
-                    checkForCudaErrorsIter("Post setNSepsilonAtTopWall", iter);
-
-#ifdef REPORT_EPSILON
-                    std::cout
-                        << "\n###### EPSILON setNSepsilonAtTopWall "
-                        << "######" << std::endl;
-                    transferNSepsilonFromGlobalDeviceMemory();
-                    printNSarray(stdout, ns.epsilon, "epsilon");
-#endif
-                }
-
-                // Modulate the pressures at the upper boundary cells
-                if ((ns.p_mod_A > 1.0e-5 || ns.p_mod_A < -1.0e-5) &&
-                        ns.p_mod_f > 1.0e-7) {
-                                         // original pressure
-                    Float new_pressure = ns.p[idx(0,0,ns.nz-1)]
-                        + ns.p_mod_A*sin(2.0*M_PI*ns.p_mod_f*time.current
-                                + ns.p_mod_phi);
-                    setUpperPressureNS<<<dimGridFluid, dimBlockFluid>>>(
-                            dev_ns_p,
-                            dev_ns_epsilon,
-                            dev_ns_epsilon_new,
-                            ns.beta,
-                            new_pressure);
-                    cudaThreadSynchronize();
-                    checkForCudaErrorsIter("Post setUpperPressureNS", iter);
-
-#ifdef REPORT_MORE_EPSILON
-                    std::cout
-                        << "\n@@@@@@ TIME STEP " << iter << " @@@@@@"
-                        << "\n###### EPSILON AFTER setUpperPressureNS "
-                        << "######" << std::endl;
-                    transferNSepsilonFromGlobalDeviceMemory();
-                    printNSarray(stdout, ns.epsilon, "epsilon");
-#endif
-                }
-
-                // Set the values of the ghost nodes in the grid
-                if (PROFILING == 1)
-                    startTimer(&kernel_tic);
-
-                setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_p, ns.bc_bot, ns.bc_top);
-
-                //setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
-                        //dev_ns_v, ns.bc_bot, ns.bc_top);
-
-                setNSghostNodesFace<Float>
-                    <<<dimGridFluidFace, dimBlockFluidFace>>>(
-                        dev_ns_v_p_x,
-                        dev_ns_v_p_y,
-                        dev_ns_v_p_z,
-                        ns.bc_bot, ns.bc_top);
-
-                setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_phi, ns.bc_bot, ns.bc_top);
-
-                setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_dphi, ns.bc_bot, ns.bc_top);
-
-                cudaThreadSynchronize();
-                if (PROFILING == 1)
-                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                            &t_setNSghostNodesDev);
-                checkForCudaErrorsIter("Post setNSghostNodesDev", iter);
-                /*std::cout << "\n###### EPSILON AFTER setNSghostNodesDev #####"
-                  << std::endl;
-                  transferNSepsilonFromGlobalDeviceMemory();
-                  printNSarray(stdout, ns.epsilon, "epsilon");*/
-
-                // interpolate velocities to cell centers which makes velocity
-                // prediction easier
-                interpolateFaceToCenter<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_v_x,
-                        dev_ns_v_y,
-                        dev_ns_v_z,
-                        dev_ns_v);
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post interpolateFaceToCenter", iter);
-
-                // Set cell-center velocity ghost nodes
-                setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
-                    dev_ns_v, ns.bc_bot, ns.bc_top);
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post setNSghostNodes(v)", iter);
-                
-                // Find the divergence of phi*vi*v, needed for predicting the
-                // fluid velocities
-                if (PROFILING == 1)
-                    startTimer(&kernel_tic);
-                findNSdivphiviv<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_phi,
-                        dev_ns_v,
-                        dev_ns_div_phi_vi_v);
-                cudaThreadSynchronize();
-                if (PROFILING == 1)
-                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                            &t_findNSdivphiviv);
-                checkForCudaErrorsIter("Post findNSdivphiviv", iter);
-
-                // Set cell-center ghost nodes
-                setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
-                    dev_ns_div_phi_vi_v, ns.bc_bot, ns.bc_top);
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post setNSghostNodes(div_phi_vi_v)",
-                                       iter);
-
-                // Predict the fluid velocities on the base of the old pressure
-                // field and ignoring the incompressibility constraint
-                if (PROFILING == 1)
-                    startTimer(&kernel_tic);
-                findPredNSvelocities<<<dimGridFluidFace, dimBlockFluidFace>>>(
-                        dev_ns_p,
-                        dev_ns_v_x,
-                        dev_ns_v_y,
-                        dev_ns_v_z,
-                        dev_ns_phi,
-                        dev_ns_dphi,
-                        dev_ns_div_tau_x,
-                        dev_ns_div_tau_y,
-                        dev_ns_div_tau_z,
-                        dev_ns_div_phi_vi_v,
-                        ns.bc_bot,
-                        ns.bc_top,
-                        ns.beta,
-                        dev_ns_F_pf,
-                        ns.ndem,
-                        wall0_iz,
-                        ns.c_v,
-                        dev_ns_v_p_x,
-                        dev_ns_v_p_y,
-                        dev_ns_v_p_z);
-                cudaThreadSynchronize();
-                if (PROFILING == 1)
-                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                            &t_findPredNSvelocities);
-                checkForCudaErrorsIter("Post findPredNSvelocities", iter);
-
-                setNSghostNodesFace<Float>
-                    <<<dimGridFluidFace, dimBlockFluidFace>>>(
-                        dev_ns_v_p_x,
-                        dev_ns_v_p_y,
-                        dev_ns_v_p_z,
-                        ns.bc_bot, ns.bc_top);
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter(
-                        "Post setNSghostNodesFace(dev_ns_v_p)", iter);
-
-                interpolateFaceToCenter<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_v_p_x,
-                        dev_ns_v_p_y,
-                        dev_ns_v_p_z,
-                        dev_ns_v_p);
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post interpolateFaceToCenter", iter);
-
-
-                // In the first iteration of the sphere program, we'll need to
-                // manually estimate the values of epsilon. In the subsequent
-                // iterations, the previous values are  used.
-                if (iter == 0) {
-
-                    // Define the first estimate of the values of epsilon.
-                    // The initial guess depends on the value of ns.beta.
-                    Float pressure = ns.p[idx(2,2,2)];
-                    Float pressure_new = pressure; // Guess p_current = p_new
-                    Float epsilon_value = pressure_new - ns.beta*pressure;
-                    if (PROFILING == 1)
-                        startTimer(&kernel_tic);
-                    setNSepsilonInterior<<<dimGridFluid, dimBlockFluid>>>(
-                            dev_ns_epsilon, epsilon_value);
-                    cudaThreadSynchronize();
-
-                    setNSnormZero<<<dimGridFluid, dimBlockFluid>>>(dev_ns_norm);
-                    cudaThreadSynchronize();
-
-                    if (PROFILING == 1)
-                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                                &t_setNSepsilon);
-                    checkForCudaErrorsIter("Post setNSepsilonInterior", iter);
-
-#ifdef REPORT_MORE_EPSILON
-                    std::cout
-                        << "\n###### EPSILON AFTER setNSepsilonInterior "
-                        << "######" << std::endl;
-                    transferNSepsilonFromGlobalDeviceMemory();
-                    printNSarray(stdout, ns.epsilon, "epsilon");
-#endif
-
-                    // Set the epsilon values at the lower boundary
-                    pressure = ns.p[idx(0,0,0)];
-                    pressure_new = pressure; // Guess p_current = p_new
-                    epsilon_value = pressure_new - ns.beta*pressure;
-                    if (PROFILING == 1)
-                        startTimer(&kernel_tic);
-                    setNSepsilonBottom<<<dimGridFluid, dimBlockFluid>>>(
-                            dev_ns_epsilon,
-                            dev_ns_epsilon_new,
-                            epsilon_value);
-                    cudaThreadSynchronize();
-                    if (PROFILING == 1)
-                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                                &t_setNSdirichlet);
-                    checkForCudaErrorsIter("Post setNSepsilonBottom", iter);
-
-#ifdef REPORT_MORE_EPSILON
-                    std::cout
-                        << "\n###### EPSILON AFTER setNSepsilonBottom "
-                        << "######" << std::endl;
-                    transferNSepsilonFromGlobalDeviceMemory();
-                    printNSarray(stdout, ns.epsilon, "epsilon");
-#endif
-
-                    /*setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
-                      dev_ns_epsilon);
-                      cudaThreadSynchronize();
-                      checkForCudaErrors("Post setNSghostNodesFloat(dev_ns_epsilon)",
-                      iter);*/
-                    setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
-                            dev_ns_epsilon,
-                            ns.bc_bot, ns.bc_top);
-                    cudaThreadSynchronize();
-                    checkForCudaErrorsIter("Post setNSghostNodesEpsilon(1)",
-                            iter);
-
-#ifdef REPORT_MORE_EPSILON
-                    std::cout <<
-                        "\n###### EPSILON AFTER setNSghostNodes(epsilon) "
-                        << "######" << std::endl;
-                    transferNSepsilonFromGlobalDeviceMemory();
-                    printNSarray(stdout, ns.epsilon, "epsilon");
-#endif
-                }
-
-                // Solve the system of epsilon using a Jacobi iterative solver.
-                // The average normalized residual is initialized to a large
-                // value.
-                //double avg_norm_res;
-                double max_norm_res;
-
-                // Write a log file of the normalized residuals during the Jacobi
-                // iterations
-                std::ofstream reslog;
-                if (write_res_log == 1)
-                    reslog.open("max_res_norm.dat");
-
-                // transfer normalized residuals from GPU to CPU
-#ifdef REPORT_MORE_EPSILON
-                std::cout << "\n###### BEFORE FIRST JACOBI ITERATION ######"
-                    << "\n@@@@@@ TIME STEP " << iter << " @@@@@@"
-                    << std::endl;
-                transferNSepsilonFromGlobalDeviceMemory();
-                printNSarray(stdout, ns.epsilon, "epsilon");
-#endif
-
-                for (unsigned int nijac = 0; nijac<ns.maxiter; ++nijac) {
-
-                    //printf("### Jacobi iteration %d\n", nijac);
-
-                    // Only grad(epsilon) changes during the Jacobi iterations.
-                    // The remaining terms of the forcing function are only
-                    // calculated during the first iteration.
-                    if (PROFILING == 1)
-                        startTimer(&kernel_tic);
-                    findNSforcing<<<dimGridFluid, dimBlockFluid>>>(
-                            dev_ns_epsilon,
-                            dev_ns_phi,
-                            dev_ns_dphi,
-                            dev_ns_v_p,
-                            dev_ns_v_p_x,
-                            dev_ns_v_p_y,
-                            dev_ns_v_p_z,
-                            nijac,
-                            ns.ndem,
-                            ns.c_v,
-                            dev_ns_f1,
-                            dev_ns_f2,
-                            dev_ns_f);
-                    cudaThreadSynchronize();
-                    if (PROFILING == 1)
-                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                                &t_findNSforcing);
-                    checkForCudaErrorsIter("Post findNSforcing", iter);
-                    /*setNSghostNodesForcing<<<dimGridFluid, dimBlockFluid>>>(
-                      dev_ns_f1,
-                      dev_ns_f2,
-                      dev_ns_f,
-                      nijac);
-                      cudaThreadSynchronize();
-                      checkForCudaErrors("Post setNSghostNodesForcing", iter);*/
-
-                    setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
-                            dev_ns_epsilon,
-                            ns.bc_bot, ns.bc_top);
-                    cudaThreadSynchronize();
-                    checkForCudaErrorsIter("Post setNSghostNodesEpsilon(2)",
-                            iter);
-
-#ifdef REPORT_EPSILON
-                    std::cout << "\n###### JACOBI ITERATION "
-                        << nijac
-                        << " after setNSghostNodes(epsilon,2) ######"
-                        << std::endl;
-                    transferNSepsilonFromGlobalDeviceMemory();
-                    printNSarray(stdout, ns.epsilon, "epsilon");
-#endif
-
-                    // Perform a single Jacobi iteration
-                    if (PROFILING == 1)
-                        startTimer(&kernel_tic);
-                    jacobiIterationNS<<<dimGridFluid, dimBlockFluid>>>(
-                            dev_ns_epsilon,
-                            dev_ns_epsilon_new,
-                            dev_ns_norm,
-                            dev_ns_f,
-                            ns.bc_bot,
-                            ns.bc_top,
-                            ns.theta,
-                            wall0_iz,
-                            dp_dz);
-                    cudaThreadSynchronize();
-                    if (PROFILING == 1)
-                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                                &t_jacobiIterationNS);
-                    checkForCudaErrorsIter("Post jacobiIterationNS", iter);
-
-                    // set Dirichlet and Neumann BC at cells containing top wall
-                    /*if (walls.nw > 0 && walls.wmode[0] == 1) {
+                    // find cell containing top wall
+                    if (walls.nw > 0 && walls.wmode[0] == 1) {
+                        wall0_iz = walls.nx->w/(grid.L[2]/grid.num[2]);
                         setNSepsilonAtTopWall<<<dimGridFluid, dimBlockFluid>>>(
                                 dev_ns_epsilon,
                                 dev_ns_epsilon_new,
@@ -1527,158 +1251,801 @@ __host__ void DEM::startTime()
                                 epsilon_value,
                                 dp_dz);
                         cudaThreadSynchronize();
-                        checkForCudaErrorsIter("Post setNSepsilonAtTopWall",
-                                iter);
-                    }*/
-
-                    // Copy new values to current values
-                    copyValues<Float><<<dimGridFluid, dimBlockFluid>>>(
-                            dev_ns_epsilon_new,
-                            dev_ns_epsilon);
-                    cudaThreadSynchronize();
-                    checkForCudaErrorsIter
-                        ("Post copyValues (epsilon_new->epsilon)", iter);
+                        checkForCudaErrorsIter("Post setNSepsilonAtTopWall", iter);
 
 #ifdef REPORT_EPSILON
-                    std::cout << "\n###### JACOBI ITERATION "
-                        << nijac << " after jacobiIterationNS ######"
+                        std::cout
+                            << "\n###### EPSILON setNSepsilonAtTopWall "
+                            << "######" << std::endl;
+                        transferNSepsilonFromGlobalDeviceMemory();
+                        printNSarray(stdout, ns.epsilon, "epsilon");
+#endif
+                    }
+
+                    // Modulate the pressures at the upper boundary cells
+                    if ((ns.p_mod_A > 1.0e-5 || ns.p_mod_A < -1.0e-5) &&
+                            ns.p_mod_f > 1.0e-7) {
+                        // original pressure
+                        Float new_pressure = ns.p[idx(0,0,ns.nz-1)]
+                            + ns.p_mod_A*sin(2.0*M_PI*ns.p_mod_f*time.current
+                                    + ns.p_mod_phi);
+                        setUpperPressureNS<<<dimGridFluid, dimBlockFluid>>>(
+                                dev_ns_p,
+                                dev_ns_epsilon,
+                                dev_ns_epsilon_new,
+                                ns.beta,
+                                new_pressure);
+                        cudaThreadSynchronize();
+                        checkForCudaErrorsIter("Post setUpperPressureNS", iter);
+
+#ifdef REPORT_MORE_EPSILON
+                        std::cout
+                            << "\n@@@@@@ TIME STEP " << iter << " @@@@@@"
+                            << "\n###### EPSILON AFTER setUpperPressureNS "
+                            << "######" << std::endl;
+                        transferNSepsilonFromGlobalDeviceMemory();
+                        printNSarray(stdout, ns.epsilon, "epsilon");
+#endif
+                    }
+
+                    // Set the values of the ghost nodes in the grid
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
+
+                    setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_ns_p, ns.bc_bot, ns.bc_top);
+
+                    //setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
+                    //dev_ns_v, ns.bc_bot, ns.bc_top);
+
+                    setNSghostNodesFace<Float>
+                        <<<dimGridFluidFace, dimBlockFluidFace>>>(
+                                dev_ns_v_p_x,
+                                dev_ns_v_p_y,
+                                dev_ns_v_p_z,
+                                ns.bc_bot, ns.bc_top);
+
+                    setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_ns_phi, ns.bc_bot, ns.bc_top);
+
+                    setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_ns_dphi, ns.bc_bot, ns.bc_top);
+
+                    cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_setNSghostNodesDev);
+                    checkForCudaErrorsIter("Post setNSghostNodesDev", iter);
+                    /*std::cout << "\n###### EPSILON AFTER setNSghostNodesDev #####"
+                      << std::endl;
+                      transferNSepsilonFromGlobalDeviceMemory();
+                      printNSarray(stdout, ns.epsilon, "epsilon");*/
+
+                    // interpolate velocities to cell centers which makes velocity
+                    // prediction easier
+                    interpolateFaceToCenter<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_ns_v_x,
+                            dev_ns_v_y,
+                            dev_ns_v_z,
+                            dev_ns_v);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post interpolateFaceToCenter", iter);
+
+                    // Set cell-center velocity ghost nodes
+                    setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_ns_v, ns.bc_bot, ns.bc_top);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post setNSghostNodes(v)", iter);
+
+                    // Find the divergence of phi*vi*v, needed for predicting the
+                    // fluid velocities
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
+                    findNSdivphiviv<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_ns_phi,
+                            dev_ns_v,
+                            dev_ns_div_phi_vi_v);
+                    cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_findNSdivphiviv);
+                    checkForCudaErrorsIter("Post findNSdivphiviv", iter);
+
+                    // Set cell-center ghost nodes
+                    setNSghostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_ns_div_phi_vi_v, ns.bc_bot, ns.bc_top);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post setNSghostNodes(div_phi_vi_v)",
+                            iter);
+
+                    // Predict the fluid velocities on the base of the old pressure
+                    // field and ignoring the incompressibility constraint
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
+                    findPredNSvelocities<<<dimGridFluidFace, dimBlockFluidFace>>>(
+                            dev_ns_p,
+                            dev_ns_v_x,
+                            dev_ns_v_y,
+                            dev_ns_v_z,
+                            dev_ns_phi,
+                            dev_ns_dphi,
+                            dev_ns_div_tau_x,
+                            dev_ns_div_tau_y,
+                            dev_ns_div_tau_z,
+                            dev_ns_div_phi_vi_v,
+                            ns.bc_bot,
+                            ns.bc_top,
+                            ns.beta,
+                            dev_ns_F_pf,
+                            ns.ndem,
+                            wall0_iz,
+                            ns.c_v,
+                            ns.mu,
+                            ns.rho_f,
+                            dev_ns_v_p_x,
+                            dev_ns_v_p_y,
+                            dev_ns_v_p_z);
+                    cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_findPredNSvelocities);
+                    checkForCudaErrorsIter("Post findPredNSvelocities", iter);
+
+                    setNSghostNodesFace<Float>
+                        <<<dimGridFluidFace, dimBlockFluidFace>>>(
+                                dev_ns_v_p_x,
+                                dev_ns_v_p_y,
+                                dev_ns_v_p_z,
+                                ns.bc_bot, ns.bc_top);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter(
+                            "Post setNSghostNodesFace(dev_ns_v_p)", iter);
+
+                    interpolateFaceToCenter<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_ns_v_p_x,
+                            dev_ns_v_p_y,
+                            dev_ns_v_p_z,
+                            dev_ns_v_p);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post interpolateFaceToCenter", iter);
+
+
+                    // In the first iteration of the sphere program, we'll need to
+                    // manually estimate the values of epsilon. In the subsequent
+                    // iterations, the previous values are  used.
+                    if (iter == 0) {
+
+                        // Define the first estimate of the values of epsilon.
+                        // The initial guess depends on the value of ns.beta.
+                        Float pressure = ns.p[idx(2,2,2)];
+                        Float pressure_new = pressure; // Guess p_current = p_new
+                        Float epsilon_value = pressure_new - ns.beta*pressure;
+                        if (PROFILING == 1)
+                            startTimer(&kernel_tic);
+                        setNSepsilonInterior<<<dimGridFluid, dimBlockFluid>>>(
+                                dev_ns_epsilon, epsilon_value);
+                        cudaThreadSynchronize();
+
+                        setNSnormZero<<<dimGridFluid, dimBlockFluid>>>(dev_ns_norm);
+                        cudaThreadSynchronize();
+
+                        if (PROFILING == 1)
+                            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                    &t_setNSepsilon);
+                        checkForCudaErrorsIter("Post setNSepsilonInterior", iter);
+
+#ifdef REPORT_MORE_EPSILON
+                        std::cout
+                            << "\n###### EPSILON AFTER setNSepsilonInterior "
+                            << "######" << std::endl;
+                        transferNSepsilonFromGlobalDeviceMemory();
+                        printNSarray(stdout, ns.epsilon, "epsilon");
+#endif
+
+                        // Set the epsilon values at the lower boundary
+                        pressure = ns.p[idx(0,0,0)];
+                        pressure_new = pressure; // Guess p_current = p_new
+                        epsilon_value = pressure_new - ns.beta*pressure;
+                        if (PROFILING == 1)
+                            startTimer(&kernel_tic);
+                        setNSepsilonBottom<<<dimGridFluid, dimBlockFluid>>>(
+                                dev_ns_epsilon,
+                                dev_ns_epsilon_new,
+                                epsilon_value);
+                        cudaThreadSynchronize();
+                        if (PROFILING == 1)
+                            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                    &t_setNSdirichlet);
+                        checkForCudaErrorsIter("Post setNSepsilonBottom", iter);
+
+#ifdef REPORT_MORE_EPSILON
+                        std::cout
+                            << "\n###### EPSILON AFTER setNSepsilonBottom "
+                            << "######" << std::endl;
+                        transferNSepsilonFromGlobalDeviceMemory();
+                        printNSarray(stdout, ns.epsilon, "epsilon");
+#endif
+
+                        /*setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                          dev_ns_epsilon);
+                          cudaThreadSynchronize();
+                          checkForCudaErrors("Post setNSghostNodesFloat(dev_ns_epsilon)",
+                          iter);*/
+                        setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                                dev_ns_epsilon,
+                                ns.bc_bot, ns.bc_top);
+                        cudaThreadSynchronize();
+                        checkForCudaErrorsIter("Post setNSghostNodesEpsilon(1)",
+                                iter);
+
+#ifdef REPORT_MORE_EPSILON
+                        std::cout <<
+                            "\n###### EPSILON AFTER setNSghostNodes(epsilon) "
+                            << "######" << std::endl;
+                        transferNSepsilonFromGlobalDeviceMemory();
+                        printNSarray(stdout, ns.epsilon, "epsilon");
+#endif
+                    }
+
+                    // Solve the system of epsilon using a Jacobi iterative solver.
+                    // The average normalized residual is initialized to a large
+                    // value.
+                    //double avg_norm_res;
+                    double max_norm_res;
+
+                    // Write a log file of the normalized residuals during the Jacobi
+                    // iterations
+                    std::ofstream reslog;
+                    if (write_res_log == 1)
+                        reslog.open("max_res_norm.dat");
+
+                    // transfer normalized residuals from GPU to CPU
+#ifdef REPORT_MORE_EPSILON
+                    std::cout << "\n###### BEFORE FIRST JACOBI ITERATION ######"
+                        << "\n@@@@@@ TIME STEP " << iter << " @@@@@@"
                         << std::endl;
                     transferNSepsilonFromGlobalDeviceMemory();
                     printNSarray(stdout, ns.epsilon, "epsilon");
 #endif
 
-                    if (nijac % nijacnorm == 0) {
+                    for (unsigned int nijac = 0; nijac<ns.maxiter; ++nijac) {
 
+                        // Only grad(epsilon) changes during the Jacobi iterations.
+                        // The remaining terms of the forcing function are only
+                        // calculated during the first iteration.
+                        if (PROFILING == 1)
+                            startTimer(&kernel_tic);
+                        findNSforcing<<<dimGridFluid, dimBlockFluid>>>(
+                                dev_ns_epsilon,
+                                dev_ns_phi,
+                                dev_ns_dphi,
+                                dev_ns_v_p,
+                                dev_ns_v_p_x,
+                                dev_ns_v_p_y,
+                                dev_ns_v_p_z,
+                                nijac,
+                                ns.ndem,
+                                ns.c_v,
+                                ns.rho_f,
+                                dev_ns_f1,
+                                dev_ns_f2,
+                                dev_ns_f);
+                        cudaThreadSynchronize();
+                        if (PROFILING == 1)
+                            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                    &t_findNSforcing);
+                        checkForCudaErrorsIter("Post findNSforcing", iter);
+                        /*setNSghostNodesForcing<<<dimGridFluid, dimBlockFluid>>>(
+                          dev_ns_f1,
+                          dev_ns_f2,
+                          dev_ns_f,
+                          nijac);
+                          cudaThreadSynchronize();
+                          checkForCudaErrors("Post setNSghostNodesForcing", iter);*/
+
+                        setNSghostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                                dev_ns_epsilon,
+                                ns.bc_bot, ns.bc_top);
+                        cudaThreadSynchronize();
+                        checkForCudaErrorsIter("Post setNSghostNodesEpsilon(2)",
+                                iter);
+
+#ifdef REPORT_EPSILON
+                        std::cout << "\n###### JACOBI ITERATION "
+                            << nijac
+                            << " after setNSghostNodes(epsilon,2) ######"
+                            << std::endl;
+                        transferNSepsilonFromGlobalDeviceMemory();
+                        printNSarray(stdout, ns.epsilon, "epsilon");
+#endif
+
+                        // Perform a single Jacobi iteration
+                        if (PROFILING == 1)
+                            startTimer(&kernel_tic);
+                        jacobiIterationNS<<<dimGridFluid, dimBlockFluid>>>(
+                                dev_ns_epsilon,
+                                dev_ns_epsilon_new,
+                                dev_ns_norm,
+                                dev_ns_f,
+                                ns.bc_bot,
+                                ns.bc_top,
+                                ns.theta,
+                                wall0_iz,
+                                dp_dz);
+                        cudaThreadSynchronize();
+                        if (PROFILING == 1)
+                            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                    &t_jacobiIterationNS);
+                        checkForCudaErrorsIter("Post jacobiIterationNS", iter);
+
+                        // set Dirichlet and Neumann BC at cells containing top wall
+                        /*if (walls.nw > 0 && walls.wmode[0] == 1) {
+                          setNSepsilonAtTopWall<<<dimGridFluid, dimBlockFluid>>>(
+                          dev_ns_epsilon,
+                          dev_ns_epsilon_new,
+                          wall0_iz,
+                          epsilon_value,
+                          dp_dz);
+                          cudaThreadSynchronize();
+                          checkForCudaErrorsIter("Post setNSepsilonAtTopWall",
+                          iter);
+                          }*/
+
+                        // Copy new values to current values
+                        copyValues<Float><<<dimGridFluid, dimBlockFluid>>>(
+                                dev_ns_epsilon_new,
+                                dev_ns_epsilon);
+                        cudaThreadSynchronize();
+                        checkForCudaErrorsIter
+                            ("Post copyValues (epsilon_new->epsilon)", iter);
+
+#ifdef REPORT_EPSILON
+                        std::cout << "\n###### JACOBI ITERATION "
+                            << nijac << " after jacobiIterationNS ######"
+                            << std::endl;
+                        transferNSepsilonFromGlobalDeviceMemory();
+                        printNSarray(stdout, ns.epsilon, "epsilon");
+#endif
+
+                        if (nijac % nijacnorm == 0) {
+
+                            // Read the normalized residuals from the device
+                            transferNSnormFromGlobalDeviceMemory();
+
+                            // Write the normalized residuals to the terminal
+                            //printNSarray(stdout, ns.norm, "norm");
+
+                            // Find the maximum value of the normalized residuals
+                            max_norm_res = maxNormResNS();
+
+                            // Write the Jacobi iteration number and maximum value
+                            // of the normalized residual to the log file
+                            if (write_res_log == 1)
+                                reslog << nijac << '\t' << max_norm_res
+                                    << std::endl;
+                        }
+
+                        if (max_norm_res < ns.tolerance) {
+
+                            if (write_conv_log == 1 && iter % conv_log_interval == 0)
+                                convlog << iter+1 << '\t' << nijac << std::endl;
+
+                            setNSghostNodes<Float>
+                                <<<dimGridFluid, dimBlockFluid>>>(
+                                        dev_ns_epsilon,
+                                        ns.bc_bot, ns.bc_top);
+                            cudaThreadSynchronize();
+                            checkForCudaErrorsIter
+                                ("Post setNSghostNodesEpsilon(4)", iter);
+
+                            // Apply smoothing if requested
+                            if (ns.gamma > 0.0) {
+
+                                smoothing<<<dimGridFluid, dimBlockFluid>>>(
+                                        dev_ns_epsilon,
+                                        ns.gamma,
+                                        ns.bc_bot, ns.bc_top);
+                                cudaThreadSynchronize();
+                                checkForCudaErrorsIter("Post smoothing", iter);
+
+                                setNSghostNodes<Float>
+                                    <<<dimGridFluid, dimBlockFluid>>>(
+                                            dev_ns_epsilon,
+                                            ns.bc_bot, ns.bc_top);
+                                cudaThreadSynchronize();
+                                checkForCudaErrorsIter
+                                    ("Post setNSghostNodesEpsilon(4)", iter);
+                            }
+
+#ifdef REPORT_EPSILON
+                            std::cout << "\n###### JACOBI ITERATION "
+                                << nijac << " after smoothing ######"
+                                << std::endl;
+                            transferNSepsilonFromGlobalDeviceMemory();
+                            printNSarray(stdout, ns.epsilon, "epsilon");
+#endif
+
+                            break;  // solution has converged, exit Jacobi loop
+                        }
+
+                        if (nijac >= ns.maxiter-1) {
+
+                            if (write_conv_log == 1)
+                                convlog << iter+1 << '\t' << nijac << std::endl;
+
+                            std::cerr << "\nIteration " << iter << ", time " 
+                                << iter*time.dt << " s: "
+                                "Error, the epsilon solution in the fluid "
+                                "calculations did not converge. Try increasing the "
+                                "value of 'ns.maxiter' (" << ns.maxiter
+                                << ") or increase 'ns.tolerance' ("
+                                << ns.tolerance << ")." << std::endl;
+                        }
+                        //break; // end after Jacobi first iteration
+                    } // end Jacobi iteration loop
+
+                    if (write_res_log == 1)
+                        reslog.close();
+
+                    // Find the new pressures and velocities
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
+
+                    updateNSpressure<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_ns_epsilon,
+                            ns.beta,
+                            dev_ns_p);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post updateNSpressure", iter);
+
+                    updateNSvelocity<<<dimGridFluidFace, dimBlockFluidFace>>>(
+                            dev_ns_v_p_x,
+                            dev_ns_v_p_y,
+                            dev_ns_v_p_z,
+                            dev_ns_phi,
+                            dev_ns_epsilon,
+                            ns.beta,
+                            ns.bc_bot,
+                            ns.bc_top,
+                            ns.ndem,
+                            ns.c_v,
+                            ns.rho_f,
+                            wall0_iz,
+                            iter,
+                            dev_ns_v_x,
+                            dev_ns_v_y,
+                            dev_ns_v_z);
+                    cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_updateNSvelocityPressure);
+                    checkForCudaErrorsIter("Post updateNSvelocity", iter);
+
+                    setNSghostNodesFace<Float>
+                        <<<dimGridFluidFace, dimBlockFluidFace>>>(
+                                dev_ns_v_p_x,
+                                dev_ns_v_p_y,
+                                dev_ns_v_p_z,
+                                ns.bc_bot, ns.bc_top);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter(
+                            "Post setNSghostNodesFace(dev_ns_v)", iter);
+
+                    interpolateFaceToCenter<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_ns_v_x,
+                            dev_ns_v_y,
+                            dev_ns_v_z,
+                            dev_ns_v);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post interpolateFaceToCenter", iter);
+                } // end iter % ns.dem == 0
+            } // end cfd_solver == 0
+
+            // Darcy solution
+            else if (cfd_solver == 1) { 
+
+#if defined(REPORT_EPSILON) || defined(REPORT_FORCING_TERMS)
+                    std::cout
+                        << "\n\n@@@@@@ TIME STEP " << iter << " @@@"
+                        << std::endl;
+#endif
+
+                if (PROFILING == 1)
+                    startTimer(&kernel_tic);
+                findDarcyPorosities<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_cellStart,
+                        dev_cellEnd,
+                        dev_x_sorted,
+                        iter,
+                        np,
+                        darcy.c_phi,
+                        dev_darcy_phi,
+                        dev_darcy_dphi);
+                cudaThreadSynchronize();
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_findDarcyPorosities);
+                checkForCudaErrorsIter("Post findDarcyPorosities", iter);
+
+                if (np > 0) {
+
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
+                    setDarcyGhostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_darcy_p, darcy.bc_bot, darcy.bc_top);
+                    cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_setDarcyGhostNodes);
+                    checkForCudaErrorsIter("Post setDarcyGhostNodes("
+                            "dev_darcy_p) before findDarcyPressureForce", iter);
+
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
+                    findDarcyPressureForce<<<dimGrid, dimBlock>>>(
+                            dev_x,
+                            dev_darcy_p,
+                            dev_darcy_phi,
+                            dev_force,
+                            dev_darcy_f_p);
+                    cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_findDarcyPressureForce);
+                    checkForCudaErrorsIter("Post findDarcyPressureForce",
+                            iter);
+                }
+
+                // Modulate the pressures at the upper boundary cells
+                if ((darcy.p_mod_A > 1.0e-5 || darcy.p_mod_A < -1.0e-5) &&
+                        darcy.p_mod_f > 1.0e-7) {
+                    // original pressure
+                    Float new_pressure = darcy.p[d_idx(0,0,darcy.nz-1)] //orig p
+                        + darcy.p_mod_A*sin(2.0*M_PI*darcy.p_mod_f*time.current
+                                + darcy.p_mod_phi);
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
+                    setDarcyTopPressure<<<dimGridFluid, dimBlockFluid>>>(
+                            new_pressure,
+                            dev_darcy_p);
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_setDarcyTopPressure);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post setUpperPressureNS", iter);
+                }
+
+                if (walls.nw > 0 && walls.wmode[0] == 1) {
+                    wall0_iz = walls.nx->w/(grid.L[2]/grid.num[2]);
+                    /*setDarcyTopWallPressure<<<dimGridFluid, dimBlockFluid>>>(
+                            new_pressure,
+                            wall0_iz,
+                            dev_darcy_p);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post setDarcyTopWallPressure",
+                            iter);*/
+                }
+
+                if (PROFILING == 1)
+                    startTimer(&kernel_tic);
+                findDarcyPermeabilities<<<dimGridFluid, dimBlockFluid>>>(
+                        darcy.k_c, dev_darcy_phi, dev_darcy_k);
+                cudaThreadSynchronize();
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_findDarcyPermeabilities);
+                checkForCudaErrorsIter("Post findDarcyPermeabilities",
+                        iter);
+
+                if (PROFILING == 1)
+                    startTimer(&kernel_tic);
+                setDarcyGhostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                        dev_darcy_k, darcy.bc_bot, darcy.bc_top);
+                cudaThreadSynchronize();
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_setDarcyGhostNodes);
+                checkForCudaErrorsIter("Post setDarcyGhostNodes(dev_darcy_k)",
+                        iter);
+
+                if (PROFILING == 1)
+                    startTimer(&kernel_tic);
+                findDarcyPermeabilityGradients<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_darcy_k, dev_darcy_grad_k);
+                cudaThreadSynchronize();
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_findDarcyPermeabilityGradients);
+                checkForCudaErrorsIter("Post findDarcyPermeabilityGradients",
+                        iter);
+
+                if (iter == 0) {
+                    setDarcyNormZero<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_darcy_norm);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post setDarcyNormZero", iter);
+
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
+                    copyValues<Float><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_darcy_p,
+                            dev_darcy_p_old);
+                    cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_copyValues);
+                    checkForCudaErrorsIter("Post copyValues(p -> p_old)",
+                            iter);
+                }
+
+                /*if (PROFILING == 1)
+                    startTimer(&kernel_tic);
+                findDarcyPressureChange<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_darcy_p_old,
+                        dev_darcy_p,
+                        iter,
+                        dev_darcy_dpdt);
+                cudaThreadSynchronize();
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_findDarcyPressureChange);
+                checkForCudaErrorsIter("Post findDarcyPressureChange", iter);*/
+
+                // Solve the system of epsilon using a Jacobi iterative solver.
+                // The average normalized residual is initialized to a large
+                // value.
+                //double avg_norm_res;
+                double max_norm_res;
+
+                // Write a log file of the normalized residuals during the
+                // Jacobi iterations
+                std::ofstream reslog;
+                if (write_res_log == 1)
+                    reslog.open("max_res_norm.dat");
+
+                for (unsigned int nijac = 0; nijac<darcy.maxiter; ++nijac) {
+
+                    if (nijac == 0) {
+                        if (PROFILING == 1)
+                            startTimer(&kernel_tic);
+                        copyValues<Float><<<dimGridFluid, dimBlockFluid>>>(
+                                dev_darcy_p,
+                                dev_darcy_p_old);
+                        cudaThreadSynchronize();
+                        if (PROFILING == 1)
+                            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                    &t_copyValues);
+                        checkForCudaErrorsIter("Post copyValues(p -> p_old)",
+                                iter);
+                    }
+
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
+                    setDarcyGhostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_darcy_p, darcy.bc_bot, darcy.bc_top);
+                    cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_setDarcyGhostNodes);
+                    checkForCudaErrorsIter("Post setDarcyGhostNodes("
+                            "dev_darcy_p) in Jacobi loop", iter);
+
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
+                    updateDarcySolution<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_darcy_p_old,
+                            //dev_darcy_dpdt,
+                            dev_darcy_p,
+                            dev_darcy_k,
+                            dev_darcy_phi,
+                            dev_darcy_dphi,
+                            dev_darcy_grad_k,
+                            darcy.beta_f,
+                            darcy.mu,
+                            darcy.bc_bot,
+                            darcy.bc_top,
+                            darcy.ndem,
+                            wall0_iz,
+                            dev_darcy_p_new,
+                            dev_darcy_norm);
+                    cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_updateDarcySolution);
+                    checkForCudaErrorsIter("Post updateDarcySolution", iter);
+
+                    // Copy new values to current values
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
+                    copyValues<Float><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_darcy_p_new,
+                            dev_darcy_p);
+                    cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_copyValues);
+                    checkForCudaErrorsIter("Post copyValues(p_new -> p)", iter);
+
+#ifdef REPORT_EPSILON
+                    std::cout << "\n###### JACOBI ITERATION "
+                        << nijac << " after copyValues ######" << std::endl;
+                    transferDarcyPressuresFromGlobalDeviceMemory();
+                    printDarcyArray(stdout, darcy.p, "p");
+#endif
+
+                    if (nijac % nijacnorm == 0) {
                         // Read the normalized residuals from the device
-                        transferNSnormFromGlobalDeviceMemory();
+                        transferDarcyNormFromGlobalDeviceMemory();
 
                         // Write the normalized residuals to the terminal
-                        //printNSarray(stdout, ns.norm, "norm");
+                        //printDarcyArray(stdout, darcy.norm, "norm");
 
                         // Find the maximum value of the normalized residuals
-                        max_norm_res = maxNormResNS();
+                        max_norm_res = maxNormResDarcy();
 
                         // Write the Jacobi iteration number and maximum value
                         // of the normalized residual to the log file
                         if (write_res_log == 1)
                             reslog << nijac << '\t' << max_norm_res
                                 << std::endl;
-                    }
 
-                    if (max_norm_res < ns.tolerance) {
+                        if (max_norm_res <= darcy.tolerance) {
+                            if (write_conv_log == 1
+                                    && iter % conv_log_interval == 0)
+                                convlog << iter+1 << '\t' << nijac << std::endl;
 
-                        if (write_conv_log == 1 && iter % conv_log_interval == 0)
-                            convlog << iter << '\t' << nijac << std::endl;
-
-                        setNSghostNodes<Float>
-                            <<<dimGridFluid, dimBlockFluid>>>(
-                                dev_ns_epsilon,
-                                ns.bc_bot, ns.bc_top);
-                        cudaThreadSynchronize();
-                        checkForCudaErrorsIter
-                            ("Post setNSghostNodesEpsilon(4)", iter);
-
-                        // Apply smoothing if requested
-                        if (ns.gamma > 0.0) {
-
-                            smoothing<<<dimGridFluid, dimBlockFluid>>>(
-                                    dev_ns_epsilon,
-                                    ns.gamma,
-                                    ns.bc_bot, ns.bc_top);
-                            cudaThreadSynchronize();
-                            checkForCudaErrorsIter("Post smoothing", iter);
-
-                            setNSghostNodes<Float>
-                                <<<dimGridFluid, dimBlockFluid>>>(
-                                    dev_ns_epsilon,
-                                    ns.bc_bot, ns.bc_top);
-                            cudaThreadSynchronize();
-                            checkForCudaErrorsIter
-                                ("Post setNSghostNodesEpsilon(4)", iter);
+                            break;  // solution has converged, exit Jacobi loop
                         }
-
-#ifdef REPORT_EPSILON
-                        std::cout << "\n###### JACOBI ITERATION "
-                            << nijac << " after smoothing ######"
-                            << std::endl;
-                        transferNSepsilonFromGlobalDeviceMemory();
-                        printNSarray(stdout, ns.epsilon, "epsilon");
-#endif
-
-                        break;  // solution has converged, exit Jacobi loop
                     }
 
-                    if (nijac >= ns.maxiter-1) {
+                    if (nijac == darcy.maxiter-1) {
 
                         if (write_conv_log == 1)
-                            convlog << iter << '\t' << nijac << std::endl;
+                            convlog << iter+1 << '\t' << nijac << std::endl;
 
                         std::cerr << "\nIteration " << iter << ", time " 
                             << iter*time.dt << " s: "
-                            "Error, the epsilon solution in the fluid "
-                            "calculations did not converge. Try increasing the "
-                            "value of 'ns.maxiter' (" << ns.maxiter
-                            << ") or increase 'ns.tolerance' ("
-                            << ns.tolerance << ")." << std::endl;
+                            "Error, the pressure solution in the fluid "
+                            "calculations did not converge. Try increasing "
+                            "the value of 'darcy.maxiter' ("
+                            << darcy.maxiter
+                            << ") or increase 'darcy.tolerance' ("
+                            << darcy.tolerance << ")." << std::endl;
                     }
-                    //break; // end after Jacobi first iteration
-                } // end Jacobi iteration loop
 
-                if (write_res_log == 1)
-                    reslog.close();
+                    if (write_res_log == 1)
+                        reslog.close();
 
-                // Find the new pressures and velocities
+                    //break; // end after first iteration
+                }
+
                 if (PROFILING == 1)
                     startTimer(&kernel_tic);
-
-                updateNSpressure<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_epsilon,
-                        ns.beta,
-                        dev_ns_p);
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post updateNSpressure", iter);
-
-                updateNSvelocity<<<dimGridFluidFace, dimBlockFluidFace>>>(
-                        dev_ns_v_p_x,
-                        dev_ns_v_p_y,
-                        dev_ns_v_p_z,
-                        dev_ns_phi,
-                        dev_ns_epsilon,
-                        ns.beta,
-                        ns.bc_bot,
-                        ns.bc_top,
-                        ns.ndem,
-                        ns.c_v,
-                        wall0_iz,
-                        iter,
-                        dev_ns_v_x,
-                        dev_ns_v_y,
-                        dev_ns_v_z);
+                setDarcyGhostNodes<Float> <<<dimGridFluid, dimBlockFluid>>>
+                    (dev_darcy_p, darcy.bc_bot, darcy.bc_top);
                 cudaThreadSynchronize();
                 if (PROFILING == 1)
                     stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                            &t_updateNSvelocityPressure);
-                checkForCudaErrorsIter("Post updateNSvelocity", iter);
+                            &t_setDarcyGhostNodes);
+                checkForCudaErrorsIter("Post setDarcyGhostNodes("
+                        "dev_darcy_p) after Jacobi loop", iter);
 
-                setNSghostNodesFace<Float>
-                    <<<dimGridFluidFace, dimBlockFluidFace>>>(
-                        dev_ns_v_p_x,
-                        dev_ns_v_p_y,
-                        dev_ns_v_p_z,
-                        ns.bc_bot, ns.bc_top);
+                if (PROFILING == 1)
+                    startTimer(&kernel_tic);
+                findDarcyVelocities<<<dimGridFluid, dimBlockFluid>>>(
+                        dev_darcy_p,
+                        dev_darcy_phi,
+                        dev_darcy_k,
+                        darcy.mu,
+                        dev_darcy_v);
                 cudaThreadSynchronize();
-                checkForCudaErrorsIter(
-                        "Post setNSghostNodesFace(dev_ns_v)", iter);
-
-                interpolateFaceToCenter<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_ns_v_x,
-                        dev_ns_v_y,
-                        dev_ns_v_z,
-                        dev_ns_v);
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter("Post interpolateFaceToCenter", iter);
-            } // end iter % ns.dem == 0
-        } // end navierstokes == 1
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_findDarcyVelocities);
+                checkForCudaErrorsIter("Post findDarcyVelocities", iter);
+            }
+        }
+        //break; // end after first iteration
 
         if (np > 0) {
             // Update particle kinematics
@@ -1777,7 +2144,7 @@ __host__ void DEM::startTime()
             checkForCudaErrorsIter("Beginning of file output section", iter);
 
             // v_x, v_y, v_z -> v
-            if (navierstokes == 1) {
+            if (fluid == 1 && cfd_solver == 0) {
                 interpolateFaceToCenter<<<dimGridFluid, dimBlockFluid>>>(
                         dev_ns_v_x,
                         dev_ns_v_y,
@@ -1797,7 +2164,7 @@ __host__ void DEM::startTime()
             cudaThreadSynchronize();
 
             // Check the numerical stability of the NS solver
-            if (navierstokes == 1)
+            if (fluid == 1 && cfd_solver == 0)
                 checkNSstability();
 
             // Write binary output file
@@ -1812,7 +2179,7 @@ __host__ void DEM::startTime()
             printNSarray(stdout, ns.epsilon, "epsilon");*/
 
             // Write fluid arrays
-            /*if (navierstokes == 1) {
+            /*if (fluid == 1 && cfd_solver == 0) {
                 sprintf(file,"output/%s.ns_phi.output%05d.bin", sid.c_str(),
                     time.step_count);
                 writeNSarray(ns.phi, file);
@@ -1904,7 +2271,12 @@ __host__ void DEM::startTime()
             t_findNSstressTensor +
             t_findNSdivphiviv + t_findNSdivtau + t_findPredNSvelocities +
             t_setNSepsilon + t_setNSdirichlet + t_setNSghostNodesDev +
-            t_findNSforcing + t_jacobiIterationNS + t_updateNSvelocityPressure;
+            t_findNSforcing + t_jacobiIterationNS + t_updateNSvelocityPressure +
+            t_findDarcyPorosities + t_setDarcyGhostNodes +
+            t_findDarcyPressureForce + t_setDarcyTopPressure +
+            t_findDarcyPermeabilities + t_findDarcyPermeabilityGradients +
+            //t_findDarcyPressureChange +
+            t_updateDarcySolution + t_copyValues + t_findDarcyVelocities;
 
         cout << "\nKernel profiling statistics:\n"
             << "  - calcParticleCellID:\t\t" << t_calcParticleCellID/1000.0
@@ -1931,34 +2303,67 @@ __host__ void DEM::startTime()
             << "\t(" << 100.0*t_summation/t_sum << " %)\n"
             << "  - integrateWalls:\t\t" << t_integrateWalls/1000.0 << " s"
             << "\t(" << 100.0*t_integrateWalls/t_sum << " %)\n";
-        if (navierstokes == 1) {
+        if (fluid == 1 && cfd_solver == 0) {
             cout << "  - findPorositiesDev:\t\t" << t_findPorositiesDev/1000.0
-            << " s" << "\t(" << 100.0*t_findPorositiesDev/t_sum << " %)\n"
-            << "  - findNSstressTensor:\t\t" << t_findNSstressTensor/1000.0
-            << " s" << "\t(" << 100.0*t_findNSstressTensor/t_sum << " %)\n"
-            << "  - findNSdivphiviv:\t\t" << t_findNSdivphiviv/1000.0
-            << " s" << "\t(" << 100.0*t_findNSdivphiviv/t_sum << " %)\n"
-            << "  - findNSdivtau:\t\t" << t_findNSdivtau/1000.0
-            << " s" << "\t(" << 100.0*t_findNSdivtau/t_sum << " %)\n"
-            << "  - findPredNSvelocities:\t" << t_findPredNSvelocities/1000.0
-            << " s" << "\t(" << 100.0*t_findPredNSvelocities/t_sum << " %)\n"
-            << "  - setNSepsilon:\t\t" << t_setNSepsilon/1000.0
-            << " s" << "\t(" << 100.0*t_setNSepsilon/t_sum << " %)\n"
-            << "  - setNSdirichlet:\t\t" << t_setNSdirichlet/1000.0
-            << " s" << "\t(" << 100.0*t_setNSdirichlet/t_sum << " %)\n"
-            << "  - setNSghostNodesDev:\t\t" << t_setNSghostNodesDev/1000.0
-            << " s" << "\t(" << 100.0*t_setNSghostNodesDev/t_sum << " %)\n"
-            << "  - findNSforcing:\t\t" << t_findNSforcing/1000.0 << " s"
-            << "\t(" << 100.0*t_findNSforcing/t_sum << " %)\n"
-            << "  - jacobiIterationNS:\t\t" << t_jacobiIterationNS/1000.0 << " s"
-            << "\t(" << 100.0*t_jacobiIterationNS/t_sum << " %)\n"
-            << "  - updateNSvelocityPressure:\t"
-            << t_updateNSvelocityPressure/1000.0 << " s"
-            << "\t(" << 100.0*t_updateNSvelocityPressure/t_sum << " %)\n";
+                << " s" << "\t(" << 100.0*t_findPorositiesDev/t_sum << " %)\n"
+                << "  - findNSstressTensor:\t\t" << t_findNSstressTensor/1000.0
+                << " s" << "\t(" << 100.0*t_findNSstressTensor/t_sum << " %)\n"
+                << "  - findNSdivphiviv:\t\t" << t_findNSdivphiviv/1000.0
+                << " s" << "\t(" << 100.0*t_findNSdivphiviv/t_sum << " %)\n"
+                << "  - findNSdivtau:\t\t" << t_findNSdivtau/1000.0
+                << " s" << "\t(" << 100.0*t_findNSdivtau/t_sum << " %)\n"
+                << "  - findPredNSvelocities:\t" <<
+                t_findPredNSvelocities/1000.0 << " s" << "\t(" <<
+                100.0*t_findPredNSvelocities/t_sum << " %)\n"
+                << "  - setNSepsilon:\t\t" << t_setNSepsilon/1000.0
+                << " s" << "\t(" << 100.0*t_setNSepsilon/t_sum << " %)\n"
+                << "  - setNSdirichlet:\t\t" << t_setNSdirichlet/1000.0
+                << " s" << "\t(" << 100.0*t_setNSdirichlet/t_sum << " %)\n"
+                << "  - setNSghostNodesDev:\t\t" << t_setNSghostNodesDev/1000.0
+                << " s" << "\t(" << 100.0*t_setNSghostNodesDev/t_sum << " %)\n"
+                << "  - findNSforcing:\t\t" << t_findNSforcing/1000.0 << " s"
+                << "\t(" << 100.0*t_findNSforcing/t_sum << " %)\n"
+                << "  - jacobiIterationNS:\t\t" << t_jacobiIterationNS/1000.0
+                << " s"
+                << "\t(" << 100.0*t_jacobiIterationNS/t_sum << " %)\n"
+                << "  - updateNSvelocityPressure:\t"
+                << t_updateNSvelocityPressure/1000.0 << " s"
+                << "\t(" << 100.0*t_updateNSvelocityPressure/t_sum << " %)\n";
+        } else if (fluid == 1 && cfd_solver == 1) {
+            cout << "  - findDarcyPorosities:\t" <<
+                t_findDarcyPorosities/1000.0 << " s" << "\t(" <<
+                100.0*t_findDarcyPorosities/t_sum << " %)\n"
+                << "  - setDarcyGhostNodes:\t\t" <<
+                t_setDarcyGhostNodes/1000.0 << " s" << "\t(" <<
+                100.0*t_setDarcyGhostNodes/t_sum << " %)\n"
+                << "  - findDarcyPressureForce:\t" <<
+                t_findDarcyPressureForce/1000.0 << " s" << "\t(" <<
+                100.0*t_findDarcyPressureForce/t_sum << " %)\n"
+                << "  - setDarcyTopPressure:\t" <<
+                t_setDarcyTopPressure/1000.0 << " s" << "\t(" <<
+                100.0*t_setDarcyTopPressure/t_sum << " %)\n"
+                << "  - findDarcyPermeabilities:\t" <<
+                t_findDarcyPermeabilities/1000.0 << " s" << "\t(" <<
+                100.0*t_findDarcyPermeabilities/t_sum << " %)\n"
+                << "  - findDarcyPermeabilityGrads:\t" <<
+                t_findDarcyPermeabilityGradients/1000.0 << " s" << "\t(" <<
+                100.0*t_findDarcyPermeabilityGradients/t_sum << " %)\n"
+                //<< "  - findDarcyPressureChange:\t" <<
+                //t_findDarcyPressureChange/1000.0 << " s" << "\t(" <<
+                //100.0*t_findDarcyPressureChange/t_sum << " %)\n"
+                << "  - updateDarcySolution:\t" <<
+                t_updateDarcySolution/1000.0 << " s" << "\t(" <<
+                100.0*t_updateDarcySolution/t_sum << " %)\n"
+                << "  - copyValues:\t\t\t" <<
+                t_copyValues/1000.0 << " s" << "\t(" <<
+                100.0*t_copyValues/t_sum << " %)\n"
+                << "  - findDarcyVelocities:\t" <<
+                t_findDarcyVelocities/1000.0 << " s" << "\t(" <<
+                100.0*t_findDarcyVelocities/t_sum << " %)" << std::endl;
         }
     }
 
-    // Free GPU device memory  
+    // Free GPU device memory
     freeGlobalDeviceMemory();
     checkForCudaErrorsIter("After freeGlobalDeviceMemory()", iter);
 
@@ -1967,8 +2372,11 @@ __host__ void DEM::startTime()
     delete[] k.distmod;
     delete[] k.delta_t;
 
-    if (navierstokes == 1) {
-        endNS();
+    if (fluid == 1) {
+        if (cfd_solver == 0)
+            endNS();
+        else if (cfd_solver == 1)
+            endDarcy();
     }
 
     cudaDeviceReset();

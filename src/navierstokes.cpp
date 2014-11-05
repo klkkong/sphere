@@ -122,7 +122,7 @@ void DEM::checkNSstability()
     const Float dmin = fmin(dx, fmin(dy, dz));
 
     // Check the diffusion term using von Neumann stability analysis
-    if (params.mu*time.dt/(dmin*dmin) > 0.5) {
+    if (ns.mu*time.dt/(dmin*dmin) > 0.5) {
         std::cerr << "Error: The time step is too large to ensure stability in "
             "the diffusive term of the fluid momentum equation.\n"
             "Decrease the viscosity, decrease the time step, and/or increase "
@@ -279,7 +279,7 @@ double DEM::maxNormResNS()
     for (int z=0; z<grid.num[2]; ++z) {
         for (int y=0; y<grid.num[1]; ++y) {
             for (int x=0; x<grid.num[0]; ++x) {
-                norm_res = static_cast<double>(ns.norm[idx(x,y,z)]);
+                norm_res = fabs(static_cast<double>(ns.norm[idx(x,y,z)]));
                 if (norm_res != norm_res) {
                     std::cerr << "\nError: normalized residual is NaN ("
                         << norm_res << ") in cell "

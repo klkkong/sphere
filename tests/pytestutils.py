@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 
 from sphere import *
+from highlighttext import highlight
 import subprocess
 import sys
 
 def passed():
-    return "\tPassed"
+    return "\t" + highlight("Passed", "green")
 
 def failed():
-    return "\tFailed"
+    return "\t" + highlight("Failed", "red", True)
 
 def test(statement, string):
     if (statement == True):

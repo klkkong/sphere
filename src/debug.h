@@ -20,7 +20,7 @@ const unsigned int nijacnorm = 10;
 // 0: False, 1: True
 const int write_res_log = 0;
 
-// Report epsilon values during Jacobi iterations to stdout
+// Report pressure (epsilon) values during Jacobi iterations to stdout
 //#define REPORT_EPSILON
 //#define REPORT_MORE_EPSILON
 
@@ -30,15 +30,15 @@ const int write_res_log = 0;
 const int write_conv_log = 1;
 
 // The interval between iteration number reporting in 'output/<sid>-conv.log'
-//const int conv_log_interval = 10;
-const int conv_log_interval = 4;
+const int conv_log_interval = 10;
+//const int conv_log_interval = 4;
 //const int conv_log_interval = 1;
 
 // Enable drag force and particle fluid coupling
 #define CFD_DEM_COUPLING
 
 // Check for nan/inf values in fluid solver kernels
-#define CHECK_NS_FINITE
+#define CHECK_FLUID_FINITE
 
 // Enable reporting of velocity prediction components to stdout
 //#define REPORT_V_P_COMPONENTS

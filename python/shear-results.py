@@ -21,8 +21,8 @@ zflow = False
 #sigma0_list = numpy.array([1.0e3, 2.0e3, 4.0e3, 10.0e3, 20.0e3, 40.0e3])
 #sigma0 = 10.0e3
 sigma0 = float(sys.argv[1])
-#cvals = [1.0, 0.1]
-cvals = [1.0, 0.1, 0.01]
+cvals = [1.0, 0.1]
+#cvals = [1.0, 0.1, 0.01]
 #cvals = [1.0]
 
 # return a smoothed version of in. The returned array is smaller than the
@@ -139,9 +139,9 @@ for c in numpy.arange(1,len(cvals)+1):
     #sid = 'shear-sigma0=' + str(sigma0) + '-c_phi=' + \
                     #str(c_phi) + '-c_v=' + str(c_v) + \
                     #'-hi_mu-lo_visc-hw'
-    #sid = 'halfshear-sigma0=' + str(sigma0) + '-c=' + str(c_v) + '-shear'
-    sid = 'halfshear-sigma0=' + str(sigma0) + '-c_v=' + str(c_v) +\
-            '-c_a=0.0-velfac=1.0-shear'
+    sid = 'halfshear-sigma0=' + str(sigma0) + '-c=' + str(c_v) + '-shear'
+    #sid = 'halfshear-sigma0=' + str(sigma0) + '-c_v=' + str(c_v) +\
+            #'-c_a=0.0-velfac=1.0-shear'
     if os.path.isfile('../output/' + sid + '.status.dat'):
 
         sim = sphere.sim(sid, fluid=fluid)

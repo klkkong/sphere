@@ -173,7 +173,8 @@ class DEM {
         Float4 *dev_v_rho;  // Device equivalent
 
         //// Porous flow 
-        int navierstokes;  // 0: no, 1: yes
+        int fluid;      // 0: no, 1: yes
+        int cfd_solver; // 0: Navier Stokes, 1: Darcy
 
         // Navier Stokes values, host
         NavierStokes ns;
@@ -262,7 +263,7 @@ class DEM {
         unsigned int idx(const int x, const int y, const int z); // pres. nodes
         unsigned int vidx(const int x, const int y, const int z); // vel. nodes
 
-        // Initialize Darcy values and arrays
+        // Initialize Navier Stokes values and arrays
         void initNS();
 
         // Clean up Navier Stokes arrays
@@ -288,6 +289,50 @@ class DEM {
         void transferNSnormFromGlobalDeviceMemory();
         void transferNSepsilonFromGlobalDeviceMemory();
         void transferNSepsilonNewFromGlobalDeviceMemory();
+
+        // Darcy values, host
+        Darcy darcy;
+
+        // Darcy values, device
+        Float*  dev_darcy_p_old;     // Previous cell hydraulic pressure
+        Float*  dev_darcy_dpdt;      // Previous cell hydraulic pressure
+        Float*  dev_darcy_p;         // Cell hydraulic pressure
+        Float*  dev_darcy_p_new;     // Updated cell hydraulic pressure
+        Float3* dev_darcy_v;         // Cell fluid velocity
+        Float*  dev_darcy_phi;       // Cell porosity
+        Float*  dev_darcy_dphi;      // Cell porosity change
+        Float*  dev_darcy_norm;      // Normalized residual of epsilon values
+        Float4* dev_darcy_f_p;       // Pressure gradient force on particles
+        Float*  dev_darcy_k;         // Cell hydraulic permeability
+        Float3* dev_darcy_grad_k;    // Spatial gradient of permeability
+
+        // Darcy functions
+        void initDarcyMem();
+        Float largestDarcyPermeability();
+        Float smallestDarcyPorosity();
+        void initDarcyMemDev();
+        unsigned int darcyCells();
+        unsigned int darcyCellsVelocity();
+        void transferDarcyToGlobalDeviceMemory(int statusmsg);
+        void transferDarcyFromGlobalDeviceMemory(int statusmsg);
+        void transferDarcyNormFromGlobalDeviceMemory();
+        void transferDarcyPressuresFromGlobalDeviceMemory();
+        void freeDarcyMem();
+        void freeDarcyMemDev();
+        unsigned int d_idx(const int x, const int y, const int z);
+        unsigned int d_vidx(const int x, const int y, const int z);
+        void checkDarcyStability();
+        void printDarcyArray(FILE* stream, Float* arr);
+        void printDarcyArray(FILE* stream, Float* arr, std::string desc);
+        void printDarcyArray(FILE* stream, Float3* arr);
+        void printDarcyArray(FILE* stream, Float3* arr, std::string desc);
+        double avgNormResDarcy();
+        double maxNormResDarcy();
+        void initDarcy();
+        void writeDarcyArray(Float* arr, const char* filename);
+        void writeDarcyArray(Float3* arr, const char* filename);
+        void endDarcy();
+        void endDarcyDev();
 
 
     public:

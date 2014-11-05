@@ -21,7 +21,7 @@ sim_id = 'collapse'
 init = sphere.sim(np = np, nd = 3, nw = 0, sid = sim_id + '-init')
 
 # Set radii
-init.generateRadii(radius_mean = 0.1)
+init.generateRadii(mean = 0.1)
 
 # Use default params
 init.defaultParams(

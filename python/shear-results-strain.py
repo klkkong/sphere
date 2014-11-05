@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
 sigma0 = 20000.0
-cvals = ['dry', 1.0, 0.1, 0.01]
-#cvals = ['dry', 1.0, 0.1]
+#cvals = ['dry', 1.0, 0.1, 0.01]
+cvals = ['dry', 1.0, 0.1]
 #cvals = ['dry', 1.0]
 #step = 1999
 

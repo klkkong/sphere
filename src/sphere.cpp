@@ -21,7 +21,7 @@ DEM::DEM(const std::string inputbin,
          const int transferConstMem,
          const int fluidFlow,
          const int device)
-: verbose(verbosity), navierstokes(fluidFlow), device(device)
+: verbose(verbosity), fluid(fluidFlow), device(device)
 {
     using std::cout;
     using std::cerr;
@@ -50,8 +50,16 @@ DEM::DEM(const std::string inputbin,
     if (dry == 1)
         exit(0);
 
-    if (navierstokes == 1) {
-        initNS();
+    if (fluid == 1) {
+        if (cfd_solver == 0)
+            initNS();
+        else if (cfd_solver == 1)
+            initDarcy();
+        else {
+            std::cerr << "DEM::DEM Error: Value of cfd_solver not understood ("
+                << cfd_solver << ")" << std::endl;
+            exit(1);
+        }
     }
 
     if (initCuda == 1) {
@@ -64,8 +72,17 @@ DEM::DEM(const std::string inputbin,
             transferToConstantDeviceMemory();
         }
 
-        if (navierstokes == 1) {
-            initNSmemDev();
+        if (fluid == 1) {
+            if (cfd_solver == 0)
+                initNSmemDev();
+            else if (cfd_solver == 1)
+                initDarcyMemDev();
+            else {
+                std::cerr
+                    << "DEM::DEM Error: Value of cfd_solver not understood ("
+                    << cfd_solver << ")" << std::endl;
+                exit(1);
+            }
         }
 
         // Allocate device memory for particle variables,
@@ -224,8 +241,8 @@ void DEM::checkValues(void)
 
         checkIfNaN(x, "position", i);
         checkIfNaN(vel, "velocity", i);
-        checkIfNaN(angpos, "angular position", i);
-        checkIfNaN(angvel, "angular velocity", i);
+        //checkIfNaN(angpos, "angular position", i);
+        //checkIfNaN(angvel, "angular velocity", i);
 
         // Check that all particles are inside of the grid
         if (x.x < grid.origo[0] ||
@@ -280,6 +297,44 @@ void DEM::checkValues(void)
     if (params.rho <= 0.0) {
         cerr << "Error: rho = " << params.rho << " kg/m3" << endl;
         exit(1);
+    }
+
+    if (fluid == 1) {
+
+        // Navier-Stokes tests
+        if (cfd_solver == 0) {
+            if (ns.rho_f <= 0.0) {
+                cerr << "Error: rho = " << params.rho << " kg/m3" << endl;
+                exit(1);
+            }
+        }
+
+        // Darcy tests
+        else if (cfd_solver == 1) {
+            if (darcy.rho_f <= 0.0) {
+                cerr << "Error: rho_f = " << darcy.rho_f << " kg/m3" << endl;
+                exit(1);
+            }
+
+            if (darcy.mu <= 0.0) {
+                cerr << "Error: mu = " << darcy.mu << " Pa s" << endl;
+                exit(1);
+            }
+
+            if (darcy.beta_f <= 0.0) {
+                cerr << "Error: beta_f = " << darcy.beta_f << " 1/Pa" << endl;
+                exit(1);
+            }
+
+            if (darcy.k_c <= 0.0) {
+                cerr << "Error: k_c = " << darcy.k_c << " m*m" << endl;
+                exit(1);
+            }
+        } else {
+            cerr << "Solver type value not understood (cfd_solver = "
+                << cfd_solver << endl;
+            exit(1);
+        }
     }
 }
 

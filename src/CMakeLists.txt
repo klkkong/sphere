@@ -23,13 +23,13 @@ ENDIF (GPU_GENERATION EQUAL 1)
 # Rule to build executable program 
 CUDA_ADD_EXECUTABLE(../sphere
     main.cpp file_io.cpp sphere.cpp device.cu utility.cu utility.cpp
-    navierstokes.cpp)
+    navierstokes.cpp darcy.cpp)
 CUDA_ADD_EXECUTABLE(../porosity
     porosity.cpp file_io.cpp sphere.cpp device.cu utility.cu utility.cpp
-    navierstokes.cpp)
+    navierstokes.cpp darcy.cpp)
 CUDA_ADD_EXECUTABLE(../forcechains
     forcechains.cpp file_io.cpp sphere.cpp device.cu utility.cu utility.cpp
-    navierstokes.cpp)
+    navierstokes.cpp darcy.cpp)
 
 #ADD_EXECUTABLE(unittests boost-unit-tests.cpp sphere.cpp)
 #TARGET_LINK_LIBRARIES(unittests
