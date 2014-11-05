@@ -1,7 +1,9 @@
 =============
 sphere readme
 =============
-``sphere`` is a 3D discrete element method algorithm utilizing CUDA.
+``sphere`` is a 3D discrete element method algorithm utilizing CUDA. ``sphere``
+allows for optional simulation of two-way coupled fluid flow using the
+Navier-Stokes or Darcy formulations.
 
 A powerful Nvidia GPU with proper support for double precision floating is
 highly recommended. ``sphere`` has been tested with the Nvidia Tesla K20 and
