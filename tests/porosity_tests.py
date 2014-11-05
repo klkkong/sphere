@@ -44,7 +44,7 @@ testPorosities(orig)
 sidelen = 10
 cubic = sphere.sim(np = sidelen**3, sid='cubic')
 radius = 1.0
-cubic.generateRadii(psd='uni', radius_mean=radius, radius_variance=0.0, histogram=False)
+cubic.generateRadii(psd='uni', mean=radius, variance=0.0, histogram=False)
 for ix in range(sidelen):
     for iy in range(sidelen):
         for iz in range(sidelen):

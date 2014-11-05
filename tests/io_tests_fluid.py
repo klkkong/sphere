@@ -8,7 +8,7 @@ print("### Fluid input/output tests - Navier Stokes CFD solver ###")
 # Generate data in python
 orig = sphere.sim(np=100, sid="test-initgrid-fluid", fluid=True)
 orig.cleanup()
-orig.generateRadii(histogram=False, radius_mean=1.0)
+orig.generateRadii(histogram=False, mean=1.0)
 orig.defaultParams()
 orig.initRandomGridPos()
 orig.initFluid()
@@ -55,7 +55,7 @@ print("### Fluid input/output tests - Darcy CFD solver ###")
 # Generate data in python
 orig = sphere.sim(np=100, sid="test-initgrid-fluid", fluid=True)
 orig.cleanup()
-orig.generateRadii(histogram=False, radius_mean=1.0)
+orig.generateRadii(histogram=False, mean=1.0)
 orig.defaultParams()
 orig.initRandomGridPos()
 
