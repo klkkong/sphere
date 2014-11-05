@@ -129,7 +129,7 @@ void DEM::checkDarcyStability()
             "the diffusive term of the fluid momentum equation.\n"
             "Increase the viscosity, decrease the time step, and/or increase "
             "the fluid grid cell size." << std::endl;
-        exit(1);
+        //exit(1);
     }
 }
 
