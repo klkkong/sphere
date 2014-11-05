@@ -121,16 +121,16 @@ orig = sphere.sim('cube-init', fluid=False)
 orig.readlast(verbose=False)
 orig.id('darcy_fluidization')
 orig.cleanup()
-orig.initTemporal(total=0.002, file_dt=0.0001)
+orig.initTemporal(total=0.02, file_dt=0.0001)
 orig.initFluid(cfd_solver=1)
 orig.g[2] = -10.0
-orig.k_c[0] = numpy.mean(orig.radius)**2/540.0
+#orig.k_c[0] = numpy.mean(orig.radius)**2/540.0
 
 mean_porosity = orig.bulkPorosity()
 fluidize_pressure = numpy.abs((orig.rho - orig.rho_f) \
         *(1.0 - mean_porosity)*numpy.abs(orig.g[2]))
 
-fluid_pressure_gradient = numpy.array([0.1, 0.9, 1.1, 2.0])
+fluid_pressure_gradient = numpy.array([0.9, 2.0])
 
 for i in numpy.arange(fluid_pressure_gradient.size):
 
@@ -154,9 +154,9 @@ for i in numpy.arange(fluid_pressure_gradient.size):
     z_vel_threshold = 0.001
     if fluid_pressure_gradient[i] < 1.0:
         test(numpy.mean(py.vel[:,2]) < z_vel_threshold, 
-                'Fluidization (' + str(i) + '):\t')
+                'Fluidization (' + str(fluid_pressure_gradient[i]) + '):\t')
     elif fluid_pressure_gradient[i] > 1.0:
         test(numpy.mean(py.vel[:,2]) > z_vel_threshold, 
-                'Fluidization (' + str(i) + '):\t')
+                'Fluidization (' + str(fluid_pressure_gradient[i]) + '):\t')
 
 
