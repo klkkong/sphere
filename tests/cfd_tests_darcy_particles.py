@@ -145,7 +145,7 @@ for i in numpy.arange(fluid_pressure_gradient.size):
     orig.p_f[:,:,-1] = base_p      # low pressure at top
 
     orig.run(verbose=False)
-    orig.writeVTKall()
+    #orig.writeVTKall()
     py = sphere.sim(sid = orig.sid, fluid = True)
     py.readlast(verbose=False)
 
@@ -161,5 +161,4 @@ for i in numpy.arange(fluid_pressure_gradient.size):
     elif fluid_pressure_gradient[i] > 1.0:
         test(numpy.mean(py.vel[:,2]) > z_vel_threshold, 
                 'Fluidization (' + str(fluid_pressure_gradient[i]) + '):\t')
-
-
+    orig.cleanup()
