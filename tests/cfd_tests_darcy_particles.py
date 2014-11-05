@@ -115,6 +115,28 @@ else:
 #'''
 
 
+print("### Dynamic wall: Transient, gravity, Dirichlet+Neumann BCs")
+#orig = sphere.sim('diffusivity-relax', fluid=False)
+orig = sphere.sim('cube-init', fluid=False)
+orig.readlast(verbose=False)
+orig.num[2] /= 2
+orig.L[2] /= 2.0
+orig.id('darcy_fluidization')
+orig.cleanup()
+orig.initTemporal(total=0.005, file_dt=0.001)
+orig.initFluid(cfd_solver=1)
+orig.setFluidBottomNoFlow()
+orig.g[2] = -10.0
+#orig.k_c[0] = numpy.mean(orig.radius)**2/540.0
+orig.consolidate()
+
+orig.run(verbose=False)
+#orig.writeVTKall()
+py = sphere.sim(sid = orig.sid, fluid = True)
+py.readlast(verbose=False)
+test(orig.w_x[0] > py.w_x[0], 'Wall movement:\t')
+
+
 print("### Fluidization test: Transient, gravity, Dirichlet+Dirichlet BCs")
 #orig = sphere.sim('diffusivity-relax', fluid=False)
 orig = sphere.sim('cube-init', fluid=False)
