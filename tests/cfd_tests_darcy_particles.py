@@ -3,7 +3,7 @@ from pytestutils import *
 import sphere
 import numpy
 
-'''
+#'''
 print("### Steady state, no gravity, no forcing, Dirichlet+Dirichlet BCs")
 orig = sphere.sim('darcy_particles', np = 1000)
 orig.cleanup()
@@ -112,7 +112,7 @@ else:
     print(numpy.mean(py.v_f))
     print(numpy.max(py.v_f))
     raise Exception("Failed")
-'''
+#'''
 
 
 print("### Fluidization test: Transient, gravity, Dirichlet+Dirichlet BCs")
@@ -144,7 +144,7 @@ for i in numpy.arange(fluid_pressure_gradient.size):
     orig.p_f[:,:,0] = base_p + dp  # high pressure at bottom
     orig.p_f[:,:,-1] = base_p      # low pressure at top
 
-    orig.run(verbose=True)
+    orig.run(verbose=False)
     orig.writeVTKall()
     py = sphere.sim(sid = orig.sid, fluid = True)
     py.readlast(verbose=False)
