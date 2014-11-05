@@ -1956,9 +1956,9 @@ class sim:
         self.readbin(fn, verbose)
 
     def generateRadii(self, psd = 'logn',
-            radius_mean = 440e-6,
-            radius_variance = 8.8e-9,
-            histogram = True):
+            mean = 440e-6,
+            variance = 8.8e-9,
+            histogram = False):
         '''
         Draw random particle radii from a selected probability distribution.
         The larger the variance of radii is, the slower the computations will
@@ -1974,11 +1974,11 @@ class sim:
             value is ``uni``, which is a uniform distribution from
             ``radius_mean-radius_variance`` to ``radius_mean+radius_variance``.
         :type psd: str
-        :param radius_mean: The mean radius [m] (default = 440e-6 m)
-        :type radius_mean: float
-        :param radius_variance: The variance in the probability distribution
+        :param mean: The mean radius [m] (default = 440e-6 m)
+        :type mean: float
+        :param variance: The variance in the probability distribution
             [m].
-        :type radius_variance: float
+        :type variance: float
 
         See also: :func:`generateBimodalRadii()`.
         '''
@@ -1988,10 +1988,13 @@ class sim:
                     (radius_mean**2)/math.sqrt(radius_variance+radius_mean**2))
             sigma = math.sqrt(math.log(radius_variance/(radius_mean**2)+1))
             self.radius = numpy.random.lognormal(mu, sigma, self.np)
-        if psd == 'uni':  # Uniform distribution
+        elif psd == 'uni':  # Uniform distribution
             radius_min = radius_mean - radius_variance
             radius_max = radius_mean + radius_variance
             self.radius = numpy.random.uniform(radius_min, radius_max, self.np)
+        else:
+            raise Exception('Particle size distribution type not understood (' 
+                    + str(psd) + '). Valid values are \'uni\' or \'logn\'')
 
         # Show radii as histogram
         if histogram:

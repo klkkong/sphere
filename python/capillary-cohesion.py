@@ -27,7 +27,7 @@ sim.mu_s[0] = 0.0
 sim.mu_d[0] = 0.0
 sim.k_n[0] = 1.0e7
 sim.k_t[0] = 1.0e7
-sim.generateRadii(psd='uni', radius_mean=1.0e-3, radius_variance=1.0e-4)
+sim.generateRadii(psd='uni', mean=1.0e-3, variance=1.0e-4)
 sim.contactModel(1)
 sim.initRandomGridPos([12, 12, 10000])
 sim.initTemporal(5.0, file_dt=0.01, epsilon=0.07)

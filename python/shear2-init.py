@@ -2,7 +2,7 @@
 import sphere
 
 sim = sphere.sim('init2', np=10000)
-sim.generateRadii(psd='uni', radius_mean=0.02, radius_variance=0.01)
+sim.generateRadii(psd='uni', mean=0.02, variance=0.01)
 sim.initRandomGridPos([12, 12, 1000])
 sim.initTemporal(10.0, file_dt=0.05, epsilon=0.07)
 sim.gamma_n[0] = 1000.0

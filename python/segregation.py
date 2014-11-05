@@ -27,7 +27,7 @@ devslist = [120e3]
 init = sphere.sim(np = np, nd = 3, nw = 0, sid = sim_id + '-init')
 
 # Save radii
-init.generateRadii(radius_mean = 0.08)
+init.generateRadii(mean = 0.08)
 
 # Use default params
 init.defaultParams(gamma_n = 100.0, mu_s = 0.4, mu_d = 0.4)

@@ -26,7 +26,7 @@ devslist = [80e3, 10e3, 20e3, 40e3, 60e3, 120e3]
 init = Spherebin(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
 
 # Save radii
-init.generateRadii(radius_mean = 0.02)
+init.generateRadii(mean = 0.02)
 
 # Use default params
 init.defaultParams(gamma_n = 100.0, mu_s = 0.6, mu_d = 0.6)
