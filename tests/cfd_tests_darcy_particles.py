@@ -19,10 +19,10 @@ orig.k_c[0] = 4.6e-10
 #orig.g[2] = -10.0
 orig.setStiffnessNormal(36.4e9)
 orig.setStiffnessTangential(36.4e9/3.0)
-orig.run()
+orig.run(verbose=False)
 #orig.writeVTKall()
 py = sphere.sim(sid = orig.sid, fluid = True)
-py.readlast()
+py.readlast(verbose=False)
 
 # Fluid flow should be very small
 if ((numpy.abs(py.v_f[:,:,:,:]) < 1.0e-6).all()):
@@ -52,10 +52,10 @@ orig.setFluidBottomNoFlow()
 #orig.g[2] = -10.0
 orig.setStiffnessNormal(36.4e9)
 orig.setStiffnessTangential(36.4e9/3.0)
-orig.run()
+orig.run(verbose=False)
 #orig.writeVTKall()
 py = sphere.sim(sid = orig.sid, fluid = True)
-py.readlast()
+py.readlast(verbose=False)
 
 # Fluid flow should be very small
 if ((numpy.abs(py.v_f[:,:,:,:]) < 1.0e-6).all()):
