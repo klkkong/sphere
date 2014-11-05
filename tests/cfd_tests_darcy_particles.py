@@ -24,6 +24,10 @@ orig.run(verbose=False)
 py = sphere.sim(sid = orig.sid, fluid = True)
 py.readlast(verbose=False)
 
+ones = numpy.ones((orig.num))
+py.readlast(verbose = False)
+compareNumpyArrays(ones, py.p_f, "Conservation of pressure:")
+
 # Fluid flow should be very small
 if ((numpy.abs(py.v_f[:,:,:,:]) < 1.0e-6).all()):
     print("Flow field:\t\t" + passed())
@@ -56,6 +60,10 @@ orig.run(verbose=False)
 #orig.writeVTKall()
 py = sphere.sim(sid = orig.sid, fluid = True)
 py.readlast(verbose=False)
+
+ones = numpy.ones((orig.num))
+py.readlast(verbose = False)
+compareNumpyArrays(ones, py.p_f, "Conservation of pressure:")
 
 # Fluid flow should be very small
 if ((numpy.abs(py.v_f[:,:,:,:]) < 1.0e-6).all()):
@@ -90,6 +98,10 @@ orig.run(verbose=False)
 #orig.writeVTKall()
 py = sphere.sim(sid = orig.sid, fluid = True)
 py.readlast(verbose=False)
+
+ones = numpy.ones((orig.num))
+py.readlast(verbose = False)
+compareNumpyArrays(ones, py.p_f, "Conservation of pressure:")
 
 # Fluid flow should be very small
 if ((numpy.abs(py.v_f[:,:,:,:]) < 1.0e-6).all()):
