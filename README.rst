@@ -14,6 +14,10 @@ See `LICENSE.txt <LICENSE.txt>`_ for more information.
 
 Important release notes
 -----------------------
+2014-11-05: A Darcy solver has been added as an alternative to the Navier-Stokes
+solver of the fluid phase. It can be selected with e.g. `initFluid(cfd_solver =
+1)` in the Python module.
+
 2014-07-28: Fluid flow is no longer simulated in a separate program. Use
 ``sphere`` with the command line argument ``-f`` or ``--fluid`` instead.
 
