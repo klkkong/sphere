@@ -722,6 +722,16 @@ class sim:
         else:
             self.sid = sid
 
+    def idAppend(self, string):
+        '''
+        Append a string to the simulation id/name, which is used to identify
+        simulation files in the output folders.
+
+        :param string: The string to append to the simulation id (`self.sid`).
+        :type string: str
+        '''
+        self.sid += string
+
     def addParticle(self,
             x,
             radius,

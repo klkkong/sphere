@@ -124,6 +124,7 @@ orig.cleanup()
 orig.initTemporal(total=0.002, file_dt=0.0001)
 orig.initFluid(cfd_solver=1)
 orig.g[2] = -10.0
+orig.k_c[0] = numpy.mean(orig.radius)**2/540.0
 
 mean_porosity = orig.bulkPorosity()
 fluidize_pressure = numpy.abs((orig.rho - orig.rho_f) \
