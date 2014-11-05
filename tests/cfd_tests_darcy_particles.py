@@ -149,10 +149,10 @@ for i in numpy.arange(fluid_pressure_gradient.size):
     py = sphere.sim(sid = orig.sid, fluid = True)
     py.readlast(verbose=False)
 
-    print('Mean particle velocity: '
+    """print('Mean particle velocity: '
             + str(numpy.mean(py.vel[:,0])) + ', '
             + str(numpy.mean(py.vel[:,1])) + ', '
-            + str(numpy.mean(py.vel[:,2])) + ' m/s')
+            + str(numpy.mean(py.vel[:,2])) + ' m/s')"""
 
     z_vel_threshold = 0.001
     if fluid_pressure_gradient[i] < 1.0:
