@@ -1972,7 +1972,7 @@ class sim:
             ``logn``, which is a log-normal probability distribution, suitable
             for approximating well-sorted, coarse sediments. The other possible
             value is ``uni``, which is a uniform distribution from
-            ``radius_mean-radius_variance`` to ``radius_mean+radius_variance``.
+            ``mean - variance`` to ``mean + variance``.
         :type psd: str
         :param mean: The mean radius [m] (default = 440e-6 m)
         :type mean: float
@@ -1985,12 +1985,12 @@ class sim:
 
         if psd == 'logn': # Log-normal probability distribution
             mu = math.log(\
-                    (radius_mean**2)/math.sqrt(radius_variance+radius_mean**2))
-            sigma = math.sqrt(math.log(radius_variance/(radius_mean**2)+1))
+                    (mean**2)/math.sqrt(variance+mean**2))
+            sigma = math.sqrt(math.log(variance/(mean**2)+1))
             self.radius = numpy.random.lognormal(mu, sigma, self.np)
         elif psd == 'uni':  # Uniform distribution
-            radius_min = radius_mean - radius_variance
-            radius_max = radius_mean + radius_variance
+            radius_min = mean - variance
+            radius_max = mean + variance
             self.radius = numpy.random.uniform(radius_min, radius_max, self.np)
         else:
             raise Exception('Particle size distribution type not understood (' 
