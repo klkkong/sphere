@@ -2885,7 +2885,7 @@ class sim:
         :type epsilon: float
         '''
 
-        if dt > 0:
+        if dt > 0.0:
             self.time_dt[0] = dt
             if (self.np[0] > 0):
                 print("Warning: Manually specifying the time step length when "
@@ -2906,14 +2906,15 @@ class sim:
             # Computational time step (O'Sullivan et al, 2003)
             #self.time_dt[0] = 0.17*math.sqrt(m_min/k_max)
 
-        # Check numerical stability of the fluid phase, by criteria derived by
-        # von Neumann stability analysis of the diffusion and advection terms
+        elif self.fluid == False:
+            raise Exception('Error: Could not automatically set a time step.')
+
+        # Check numerical stability of the fluid phase, by criteria derived
+        # by von Neumann stability analysis of the diffusion and advection
+        # terms
         if self.fluid:
-            fluid_time_dt = self.largestFluidTimeStep(safety = 0.5)
             self.time_dt[0] = numpy.min([fluid_time_dt, self.time_dt[0]])
 
-        else:
-            raise Exception('Error: Could not automatically set a time step.')
 
         # Time at start
         self.time_current[0] = current
