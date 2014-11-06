@@ -49,6 +49,7 @@ else:
 # This test passes with BETA=0.0 and tolerance=1.0e-9
 orig.p_f[:,:,-1] = 1.1
 #orig.setTolerance(1.0e-8)
+#orig.time_dt[0] *= 0.01
 orig.cleanup()
 #orig.time_file_dt = orig.time_dt*0.99
 #orig.time_total = orig.time_dt*1
