@@ -170,6 +170,23 @@ __global__ void setDarcyNormZero(
     }
 }
 
+// Set an array of scalars to 0.0 inside devC_grid
+    template<typename T>
+__global__ void setDarcyZeros(T* __restrict__ dev_scalarfield)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // check that we are not outside the fluid grid
+    if (x < devC_grid.num[0] && y < devC_grid.num[1] && z < devC_grid.num[2]) {
+        __syncthreads();
+        dev_scalarfield[d_idx(x,y,z)] = 0.0;
+    }
+}
+
+
 // Update a field in the ghost nodes from their parent cell values. The edge
 // (diagonal) cells are not written since they are not read. Launch this kernel
 // for all cells in the grid using
@@ -234,7 +251,7 @@ __global__ void findDarcyPorosities(
         const unsigned int np,                            // in
         const Float c_phi,                                // in
         Float*  __restrict__ dev_darcy_phi,               // in + out
-        Float*  __restrict__ dev_darcy_dphi)              // out
+        Float*  __restrict__ dev_darcy_dphi)              // in + out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -395,8 +412,8 @@ __global__ void findDarcyPorosities(
             __syncthreads();
             //phi = 0.5; dphi = 0.0; // disable porosity effects
             const unsigned int cellidx = d_idx(x,y,z);
-            dev_darcy_phi[cellidx]  = phi*c_phi;
-            dev_darcy_dphi[cellidx] = dphi*c_phi;
+            dev_darcy_phi[cellidx]   = phi*c_phi;
+            dev_darcy_dphi[cellidx] += dphi*c_phi;
             //dev_darcy_vp_avg[cellidx] = v_avg;
             //dev_darcy_d_avg[cellidx]  = d_avg;
 
@@ -719,10 +736,11 @@ __global__ void findDarcyPermeabilityGradients(
 
 // Find the temporal gradient in pressure using the backwards Euler method
 __global__ void findDarcyPressureChange(
-        const Float* __restrict__ dev_darcy_p_old,
-        const Float* __restrict__ dev_darcy_p,
-        const unsigned int iter,
-        Float* __restrict__ dev_darcy_dpdt)
+        const Float* __restrict__ dev_darcy_p_old,    // in
+        const Float* __restrict__ dev_darcy_p,        // in
+        const unsigned int iter,                      // in
+        const unsigned int ndem,                      // in
+        Float* __restrict__ dev_darcy_dpdt)           // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -739,7 +757,7 @@ __global__ void findDarcyPressureChange(
         const Float p_old = dev_darcy_p_old[cellidx];
         const Float p     = dev_darcy_p[cellidx];
 
-        Float dpdt = (p - p_old)/devC_dt;
+        Float dpdt = (p - p_old)/(ndem*devC_dt);
 
         // Ignore the large initial pressure gradients caused by solver "warm
         // up" towards hydrostatic pressure distribution
@@ -862,7 +880,7 @@ __global__ void updateDarcySolution(
             /(2.0*(dxdx*dydy + dxdx*dzdz + dydy*dzdz));*/
 
         Float p_new = p_old
-            + devC_dt/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
+            + (ndem*devC_dt)/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
             - dphi/(beta_f*phi*(1.0 - phi));
 
         // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the

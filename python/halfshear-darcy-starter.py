@@ -34,8 +34,8 @@ sim.cleanup()
 sim.adjustUpperWall()
 sim.zeroKinematics()
 
-#sim.shear(0.0/20.0)
-sim.shear(1.0/20.0)
+sim.shear(0.0/20.0)
+#sim.shear(1.0/20.0)
 
 if fluid:
     #sim.num[2] *= 2
@@ -63,7 +63,7 @@ sim.setDampingTangential(0.0)
 sim.fixvel[:] = -1.0
 
 sim.initTemporal(total = 20.0, file_dt = 0.01, epsilon=0.07)
-sim.time_dt[0] *= 1.0e-2
+#sim.time_dt[0] *= 1.0e-2
 #sim.initTemporal(total = 1.0e-4, file_dt = 1.0e-5, epsilon=0.07)
 
 # Fix lowermost particles
