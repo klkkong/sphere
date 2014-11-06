@@ -109,6 +109,25 @@ Float DEM::smallestDarcyPorosity()
     return phi_min;
 }
 
+// Component-wise max absolute velocities
+Float3 DEM::largestDarcyVelocities()
+{
+    Float3 v_max_abs = MAKE_FLOAT3(0.0, 0.0, 0.0);
+    Float3 v;
+    for (unsigned int z=0; z<grid.num[2]; z++)
+        for (unsigned int y=0; y<grid.num[1]; y++)
+            for (unsigned int x=0; x<grid.num[0]; x++) {
+                v = darcy.v[d_idx(x,y,z)];
+                if (v.x > v_max_abs.x)
+                    v_max_abs.x = fabs(v.x);
+                if (v.y > v_max_abs.y)
+                    v_max_abs.y = fabs(v.y);
+                if (v.z > v_max_abs.z)
+                    v_max_abs.z = fabs(v.z);
+            }
+    return v_max_abs;
+}
+
 // Determine if the FTCS (forward time, central space) solution of the Navier
 // Stokes equations is unstable
 void DEM::checkDarcyStability()
@@ -121,16 +140,31 @@ void DEM::checkDarcyStability()
     const Float alpha_max = largestDarcyPermeability()
         /(darcy.beta_f*smallestDarcyPorosity()*darcy.mu);
 
-    // Check the diffusion term using von Neumann stability analysis
-    //if (darcy.mu*time.dt/(dmin*dmin) > 0.5) {
+    // von Neumann stability analysis
     if (time.dt >= 1.0/(2.0*alpha_max) *
             1.0/(1.0/(dx*dx) + 1.0/(dy*dy) + 1.0/(dz*dz))) {
         std::cerr
             << "\nError: The time step is too large to ensure stability in "
             "the diffusive term of the fluid momentum equation.\n"
-            "Increase the viscosity, decrease the time step, and/or increase "
+            "Decrease the time step, increase the fluid viscosity, increase "
+            "the fluid compressibility and/or increase "
             "the fluid grid cell size." << std::endl;
         //exit(1);
+    }
+
+    // Courant-Friedrichs-Lewy criteria
+    Float3 v_max_abs = largestDarcyVelocities();
+    if (v_max_abs.x*time.dt > dx ||
+            v_max_abs.y*time.dt > dy ||
+            v_max_abs.z*time.dt > dz) {
+        std::cerr
+            << "\nError: The time step is too large to ensure stability due to "
+            "large fluid velocities.\n v_max_abs = "
+            << v_max_abs.x << ", "
+            << v_max_abs.y << ", "
+            << v_max_abs.z <<
+            " m/s.\nDecrease the time step "
+            "and/or increase the fluid grid cell size." << std::endl;
     }
 }
 

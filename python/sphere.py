@@ -2785,9 +2785,10 @@ class sim:
                 self.cellSize()
                 #self.hydraulicPermeability()
                 #alpha_max = numpy.max(self.k/(self.beta_f*0.9*self.mu))
-                k_max = 2.7e-8   # hardcoded
-                phi_min = 0.1    # hardcoded
+                k_max = 2.7e-8   # hardcoded in darcy.cuh
+                phi_min = 0.1    # hardcoded in darcy.cuh
                 alpha_max = k_max/(self.beta_f*phi_min*self.mu)
+                print(alpha_max)
                 return safety * 1.0/(2.0*alpha_max)*1.0/(
                         1.0/(self.dx[0]**2) + \
                         1.0/(self.dx[1]**2) + \
@@ -2907,8 +2908,9 @@ class sim:
 
         # Check numerical stability of the fluid phase, by criteria derived by
         # von Neumann stability analysis of the diffusion and advection terms
-        elif self.fluid:
-            self.time_dt[0] = self.largestFluidTimeStep(safety = 0.5)
+        if self.fluid:
+            fluid_time_dt = self.largestFluidTimeStep(safety = 0.5)
+            self.time_dt[0] = numpy.min([fluid_time_dt, self.time_dt[0]])
 
         else:
             raise Exception('Error: Could not automatically set a time step.')
