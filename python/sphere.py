@@ -2886,7 +2886,9 @@ class sim:
             if (self.np[0] > 0):
                 print("Warning: Manually specifying the time step length when "
                 + "simulating particles may produce instabilities.")
-        else:
+
+        elif self.np[0] > 0:
+
             r_min = numpy.min(self.radius)
             m_min = self.rho * 4.0/3.0*numpy.pi*r_min**3
             k_max = numpy.max([self.k_n[:], self.k_t[:]])
@@ -2902,36 +2904,11 @@ class sim:
 
         # Check numerical stability of the fluid phase, by criteria derived by
         # von Neumann stability analysis of the diffusion and advection terms
-        if self.fluid:
+        elif self.fluid:
+            self.time_dt[0] = self.largestFluidTimeStep(safety = 0.5)
 
-            # Cell spacing
-            dx = numpy.amin((\
-                    self.L[0]/self.num[0],\
-                    self.L[1]/self.num[1],\
-                    self.L[2]/self.num[2]))
-
-            # Diffusion term
-            if (self.mu[0]*self.time_dt[0]/(dx**2) > 0.5):
-                raise Exception("Error: The time step is too large to ensure "
-                        + "stability in the diffusive term of the fluid "
-                        + "momentum equation.")
-
-            # Normalized velocities
-            v_norm = numpy.empty(self.num[0]*self.num[1]*self.num[2])
-            idx = 0
-            for x in numpy.arange(self.num[0]):
-                for y in numpy.arange(self.num[1]):
-                    for z in numpy.arange(self.num[2]):
-                        v_norm[idx] = numpy.sqrt(self.v_f[x,y,z,:].dot(\
-                                self.v_f[x,y,z,:]))
-                        idx += 1
-
-            # Advection term. This term has to be reevaluated during the
-            # computations, as the fluid velocity changes.
-            if (numpy.amax(v_norm)*self.time_dt[0]/dx > 1.0):
-                raise Exception("Error: The time step is too large to ensure "
-                        + "stability in the advective term of the fluid "
-                        + "momentum equation.")
+        else:
+            raise Exception('Error: Could not automatically set a time step.')
 
         # Time at start
         self.time_current[0] = current
