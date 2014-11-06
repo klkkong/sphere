@@ -2913,6 +2913,7 @@ class sim:
         # by von Neumann stability analysis of the diffusion and advection
         # terms
         if self.fluid:
+            fluid_time_dt = self.largestFluidTimeStep()
             self.time_dt[0] = numpy.min([fluid_time_dt, self.time_dt[0]])
 
 
