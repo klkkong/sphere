@@ -378,7 +378,7 @@ __global__ void findDarcyPorosities(
             //}
 
             // Make sure that the porosity is in the interval [0.0;1.0]
-            phi = fmin(0.99, fmax(0.01, void_volume/cell_volume));
+            phi = fmin(0.9, fmax(0.1, void_volume/cell_volume));
             //phi = void_volume/cell_volume;
 
             Float dphi = phi - phi_0;
@@ -642,7 +642,7 @@ __global__ void findDarcyPermeabilities(
 
         // limit permeability [m*m]
         // K_gravel = 3.0e-2 m/s => k_gravel = 2.7e-9 m*m
-        k = fmin(2.7e-9, k);
+        k = fmin(2.7e-8, k);
 
         __syncthreads();
         dev_darcy_k[cellidx] = k;

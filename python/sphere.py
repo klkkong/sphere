@@ -2783,8 +2783,11 @@ class sim:
                 # Determine on the base of the diffusivity coefficient
                 # components
                 self.cellSize()
-                self.hydraulicPermeability()
-                alpha_max = numpy.max(self.k/(self.beta_f*0.9*self.mu))
+                #self.hydraulicPermeability()
+                #alpha_max = numpy.max(self.k/(self.beta_f*0.9*self.mu))
+                k_max = 2.7e-8   # hardcoded
+                phi_min = 0.1    # hardcoded
+                alpha_max = k_max/(self.beta_f*phi_min*self.mu)
                 return safety * 1.0/(2.0*alpha_max)*1.0/(
                         1.0/(self.dx[0]**2) + \
                         1.0/(self.dx[1]**2) + \
