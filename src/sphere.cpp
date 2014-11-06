@@ -438,7 +438,7 @@ void DEM::reportValues()
         cout << "  - Fluid solver: ";
         if (cfd_solver == 0) {
             cout << "Navier-Stokes";
-        } else if (cfd_solver == 0) {
+        } else if (cfd_solver == 1) {
             cout << "Darcy";
         } else {
             cout << "Unknown";
