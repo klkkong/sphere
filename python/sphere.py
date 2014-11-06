@@ -2792,7 +2792,7 @@ class sim:
                 # components
                 #self.hydraulicPermeability()
                 #alpha_max = numpy.max(self.k/(self.beta_f*0.9*self.mu))
-                k_max = 2.7e-8   # hardcoded in darcy.cuh
+                k_max = 2.7e-10  # hardcoded in darcy.cuh
                 phi_min = 0.1    # hardcoded in darcy.cuh
                 alpha_max = k_max/(self.beta_f*phi_min*self.mu)
                 print(alpha_max)
