@@ -2731,7 +2731,7 @@ class sim:
         self.mu_ws[0] = 0.0
         self.mu_wd[0] = 0.0
 
-    def largestFluidTimeStep(self, safety=0.5):
+    def largestFluidTimeStep(self, safety=0.5, v_max=-1.0):
         '''
         Finds and returns the largest time step in the fluid phase by von
         Neumann and Courant-Friedrichs-Lewy analysis given the current
@@ -2746,43 +2746,50 @@ class sim:
         :param safety: Safety factor which is multiplied to the largest time
             step.
         :type safety: float
+        :param v_max: The largest anticipated absolute fluid velocity [m/s]
+        :type v_max: float
+
         :returns: The largest timestep stable for the current fluid state.
         :return type: float
         '''
 
         if self.fluid:
 
+            # Normalized velocities
+            v_norm = numpy.empty(self.num[0]*self.num[1]*self.num[2])
+            idx = 0
+            for x in numpy.arange(self.num[0]):
+                for y in numpy.arange(self.num[1]):
+                    for z in numpy.arange(self.num[2]):
+                        v_norm[idx] = numpy.sqrt(self.v_f[x,y,z,:].dot(\
+                                self.v_f[x,y,z,:]))
+                        idx += 1
+
+            v_max_obs = numpy.amax(v_norm)
+            if v_max_obs == 0:
+                v_max_obs = 1.0e-7
+            if v_max < 0.0:
+                v_max = v_max_obs
+
+            dx_min = numpy.min(self.L/self.num)
+            dt_min_cfl = dx_min/v_max
+
             # Navier-Stokes
             if self.cfd_solver[0] == 0:
-                dx_min = numpy.min(self.L/self.num)
                 dt_min_von_neumann = 0.5*dx_min**2/self.mu[0]
 
-                # Normalized velocities
-                v_norm = numpy.empty(self.num[0]*self.num[1]*self.num[2])
-                idx = 0
-                for x in numpy.arange(self.num[0]):
-                    for y in numpy.arange(self.num[1]):
-                        for z in numpy.arange(self.num[2]):
-                            v_norm[idx] = numpy.sqrt(self.v_f[x,y,z,:].dot(\
-                                    self.v_f[x,y,z,:]))
-                            idx += 1
-
-                # Advection term. This term has to be reevaluated during the
-                # computations, as the fluid velocity changes.
-                v_max = numpy.amax(v_norm)
-                if v_max == 0:
-                    v_max = 1.0e-7
-
-                dt_min_cfl = dx_min/v_max
 
                 return numpy.min([dt_min_von_neumann, dt_min_cfl])*safety
 
             # Darcy
             elif self.cfd_solver[0] == 1:
 
+                self.cellSize()
+                return dt_min_cfl
+
+                '''
                 # Determine on the base of the diffusivity coefficient
                 # components
-                self.cellSize()
                 #self.hydraulicPermeability()
                 #alpha_max = numpy.max(self.k/(self.beta_f*0.9*self.mu))
                 k_max = 2.7e-8   # hardcoded in darcy.cuh
@@ -2793,6 +2800,7 @@ class sim:
                         1.0/(self.dx[0]**2) + \
                         1.0/(self.dx[1]**2) + \
                         1.0/(self.dx[2]**2))
+                        '''
 
                 '''
                 # Determine value on the base of the hydraulic conductivity
