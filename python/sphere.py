@@ -3333,6 +3333,38 @@ class sim:
         else:
             print('Warning: The system is critically dampened (ratio = '
                   + str(damping_ratio) + ') in the tangential component.')
+
+    def setStaticFriction(self, mu_s):
+        '''
+        Set the static friction coefficient for particle-particle interactions
+        (`self.mu_s`). This value describes the resistance to a shearing motion
+        while it is not happenind (contact tangential velocity zero).
+
+        :param mu_s: Value of the static friction coefficient, in [0;inf[.
+            Usually between 0 and 1.
+        :type mu_s: float
+
+        See also: :func:`setDynamicFriction(mu_d)`
+        '''
+        self.mu_s[0] = mu_s
+
+    def setDynamicFriction(self, mu_d):
+        '''
+        Set the dynamic friction coefficient for particle-particle interactions
+        (`self.mu_d`). This value describes the resistance to a shearing motion
+        while it is happening (contact tangential velocity larger than 0).
+        Strain softening can be introduced by having a smaller dynamic
+        frictional coefficient than the static fricion coefficient. Usually this
+        value is identical to the static friction coefficient.
+
+        :param mu_d: Value of the dynamic friction coefficient, in [0;inf[.
+            Usually between 0 and 1.
+        :type mu_d: float
+
+        See also: :func:`setStaticFriction(mu_s)`
+        '''
+        self.mu_d[0] = mu_d
+
         
     def bond(self, i, j):
         '''
