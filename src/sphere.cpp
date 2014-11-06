@@ -433,6 +433,18 @@ void DEM::reportValues()
     cout << " m\n";
 
     cout << "  - No. of particle bonds: " << params.nb0 << endl;
+
+    if (fluid == 1) {
+        cout << "  - Fluid solver: ";
+        if (cfd_solver == 0) {
+            cout << "Navier-Stokes";
+        } else if (cfd_solver == 0) {
+            cout << "Darcy";
+        } else {
+            cout << "Unknown";
+        }
+        cout << endl;
+    }
 }
 
 // Returns the volume of a spherical cap

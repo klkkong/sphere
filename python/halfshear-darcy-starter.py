@@ -58,7 +58,8 @@ sim.mu_s[0] = 0.5
 sim.mu_d[0] = 0.5
 sim.setDampingNormal(0.0)
 sim.setDampingTangential(0.0)
-sim.deleteAllParticles()
+#sim.deleteAllParticles()
+sim.fixvel[:] = -1.0
 
 sim.initTemporal(total = 20.0, file_dt = 0.01, epsilon=0.07)
 
