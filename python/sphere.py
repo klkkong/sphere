@@ -2824,7 +2824,7 @@ class sim:
         else:
             raise Exception('This function only works for the Darcy solver')
 
-    def hydraulicPermeability(self, phi_min = 0.1, phi_max = 0.9):
+    def hydraulicPermeability(self, phi_min = 0.3, phi_max = 0.99):
         '''
         Determine the hydraulic permeability (k) [m*m] from the Kozeny-Carman
         relationship, using the permeability prefactor (`self.k_c`), and the
