@@ -61,7 +61,8 @@ sim.setDampingTangential(0.0)
 #sim.deleteAllParticles()
 sim.fixvel[:] = -1.0
 
-sim.initTemporal(total = 20.0, file_dt = 0.01, epsilon=0.07)
+#sim.initTemporal(total = 20.0, file_dt = 0.01, epsilon=0.07)
+sim.initTemporal(total = 1.0e-4, file_dt = 1.0e-5, epsilon=0.07)
 
 # Fix lowermost particles
 #dz = sim.L[2]/sim.num[2]
@@ -70,6 +71,6 @@ sim.initTemporal(total = 20.0, file_dt = 0.01, epsilon=0.07)
 
 sim.run(dry=True)
 sim.run(device=device)
-#sim.writeVTKall()
+sim.writeVTKall()
 #sim.visualize('walls')
 #sim.visualize('fluid-pressure')

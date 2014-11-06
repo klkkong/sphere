@@ -125,7 +125,8 @@ void DEM::checkDarcyStability()
     //if (darcy.mu*time.dt/(dmin*dmin) > 0.5) {
     if (time.dt >= 1.0/(2.0*alpha_max) *
             1.0/(1.0/(dx*dx) + 1.0/(dy*dy) + 1.0/(dz*dz))) {
-        std::cerr << "Error: The time step is too large to ensure stability in "
+        std::cerr
+            << "\nError: The time step is too large to ensure stability in "
             "the diffusive term of the fluid momentum equation.\n"
             "Increase the viscosity, decrease the time step, and/or increase "
             "the fluid grid cell size." << std::endl;
