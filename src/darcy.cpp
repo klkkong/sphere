@@ -137,7 +137,7 @@ void DEM::checkDarcyStability()
     const Float dy = grid.L[1]/grid.num[1];
     const Float dz = grid.L[2]/grid.num[2];
 
-    const Float alpha_max = largestDarcyPermeability()
+    /*const Float alpha_max = largestDarcyPermeability()
         /(darcy.beta_f*smallestDarcyPorosity()*darcy.mu);
 
     // von Neumann stability analysis
@@ -150,7 +150,7 @@ void DEM::checkDarcyStability()
             "the fluid compressibility and/or increase "
             "the fluid grid cell size." << std::endl;
         //exit(1);
-    }
+    }*/
 
     // Courant-Friedrichs-Lewy criteria
     Float3 v_max_abs = largestDarcyVelocities();
