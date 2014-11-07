@@ -171,6 +171,7 @@ orig.num[2] /= 2
 orig.L[2] /= 2.0
 orig.id('darcy_fluidization')
 orig.cleanup()
+orig.setDEMstepsPerCFDstep(1)
 orig.setStiffnessNormal(36.4e9)
 orig.setStiffnessTangential(36.4e9/3.0)
 orig.initTemporal(total=0.0005, file_dt=0.0001)
