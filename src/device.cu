@@ -1795,7 +1795,7 @@ __host__ void DEM::startTime()
                             iter);
                 }
 
-                if ((iter % ns.ndem) == 0) {
+                if ((iter % darcy.ndem) == 0) {
 
                     // Modulate the pressures at the upper boundary cells
                     if ((darcy.p_mod_A > 1.0e-5 || darcy.p_mod_A < -1.0e-5) &&
