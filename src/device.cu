@@ -1874,7 +1874,7 @@ __host__ void DEM::startTime()
                     if (PROFILING == 1)
                         startTimer(&kernel_tic);
                     findDarcyPermeabilityGradients
-                        <<dimGridFluid, dimBlockFluid>>>
+                        <<<dimGridFluid, dimBlockFluid>>>
                         (dev_darcy_k, dev_darcy_grad_k);
                     cudaThreadSynchronize();
                     if (PROFILING == 1)
