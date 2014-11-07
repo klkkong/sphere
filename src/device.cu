@@ -2187,11 +2187,14 @@ __host__ void DEM::startTime()
                     iter);
 
             // Empty the dphi values after device to host transfer
-            setDarcyZeros<Float> <<<dimGridFluid, dimBlockFluid>>>
-                (dev_darcy_dphi);
-            cudaThreadSynchronize();
-            checkForCudaErrorsIter(
-                    "After setDarcyZeros(dev_darcy_dphi) after transfer", iter);
+            if (fluid == 1 && cfd_solver == 1) {
+                setDarcyZeros<Float> <<<dimGridFluid, dimBlockFluid>>>
+                    (dev_darcy_dphi);
+                cudaThreadSynchronize();
+                checkForCudaErrorsIter(
+                        "After setDarcyZeros(dev_darcy_dphi) after transfer",
+                        iter);
+            }
 
 
             // Pause the CPU thread until all CUDA calls previously issued are
