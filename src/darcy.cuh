@@ -269,8 +269,8 @@ __global__ void findDarcyPorosities(
     const Float dz = devC_grid.L[2]/nz;
 
     // Cell sphere radius
-    //const Float R = fmin(dx, fmin(dy,dz)) * 0.5; // diameter = cell width
-    const Float R = fmin(dx, fmin(dy,dz));       // diameter = 2*cell width
+    const Float R = fmin(dx, fmin(dy,dz)) * 0.5; // diameter = cell width
+    //const Float R = fmin(dx, fmin(dy,dz));       // diameter = 2*cell width
     const Float cell_volume = 4.0/3.0*M_PI*R*R*R;
 
     Float void_volume = cell_volume;
@@ -311,14 +311,14 @@ __global__ void findDarcyPorosities(
             unsigned int cellID, startIdx, endIdx, i;
 
             // Iterate over 27 neighbor cells, R = cell width
-            /*for (int z_dim=-1; z_dim<2; ++z_dim) // z-axis
-              for (int y_dim=-1; y_dim<2; ++y_dim) // y-axis
-              for (int x_dim=-1; x_dim<2; ++x_dim) // x-axis*/
+            for (int z_dim=-1; z_dim<2; ++z_dim) { // z-axis
+                for (int y_dim=-1; y_dim<2; ++y_dim) { // y-axis
+                    for (int x_dim=-1; x_dim<2; ++x_dim) { // x-axis
 
-            // Iterate over 27 neighbor cells, R = 2*cell width
-            for (int z_dim=-2; z_dim<3; ++z_dim) { // z-axis
+            // Iterate over 125 neighbor cells, R = 2*cell width
+            /*for (int z_dim=-2; z_dim<3; ++z_dim) { // z-axis
                 for (int y_dim=-2; y_dim<3; ++y_dim) { // y-axis
-                    for (int x_dim=-2; x_dim<3; ++x_dim) { // x-axis
+                    for (int x_dim=-2; x_dim<3; ++x_dim) { // x-axis*/
 
                         // Index of neighbor cell this iteration is looking at
                         targetCell = gridPos + make_int3(x_dim, y_dim, z_dim);
