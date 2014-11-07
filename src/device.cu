@@ -2036,12 +2036,14 @@ __host__ void DEM::startTime()
                     }
 
                     // Zero all dphi values right after they are used in fluid
-                    // solution
-                    setDarcyZeros<Float> <<<dimGridFluid, dimBlockFluid>>>
-                        (dev_darcy_dphi);
-                    cudaThreadSynchronize();
-                    checkForCudaErrorsIter(
-                            "After setDarcyZeros(dev_darcy_dphi)", iter);
+                    // solution, unless a file is written in this step.
+                    if (filetimeclock < time.file_dt) {
+                        setDarcyZeros<Float> <<<dimGridFluid, dimBlockFluid>>>
+                            (dev_darcy_dphi);
+                        cudaThreadSynchronize();
+                        checkForCudaErrorsIter(
+                                "After setDarcyZeros(dev_darcy_dphi)", iter);
+                    }
 
                     if (PROFILING == 1)
                         startTimer(&kernel_tic);
@@ -2183,6 +2185,14 @@ __host__ void DEM::startTime()
             transferFromGlobalDeviceMemory();
             checkForCudaErrorsIter("After transferFromGlobalDeviceMemory()",
                     iter);
+
+            // Empty the dphi values after device to host transfer
+            setDarcyZeros<Float> <<<dimGridFluid, dimBlockFluid>>>
+                (dev_darcy_dphi);
+            cudaThreadSynchronize();
+            checkForCudaErrorsIter(
+                    "After setDarcyZeros(dev_darcy_dphi) after transfer", iter);
+
 
             // Pause the CPU thread until all CUDA calls previously issued are
             // completed
