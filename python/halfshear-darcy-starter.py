@@ -49,7 +49,7 @@ if fluid:
     sim.initFluid(mu = mu, p = 0.0, cfd_solver = 1)
     sim.setFluidBottomNoFlow()
     sim.setFluidTopFixedPressure()
-    sim.setDEMstepsPerCFDstep(100)
+    #sim.setDEMstepsPerCFDstep(10)
     sim.setMaxIterations(2e5)
     sim.setPermeabilityPrefactor(k_c)
     sim.setFluidCompressibility(1.0/K_w_sim)
@@ -66,7 +66,7 @@ sim.mu_d[0] = 0.5
 sim.setDampingNormal(0.0)
 sim.setDampingTangential(0.0)
 #sim.deleteAllParticles()
-sim.fixvel[:] = -1.0
+#sim.fixvel[:] = -1.0
 
 sim.initTemporal(total = 20.0, file_dt = 0.01, epsilon=0.07)
 #sim.time_dt[0] *= 1.0e-2
