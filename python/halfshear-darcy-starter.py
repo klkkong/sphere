@@ -36,25 +36,31 @@ sim.zeroKinematics()
 
 sim.shear(0.0/20.0)
 #sim.shear(1.0/20.0)
+K_q_real = 36.4e9
+K_w_real =  2.2e9
+K_q_sim  = 1.16e9
+K_w_sim  = K_w_real/K_q_real * K_q_sim
 
 if fluid:
     #sim.num[2] *= 2
     sim.num[:] /= 2
     #sim.L[2] *= 2.0
     #sim.initFluid(mu = 1.787e-6, p = 600.0e3, cfd_solver = 1)
-    sim.initFluid(mu = 1.787e-6, p = 0.0, cfd_solver = 1)
+    sim.initFluid(mu = mu, p = 0.0, cfd_solver = 1)
     sim.setFluidBottomNoFlow()
     sim.setFluidTopFixedPressure()
-    #sim.setDEMstepsPerCFDstep(100)
+    sim.setDEMstepsPerCFDstep(100)
     sim.setMaxIterations(2e5)
-    sim.beta_f[0] = mu
-    sim.k_c[0] = k_c
+    sim.setPermeabilityPrefactor(k_c)
+    sim.setFluidCompressibility(1.0/K_w_sim)
 
 sim.w_devs[0] = sigma0
 sim.w_m[0] = numpy.abs(sigma0*sim.L[0]*sim.L[1]/sim.g[2])
 
-sim.setStiffnessNormal(36.4e9)
-sim.setStiffnessTangential(36.4e9/3.0)
+#sim.setStiffnessNormal(36.4e9 * 0.1 / 2.0)
+#sim.setStiffnessTangential(36.4e9/3.0 * 0.1 / 2.0)
+sim.setStiffnessNormal(K_q_sim)
+sim.setStiffnessTangential(K_q_sim)
 sim.mu_s[0] = 0.5
 sim.mu_d[0] = 0.5
 sim.setDampingNormal(0.0)

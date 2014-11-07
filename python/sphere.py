@@ -3112,6 +3112,28 @@ class sim:
         '''
         self.bc_top[0] = 0
 
+    def setPermeabilityPrefactor(self, k_c):
+        '''
+        Set the permeability prefactor from Goren et al 2011, eq. 24. The
+        function will print the limits of permeabilities to be simulated. This
+        parameter is only used in the Darcy solver.
+
+        :param k_c: Permeability prefactor value [m*m]
+        :type k_c: float
+        '''
+        if self.cfd_solver[0] == 1:
+            self.k_c[0] = k_c
+            phi = numpy.array([0.1, 0.9])
+            k = self.k_c * phi**3/(1.0 - phi**2)
+            K = k * self.rho*numpy.abs(self.g[2])/self.mu
+            print('Hydraulic permeability limits for porosity phi = [0.1, 0.9]:')
+            print('\tk = ' + str(k) + ' m*m')
+            print('Hydraulic conductivity limits for porosity phi = [0.1, 0.9]:')
+            print('\tK = ' + str(K) + ' m/s')
+        else:
+            raise Exception('setPermeabilityPrefactor() only relevant for the '
+                    + 'Darcy solver (cfd_solver = 1)')
+
     def findPermeabilities(self):
         '''
         Calculates the hydrological permeabilities from the Kozeny-Carman
@@ -3121,8 +3143,12 @@ class sim:
         are set if a file from the `output/` folder is read using
         `self.readbin`.
         '''
-        phi = numpy.clip(self.phi, 0.1, 0.9)
-        self.k = self.k_c * phi**3/(1.0 - phi**2)
+        if self.cfd_solver[0] == 1:
+            phi = numpy.clip(self.phi, 0.1, 0.9)
+            self.k = self.k_c * phi**3/(1.0 - phi**2)
+        else:
+            raise Exception('findPermeabilities() only relevant for the '
+                    + 'Darcy solver (cfd_solver = 1)')
 
     def defaultParams(self,
             mu_s = 0.5,
@@ -3357,7 +3383,51 @@ class sim:
         '''
         self.mu_d[0] = mu_d
 
-        
+    def setFluidCompressibility(self, beta_f):
+        '''
+        Set the fluid adiabatic compressibility [1/Pa]. This value is equal to
+        `1/K` where `K` is the bulk modulus [Pa]. The value for water is 5.1e-10
+        for water at 0 degrees Celcius. This parameter is used for the Darcy
+        solver exclusively.
+
+        :param beta_f: The fluid compressibility [1/Pa]
+        :type beta_f: float
+
+        See also: :func:`setFluidDensity()` and :func:`setFluidViscosity()`
+        '''
+        if self.cfd_solver[0] == 1:
+            self.beta_f[0] = beta_f
+        else:
+            raise Exception('setFluidCompressibility() only relevant for the '
+                    + 'Darcy solver (cfd_solver = 1)')
+
+    def setFluidViscosity(self, mu):
+        '''
+        Set the fluid dynamic viscosity [Pa*s]. The value for water is
+        1.797e-3 at 0 degrees Celcius. This parameter is used for both the Darcy
+        and Navier-Stokes fluid solver.
+
+        :param mu: The fluid dynamic viscosity [Pa*s]
+        :type mu: float
+
+        See also: :func:`setFluidDensity()` and
+            :func:`setFluidCompressibility()`
+        '''
+        self.mu[0] = mu
+
+    def setFluidDensity(self, rho_f):
+        '''
+        Set the fluid density [kg/(m*m*m)]. The value for water is 1000. This
+        parameter is used for the Navier-Stokes fluid solver exclusively.
+
+        :param rho_f: The fluid density [kg/(m*m*m)]
+        :type rho_f: float
+
+        See also: :func:`setFluidViscosity()` and
+            :func:`setFluidCompressibility()`
+        '''
+        self.rho_f[0] = rho_f
+
     def bond(self, i, j):
         '''
         Create a bond between particles with index i and j
