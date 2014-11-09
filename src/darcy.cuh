@@ -903,20 +903,19 @@ __global__ void updateDarcySolution(
         const Float res_norm = (p_new - p)/(p + 1.0e-16);
 
 #ifdef REPORT_FORCING_TERMS
+            const Float dp_diff = (ndem*devC_dt)/(beta_f*phi*mu)
+                *(k*laplace_p + dot(grad_k, grad_p));
+            const Float dp_forc = -dphi/(beta_f*phi*(1.0 - phi));
         printf("\n%d,%d,%d updateDarcySolution\n"
-                "dpdt        = %e\n"
-                "p           = %e\n"
                 "p_new       = %e\n"
-                "f           = %e\n"
-                "f_transient = %e\n"
-                "f_forcing   = %e\n"
-                "f_diff      = %e\n"
+                "p           = %e\n"
+                "p_old       = %e\n"
+                "dp_diff     = %e\n"
+                "dp_forc     = %e\n"
                 "res_norm    = %e\n",
                 x,y,z,
-                dpdt,
-                p, p_new,
-                f,
-                f_transient, f_forcing, f_diff,
+                p_new, p, p_old,
+                dp_diff, dp_forc,
                 res_norm);
 #endif
 
