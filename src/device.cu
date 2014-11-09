@@ -1916,6 +1916,10 @@ __host__ void DEM::startTime()
 
                     for (unsigned int nijac = 0; nijac<darcy.maxiter; ++nijac) {
 
+#if defined(REPORT_EPSILON) || defined(REPORT_FORCING_TERMS)
+                std::cout << "\n\n### Jacobi iteration " << nijac << std::endl;
+#endif
+
                         if (nijac == 0) {
                             if (PROFILING == 1)
                                 startTimer(&kernel_tic);

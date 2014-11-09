@@ -898,6 +898,10 @@ __global__ void updateDarcySolution(
                 (z == wall0_iz))
             p_new = p;
 
+        // add relaxation
+        const Float theta = 0.1;
+        p_new = p*(1.0-theta) + p_new*theta;
+
         // normalized residual, avoid division by zero
         //const Float res_norm = (p_new - p)*(p_new - p)/(p_new*p_new + 1.0e-16);
         const Float res_norm = (p_new - p)/(p + 1.0e-16);
@@ -912,10 +916,13 @@ __global__ void updateDarcySolution(
                 "p_old       = %e\n"
                 "dp_diff     = %e\n"
                 "dp_forc     = %e\n"
+                "dphi        = %e\n"
+                "dphi/dt     = %e\n"
                 "res_norm    = %e\n",
                 x,y,z,
                 p_new, p, p_old,
                 dp_diff, dp_forc,
+                dphi, dphi/(ndem*devC_dt),
                 res_norm);
 #endif
 
