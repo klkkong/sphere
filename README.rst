@@ -71,7 +71,7 @@ All examples are visualized using `ParaView <http://www.paraview.org>`_.
    :alt: Shear test
 
    Shear of a dense particle assemblage. Top left: particles colored by initial
-   positions, top middle: particles colored by horizontal velocity, top right:
+   positions, top center: particles colored by horizontal velocity, top right:
    particles colored by pressure. Bottom left: fluid pressures, bottom center:
    porosities, bottom right: porosity changes.
 
