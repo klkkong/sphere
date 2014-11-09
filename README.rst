@@ -55,7 +55,7 @@ Examples
 All examples are visualized using `ParaView <http://www.paraview.org>`_.
 
 .. figure:: doc/sphinx/img/stokes.png
-   :scale: 100%
+   :scale: 75%
    :alt: Particle falling through fluid grid
 
    A particle falling through a fluid column causing fluid flow.
