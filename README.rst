@@ -58,13 +58,13 @@ All examples are visualized using `ParaView <http://www.paraview.org>`_.
    :scale: 75%
    :alt: Particle falling through fluid grid
 
-   A particle falling through a fluid column causing fluid flow.
+   A particle moving downwards through a fluid column causing fluid flow.
 
 .. figure:: doc/sphinx/img/diff.png
    :scale: 100%
    :alt: Consolidation test
 
-   Consolidation test of particle/fluid assemblage.
+   Consolidation test of a particle/fluid assemblage.
 
 .. figure:: doc/sphinx/img/shear.png
    :scale: 100%
