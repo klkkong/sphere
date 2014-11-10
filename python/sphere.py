@@ -2948,7 +2948,7 @@ class sim:
         self.fluid = True
         self.initFluid()
 
-    def initFluid(self, mu = 8.9e-4, rho = 1.0e3, p = 1.0,
+    def initFluid(self, mu = 8.9e-4, rho = 1.0e3, p = 0.0,
             hydrostatic = False, cfd_solver = 0):
         '''
         Initialize the fluid arrays and the fluid viscosity. The default value
