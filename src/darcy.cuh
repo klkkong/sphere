@@ -820,15 +820,15 @@ __global__ void updateDarcySolution(
     // Perform the epsilon updates for all non-ghost nodes except the Dirichlet
     // boundaries at z=0 and z=nz-1.
     // Adjust z range if a boundary has the Dirichlet boundary condition.
-    int z_min = 0;
+    /*int z_min = 0;
     int z_max = nz-1;
     if (bc_bot == 0)
         z_min = 1;
     if (bc_top == 0)
-        z_max = nz-2;
+        z_max = nz-2;*/
 
-
-    if (x < nx && y < ny && z >= z_min && z <= z_max) {
+    //if (x < nx && y < ny && z >= z_min && z <= z_max) {
+    if (x < nx && y < ny && z < nz) {
 
         // 1D thread index
         const unsigned int cellidx = d_idx(x,y,z);
@@ -858,18 +858,17 @@ __global__ void updateDarcySolution(
         if (z == nz-1 && bc_top == 1)
             p_zp = p;
 
-
         // gradient approximated by first-order central differences
         const Float3 grad_p = MAKE_FLOAT3(
-                (p_xp - p_xn)/(dx+dx),
-                (p_yp - p_yn)/(dy+dy),
-                (p_zp - p_zn)/(dz+dz));
+                (p_xp - p_xn)/(dx + dx),
+                (p_yp - p_yn)/(dy + dy),
+                (p_zp - p_zn)/(dz + dz));
 
         // laplacian approximated by second-order central differences
         const Float laplace_p =
-                (p_xp - (p+p) + p_xn)/(dx*dx) +
-                (p_yp - (p+p) + p_yn)/(dy*dy) +
-                (p_zp - (p+p) + p_zn)/(dz*dz);
+                (p_xp - (p + p) + p_xn)/(dx*dx) +
+                (p_yp - (p + p) + p_yn)/(dy*dy) +
+                (p_zp - (p + p) + p_zn)/(dz*dz);
 
         Float p_new = p_old
             + (ndem*devC_dt)/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
@@ -877,22 +876,13 @@ __global__ void updateDarcySolution(
 
         // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
         // grid if the wall isn't dynamic
-        if (z >= wall0_iz)
+        if ((bc_bot == 0 && z == 0) || (bc_top == 0 && z == nz-1)
+                || (z >= wall0_iz))
             p_new = p;
-
-        // Neumann BC at dynamic top wall
-        //if (z == wall0_iz + 1)
-            //p_new = p_zn + dp_dz;
-
-        // Dirichlet BCs
-        /*if ((z == 0 && bc_bot == 0) ||
-                (z == nz-1 && bc_top == 0) ||
-                (z == wall0_iz))
-            p_new = p;*/
 
         // add relaxation
         //const Float theta = 0.1;
-        //p_new = p*(1.0-theta) + p_new*theta;
+        //p_new = p*(1.0 - theta) + p_new*theta;
 
         // normalized residual, avoid division by zero
         //const Float res_norm = (p_new - p)*(p_new - p)/(p_new*p_new + 1.0e-16);
