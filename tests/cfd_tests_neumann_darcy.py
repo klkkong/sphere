@@ -23,9 +23,9 @@ orig.bc_bot[0] = 1      # No-flow BC at bottom (Neumann)
 orig.run(verbose=False)
 #orig.writeVTKall()
 py.readlast(verbose = False)
-ones = numpy.ones((orig.num))
+zeros = numpy.zeros((orig.num))
 py.readlast(verbose = False)
-compareNumpyArraysClose(ones, py.p_f, "Conservation of pressure:",
+compareNumpyArraysClose(zeros, py.p_f, "Conservation of pressure:",
         tolerance = 1.0e-5)
 
 # Fluid flow along z should be very small
