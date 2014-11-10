@@ -27,9 +27,9 @@ orig.run(device=2, verbose=False)
 #orig.run(verbose=True)
 py = sphere.sim(sid = orig.sid, fluid = True)
 
-ones = numpy.ones((orig.num))
+zeros = numpy.zeros((orig.num))
 py.readlast(verbose = False)
-compareNumpyArrays(ones, py.p_f, "Conservation of pressure:")
+compareNumpyArrays(zeros, py.p_f, "Conservation of pressure:")
 
 # Convergence rate (1/3)
 it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
@@ -48,7 +48,7 @@ else:
 
 # Add pressure gradient
 print("# Pressure gradient")
-orig.p_f[:,:,-1] = 1.1
+orig.p_f[:,:,-1] = 1.0
 #orig.setTolerance(1.0e-8)
 #orig.time_dt[0] *= 0.01
 orig.cleanup()

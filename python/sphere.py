@@ -2776,7 +2776,7 @@ class sim:
 
             # Navier-Stokes
             if self.cfd_solver[0] == 0:
-                dt_min_von_neumann = 0.5*dx_min**2/self.mu[0]
+                dt_min_von_neumann = 0.5*dx_min**2/(self.mu[0] + 1.0e-16)
 
 
                 return numpy.min([dt_min_von_neumann, dt_min_cfl])*safety
