@@ -167,6 +167,7 @@ orig.p_f[4,2,5] = 2.0
 #orig.run(verbose=False)
 orig.run(device=2, verbose=True)
 py = sphere.sim(sid = orig.sid, fluid = True)
+py.writeVTKall()
 
 
 #ones = numpy.ones((orig.num))

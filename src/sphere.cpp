@@ -145,6 +145,7 @@ void checkIfNaN(Float4 vec, std::string description, unsigned int idx)
 void DEM::checkValues(void)
 {
     using std::cerr;
+    using std::cout;
     using std::endl;
 
     unsigned int i;
@@ -165,7 +166,7 @@ void DEM::checkValues(void)
     }
 
     // Check that we have a positive number of particles
-    if (np < 1) {
+    if (np < 1 && verbose == 1) {
         cout << "Info: No particles are being simulated (np = " << np
             << ")" << endl;
     }
