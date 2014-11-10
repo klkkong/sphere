@@ -672,8 +672,7 @@ __global__ void findDarcyPermeabilities(
     }
 }
 
-// Find the spatial gradients of the permeability. To be used in the pressure
-// diffusion term in updateDarcySolution.
+// Find the spatial gradients of the permeability.
 __global__ void findDarcyPermeabilityGradients(
         const Float*  __restrict__ dev_darcy_k,   // in
         Float3* __restrict__ dev_darcy_grad_k)    // out
@@ -818,7 +817,18 @@ __global__ void updateDarcySolution(
     const Float dy = devC_grid.L[1]/ny;
     const Float dz = devC_grid.L[2]/nz;
 
-    if (x < nx && y < ny && z < nz) {
+    // Perform the epsilon updates for all non-ghost nodes except the Dirichlet
+    // boundaries at z=0 and z=nz-1.
+    // Adjust z range if a boundary has the Dirichlet boundary condition.
+    int z_min = 0;
+    int z_max = nz-1;
+    if (bc_bot == 0)
+        z_min = 1;
+    if (bc_top == 0)
+        z_max = nz-2;
+
+
+    if (x < nx && y < ny && z >= z_min && z <= z_max) {
 
         // 1D thread index
         const unsigned int cellidx = d_idx(x,y,z);
@@ -842,42 +852,24 @@ __global__ void updateDarcySolution(
         Float p_zn = dev_darcy_p[d_idx(x,y,z-1)];
         Float p_zp = dev_darcy_p[d_idx(x,y,z+1)];
 
-        // gradient approximated by first-order central difference
-        const Float3 grad_p = MAKE_FLOAT3(
-                (p_xp - p_xn)/(dx+dx),
-                (p_yp - p_yn)/(dy+dy),
-                (p_zp - p_zn)/(dz+dz));
-
-        const Float laplace_p =
-                (p_xp - (p+p) + p_xn)/(dx*dx) +
-                (p_yp - (p+p) + p_yn)/(dy*dy) +
-                (p_zp - (p+p) + p_zn)/(dz*dz);
-
-        // find forcing function value
-        /*const Float f_transient = beta_f*phi*mu/k*dpdt;
-        const Float f_forcing = mu/((1.0 - phi)*k)*dphi/devC_dt;
-        const Float f_diff = -1.0*dot(grad_p, grad_k)/k;
-        const Float f = f_transient + f_forcing + f_diff;*/
-
-        //const Float div_v_p = dev_darcy_div_v_p[cellidx];
-
         // Neumann BCs
         if (z == 0 && bc_bot == 1)
             p_zn = p;
         if (z == nz-1 && bc_top == 1)
             p_zp = p;
 
-        // New value of epsilon in 3D update, derived by rearranging the
-        // 3d discrete finite difference Laplacian
-        /*const Float dxdx = dx*dx;
-        const Float dydy = dy*dy;
-        const Float dzdz = dz*dz;
-        Float p_new
-            = (-dxdx*dydy*dzdz*f
-               + dydy*dzdz*(p_xn + p_xp)
-               + dxdx*dzdz*(p_yn + p_yp)
-               + dxdx*dydy*(p_zn + p_zp))
-            /(2.0*(dxdx*dydy + dxdx*dzdz + dydy*dzdz));*/
+
+        // gradient approximated by first-order central differences
+        const Float3 grad_p = MAKE_FLOAT3(
+                (p_xp - p_xn)/(dx+dx),
+                (p_yp - p_yn)/(dy+dy),
+                (p_zp - p_zn)/(dz+dz));
+
+        // laplacian approximated by second-order central differences
+        const Float laplace_p =
+                (p_xp - (p+p) + p_xn)/(dx*dx) +
+                (p_yp - (p+p) + p_yn)/(dy*dy) +
+                (p_zp - (p+p) + p_zn)/(dz*dz);
 
         Float p_new = p_old
             + (ndem*devC_dt)/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
@@ -885,7 +877,7 @@ __global__ void updateDarcySolution(
 
         // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
         // grid if the wall isn't dynamic
-        if (z == wall0_iz)
+        if (z >= wall0_iz)
             p_new = p;
 
         // Neumann BC at dynamic top wall
@@ -893,14 +885,14 @@ __global__ void updateDarcySolution(
             //p_new = p_zn + dp_dz;
 
         // Dirichlet BCs
-        if ((z == 0 && bc_bot == 0) ||
+        /*if ((z == 0 && bc_bot == 0) ||
                 (z == nz-1 && bc_top == 0) ||
                 (z == wall0_iz))
-            p_new = p;
+            p_new = p;*/
 
         // add relaxation
-        const Float theta = 0.1;
-        p_new = p*(1.0-theta) + p_new*theta;
+        //const Float theta = 0.1;
+        //p_new = p*(1.0-theta) + p_new*theta;
 
         // normalized residual, avoid division by zero
         //const Float res_norm = (p_new - p)*(p_new - p)/(p_new*p_new + 1.0e-16);
@@ -913,14 +905,28 @@ __global__ void updateDarcySolution(
         printf("\n%d,%d,%d updateDarcySolution\n"
                 "p_new       = %e\n"
                 "p           = %e\n"
+                "p_x         = %e, %e\n"
+                "p_y         = %e, %e\n"
+                "p_z         = %e, %e\n"
                 "p_old       = %e\n"
+                "laplace_p   = %e\n"
+                "grad_p      = %e, %e, %e\n"
+                "grad_k      = %e, %e, %e\n"
                 "dp_diff     = %e\n"
                 "dp_forc     = %e\n"
                 "dphi        = %e\n"
                 "dphi/dt     = %e\n"
-                "res_norm    = %e\n",
+                "res_norm    = %e\n"
+                ,
                 x,y,z,
-                p_new, p, p_old,
+                p_new, p,
+                p_xn, p_xp,
+                p_yn, p_yp,
+                p_zn, p_zp,
+                p_old,
+                laplace_p,
+                grad_p.x, grad_p.y, grad_p.z,
+                grad_k.x, grad_k.y, grad_k.z,
                 dp_diff, dp_forc,
                 dphi, dphi/(ndem*devC_dt),
                 res_norm);

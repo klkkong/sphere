@@ -23,9 +23,9 @@ orig.initTemporal(total = 0.2, file_dt = 0.01, dt = 1.0e-7)
 orig.time_file_dt = orig.time_dt*0.99
 orig.time_total = orig.time_dt*10
 #orig.run(dry=True)
-orig.run(device=2, verbose=False)
-#orig.run(verbose=True)
 py = sphere.sim(sid = orig.sid, fluid = True)
+#orig.run(verbose=False)
+orig.run(verbose=True)
 
 zeros = numpy.zeros((orig.num))
 py.readlast(verbose = False)
@@ -48,14 +48,14 @@ else:
 
 # Add pressure gradient
 print("# Pressure gradient")
-orig.p_f[:,:,-1] = 1.0
-#orig.setTolerance(1.0e-8)
-#orig.time_dt[0] *= 0.01
 orig.cleanup()
+orig.p_f[:,:,-1] = 1.0
+orig.initTemporal(total = 0.5, file_dt = 0.01, dt = 1.0e-6)
+#orig.time_dt[0] *= 0.01
 #orig.time_file_dt = orig.time_dt*0.99
 #orig.time_total = orig.time_dt*1
-orig.run(device=2, verbose=False)
-#orig.run(verbose=True)
+#orig.run(device=2, verbose=False)
+orig.run(verbose=False)
 py.readlast(verbose = False)
 ideal_grad_p_z = numpy.linspace(orig.p_f[0,0,0], orig.p_f[0,0,-1], orig.num[2])
 #orig.writeVTKall()
@@ -135,7 +135,7 @@ orig.time_total[0] = 1.0e-2
 orig.time_file_dt[0] = 0.101*orig.time_total[0]
 orig.setFluidPressureModulation(A=1.0, f=1.0/orig.time_total[0])
 #orig.plotPrescribedFluidPressures()
-orig.run(device=2, verbose=False)
+orig.run(verbose=False)
 #py.plotConvergence()
 #py.plotFluidDiffAdvPresZ()
 #py.writeVTKall()
@@ -165,7 +165,7 @@ orig.time_total = orig.time_dt*10
 #orig.run(dry=True)
 orig.p_f[4,2,5] = 2.0
 #orig.run(verbose=False)
-orig.run(device=2, verbose=True)
+orig.run(verbose=True)
 py = sphere.sim(sid = orig.sid, fluid = True)
 py.writeVTKall()
 
