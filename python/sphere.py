@@ -5005,7 +5005,8 @@ class sim:
                     self.v_f_magn[x,y,z] = \
                             self.v_f[x,y,z,:].dot(self.v_f[x,y,z,:])
 
-        self.Re = self.rho_f*self.v_f_magn*self.L[0]/self.num[0]/self.mu
+        self.Re = self.rho_f*self.v_f_magn*self.L[0]/self.num[0]/(self.mu + \
+                1.0e-16)
         return self.Re
 
     def plotLoadCurve(self, graphics_format='png'):
