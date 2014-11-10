@@ -24,8 +24,8 @@ orig.time_file_dt = orig.time_dt*0.99
 orig.time_total = orig.time_dt*10
 #orig.run(dry=True)
 py = sphere.sim(sid = orig.sid, fluid = True)
-#orig.run(verbose=False)
-orig.run(verbose=True)
+orig.run(verbose=False)
+#orig.run(verbose=True)
 
 zeros = numpy.zeros((orig.num))
 py.readlast(verbose = False)
