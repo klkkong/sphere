@@ -10,6 +10,7 @@ print("### CFD tests - Dirichlet BCs ###")
 
 # Iteration and conservation of mass test
 # No gravity, no pressure gradients => no flow
+print('# No forcing')
 orig = sphere.sim(np = 0, nd = 3, nw = 0, sid = "cfdtest", fluid = True)
 cleanup(orig)
 orig.defaultParams()
@@ -47,6 +48,7 @@ else:
 
 # Add pressure gradient
 # This test passes with BETA=0.0 and tolerance=1.0e-9
+print('# Pressure gradient')
 orig.p_f[:,:,-1] = 1.1
 orig.run(verbose=False)
 #orig.run(verbose=True)
@@ -104,6 +106,7 @@ else:
 # Add viscosity which will limit the fluid flow. Used to test the stress tensor
 # in the fluid velocity prediction
 #print(numpy.mean(py.v_f[:,:,:,2]))
+print('# Viscid flow')
 orig.time_file_dt[0] = 1.0e-4
 orig.time_total[0] = 1.0e-3
 orig.initFluid(mu = 8.9-4) # water at 25 deg C
@@ -185,6 +188,7 @@ for it in range(1,py.status()): # gradient should be smooth in all output files
 '''
 
 # Fast pressure modulation test
+print('# Fast pressure modulation')
 orig.time_total[0] = 1.0e-2
 orig.time_file_dt[0] = 0.101*orig.time_total[0]
 orig.mu[0] = 0.0 # dont let diffusion add transient effects
