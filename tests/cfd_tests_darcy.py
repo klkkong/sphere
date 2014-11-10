@@ -10,6 +10,7 @@ print("### CFD tests - Dirichlet BCs ###")
 
 # Iteration and conservation of mass test
 # No gravity, no pressure gradients => no flow
+print("# No forcing")
 orig = sphere.sim(np = 0, nd = 3, nw = 0, sid = "cfdtest", fluid = True)
 cleanup(orig)
 orig.defaultParams()
@@ -22,7 +23,7 @@ orig.initTemporal(total = 0.2, file_dt = 0.01, dt = 1.0e-7)
 orig.time_file_dt = orig.time_dt*0.99
 orig.time_total = orig.time_dt*10
 #orig.run(dry=True)
-orig.run(verbose=False)
+orig.run(device=2, verbose=False)
 #orig.run(verbose=True)
 py = sphere.sim(sid = orig.sid, fluid = True)
 
@@ -46,14 +47,14 @@ else:
 
 
 # Add pressure gradient
-# This test passes with BETA=0.0 and tolerance=1.0e-9
+print("# Pressure gradient")
 orig.p_f[:,:,-1] = 1.1
 #orig.setTolerance(1.0e-8)
 #orig.time_dt[0] *= 0.01
 orig.cleanup()
 #orig.time_file_dt = orig.time_dt*0.99
 #orig.time_total = orig.time_dt*1
-orig.run(verbose=False)
+orig.run(device=2, verbose=False)
 #orig.run(verbose=True)
 py.readlast(verbose = False)
 ideal_grad_p_z = numpy.linspace(orig.p_f[0,0,0], orig.p_f[0,0,-1], orig.num[2])
@@ -129,12 +130,12 @@ for it in range(1,py.status()): # gradient should be smooth in all output files
 '''
 
 #'''
-# Fast pressure modulation test
+print("# Fast pressure modulation")
 orig.time_total[0] = 1.0e-2
 orig.time_file_dt[0] = 0.101*orig.time_total[0]
 orig.setFluidPressureModulation(A=1.0, f=1.0/orig.time_total[0])
 #orig.plotPrescribedFluidPressures()
-orig.run(verbose=False)
+orig.run(device=2, verbose=False)
 #py.plotConvergence()
 #py.plotFluidDiffAdvPresZ()
 #py.writeVTKall()
@@ -149,4 +150,41 @@ for it in range(1,py.status()+1): # gradient should be smooth in all output file
             str(it) + '/' + str(py.status()) + '):', tolerance=5.0e-1)
 #'''
 
+print("# Pressure perturbation")
+orig = sphere.sim(np = 0, nd = 3, nw = 0, sid = "cfdtest", fluid = True)
 cleanup(orig)
+orig.defaultParams()
+orig.defineWorldBoundaries([1.0,1.0,1.0], dx=0.1)
+#orig.defineWorldBoundaries([0.4,0.3,0.4], dx=0.1)
+orig.initFluid(cfd_solver = 1)
+#orig.initFluid(mu = 8.9e-4)
+orig.initTemporal(total = 0.2, file_dt = 0.01, dt = 1.0e-7)
+#orig.g[2] = -10.0
+orig.time_file_dt = orig.time_dt*0.99
+orig.time_total = orig.time_dt*10
+#orig.run(dry=True)
+orig.p_f[4,2,5] = 2.0
+#orig.run(verbose=False)
+orig.run(device=2, verbose=True)
+py = sphere.sim(sid = orig.sid, fluid = True)
+
+
+#ones = numpy.ones((orig.num))
+#py.readlast(verbose = False)
+#compareNumpyArrays(ones, py.p_f, "Conservation of pressure:")
+
+# Convergence rate (1/3)
+#it = numpy.loadtxt("../output/" + orig.sid + "-conv.log")
+#compare(it[:,1].sum(), 0.0, "Convergence rate (1/3):\t")
+
+# Fluid flow should be very small
+#if ((numpy.abs(py.v_f[:,:,:,:]) < 1.0e-6).all()):
+#    print("Flow field:\t\t" + passed())
+#else:
+#    print("Flow field:\t\t" + failed())
+#    print(numpy.min(py.v_f))
+#    print(numpy.mean(py.v_f))
+#    print(numpy.max(py.v_f))
+#    raise Exception("Failed")
+
+#cleanup(orig)

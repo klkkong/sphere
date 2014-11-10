@@ -166,7 +166,7 @@ void DEM::checkValues(void)
 
     // Check that we have a positive number of particles
     if (np < 1) {
-        cerr << "Info: No particles are being simulated (np = " << np
+        cout << "Info: No particles are being simulated (np = " << np
             << ")" << endl;
     }
 
