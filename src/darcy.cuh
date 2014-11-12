@@ -1043,10 +1043,10 @@ __global__ void updateDarcySolution(
             //p_new = p;
 
         // choose integration method, parameter in [0.0; 1.0]
-        //    epsilon = 0:   explicit
+        //    epsilon = 0.0: explicit
         //    epsilon = 0.5: Crank-Nicolson
-        //    epsilon = 1:   implicit
-        const Float epsilon = 1.0;
+        //    epsilon = 1.0: implicit
+        const Float epsilon = 0.5;
         Float p_new = p_old + (1.0 - epsilon)*dp_expl + epsilon*dp_impl;
 
         // add underrelaxation
