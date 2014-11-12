@@ -1042,7 +1042,7 @@ __global__ void updateDarcySolution(
             dp_impl = 0.0;
             //p_new = p;
 
-        // choose integration method
+        // choose integration method, parameter in [0.0; 1.0]
         //    epsilon = 0:   explicit
         //    epsilon = 0.5: Crank-Nicolson
         //    epsilon = 1:   implicit
@@ -1067,6 +1067,7 @@ __global__ void updateDarcySolution(
                 "p_x         = %e, %e\n"
                 "p_y         = %e, %e\n"
                 "p_z         = %e, %e\n"
+                "dp_expl     = %e\n"
                 "p_old       = %e\n"
                 "laplace_p   = %e\n"
                 "grad_p      = %e, %e, %e\n"
@@ -1082,6 +1083,7 @@ __global__ void updateDarcySolution(
                 p_xn, p_xp,
                 p_yn, p_yp,
                 p_zn, p_zp,
+                dp_expl,
                 p_old,
                 laplace_p,
                 grad_p.x, grad_p.y, grad_p.z,
