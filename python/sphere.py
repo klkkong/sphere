@@ -1096,7 +1096,7 @@ class sim:
                                     count=1)
                             self.dphi[x,y,z] = \
                                     numpy.fromfile(fh, dtype=numpy.float64,\
-                                    count=1)
+                                    count=1)/(self.time_dt*self.ndem)
 
                 if self.version >= 0.36:
                     self.rho_f =\
@@ -1341,7 +1341,8 @@ class sim:
                             fh.write(self.v_f[x,y,z,2].astype(numpy.float64))
                             fh.write(self.p_f[x,y,z].astype(numpy.float64))
                             fh.write(self.phi[x,y,z].astype(numpy.float64))
-                            fh.write(self.dphi[x,y,z].astype(numpy.float64))
+                            fh.write(self.dphi[x,y,z].astype(numpy.float64)*
+                                    self.time_dt*self.ndem)
 
                 fh.write(self.rho_f.astype(numpy.float64))
                 fh.write(self.p_mod_A.astype(numpy.float64))

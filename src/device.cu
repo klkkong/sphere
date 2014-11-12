@@ -2066,7 +2066,7 @@ __host__ void DEM::startTime()
 
                     // Zero all dphi values right after they are used in fluid
                     // solution, unless a file is written in this step.
-                    if (filetimeclock < time.file_dt) {
+                    if (filetimeclock + time.dt < time.file_dt) {
                         setDarcyZeros<Float> <<<dimGridFluid, dimBlockFluid>>>
                             (dev_darcy_dphi);
                         cudaThreadSynchronize();
