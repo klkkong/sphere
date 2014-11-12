@@ -5076,6 +5076,16 @@ class sim:
         plt.clf()
         plt.close(fig)
         
+    def convergence(self):
+        '''
+        Read the convergence evolution in the CFD solver. The values are stored
+        in `self.conv` with iteration number in the first column and iteration
+        count in the second column.
+
+        See also: :func:`plotConvergence()`
+        '''
+        self.conv = numpy.loadtxt('../output/' + self.sid + '-conv.log')
+
     def plotConvergence(self, graphics_format='png'):
         '''
         Plot the convergence evolution in the CFD solver. The plot is saved 
@@ -5084,14 +5094,16 @@ class sim:
 
         :param graphics_format: Save the plot in this format
         :type graphics_format: str
+
+        See also: :func:`convergence()`
         '''
         fig = plt.figure()
-        conv = numpy.loadtxt('../output/' + self.sid + '-conv.log')
+        self.convergence()
 
         plt.title('Convergence evolution in CFD solver in "' + self.sid + '"')
         plt.xlabel('Time step')
         plt.ylabel('Jacobi iterations')
-        plt.plot(conv[:,0], conv[:,1])
+        plt.plot(self.conv[:,0], self.conv[:,1])
         plt.grid()
         plt.savefig(self.sid + '-conv.' + graphics_format)
         plt.clf()
