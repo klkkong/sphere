@@ -1871,6 +1871,15 @@ class sim:
             else:
                 k.SetNumberOfTuples(grid.GetNumberOfPoints())
 
+            self.findHydraulicConductivities()
+            K = vtk.vtkDoubleArray()
+            K.SetName("Conductivity [m/s]")
+            K.SetNumberOfComponents(1)
+            if cell_centered:
+                K.SetNumberOfTuples(grid.GetNumberOfCells())
+            else:
+                K.SetNumberOfTuples(grid.GetNumberOfPoints())
+
         # insert values
         for z in range(self.num[2]):
             for y in range(self.num[1]):
@@ -1883,6 +1892,7 @@ class sim:
                     Re.SetValue(idx, self.Re[x,y,z])
                     if self.cfd_solver[0] == 1:
                         k.SetValue(idx, self.k[x,y,z])
+                        K.SetValue(idx, self.K[x,y,z])
 
         # add pres array to grid
         if cell_centered:
@@ -1893,6 +1903,7 @@ class sim:
             grid.GetCellData().AddArray(Re)
             if self.cfd_solver[0] == 1:
                 grid.GetCellData().AddArray(k)
+                grid.GetCellData().AddArray(K)
         else:
             grid.GetPointData().AddArray(pres)
             grid.GetPointData().AddArray(vel)
@@ -1901,6 +1912,7 @@ class sim:
             grid.GetPointData().AddArray(Re)
             if self.cfd_solver[0] == 1:
                 grid.GetPointData().AddArray(k)
+                grid.GetPointData().AddArray(K)
 
         # write VTK XML image data file
         writer = vtk.vtkXMLImageDataWriter()
@@ -3146,6 +3158,22 @@ class sim:
         if self.cfd_solver[0] == 1:
             phi = numpy.clip(self.phi, 0.1, 0.9)
             self.k = self.k_c * phi**3/(1.0 - phi**2)
+        else:
+            raise Exception('findPermeabilities() only relevant for the '
+                    + 'Darcy solver (cfd_solver = 1)')
+
+    def findHydraulicConductivities(self):
+        '''
+        Calculates the hydrological conductivities from the Kozeny-Carman
+        relationship. These values are only relevant when the Darcy solver is
+        used (`self.cfd_solver = 1`). The permeability pre-factor `self.k_c`
+        and the assemblage porosities must be set beforehand. The former values
+        are set if a file from the `output/` folder is read using
+        `self.readbin`.
+        '''
+        if self.cfd_solver[0] == 1:
+            self.findPermeabilities()
+            self.K = self.k*self.rho_f*g/self.mu
         else:
             raise Exception('findPermeabilities() only relevant for the '
                     + 'Darcy solver (cfd_solver = 1)')
