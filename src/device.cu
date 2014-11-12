@@ -1946,11 +1946,36 @@ __host__ void DEM::startTime()
                         checkForCudaErrorsIter("Post setDarcyGhostNodes("
                                 "dev_darcy_p) in Jacobi loop", iter);
 
+                        if (nijac == 0) {
+                            if (PROFILING == 1)
+                                startTimer(&kernel_tic);
+                            firstDarcySolution<<<dimGridFluid, dimBlockFluid>>>(
+                                    dev_darcy_p,
+                                    dev_darcy_k,
+                                    dev_darcy_phi,
+                                    dev_darcy_dphi,
+                                    dev_darcy_grad_k,
+                                    darcy.beta_f,
+                                    darcy.mu,
+                                    darcy.bc_bot,
+                                    darcy.bc_top,
+                                    darcy.ndem,
+                                    wall0_iz,
+                                    dev_darcy_dp_expl);
+                            cudaThreadSynchronize();
+                            if (PROFILING == 1)
+                                stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                        &t_updateDarcySolution);
+                            checkForCudaErrorsIter("Post updateDarcySolution",
+                                    iter);
+                        }
+
                         if (PROFILING == 1)
                             startTimer(&kernel_tic);
                         updateDarcySolution<<<dimGridFluid, dimBlockFluid>>>(
                                 dev_darcy_p_old,
                                 //dev_darcy_dpdt,
+                                dev_darcy_dp_expl,
                                 dev_darcy_p,
                                 dev_darcy_k,
                                 dev_darcy_phi,

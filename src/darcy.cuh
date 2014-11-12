@@ -22,7 +22,8 @@ void DEM::initDarcyMemDev(void)
     // size of cell-face arrays in staggered grid discretization
     //unsigned int memSizeFface = sizeof(Float)*darcyCellsVelocity();
 
-    cudaMalloc((void**)&dev_darcy_dpdt, memSizeF);  // Backwards Euler gradient
+    //cudaMalloc((void**)&dev_darcy_dpdt, memSizeF);  // Backwards Euler gradient
+    cudaMalloc((void**)&dev_darcy_dp_expl, memSizeF); // Expl. pressure change
     cudaMalloc((void**)&dev_darcy_p_old, memSizeF); // old pressure
     cudaMalloc((void**)&dev_darcy_p, memSizeF);     // hydraulic pressure
     cudaMalloc((void**)&dev_darcy_p_new, memSizeF); // updated pressure
@@ -43,7 +44,8 @@ void DEM::initDarcyMemDev(void)
 // Free memory
 void DEM::freeDarcyMemDev()
 {
-    cudaFree(dev_darcy_dpdt);
+    //cudaFree(dev_darcy_dpdt);
+    cudaFree(dev_darcy_dp_expl);
     cudaFree(dev_darcy_p_old);
     cudaFree(dev_darcy_p);
     cudaFree(dev_darcy_p_new);
@@ -782,12 +784,156 @@ __global__ void findDarcyPressureChange(
     }
 }
 
+__global__ void firstDarcySolution(
+        const Float*  __restrict__ dev_darcy_p,       // in
+        const Float*  __restrict__ dev_darcy_k,       // in
+        const Float*  __restrict__ dev_darcy_phi,     // in
+        const Float*  __restrict__ dev_darcy_dphi,    // in
+        const Float3* __restrict__ dev_darcy_grad_k,  // in
+        const Float beta_f,                           // in
+        const Float mu,                               // in
+        const int bc_bot,                             // in
+        const int bc_top,                             // in
+        const unsigned int ndem,                      // in
+        const unsigned int wall0_iz,                  // in
+        Float* __restrict__ dev_darcy_dp_expl)        // out
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    // Cell size
+    const Float dx = devC_grid.L[0]/nx;
+    const Float dy = devC_grid.L[1]/ny;
+    const Float dz = devC_grid.L[2]/nz;
+
+    // Perform the epsilon updates for all non-ghost nodes except the Dirichlet
+    // boundaries at z=0 and z=nz-1.
+    // Adjust z range if a boundary has the Dirichlet boundary condition.
+    /*int z_min = 0;
+    int z_max = nz-1;
+    if (bc_bot == 0)
+        z_min = 1;
+    if (bc_top == 0)
+        z_max = nz-2;*/
+
+    //if (x < nx && y < ny && z >= z_min && z <= z_max) {
+    if (x < nx && y < ny && z < nz) {
+
+        // 1D thread index
+        const unsigned int cellidx = d_idx(x,y,z);
+
+        // read values
+        __syncthreads();
+        const Float  k      = dev_darcy_k[cellidx];
+        const Float3 grad_k = dev_darcy_grad_k[cellidx];
+        const Float  phi    = dev_darcy_phi[cellidx];
+        const Float  dphi   = dev_darcy_dphi[cellidx];
+
+        const Float p_xn  = dev_darcy_p[d_idx(x-1,y,z)];
+        const Float p     = dev_darcy_p[cellidx];
+        const Float p_xp  = dev_darcy_p[d_idx(x+1,y,z)];
+        const Float p_yn  = dev_darcy_p[d_idx(x,y-1,z)];
+        const Float p_yp  = dev_darcy_p[d_idx(x,y+1,z)];
+        Float p_zn = dev_darcy_p[d_idx(x,y,z-1)];
+        Float p_zp = dev_darcy_p[d_idx(x,y,z+1)];
+
+        // Neumann BCs
+        if (z == 0 && bc_bot == 1)
+            p_zn = p;
+        if (z == nz-1 && bc_top == 1)
+            p_zp = p;
+
+        // upwind coefficients for grad(p) determined from values of k
+        // k =  1.0: backwards difference
+        // k = -1.0: forwards difference
+        /*const Float3 e_k = MAKE_FLOAT3(
+                copysign(1.0, grad_k.x),
+                copysign(1.0, grad_k.y),
+                copysign(1.0, grad_k.z));
+
+        // gradient approximated by first-order forward differences
+        const Float3 grad_p = MAKE_FLOAT3(
+                ((1.0 + e_k.x)*(p - p_xn) + (1.0 - e_k.x)*(p_xp - p))/(dx + dx),
+                ((1.0 + e_k.y)*(p - p_yn) + (1.0 - e_k.y)*(p_yp - p))/(dy + dy),
+                ((1.0 + e_k.z)*(p - p_zn) + (1.0 - e_k.z)*(p_zp - p))/(dz + dz)
+                );*/
+
+        // gradient approximated by first-order central differences
+        const Float3 grad_p = MAKE_FLOAT3(
+                (p_xp - p_xn)/(dx + dx),
+                (p_yp - p_yn)/(dy + dy),
+                (p_zp - p_zn)/(dz + dz));
+
+        // laplacian approximated by second-order central differences
+        const Float laplace_p =
+                (p_xp - (p + p) + p_xn)/(dx*dx) +
+                (p_yp - (p + p) + p_yn)/(dy*dy) +
+                (p_zp - (p + p) + p_zn)/(dz*dz);
+
+        Float dp_expl =
+            + (ndem*devC_dt)/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
+            - dphi/(beta_f*phi*(1.0 - phi));
+
+        // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
+        // grid if the wall isn't dynamic
+        if ((bc_bot == 0 && z == 0) || (bc_top == 0 && z == nz-1)
+                || (z >= wall0_iz))
+            dp_expl = 0.0;
+
+#ifdef REPORT_FORCING_TERMS
+            const Float dp_diff = (ndem*devC_dt)/(beta_f*phi*mu)
+                *(k*laplace_p + dot(grad_k, grad_p));
+            const Float dp_forc = -dphi/(beta_f*phi*(1.0 - phi));
+        printf("\n%d,%d,%d updateDarcySolution\n"
+                "p           = %e\n"
+                "p_x         = %e, %e\n"
+                "p_y         = %e, %e\n"
+                "p_z         = %e, %e\n"
+                "dp_expl     = %e\n"
+                "laplace_p   = %e\n"
+                "grad_p      = %e, %e, %e\n"
+                "grad_k      = %e, %e, %e\n"
+                "dp_diff     = %e\n"
+                "dp_forc     = %e\n"
+                "dphi        = %e\n"
+                "dphi/dt     = %e\n"
+                ,
+                x,y,z,
+                p,
+                p_xn, p_xp,
+                p_yn, p_yp,
+                p_zn, p_zp,
+                dp_expl,
+                laplace_p,
+                grad_p.x, grad_p.y, grad_p.z,
+                grad_k.x, grad_k.y, grad_k.z,
+                dp_diff, dp_forc,
+                dphi, dphi/(ndem*devC_dt));
+#endif
+
+        // save explicit integrated pressure change
+        __syncthreads();
+        dev_darcy_dp_expl[cellidx] = dp_expl;
+
+#ifdef CHECK_FLUID_FINITE
+        checkFiniteFloat("dp_expl", x, y, z, dp_expl);
+#endif
+    }
+}
 // A single jacobi iteration where the pressure values are updated to
 // dev_darcy_p_new.
 // bc = 0: Dirichlet, 1: Neumann
 __global__ void updateDarcySolution(
         const Float*  __restrict__ dev_darcy_p_old,   // in
         //const Float*  __restrict__ dev_darcy_dpdt,    // in
+        const Float*  __restrict__ dev_darcy_dp_expl, // in
         const Float*  __restrict__ dev_darcy_p,       // in
         const Float*  __restrict__ dev_darcy_k,       // in
         const Float*  __restrict__ dev_darcy_phi,     // in
@@ -835,14 +981,13 @@ __global__ void updateDarcySolution(
 
         // read values
         __syncthreads();
-        const Float  k      = dev_darcy_k[cellidx];
+        const Float k     = dev_darcy_k[cellidx];
         const Float3 grad_k = dev_darcy_grad_k[cellidx];
         const Float  phi    = dev_darcy_phi[cellidx];
         const Float  dphi   = dev_darcy_dphi[cellidx];
 
-        //const Float dpdt  = dev_darcy_dpdt[cellidx];
-
-        const Float p_old = dev_darcy_p_old[cellidx];
+        const Float p_old   = dev_darcy_p_old[cellidx];
+        const Float dp_expl = dev_darcy_dp_expl[cellidx];
 
         const Float p_xn  = dev_darcy_p[d_idx(x-1,y,z)];
         const Float p     = dev_darcy_p[cellidx];
@@ -858,6 +1003,21 @@ __global__ void updateDarcySolution(
         if (z == nz-1 && bc_top == 1)
             p_zp = p;
 
+        // upwind coefficients for grad(p) determined from values of k
+        // k =  1.0: backwards difference
+        // k = -1.0: forwards difference
+        /*const Float3 e_k = MAKE_FLOAT3(
+                copysign(1.0, grad_k.x),
+                copysign(1.0, grad_k.y),
+                copysign(1.0, grad_k.z));
+
+        // gradient approximated by first-order forward differences
+        const Float3 grad_p = MAKE_FLOAT3(
+                ((1.0 + e_k.x)*(p - p_xn) + (1.0 - e_k.x)*(p_xp - p))/(dx + dx),
+                ((1.0 + e_k.y)*(p - p_yn) + (1.0 - e_k.y)*(p_yp - p))/(dy + dy),
+                ((1.0 + e_k.z)*(p - p_zn) + (1.0 - e_k.z)*(p_zp - p))/(dz + dz)
+                );*/
+
         // gradient approximated by first-order central differences
         const Float3 grad_p = MAKE_FLOAT3(
                 (p_xp - p_xn)/(dx + dx),
@@ -870,7 +1030,8 @@ __global__ void updateDarcySolution(
                 (p_yp - (p + p) + p_yn)/(dy*dy) +
                 (p_zp - (p + p) + p_zn)/(dz*dz);
 
-        Float p_new = p_old
+        //Float p_new = p_old
+        Float dp_impl =
             + (ndem*devC_dt)/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
             - dphi/(beta_f*phi*(1.0 - phi));
 
@@ -878,11 +1039,19 @@ __global__ void updateDarcySolution(
         // grid if the wall isn't dynamic
         if ((bc_bot == 0 && z == 0) || (bc_top == 0 && z == nz-1)
                 || (z >= wall0_iz))
-            p_new = p;
+            dp_impl = 0.0;
+            //p_new = p;
 
-        // add relaxation
-        //const Float theta = 0.1;
-        //p_new = p*(1.0 - theta) + p_new*theta;
+        // choose integration method
+        //    epsilon = 0:   explicit
+        //    epsilon = 0.5: Crank-Nicolson
+        //    epsilon = 1:   implicit
+        const Float epsilon = 1.0;
+        Float p_new = p_old + (1.0 - epsilon)*dp_expl + epsilon*dp_impl;
+
+        // add underrelaxation
+        const Float theta = 0.1;
+        p_new = p*(1.0 - theta) + p_new*theta;
 
         // normalized residual, avoid division by zero
         //const Float res_norm = (p_new - p)*(p_new - p)/(p_new*p_new + 1.0e-16);
