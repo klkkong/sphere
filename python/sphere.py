@@ -5084,9 +5084,8 @@ class sim:
 
         See also: :func:`plotConvergence()`
         '''
-        self.conv = numpy.array(\
-                numpy.loadtxt('../output/' + self.sid + '-conv.log'),
-                dtype=numpy.int32)
+        self.conv = numpy.int32(\
+                numpy.loadtxt('../output/' + self.sid + '-conv.log'))
 
     def plotConvergence(self, graphics_format='png'):
         '''
