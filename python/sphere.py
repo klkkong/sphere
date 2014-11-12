@@ -3136,17 +3136,15 @@ class sim:
         '''
         if self.cfd_solver[0] == 1:
             self.k_c[0] = k_c
-            phi = numpy.array([0.1, 0.9])
+            phi = numpy.array([0.1, 0.35, 0.9])
             k = self.k_c * phi**3/(1.0 - phi**2)
-            k_phi30 = self.k_c * 0.3**3/(1.0 - 0.3**2)
             K = k * self.rho*numpy.abs(self.g[2])/self.mu
-            K_phi30 = k_phi30 * self.rho*numpy.abs(self.g[2])/self.mu
-            print('Hydraulic permeability limits for porosity phi = [0.1, 0.9]:')
+            print('Hydraulic permeability limits for porosity phi = ' + \
+                    str(phi) + ':')
             print('\tk = ' + str(k) + ' m*m')
-            print('\tk(phi = 0.3) = ' + str(k_phi30) + ' m*m')
-            print('Hydraulic conductivity limits for porosity phi = [0.1, 0.9]:')
+            print('Hydraulic conductivity limits for porosity phi = ' + \
+                    str(phi) + ':')
             print('\tK = ' + str(K) + ' m/s')
-            print('\tK(phi = 0.3) = ' + str(K_phi30) + ' m/s')
         else:
             raise Exception('setPermeabilityPrefactor() only relevant for the '
                     + 'Darcy solver (cfd_solver = 1)')
@@ -3335,23 +3333,23 @@ class sim:
         if (damping_ratio < 1.0):
             print('Info: The system is under-dampened (ratio = '
                   + str(damping_ratio)
-                  + ') in the normal component. Critical damping = '
+                  + ') in the normal component. \nCritical damping = '
                   + str(critical_gamma) + '. This is ok.')
         elif (damping_ratio > 1.0):
             if over_damping:
                 print('Warning: The system is over-dampened (ratio = '
                   + str(damping_ratio) + ') in the normal component. '
-                  + 'Critical damping = ' + str(critical_gamma) + '.')
+                  + '\nCritical damping = ' + str(critical_gamma) + '.')
             else:
                 raise Exception('Warning: The system is over-dampened (ratio = '
                       + str(damping_ratio) + ') in the normal component.\n'
                       + 'Call this function once more with `over_damping=True` '
-                      + 'if this is what you want. Critical damping = '
+                      + 'if this is what you want. \nCritical damping = '
                       + str(critical_gamma) + '.')
         else:
             print('Warning: The system is critically dampened (ratio = '
                   + str(damping_ratio) + ') in the normal component. '
-                  + 'Critical damping = ' + str(critical_gamma) + '.')
+                  + '\nCritical damping = ' + str(critical_gamma) + '.')
         
     def setDampingTangential(self, gamma, over_damping=False):
         '''
