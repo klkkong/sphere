@@ -3138,11 +3138,15 @@ class sim:
             self.k_c[0] = k_c
             phi = numpy.array([0.1, 0.9])
             k = self.k_c * phi**3/(1.0 - phi**2)
+            k_phi30 = self.k_c * 0.3**3/(1.0 - 0.3**2)
             K = k * self.rho*numpy.abs(self.g[2])/self.mu
+            K_phi30 = k_phi30 = self.rho*numpy.abs(self.g[2])/self.mu
             print('Hydraulic permeability limits for porosity phi = [0.1, 0.9]:')
             print('\tk = ' + str(k) + ' m*m')
+            print('\tk(phi = 0.3) = ' + str(k_phi30) + ' m*m')
             print('Hydraulic conductivity limits for porosity phi = [0.1, 0.9]:')
             print('\tK = ' + str(K) + ' m/s')
+            print('\tK(phi = 0.3) = ' + str(K_phi30) + ' m/s')
         else:
             raise Exception('setPermeabilityPrefactor() only relevant for the '
                     + 'Darcy solver (cfd_solver = 1)')
