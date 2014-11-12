@@ -75,6 +75,16 @@ All examples are visualized using `ParaView <http://www.paraview.org>`_.
    particles colored by pressure. Bottom left: fluid pressures, bottom center:
    porosities, bottom right: porosity changes.
 
+Publications
+------------
+``sphere`` has been used to produce results in the following scientific
+publications:
+
+- Damsgaard, A., D. L. Egholm, J. A. Piotrowski, S. Tulaczyk, N. K. Larsen, and
+  K. Tylmann (2013), Discrete element modeling of subglacial sediment
+  deformation, J. Geophys. Res. Earth Surf., 118, 2230–2242,
+  `doi:10.1002/2013JF002830 <http://dx.doi.org/10.1002/2013JF002830>`_.
+
 Author
 ------
 Anders Damsgaard, `anders.damsgaard@geo.au.dk <mailto:anders.damsgaard@geo.au.dk>`_,
