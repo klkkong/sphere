@@ -3173,7 +3173,7 @@ class sim:
         '''
         if self.cfd_solver[0] == 1:
             self.findPermeabilities()
-            self.K = self.k*self.rho_f*g/self.mu
+            self.K = self.k*self.rho_f*numpy.abs(self.g[2])/self.mu
         else:
             raise Exception('findPermeabilities() only relevant for the '
                     + 'Darcy solver (cfd_solver = 1)')
