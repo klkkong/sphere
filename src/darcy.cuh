@@ -533,7 +533,7 @@ __global__ void findDarcyPressureForce(
         __syncthreads();
         const Float phi = dev_darcy_phi[cellidx];
         const Float p_xn = dev_darcy_p[d_idx(i_x-1,i_y,i_z)];
-        //const Float p    = dev_darcy_p[cellidx];
+        const Float p    = dev_darcy_p[cellidx];
         const Float p_xp = dev_darcy_p[d_idx(i_x+1,i_y,i_z)];
         const Float p_yn = dev_darcy_p[d_idx(i_x,i_y-1,i_z)];
         const Float p_yp = dev_darcy_p[d_idx(i_x,i_y+1,i_z)];
@@ -542,7 +542,8 @@ __global__ void findDarcyPressureForce(
 
         // Add Neumann BC at top wall
         if (i_z >= wall0_iz)
-            p_zp = p_zn;
+            p_zp = p;
+            //p_zp = p_zn;
 
         // find particle volume (radius in x.w)
         const Float V = 4.0/3.0*M_PI*x.w*x.w*x.w;
