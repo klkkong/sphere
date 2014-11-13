@@ -1785,6 +1785,18 @@ __host__ void DEM::startTime()
                             &t_findDarcyPorosities);
                 checkForCudaErrorsIter("Post findDarcyPorosities", iter);
 
+                if (walls.nw > 0 && walls.wmode[0] == 1) {
+                    wall0_iz = walls.nx->w/(grid.L[2]/grid.num[2]);
+                    /*setDarcyTopWallPressure
+                      <<<dimGridFluid, dimBlockFluid>>>(
+                      new_pressure,
+                      wall0_iz,
+                      dev_darcy_p);
+                      cudaThreadSynchronize();
+                      checkForCudaErrorsIter("Post setDarcyTopWallPressure",
+                      iter);*/
+                }
+
                 if (np > 0) {
 
                     if (PROFILING == 1)
@@ -1804,6 +1816,7 @@ __host__ void DEM::startTime()
                             dev_x,
                             dev_darcy_p,
                             dev_darcy_phi,
+                            wall0_iz,
                             dev_force,
                             dev_darcy_f_p);
                     cudaThreadSynchronize();
@@ -1835,18 +1848,6 @@ __host__ void DEM::startTime()
                                     &t_setDarcyTopPressure);
                         cudaThreadSynchronize();
                         checkForCudaErrorsIter("Post setUpperPressureNS", iter);
-                    }
-
-                    if (walls.nw > 0 && walls.wmode[0] == 1) {
-                        wall0_iz = walls.nx->w/(grid.L[2]/grid.num[2]);
-                        /*setDarcyTopWallPressure
-                          <<<dimGridFluid, dimBlockFluid>>>(
-                          new_pressure,
-                          wall0_iz,
-                          dev_darcy_p);
-                          cudaThreadSynchronize();
-                          checkForCudaErrorsIter("Post setDarcyTopWallPressure",
-                          iter);*/
                     }
 
                     if (PROFILING == 1)
@@ -2224,7 +2225,6 @@ __host__ void DEM::startTime()
                         "After setDarcyZeros(dev_darcy_dphi) after transfer",
                         iter);
             }
-
 
             // Pause the CPU thread until all CUDA calls previously issued are
             // completed
