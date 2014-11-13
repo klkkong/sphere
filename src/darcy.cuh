@@ -847,7 +847,7 @@ __global__ void firstDarcySolution(
         // Neumann BCs
         if (z == 0 && bc_bot == 1)
             p_zn = p;
-        if (z == nz-1 && bc_top == 1)
+        if ((z == nz-1 && bc_top == 1) || z >= wall0_iz)
             p_zp = p;
 
         // upwind coefficients for grad(p) determined from values of k
@@ -1000,7 +1000,7 @@ __global__ void updateDarcySolution(
         // Neumann BCs
         if (z == 0 && bc_bot == 1)
             p_zn = p;
-        if (z == nz-1 && bc_top == 1)
+        if ((z == nz-1 && bc_top == 1) || z >= wall0_iz)
             p_zp = p;
 
         // upwind coefficients for grad(p) determined from values of k
@@ -1050,7 +1050,7 @@ __global__ void updateDarcySolution(
         Float p_new = p_old + (1.0 - epsilon)*dp_expl + epsilon*dp_impl;
 
         // add underrelaxation
-        const Float theta = 0.1;
+        const Float theta = 0.05;
         p_new = p*(1.0 - theta) + p_new*theta;
 
         // normalized residual, avoid division by zero
