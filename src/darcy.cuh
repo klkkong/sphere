@@ -503,6 +503,7 @@ __global__ void findDarcyPressureForce(
     const Float4* __restrict__ dev_x,           // in
     const Float*  __restrict__ dev_darcy_p,     // in
     const Float*  __restrict__ dev_darcy_phi,   // in
+    const unsigned int wall0_iz,                // in
     Float4* __restrict__ dev_force,             // out
     Float4* __restrict__ dev_darcy_f_p)         // out
 {
@@ -537,7 +538,11 @@ __global__ void findDarcyPressureForce(
         const Float p_yn = dev_darcy_p[d_idx(i_x,i_y-1,i_z)];
         const Float p_yp = dev_darcy_p[d_idx(i_x,i_y+1,i_z)];
         const Float p_zn = dev_darcy_p[d_idx(i_x,i_y,i_z-1)];
-        const Float p_zp = dev_darcy_p[d_idx(i_x,i_y,i_z+1)];
+        Float p_zp = dev_darcy_p[d_idx(i_x,i_y,i_z+1)];
+
+        // Add Neumann BC at top wall
+        if (z >= wall0_iz)
+            p_zp = p;
 
         // find particle volume (radius in x.w)
         const Float V = 4.0/3.0*M_PI*x.w*x.w*x.w;
