@@ -541,9 +541,9 @@ __global__ void findDarcyPressureForce(
         Float p_zp = dev_darcy_p[d_idx(i_x,i_y,i_z+1)];
 
         // Add Neumann BC at top wall
-        if (i_z >= wall0_iz - 1)
+        /*if (i_z >= wall0_iz - 1)
             p_zp = p;
-            //p_zp = p_zn;
+            //p_zp = p_zn;*/
 
         // find particle volume (radius in x.w)
         const Float V = 4.0/3.0*M_PI*x.w*x.w*x.w;
@@ -557,11 +557,15 @@ __global__ void findDarcyPressureForce(
         // find pressure gradient force plus buoyancy force.
         // buoyancy force = weight of displaced fluid
         // f_b = -rho_f*V*g
-        const Float3 f_p = -1.0*grad_p*V/(1.0 - phi);
+        Float3 f_p = -1.0*grad_p*V/(1.0 - phi);
             //- devC_params.rho_f*V*MAKE_FLOAT3(
                     //devC_params.g[0],
                     //devC_params.g[1],
                     //devC_params.g[2]);
+
+        // Add Neumann BC at top wall
+        if (i_z >= wall0_iz - 1)
+            f_p.z = 0.0;
 
         /*printf("%d,%d,%d findPF:\n"
                 "\tphi    = %f\n"
