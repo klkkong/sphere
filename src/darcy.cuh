@@ -533,7 +533,7 @@ __global__ void findDarcyPressureForce(
         __syncthreads();
         const Float phi = dev_darcy_phi[cellidx];
         const Float p_xn = dev_darcy_p[d_idx(i_x-1,i_y,i_z)];
-        const Float p    = dev_darcy_p[cellidx];
+        //const Float p    = dev_darcy_p[cellidx];
         const Float p_xp = dev_darcy_p[d_idx(i_x+1,i_y,i_z)];
         const Float p_yn = dev_darcy_p[d_idx(i_x,i_y-1,i_z)];
         const Float p_yp = dev_darcy_p[d_idx(i_x,i_y+1,i_z)];
