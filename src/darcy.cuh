@@ -564,7 +564,7 @@ __global__ void findDarcyPressureForce(
                     //devC_params.g[2]);
 
         // Add Neumann BC at top wall
-        if (i_z >= wall0_iz)
+        if (i_z >= wall0_iz - 1)
             f_p.z = 0.0;
 
         /*printf("%d,%d,%d findPF:\n"
