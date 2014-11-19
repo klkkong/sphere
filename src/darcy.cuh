@@ -558,13 +558,14 @@ __global__ void findDarcyPressureForce(
         // buoyancy force = weight of displaced fluid
         // f_b = -rho_f*V*g
         Float3 f_p = -1.0*grad_p*V/(1.0 - phi);
-            //- devC_params.rho_f*V*MAKE_FLOAT3(
-                    //devC_params.g[0],
-                    //devC_params.g[1],
-                    //devC_params.g[2]);
+            - devC_params.rho_f*V*MAKE_FLOAT3(
+                    devC_params.g[0],
+                    devC_params.g[1],
+                    devC_params.g[2]);
 
         // Add Neumann BC at top wall
-        if (i_z >= wall0_iz - 1)
+        //if (i_z >= wall0_iz - 1)
+        if (i_z >= wall0_iz)
             f_p.z = 0.0;
 
         /*printf("%d,%d,%d findPF:\n"

@@ -205,7 +205,7 @@ for i in numpy.arange(fluid_pressure_gradient.size):
             + str(numpy.mean(py.vel[:,1])) + ', '
             + str(numpy.mean(py.vel[:,2])) + ' m/s')"""
 
-    z_vel_threshold = 0.001
+    z_vel_threshold = 0.002
     if fluid_pressure_gradient[i] < 1.0:
         test(numpy.mean(py.vel[:,2]) < z_vel_threshold, 
                 'Fluidization (' + str(fluid_pressure_gradient[i]) + '):\t')
