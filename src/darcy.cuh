@@ -504,6 +504,7 @@ __global__ void findDarcyPressureForce(
     const Float*  __restrict__ dev_darcy_p,     // in
     const Float*  __restrict__ dev_darcy_phi,   // in
     const unsigned int wall0_iz,                // in
+    const Float rho_f,                          // in
     Float4* __restrict__ dev_force,             // out
     Float4* __restrict__ dev_darcy_f_p)         // out
 {
@@ -558,7 +559,7 @@ __global__ void findDarcyPressureForce(
         // buoyancy force = weight of displaced fluid
         // f_b = -rho_f*V*g
         Float3 f_p = -1.0*grad_p*V/(1.0 - phi);
-            - devC_params.rho_f*V*MAKE_FLOAT3(
+            - rho_f*V*MAKE_FLOAT3(
                     devC_params.g[0],
                     devC_params.g[1],
                     devC_params.g[2]);

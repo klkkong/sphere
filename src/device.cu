@@ -1817,6 +1817,7 @@ __host__ void DEM::startTime()
                             dev_darcy_p,
                             dev_darcy_phi,
                             wall0_iz,
+                            darcy.rho_f,
                             dev_force,
                             dev_darcy_f_p);
                     cudaThreadSynchronize();
