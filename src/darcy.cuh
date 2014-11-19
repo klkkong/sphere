@@ -558,7 +558,9 @@ __global__ void findDarcyPressureForce(
         // find pressure gradient force plus buoyancy force.
         // buoyancy force = weight of displaced fluid
         // f_b = -rho_f*V*g
-        Float3 f_p = -1.0*grad_p*V/(1.0 - phi);
+        // Float3 f_p = -1.0*grad_p*V/(1.0 - phi);
+        // Float3 f_p = -1.0*grad_p*V/(1.0 - phi)
+        Float3 f_p = -1.0*grad_p*V
             - rho_f*V*MAKE_FLOAT3(
                     devC_params.g[0],
                     devC_params.g[1],
