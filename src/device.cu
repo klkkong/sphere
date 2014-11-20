@@ -1768,22 +1768,26 @@ __host__ void DEM::startTime()
                         << std::endl;
 #endif
 
-                if (PROFILING == 1)
-                    startTimer(&kernel_tic);
-                findDarcyPorosities<<<dimGridFluid, dimBlockFluid>>>(
-                        dev_cellStart,
-                        dev_cellEnd,
-                        dev_x_sorted,
-                        iter,
-                        np,
-                        darcy.c_phi,
-                        dev_darcy_phi,
-                        dev_darcy_dphi);
-                cudaThreadSynchronize();
-                if (PROFILING == 1)
-                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                            &t_findDarcyPorosities);
-                checkForCudaErrorsIter("Post findDarcyPorosities", iter);
+                if ((iter % darcy.ndem) == 0) {
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
+                    findDarcyPorosities<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_cellStart,
+                            dev_cellEnd,
+                            dev_x_sorted,
+                            dev_vel_sorted,
+                            iter,
+                            np,
+                            darcy.c_phi,
+                            dev_darcy_phi,
+                            dev_darcy_dphi,
+                            dev_darcy_div_v_p);
+                    cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_findDarcyPorosities);
+                    checkForCudaErrorsIter("Post findDarcyPorosities", iter);
+                }
 
                 if (walls.nw > 0 && walls.wmode[0] == 1) {
                     wall0_iz = walls.nx->w/(grid.L[2]/grid.num[2]);
@@ -1815,7 +1819,7 @@ __host__ void DEM::startTime()
                     findDarcyPressureForce<<<dimGrid, dimBlock>>>(
                             dev_x,
                             dev_darcy_p,
-                            dev_darcy_phi,
+                            //dev_darcy_phi,
                             wall0_iz,
                             darcy.rho_f,
                             dev_force,
@@ -1956,6 +1960,7 @@ __host__ void DEM::startTime()
                                     dev_darcy_k,
                                     dev_darcy_phi,
                                     dev_darcy_dphi,
+                                    dev_darcy_div_v_p,
                                     dev_darcy_grad_k,
                                     darcy.beta_f,
                                     darcy.mu,
@@ -1982,6 +1987,7 @@ __host__ void DEM::startTime()
                                 dev_darcy_k,
                                 dev_darcy_phi,
                                 dev_darcy_dphi,
+                                dev_darcy_div_v_p,
                                 dev_darcy_grad_k,
                                 darcy.beta_f,
                                 darcy.mu,

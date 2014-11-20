@@ -36,7 +36,7 @@ void DEM::initDarcyMemDev(void)
     cudaMalloc((void**)&dev_darcy_f_p, sizeof(Float4)*np); // pressure force
     cudaMalloc((void**)&dev_darcy_k, memSizeF);        // hydraulic permeability
     cudaMalloc((void**)&dev_darcy_grad_k, memSizeF*3);  // grad(permeability)
-    //cudaMalloc((void**)&dev_darcy_div_v_p, memSizeF3); // divergence(v_p)
+    cudaMalloc((void**)&dev_darcy_div_v_p, memSizeF); // divergence(v_p)
 
     checkForCudaErrors("End of initDarcyMemDev");
 }
@@ -58,7 +58,7 @@ void DEM::freeDarcyMemDev()
     cudaFree(dev_darcy_f_p);
     cudaFree(dev_darcy_k);
     cudaFree(dev_darcy_grad_k);
-    //cudaFree(dev_darcy_div_v_p);
+    cudaFree(dev_darcy_div_v_p);
 }
 
 // Transfer to device
@@ -249,11 +249,15 @@ __global__ void findDarcyPorosities(
         const unsigned int* __restrict__ dev_cellStart,   // in
         const unsigned int* __restrict__ dev_cellEnd,     // in
         const Float4* __restrict__ dev_x_sorted,          // in
+        const Float4* __restrict__ dev_vel_sorted,        // in
         const unsigned int iteration,                     // in
         const unsigned int np,                            // in
         const Float c_phi,                                // in
         Float*  __restrict__ dev_darcy_phi,               // in + out
-        Float*  __restrict__ dev_darcy_dphi)              // in + out
+        //Float*  __restrict__ dev_darcy_dphi)              // in + out
+        Float*  __restrict__ dev_darcy_dphi,              // in + out
+        //Float*  __restrict__ dev_darcy_dphi)              // out
+        Float*  __restrict__ dev_darcy_div_v_p)           // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -291,8 +295,23 @@ __global__ void findDarcyPorosities(
 
             Float d, r;
             Float phi = 1.00;
-            //Float4 v;
-            unsigned int n = 0;
+            Float4 v;
+            //unsigned int n = 0;
+
+            // Diagonal strain rate tensor components
+            Float3 dot_epsilon_ii = MAKE_FLOAT3(0.0, 0.0, 0.0);
+
+            // Vector pointing from cell center to particle center
+            Float3 x_p;
+
+            // Normal vector pointing from cell center towards particle center
+            Float3 n_p;
+
+            // Normalized sphere-particle distance
+            Float q;
+
+            // Kernel function derivative value
+            Float dw_q;
 
             //Float3 v_avg = MAKE_FLOAT3(0.0, 0.0, 0.0);
             //Float  d_avg = 0.0;
@@ -353,7 +372,7 @@ __global__ void findDarcyPorosities(
                                     // Read particle position and radius
                                     __syncthreads();
                                     xr = dev_x_sorted[i];
-                                    //v  = dev_vel_sorted[i];
+                                    v  = dev_vel_sorted[i];
                                     r = xr.w;
 
                                     // Find center distance
@@ -363,6 +382,33 @@ __global__ void findDarcyPorosities(
                                             X.z - xr.z);
                                     dist += distmod;
                                     d = length(dist);
+
+                                    // Find center distance and normal vector
+                                    x_p = MAKE_FLOAT3(
+                                        xr.x - X.x,
+                                        xr.y - X.y,
+                                        xr.z - X.z);
+                                    d = length(x_p);
+                                    n_p = x_p/d;
+                                    q = d/R;
+
+                                    // Determine particle importance by finding
+                                    // weighting function value
+                                    dw_q = 0.0;
+                                    if (0.0 < q && q < 1.0) {
+                                        // kernel for 2d disc approximation
+                                        //dw_q = -1.0;
+
+                                        // kernel for 3d sphere approximation
+                                        dw_q = -1.5*pow(-q + 1.0, 0.5)
+                                            *pow(q + 1.0, 0.5)
+                                            + 0.5*pow(-q + 1.0, 1.5)
+                                            *pow(q + 1.0, -0.5);
+                                    }
+
+                                    //v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
+                                    dot_epsilon_ii +=
+                                        dw_q*MAKE_FLOAT3(v.x, v.y, v.z)*n_p;
 
                                     // Lens shaped intersection
                                     if ((R - r) < d && d < (R + r)) {
@@ -374,7 +420,7 @@ __global__ void findDarcyPorosities(
                                                         - 3.0*R*R) );
                                         //v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
                                         //d_avg += r+r;
-                                        n++;
+                                        //n++;
                                     }
 
                                     // Particle fully contained in cell sphere
@@ -382,14 +428,19 @@ __global__ void findDarcyPorosities(
                                         void_volume -= 4.0/3.0*M_PI*r*r*r;
                                         //v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
                                         //d_avg += r+r;
-                                        n++;
+                                        //n++;
                                     }
+                                    //n++;
                                 }
                             }
                         }
                     }
                 }
             }
+
+            dot_epsilon_ii /= R;
+            const Float dot_epsilon_kk =
+                dot_epsilon_ii.x + dot_epsilon_ii.y + dot_epsilon_ii.z;
 
             //if (phi < 0.999) {
             //v_avg /= n;
@@ -405,6 +456,9 @@ __global__ void findDarcyPorosities(
             if (iteration == 0)
                 dphi = 0.0;
 
+            //const Float dphi =
+                //(1.0 - fmin(phi_0,0.99))*dot_epsilon_kk*ndem*devC_dt;
+
             // report values to stdout for debugging
             //printf("%d,%d,%d\tphi = %f dphi = %f\n", x,y,z, phi, dphi);
             //printf("%d,%d,%d\tphi = %f dphi = %f v_avg = %f,%f,%f d_avg = %f\n",
@@ -415,9 +469,11 @@ __global__ void findDarcyPorosities(
             //phi = 0.5; dphi = 0.0; // disable porosity effects
             const unsigned int cellidx = d_idx(x,y,z);
             dev_darcy_phi[cellidx]   = phi*c_phi;
+            //dev_darcy_dphi[cellidx] += dphi*c_phi;
             dev_darcy_dphi[cellidx] += dphi*c_phi;
             //dev_darcy_vp_avg[cellidx] = v_avg;
             //dev_darcy_d_avg[cellidx]  = d_avg;
+            dev_darcy_div_v_p[cellidx] = dot_epsilon_kk;
 
 #ifdef CHECK_FLUID_FINITE
             (void)checkFiniteFloat("phi", x, y, z, phi);
@@ -502,7 +558,7 @@ __global__ void findDarcyParticleVelocityDivergence(
 __global__ void findDarcyPressureForce(
     const Float4* __restrict__ dev_x,           // in
     const Float*  __restrict__ dev_darcy_p,     // in
-    const Float*  __restrict__ dev_darcy_phi,   // in
+    //const Float*  __restrict__ dev_darcy_phi,   // in
     const unsigned int wall0_iz,                // in
     const Float rho_f,                          // in
     Float4* __restrict__ dev_force,             // out
@@ -532,7 +588,7 @@ __global__ void findDarcyPressureForce(
 
         // read fluid information
         __syncthreads();
-        const Float phi = dev_darcy_phi[cellidx];
+        //const Float phi = dev_darcy_phi[cellidx];
         const Float p_xn = dev_darcy_p[d_idx(i_x-1,i_y,i_z)];
         const Float p    = dev_darcy_p[cellidx];
         const Float p_xp = dev_darcy_p[d_idx(i_x+1,i_y,i_z)];
@@ -803,6 +859,7 @@ __global__ void firstDarcySolution(
         const Float*  __restrict__ dev_darcy_k,       // in
         const Float*  __restrict__ dev_darcy_phi,     // in
         const Float*  __restrict__ dev_darcy_dphi,    // in
+        const Float*  __restrict__ dev_darcy_div_v_p, // in
         const Float3* __restrict__ dev_darcy_grad_k,  // in
         const Float beta_f,                           // in
         const Float mu,                               // in
@@ -845,10 +902,11 @@ __global__ void firstDarcySolution(
 
         // read values
         __syncthreads();
-        const Float  k      = dev_darcy_k[cellidx];
-        const Float3 grad_k = dev_darcy_grad_k[cellidx];
-        const Float  phi    = dev_darcy_phi[cellidx];
-        const Float  dphi   = dev_darcy_dphi[cellidx];
+        const Float  k       = dev_darcy_k[cellidx];
+        const Float3 grad_k  = dev_darcy_grad_k[cellidx];
+        const Float  phi     = dev_darcy_phi[cellidx];
+        //const Float  dphi    = dev_darcy_dphi[cellidx];
+        const Float  div_v_p = dev_darcy_div_v_p[cellidx];
 
         const Float p_xn  = dev_darcy_p[d_idx(x-1,y,z)];
         const Float p     = dev_darcy_p[cellidx];
@@ -893,7 +951,8 @@ __global__ void firstDarcySolution(
 
         Float dp_expl =
             + (ndem*devC_dt)/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
-            - dphi/(beta_f*phi*(1.0 - phi));
+            - div_v_p/(beta_f*phi);
+            //- dphi/(beta_f*phi*(1.0 - phi));
 
         // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
         // grid if the wall isn't dynamic
@@ -905,7 +964,7 @@ __global__ void firstDarcySolution(
             const Float dp_diff = (ndem*devC_dt)/(beta_f*phi*mu)
                 *(k*laplace_p + dot(grad_k, grad_p));
             const Float dp_forc = -dphi/(beta_f*phi*(1.0 - phi));
-        printf("\n%d,%d,%d updateDarcySolution\n"
+        printf("\n%d,%d,%d firstDarcySolution\n"
                 "p           = %e\n"
                 "p_x         = %e, %e\n"
                 "p_y         = %e, %e\n"
@@ -916,8 +975,8 @@ __global__ void firstDarcySolution(
                 "grad_k      = %e, %e, %e\n"
                 "dp_diff     = %e\n"
                 "dp_forc     = %e\n"
-                "dphi        = %e\n"
-                "dphi/dt     = %e\n"
+                //"dphi        = %e\n"
+                //"dphi/dt     = %e\n"
                 ,
                 x,y,z,
                 p,
@@ -928,8 +987,9 @@ __global__ void firstDarcySolution(
                 laplace_p,
                 grad_p.x, grad_p.y, grad_p.z,
                 grad_k.x, grad_k.y, grad_k.z,
-                dp_diff, dp_forc,
-                dphi, dphi/(ndem*devC_dt));
+                dp_diff, dp_forc//,
+                //dphi, dphi/(ndem*devC_dt)
+                );
 #endif
 
         // save explicit integrated pressure change
@@ -952,6 +1012,7 @@ __global__ void updateDarcySolution(
         const Float*  __restrict__ dev_darcy_k,       // in
         const Float*  __restrict__ dev_darcy_phi,     // in
         const Float*  __restrict__ dev_darcy_dphi,    // in
+        const Float*  __restrict__ dev_darcy_div_v_p, // in
         const Float3* __restrict__ dev_darcy_grad_k,  // in
         const Float beta_f,                           // in
         const Float mu,                               // in
@@ -995,10 +1056,11 @@ __global__ void updateDarcySolution(
 
         // read values
         __syncthreads();
-        const Float k     = dev_darcy_k[cellidx];
-        const Float3 grad_k = dev_darcy_grad_k[cellidx];
-        const Float  phi    = dev_darcy_phi[cellidx];
-        const Float  dphi   = dev_darcy_dphi[cellidx];
+        const Float k        = dev_darcy_k[cellidx];
+        const Float3 grad_k  = dev_darcy_grad_k[cellidx];
+        const Float  phi     = dev_darcy_phi[cellidx];
+        //const Float  dphi    = dev_darcy_dphi[cellidx];
+        const Float  div_v_p = dev_darcy_div_v_p[cellidx];
 
         const Float p_old   = dev_darcy_p_old[cellidx];
         const Float dp_expl = dev_darcy_dp_expl[cellidx];
@@ -1047,7 +1109,8 @@ __global__ void updateDarcySolution(
         //Float p_new = p_old
         Float dp_impl =
             + (ndem*devC_dt)/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
-            - dphi/(beta_f*phi*(1.0 - phi));
+            - div_v_p/(beta_f*phi);
+            //- dphi/(beta_f*phi*(1.0 - phi));
 
         // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
         // grid if the wall isn't dynamic
@@ -1088,8 +1151,8 @@ __global__ void updateDarcySolution(
                 "grad_k      = %e, %e, %e\n"
                 "dp_diff     = %e\n"
                 "dp_forc     = %e\n"
-                "dphi        = %e\n"
-                "dphi/dt     = %e\n"
+                //"dphi        = %e\n"
+                //"dphi/dt     = %e\n"
                 "res_norm    = %e\n"
                 ,
                 x,y,z,
@@ -1103,7 +1166,7 @@ __global__ void updateDarcySolution(
                 grad_p.x, grad_p.y, grad_p.z,
                 grad_k.x, grad_k.y, grad_k.z,
                 dp_diff, dp_forc,
-                dphi, dphi/(ndem*devC_dt),
+                //dphi, dphi/(ndem*devC_dt),
                 res_norm);
 #endif
 

@@ -301,6 +301,7 @@ class DEM {
         Float3* dev_darcy_v;         // Cell fluid velocity
         Float*  dev_darcy_phi;       // Cell porosity
         Float*  dev_darcy_dphi;      // Cell porosity change
+        Float*  dev_darcy_div_v_p;   // Cell particle velocity divergence
         Float*  dev_darcy_norm;      // Normalized residual of epsilon values
         Float4* dev_darcy_f_p;       // Pressure gradient force on particles
         Float*  dev_darcy_k;         // Cell hydraulic permeability
