@@ -3125,7 +3125,7 @@ class sim:
         '''
         self.bc_top[0] = 0
 
-    def setPermeabilityPrefactor(self, k_c):
+    def setPermeabilityPrefactor(self, k_c, verbose=True):
         '''
         Set the permeability prefactor from Goren et al 2011, eq. 24. The
         function will print the limits of permeabilities to be simulated. This
@@ -3136,15 +3136,16 @@ class sim:
         '''
         if self.cfd_solver[0] == 1:
             self.k_c[0] = k_c
-            phi = numpy.array([0.1, 0.35, 0.9])
-            k = self.k_c * phi**3/(1.0 - phi**2)
-            K = k * self.rho_f*numpy.abs(self.g[2])/self.mu
-            print('Hydraulic permeability limits for porosity phi = ' + \
-                    str(phi) + ':')
-            print('\tk = ' + str(k) + ' m*m')
-            print('Hydraulic conductivity limits for porosity phi = ' + \
-                    str(phi) + ':')
-            print('\tK = ' + str(K) + ' m/s')
+            if verbose:
+                phi = numpy.array([0.1, 0.35, 0.9])
+                k = self.k_c * phi**3/(1.0 - phi**2)
+                K = k * self.rho_f*numpy.abs(self.g[2])/self.mu
+                print('Hydraulic permeability limits for porosity phi = ' + \
+                        str(phi) + ':')
+                print('\tk = ' + str(k) + ' m*m')
+                print('Hydraulic conductivity limits for porosity phi = ' + \
+                        str(phi) + ':')
+                print('\tK = ' + str(K) + ' m/s')
         else:
             raise Exception('setPermeabilityPrefactor() only relevant for the '
                     + 'Darcy solver (cfd_solver = 1)')
