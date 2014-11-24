@@ -3133,6 +3133,10 @@ class sim:
 
         :param k_c: Permeability prefactor value [m*m]
         :type k_c: float
+        :param verbose: Print information about the realistic permeabilities and
+            hydraulic conductivities to expect with the chosen permeability
+            prefactor.
+        :type verbose: bool
         '''
         if self.cfd_solver[0] == 1:
             self.k_c[0] = k_c
