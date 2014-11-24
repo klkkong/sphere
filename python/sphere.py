@@ -3138,7 +3138,7 @@ class sim:
             self.k_c[0] = k_c
             phi = numpy.array([0.1, 0.35, 0.9])
             k = self.k_c * phi**3/(1.0 - phi**2)
-            K = k * self.rho*numpy.abs(self.g[2])/self.mu
+            K = k * self.rho_f*numpy.abs(self.g[2])/self.mu
             print('Hydraulic permeability limits for porosity phi = ' + \
                     str(phi) + ':')
             print('\tk = ' + str(k) + ' m*m')

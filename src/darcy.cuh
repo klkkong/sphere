@@ -388,9 +388,12 @@ __global__ void findDarcyPorosities(
                                         xr.x - X.x,
                                         xr.y - X.y,
                                         xr.z - X.z);
+                                    //x_p -= distmod;
                                     d = length(x_p);
                                     n_p = x_p/d;
+                                    //n_p = -1.0*dist;
                                     q = d/R;
+                                    //q = (R*R - r*r + d)/(2.0*R*d);
 
                                     // Determine particle importance by finding
                                     // weighting function value
@@ -407,8 +410,9 @@ __global__ void findDarcyPorosities(
                                     }
 
                                     //v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
-                                    dot_epsilon_ii +=
-                                        dw_q*MAKE_FLOAT3(v.x, v.y, v.z)*n_p;
+                                    //dot_epsilon_ii += 1.0/R *
+                                    dot_epsilon_ii -= 1.0/R *
+                                        dw_q*n_p*MAKE_FLOAT3(v.x, v.y, v.z);
 
                                     // Lens shaped intersection
                                     if ((R - r) < d && d < (R + r)) {
@@ -438,7 +442,7 @@ __global__ void findDarcyPorosities(
                 }
             }
 
-            dot_epsilon_ii /= R;
+            //dot_epsilon_ii /= R;
             const Float dot_epsilon_kk =
                 dot_epsilon_ii.x + dot_epsilon_ii.y + dot_epsilon_ii.z;
 
@@ -473,11 +477,26 @@ __global__ void findDarcyPorosities(
             dev_darcy_dphi[cellidx] += dphi*c_phi;
             //dev_darcy_vp_avg[cellidx] = v_avg;
             //dev_darcy_d_avg[cellidx]  = d_avg;
-            dev_darcy_div_v_p[cellidx] = dot_epsilon_kk;
+            dev_darcy_div_v_p[cellidx] = dot_epsilon_kk*c_phi;
+
+            /*printf("\n%d,%d,%d: findDarcyPorosities\n"
+                    "\tphi     = %f\n"
+                    "\tdphi    = %e\n"
+                    "\tX       = %e, %e, %e\n"
+                    "\txr      = %e, %e, %e\n"
+                    "\tq       = %e\n"
+                    "\tdiv_v_p = %e\n"
+                    , x,y,z,
+                    phi, dphi,
+                    X.x, X.y, X.z,
+                    xr.x, xr.y, xr.z,
+                    q,
+                    dot_epsilon_kk);*/
 
 #ifdef CHECK_FLUID_FINITE
             (void)checkFiniteFloat("phi", x, y, z, phi);
             (void)checkFiniteFloat("dphi", x, y, z, dphi);
+            (void)checkFiniteFloat("dot_epsilon_kk", x, y, z, dot_epsilon_kk);
             //(void)checkFiniteFloat3("v_avg", x, y, z, v_avg);
             //(void)checkFiniteFloat("d_avg", x, y, z, d_avg);
 #endif
@@ -963,7 +982,8 @@ __global__ void firstDarcySolution(
 #ifdef REPORT_FORCING_TERMS
             const Float dp_diff = (ndem*devC_dt)/(beta_f*phi*mu)
                 *(k*laplace_p + dot(grad_k, grad_p));
-            const Float dp_forc = -dphi/(beta_f*phi*(1.0 - phi));
+            //const Float dp_forc = -dphi/(beta_f*phi*(1.0 - phi));
+            const Float dp_forc = -div_v_p/(beta_f*phi);
         printf("\n%d,%d,%d firstDarcySolution\n"
                 "p           = %e\n"
                 "p_x         = %e, %e\n"
@@ -975,6 +995,7 @@ __global__ void firstDarcySolution(
                 "grad_k      = %e, %e, %e\n"
                 "dp_diff     = %e\n"
                 "dp_forc     = %e\n"
+                "div_v_p     = %e\n"
                 //"dphi        = %e\n"
                 //"dphi/dt     = %e\n"
                 ,
@@ -987,7 +1008,8 @@ __global__ void firstDarcySolution(
                 laplace_p,
                 grad_p.x, grad_p.y, grad_p.z,
                 grad_k.x, grad_k.y, grad_k.z,
-                dp_diff, dp_forc//,
+                dp_diff, dp_forc,
+                div_v_p//,
                 //dphi, dphi/(ndem*devC_dt)
                 );
 #endif
@@ -1137,8 +1159,9 @@ __global__ void updateDarcySolution(
 #ifdef REPORT_FORCING_TERMS
             const Float dp_diff = (ndem*devC_dt)/(beta_f*phi*mu)
                 *(k*laplace_p + dot(grad_k, grad_p));
-            const Float dp_forc = -dphi/(beta_f*phi*(1.0 - phi));
-        printf("\n%d,%d,%d updateDarcySolution\n"
+            //const Float dp_forc = -dphi/(beta_f*phi*(1.0 - phi));
+            const Float dp_forc = -div_v_p/(beta_f*phi);
+        /*printf("\n%d,%d,%d updateDarcySolution\n"
                 "p_new       = %e\n"
                 "p           = %e\n"
                 "p_x         = %e, %e\n"
@@ -1151,6 +1174,7 @@ __global__ void updateDarcySolution(
                 "grad_k      = %e, %e, %e\n"
                 "dp_diff     = %e\n"
                 "dp_forc     = %e\n"
+                "div_v_p     = %e\n"
                 //"dphi        = %e\n"
                 //"dphi/dt     = %e\n"
                 "res_norm    = %e\n"
@@ -1166,8 +1190,9 @@ __global__ void updateDarcySolution(
                 grad_p.x, grad_p.y, grad_p.z,
                 grad_k.x, grad_k.y, grad_k.z,
                 dp_diff, dp_forc,
+                div_v_p,
                 //dphi, dphi/(ndem*devC_dt),
-                res_norm);
+                res_norm);*/
 #endif
 
         // save new pressure and the residual
