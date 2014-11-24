@@ -1769,6 +1769,21 @@ __host__ void DEM::startTime()
 #endif
 
                 if ((iter % darcy.ndem) == 0) {
+                    //if (PROFILING == 1)
+                        //startTimer(&kernel_tic);
+                    /*findDarcyParticleVelocities
+                        <<<dimGridFluidFace, dimBlockFluidFace>>>(
+                                dev_cellStart,
+                                dev_cellEnd,
+                                dev_x_sorted,
+                                dev_vel_sorted,
+                                np,
+                                dev_darcy_v_p_x,
+                                dev_darcy_v_p_y,
+                                dev_darcy_v_p_z);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post findDarcyVelocities", iter);*/
+
                     if (PROFILING == 1)
                         startTimer(&kernel_tic);
                     findDarcyPorosities<<<dimGridFluid, dimBlockFluid>>>(

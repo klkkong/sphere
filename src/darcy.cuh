@@ -35,8 +35,11 @@ void DEM::initDarcyMemDev(void)
     cudaMalloc((void**)&dev_darcy_norm, memSizeF);  // normalized residual
     cudaMalloc((void**)&dev_darcy_f_p, sizeof(Float4)*np); // pressure force
     cudaMalloc((void**)&dev_darcy_k, memSizeF);        // hydraulic permeability
-    cudaMalloc((void**)&dev_darcy_grad_k, memSizeF*3);  // grad(permeability)
-    cudaMalloc((void**)&dev_darcy_div_v_p, memSizeF); // divergence(v_p)
+    cudaMalloc((void**)&dev_darcy_grad_k, memSizeF*3); // grad(permeability)
+    cudaMalloc((void**)&dev_darcy_div_v_p, memSizeF);  // divergence(v_p)
+    //cudaMalloc((void**)&dev_darcy_v_p_x, memSizeFace); // v_p.x
+    //cudaMalloc((void**)&dev_darcy_v_p_y, memSizeFace); // v_p.y
+    //cudaMalloc((void**)&dev_darcy_v_p_z, memSizeFace); // v_p.z
 
     checkForCudaErrors("End of initDarcyMemDev");
 }
@@ -59,6 +62,9 @@ void DEM::freeDarcyMemDev()
     cudaFree(dev_darcy_k);
     cudaFree(dev_darcy_grad_k);
     cudaFree(dev_darcy_div_v_p);
+    //cudaFree(dev_darcy_v_p_x);
+    //cudaFree(dev_darcy_v_p_y);
+    //cudaFree(dev_darcy_v_p_z);
 }
 
 // Transfer to device
@@ -243,6 +249,22 @@ __global__ void setDarcyGhostNodes(
     }
 }
 
+/*
+__global__ void findDarcyParticleVelocities(
+        const unsigned int* __restrict__ dev_cellStart,   // in
+        const unsigned int* __restrict__ dev_cellEnd,     // in
+        const Float4* __restrict__ dev_x_sorted,          // in
+        const Float4* __restrict__ dev_vel_sorted,        // in
+        const unsigned int np,                            // in
+        Float*  __restrict__ dev_darcy_v_p_x,             // out
+        Float*  __restrict__ dev_darcy_v_p_y,             // out
+        Float*  __restrict__ dev_darcy_v_p_z)             // out
+{
+
+
+}
+*/
+
 // Find the porosity in each cell on the base of a sphere, centered at the cell
 // center. 
 __global__ void findDarcyPorosities(
@@ -384,14 +406,14 @@ __global__ void findDarcyPorosities(
                                     d = length(dist);
 
                                     // Find center distance and normal vector
-                                    x_p = MAKE_FLOAT3(
+                                    /*x_p = MAKE_FLOAT3(
                                         xr.x - X.x,
                                         xr.y - X.y,
-                                        xr.z - X.z);
+                                        xr.z - X.z);*/
                                     //x_p -= distmod;
+                                    x_p = -1.0*dist;
                                     d = length(x_p);
                                     n_p = x_p/d;
-                                    //n_p = -1.0*dist;
                                     q = d/R;
                                     //q = (R*R - r*r + d)/(2.0*R*d);
 
@@ -479,19 +501,21 @@ __global__ void findDarcyPorosities(
             //dev_darcy_d_avg[cellidx]  = d_avg;
             dev_darcy_div_v_p[cellidx] = dot_epsilon_kk*c_phi;
 
-            /*printf("\n%d,%d,%d: findDarcyPorosities\n"
+            printf("\n%d,%d,%d: findDarcyPorosities\n"
                     "\tphi     = %f\n"
                     "\tdphi    = %e\n"
+                    "\tdphi_eps= %e\n"
                     "\tX       = %e, %e, %e\n"
                     "\txr      = %e, %e, %e\n"
                     "\tq       = %e\n"
                     "\tdiv_v_p = %e\n"
                     , x,y,z,
                     phi, dphi,
+                    dot_epsilon_kk*(1.0 - phi)*devC_dt,
                     X.x, X.y, X.z,
                     xr.x, xr.y, xr.z,
                     q,
-                    dot_epsilon_kk);*/
+                    dot_epsilon_kk);
 
 #ifdef CHECK_FLUID_FINITE
             (void)checkFiniteFloat("phi", x, y, z, phi);
