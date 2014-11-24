@@ -1792,6 +1792,7 @@ __host__ void DEM::startTime()
                             dev_x_sorted,
                             dev_vel_sorted,
                             iter,
+                            darcy.ndem,
                             np,
                             darcy.c_phi,
                             dev_darcy_phi,

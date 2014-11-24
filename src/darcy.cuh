@@ -273,6 +273,7 @@ __global__ void findDarcyPorosities(
         const Float4* __restrict__ dev_x_sorted,          // in
         const Float4* __restrict__ dev_vel_sorted,        // in
         const unsigned int iteration,                     // in
+        const unsigned int ndem,                          // in
         const unsigned int np,                            // in
         const Float c_phi,                                // in
         Float*  __restrict__ dev_darcy_phi,               // in + out
