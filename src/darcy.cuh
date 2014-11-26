@@ -440,11 +440,13 @@ __global__ void findDarcyPorosities(
             // Forwards Euler
             //Float dphi = phi_new - phi;
 
-            // Central difference
-            Float dphi = 0.5*(phi_new - phi_0);
+            // Central difference after first iteration
+            Float dphi;
+            if (iteration > 0)
+                dphi = phi_new - phi;
+            else
+                dphi = 0.5*(phi_new - phi_0);
 
-            /*if (iteration == 0)
-                dphi = 0.0;*/
 
             // report values to stdout for debugging
             //printf("%d,%d,%d\tphi = %f dphi = %f\n", x,y,z, phi, dphi);
