@@ -442,7 +442,7 @@ __global__ void findDarcyPorosities(
 
             // Central difference after first iteration
             Float dphi;
-            if (iteration > 0)
+            if (iteration == 0)
                 dphi = phi_new - phi;
             else
                 dphi = 0.5*(phi_new - phi_0);
