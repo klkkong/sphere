@@ -1796,8 +1796,8 @@ __host__ void DEM::startTime()
                             np,
                             darcy.c_phi,
                             dev_darcy_phi,
-                            dev_darcy_dphi,
-                            dev_darcy_div_v_p);
+                            dev_darcy_dphi);//,
+                            //dev_darcy_div_v_p);
                     cudaThreadSynchronize();
                     if (PROFILING == 1)
                         stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
@@ -1976,7 +1976,7 @@ __host__ void DEM::startTime()
                                     dev_darcy_k,
                                     dev_darcy_phi,
                                     dev_darcy_dphi,
-                                    dev_darcy_div_v_p,
+                                    //dev_darcy_div_v_p,
                                     dev_darcy_grad_k,
                                     darcy.beta_f,
                                     darcy.mu,
@@ -2003,7 +2003,7 @@ __host__ void DEM::startTime()
                                 dev_darcy_k,
                                 dev_darcy_phi,
                                 dev_darcy_dphi,
-                                dev_darcy_div_v_p,
+                                //dev_darcy_div_v_p,
                                 dev_darcy_grad_k,
                                 darcy.beta_f,
                                 darcy.mu,
