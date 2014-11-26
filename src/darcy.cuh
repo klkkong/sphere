@@ -302,7 +302,8 @@ __global__ void findDarcyPorosities(
     //const Float R = fmin(dx, fmin(dy,dz));       // diameter = 2*cell width
     const Float cell_volume = 4.0/3.0*M_PI*R*R*R;
 
-    Float void_volume = cell_volume;
+    Float void_volume = cell_volume;     // current void volume
+    Float void_volume_new = cell_volume; // projected new void volume
     Float4 xr;  // particle pos. and radius
 
     // check that we are not outside the fluid grid
@@ -320,24 +321,6 @@ __global__ void findDarcyPorosities(
             Float phi = 1.00;
             Float4 v;
             //unsigned int n = 0;
-
-            // Diagonal strain rate tensor components
-            Float3 dot_epsilon_ii = MAKE_FLOAT3(0.0, 0.0, 0.0);
-
-            // Vector pointing from cell center to particle center
-            Float3 x_p;
-
-            // Normal vector pointing from cell center towards particle center
-            Float3 n_p;
-
-            // Normalized sphere-particle distance
-            Float q;
-
-            // Kernel function derivative value
-            Float dw_q;
-
-            //Float3 v_avg = MAKE_FLOAT3(0.0, 0.0, 0.0);
-            //Float  d_avg = 0.0;
 
             // Read old porosity
             __syncthreads();
@@ -358,11 +341,6 @@ __global__ void findDarcyPorosities(
             for (int z_dim=-1; z_dim<2; ++z_dim) { // z-axis
                 for (int y_dim=-1; y_dim<2; ++y_dim) { // y-axis
                     for (int x_dim=-1; x_dim<2; ++x_dim) { // x-axis
-
-            // Iterate over 125 neighbor cells, R = 2*cell width
-            /*for (int z_dim=-2; z_dim<3; ++z_dim) { // z-axis
-                for (int y_dim=-2; y_dim<3; ++y_dim) { // y-axis
-                    for (int x_dim=-2; x_dim<3; ++x_dim) { // x-axis*/
 
                         // Index of neighbor cell this iteration is looking at
                         targetCell = gridPos + make_int3(x_dim, y_dim, z_dim);
@@ -406,58 +384,43 @@ __global__ void findDarcyPorosities(
                                     dist += distmod;
                                     d = length(dist);
 
-                                    // Find center distance and normal vector
-                                    /*x_p = MAKE_FLOAT3(
-                                        xr.x - X.x,
-                                        xr.y - X.y,
-                                        xr.z - X.z);*/
-                                    //x_p -= distmod;
-                                    x_p = -1.0*dist;
-                                    d = length(x_p);
-                                    n_p = x_p/d;
-                                    q = d/R;
-                                    //q = (R*R - r*r + d)/(2.0*R*d);
-
-                                    // Determine particle importance by finding
-                                    // weighting function value
-                                    dw_q = 0.0;
-                                    if (0.0 < q && q < 1.0) {
-                                        // kernel for 2d disc approximation
-                                        //dw_q = -1.0;
-
-                                        // kernel for 3d sphere approximation
-                                        dw_q = -1.5*pow(-q + 1.0, 0.5)
-                                            *pow(q + 1.0, 0.5)
-                                            + 0.5*pow(-q + 1.0, 1.5)
-                                            *pow(q + 1.0, -0.5);
-                                    }
-
-                                    //v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
-                                    //dot_epsilon_ii += 1.0/R *
-                                    dot_epsilon_ii -= 1.0/R *
-                                        dw_q*n_p*MAKE_FLOAT3(v.x, v.y, v.z);
-
                                     // Lens shaped intersection
-                                    if ((R - r) < d && d < (R + r)) {
+                                    if ((R - r) < d && d < (R + r))
                                         void_volume -=
                                             1.0/(12.0*d) * (
                                                     M_PI*(R + r - d)*(R + r - d)
                                                     *(d*d + 2.0*d*r - 3.0*r*r
                                                         + 2.0*d*R + 6.0*r*R
                                                         - 3.0*R*R) );
-                                        //v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
-                                        //d_avg += r+r;
-                                        //n++;
-                                    }
 
                                     // Particle fully contained in cell sphere
-                                    if (d <= R - r) {
+                                    if (d <= R - r)
                                         void_volume -= 4.0/3.0*M_PI*r*r*r;
-                                        //v_avg += MAKE_FLOAT3(v.x, v.y, v.z);
-                                        //d_avg += r+r;
-                                        //n++;
-                                    }
-                                    //n++;
+
+                                    //// Find projected new void volume
+                                    // Eulerian update of positions
+                                    xr += v*devC_dt;
+                                    
+                                    // Find center distance
+                                    dist = MAKE_FLOAT3(
+                                            X.x - xr.x, 
+                                            X.y - xr.y,
+                                            X.z - xr.z);
+                                    dist += distmod;
+                                    d = length(dist);
+
+                                    // Lens shaped intersection
+                                    if ((R - r) < d && d < (R + r))
+                                        void_volume_new -=
+                                            1.0/(12.0*d) * (
+                                                    M_PI*(R + r - d)*(R + r - d)
+                                                    *(d*d + 2.0*d*r - 3.0*r*r
+                                                        + 2.0*d*R + 6.0*r*R
+                                                        - 3.0*R*R) );
+
+                                    // Particle fully contained in cell sphere
+                                    if (d <= R - r)
+                                        void_volume_new -= 4.0/3.0*M_PI*r*r*r;
                                 }
                             }
                         }
@@ -465,28 +428,17 @@ __global__ void findDarcyPorosities(
                 }
             }
 
-            //dot_epsilon_ii /= R;
-            const Float dot_epsilon_kk =
-                dot_epsilon_ii.x + dot_epsilon_ii.y + dot_epsilon_ii.z;
-
-            //if (phi < 0.999) {
-            //v_avg /= n;
-            //d_avg /= n;
-            //}
-
             // Make sure that the porosity is in the interval [0.0;1.0]
             phi = fmin(0.9, fmax(0.1, void_volume/cell_volume));
+            Float phi_new = fmin(0.9, fmax(0.1, void_volume_new/cell_volume));
             //phi = fmin(0.99, fmax(0.01, void_volume/cell_volume));
             //phi = void_volume/cell_volume;
 
             /*Float dphi = phi - phi_0;*/
+            Float dphi = phi_new - phi;
 
-            Float dphi =
-                (1.0 - fmin(phi_0, 0.9))*dot_epsilon_kk*ndem*devC_dt;
-                //(1.0 - fmin(phi_0,0.99))*dot_epsilon_kk*ndem*devC_dt;
-
-            if (iteration == 0)
-                dphi = 0.0;
+            /*if (iteration == 0)
+                dphi = 0.0;*/
 
             // report values to stdout for debugging
             //printf("%d,%d,%d\tphi = %f dphi = %f\n", x,y,z, phi, dphi);
