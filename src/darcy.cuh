@@ -447,7 +447,6 @@ __global__ void findDarcyPorosities(
             else
                 dphi = 0.5*(phi_new - phi_0);
 
-
             // report values to stdout for debugging
             //printf("%d,%d,%d\tphi = %f dphi = %f\n", x,y,z, phi, dphi);
             //printf("%d,%d,%d\tphi = %f dphi = %f v_avg = %f,%f,%f d_avg = %f\n",
@@ -925,7 +924,8 @@ __global__ void firstDarcySolution(
         // Neumann BCs
         if (z == 0 && bc_bot == 1)
             p_zn = p;
-        if ((z == nz-1 && bc_top == 1) || z >= wall0_iz)
+        //if ((z == nz-1 && bc_top == 1) || z >= wall0_iz)
+        if (z == nz-1 && bc_top == 1)
             p_zp = p;
 
         // upwind coefficients for grad(p) determined from values of k
@@ -1086,7 +1086,8 @@ __global__ void updateDarcySolution(
         // Neumann BCs
         if (z == 0 && bc_bot == 1)
             p_zn = p;
-        if ((z == nz-1 && bc_top == 1) || z >= wall0_iz)
+        //if ((z == nz-1 && bc_top == 1) || z >= wall0_iz)
+        if (z == nz-1 && bc_top == 1)
             p_zp = p;
 
         // upwind coefficients for grad(p) determined from values of k
