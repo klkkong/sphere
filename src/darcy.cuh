@@ -603,7 +603,7 @@ __global__ void findDarcyPressureForce(
         Float p_zp = dev_darcy_p[d_idx(i_x,i_y,i_z+1)];
 
         // Add Neumann BC at top wall
-        if (i_z >= wall0_iz - 1)
+        if (i_z >= wall0_iz - 2)
             p_zp = p;
             //p_zp = p_zn;*/
 

@@ -1987,7 +1987,8 @@ __host__ void DEM::startTime()
                                     dev_darcy_dp_expl);
                             cudaThreadSynchronize();
                             if (PROFILING == 1)
-                                stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                stopTimer(&kernel_tic, &kernel_toc,
+                                        &kernel_elapsed,
                                         &t_updateDarcySolution);
                             checkForCudaErrorsIter("Post updateDarcySolution",
                                     iter);
