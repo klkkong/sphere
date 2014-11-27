@@ -603,7 +603,7 @@ __global__ void findDarcyPressureForce(
         Float p_zp = dev_darcy_p[d_idx(i_x,i_y,i_z+1)];
 
         // Add Neumann BC at top wall
-        if (i_z >= wall0_iz - 2)
+        if (i_z >= wall0_iz - 1)
             p_zp = p;
             //p_zp = p_zn;*/
 
@@ -963,7 +963,7 @@ __global__ void firstDarcySolution(
         // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
         // grid if the wall isn't dynamic
         if ((bc_bot == 0 && z == 0) || (bc_top == 0 && z == nz-1)
-                || (z >= wall0_iz))
+                || (z >= wall0_iz - 1))
             dp_expl = 0.0;
 
 #ifdef REPORT_FORCING_TERMS
@@ -1126,7 +1126,7 @@ __global__ void updateDarcySolution(
         // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
         // grid if the wall isn't dynamic
         if ((bc_bot == 0 && z == 0) || (bc_top == 0 && z == nz-1)
-                || (z >= wall0_iz))
+                || (z >= wall0_iz - 1))
             dp_impl = 0.0;
             //p_new = p;
 
