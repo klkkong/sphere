@@ -1529,7 +1529,7 @@ class sim:
 
             # Coordinates for each point (positions)
             fh.write('      <Points>\n')
-            fh.write('        <DataArray name="Position" type="Float32" '
+            fh.write('        <DataArray name="Position [m]" type="Float32" '
                     + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
@@ -1539,7 +1539,7 @@ class sim:
             fh.write('      </Points>\n')
             
             ### Data attributes
-            fh.write('      <PointData Scalars="Diameter" Vectors="vector">\n')
+            fh.write('      <PointData Scalars="Diameter [m]" Vectors="vector">\n')
 
             # Radii
             fh.write('        <DataArray type="Float32" Name="Diameter" '
@@ -1551,7 +1551,7 @@ class sim:
             fh.write('        </DataArray>\n')
 
             # Displacements (xyzsum)
-            fh.write('        <DataArray type="Float32" Name="Displacement" '
+            fh.write('        <DataArray type="Float32" Name="Displacement [m]" '
                     + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
@@ -1561,7 +1561,7 @@ class sim:
             fh.write('        </DataArray>\n')
 
             # Velocity
-            fh.write('        <DataArray type="Float32" Name="Velocity" '
+            fh.write('        <DataArray type="Float32" Name="Velocity [m/s]" '
                     + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
@@ -1575,7 +1575,7 @@ class sim:
                 if self.cfd_solver == 0:  # Navier Stokes
                     # Fluid interaction force
                     fh.write('        <DataArray type="Float32" ' 
-                            + 'Name="Fluid force total" '
+                            + 'Name="Fluid force total [N]" '
                             + 'NumberOfComponents="3" format="ascii">\n')
                     fh.write('          ')
                     for i in range(self.np):
@@ -1587,7 +1587,7 @@ class sim:
 
                     # Fluid drag force
                     fh.write('        <DataArray type="Float32" '
-                            + 'Name="Fluid drag force" '
+                            + 'Name="Fluid drag force [N]" '
                             + 'NumberOfComponents="3" format="ascii">\n')
                     fh.write('          ')
                     for i in range(self.np):
@@ -1598,7 +1598,7 @@ class sim:
 
                 # Fluid pressure force
                 fh.write('        <DataArray type="Float32" '
-                        + 'Name="Fluid pressure force" '
+                        + 'Name="Fluid pressure force [N]" '
                         + 'NumberOfComponents="3" format="ascii">\n')
                 fh.write('          ')
                 for i in range(self.np):
@@ -1610,7 +1610,7 @@ class sim:
                 if self.cfd_solver == 0:  # Navier Stokes
                     # Fluid viscous force
                     fh.write('        <DataArray type="Float32" '
-                            + 'Name="Fluid viscous force" '
+                            + 'Name="Fluid viscous force [N]" '
                             + 'NumberOfComponents="3" format="ascii">\n')
                     fh.write('          ')
                     for i in range(self.np):
@@ -1629,7 +1629,7 @@ class sim:
             fh.write('        </DataArray>\n')
 
             # Force
-            fh.write('        <DataArray type="Float32" Name="Force" '
+            fh.write('        <DataArray type="Float32" Name="Force [N]" '
                     + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
@@ -1639,7 +1639,8 @@ class sim:
             fh.write('        </DataArray>\n')
 
             # Angular Position
-            fh.write('        <DataArray type="Float32" Name="AngularPosition" '
+            fh.write('        <DataArray type="Float32" Name="Angular position'
+                    + '[rad]" '
                     + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
@@ -1649,7 +1650,8 @@ class sim:
             fh.write('        </DataArray>\n')
 
             # Angular Velocity
-            fh.write('        <DataArray type="Float32" Name="AngularVelocity" '
+            fh.write('        <DataArray type="Float32" Name="Angular velocity'
+                    + ' [rad/s]" '
                     + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
@@ -1659,7 +1661,7 @@ class sim:
             fh.write('        </DataArray>\n')
 
             # Torque
-            fh.write('        <DataArray type="Float32" Name="Torque" '
+            fh.write('        <DataArray type="Float32" Name="Torque [Nm]" '
                     + 'NumberOfComponents="3" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
@@ -1669,7 +1671,8 @@ class sim:
             fh.write('        </DataArray>\n')
 
             # Shear energy rate
-            fh.write('        <DataArray type="Float32" Name="ShearEnergyRate" '
+            fh.write('        <DataArray type="Float32" Name="Shear Energy '
+                    + 'Rate [J/s]" '
                     + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
@@ -1678,8 +1681,8 @@ class sim:
             fh.write('        </DataArray>\n')
 
             # Shear energy
-            fh.write('        <DataArray type="Float32" Name="ShearEnergy" '
-                    + 'format="ascii">\n')
+            fh.write('        <DataArray type="Float32" Name="Shear Energy [J]"'
+                    + ' format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
                 fh.write('%f ' % (self.es[i]))
@@ -1688,7 +1691,7 @@ class sim:
 
             # Viscous energy rate
             fh.write('        <DataArray type="Float32" '
-                    + 'Name="ViscousEnergyRate" format="ascii">\n')
+                    + 'Name="Viscous Energy Rate [J/s]" format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
                 fh.write('%f ' % (self.ev_dot[i]))
@@ -1696,7 +1699,8 @@ class sim:
             fh.write('        </DataArray>\n')
 
             # Shear energy
-            fh.write('        <DataArray type="Float32" Name="ViscousEnergy" '
+            fh.write('        <DataArray type="Float32" '
+                    + 'Name="Viscous Energy [J]" '
                     + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
@@ -1705,7 +1709,7 @@ class sim:
             fh.write('        </DataArray>\n')
 
             # Pressure
-            fh.write('        <DataArray type="Float32" Name="Pressure" '
+            fh.write('        <DataArray type="Float32" Name="Pressure [Pa]" '
                     + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
