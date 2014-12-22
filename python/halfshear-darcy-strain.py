@@ -155,7 +155,7 @@ plt.MaxNLocator(nbins=4)
 
 filename = 'halfshear-darcy-strain.pdf'
 plt.savefig(filename)
-shutil.copyfile(filename, '/home/adc/articles/own/2/graphics/' + filename)
+shutil.copyfile(filename, '/Users/adc/articles/own/2/graphics/' + filename)
 print(filename)
 
 
