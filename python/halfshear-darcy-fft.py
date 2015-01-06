@@ -33,6 +33,7 @@ p_max = [[], [], [], []]
 f_n_mean = [[], [], [], []]
 f_n_max  = [[], [], [], []]
 v_f_z_mean  = [[], [], [], []]
+t_total = []
 
 fluid=True
 
@@ -47,6 +48,7 @@ shear_strain[0] = sim.shear_strain
 #shear_strain[0] = numpy.arange(sim.status()+1)
 friction[0] = sim.tau/sim.sigma_eff
 dilation[0] = sim.dilation
+t_total.append(sim.time_total[0])
 
 
 # wet shear
@@ -65,17 +67,14 @@ for c in numpy.arange(1,len(k_c_vals)+1):
         shear_strain[c] = numpy.zeros(sim.status())
         friction[c] = numpy.zeros_like(shear_strain[c])
         dilation[c] = numpy.zeros_like(shear_strain[c])
-        if smoothed_results:
-            friction_smooth[c] = numpy.zeros_like(shear_strain[c])
 
         sim.readlast(verbose=False)
         sim.visualize('shear')
+        t_total.append(sim.time_total[0])
         shear_strain[c] = sim.shear_strain
         #shear_strain[c] = numpy.arange(sim.status()+1)
         friction[c] = sim.tau/sim.sigma_eff
         dilation[c] = sim.dilation
-        if smoothed_results:
-            friction_smooth[c] = smooth(friction[c], smooth_window)
 
     else:
         print(sid + ' not found')
@@ -86,42 +85,48 @@ for c in numpy.arange(1,len(k_c_vals)+1):
         #sim.writeVTKall()
     c += 1
 
-fig = plt.figure(figsize=(8,6)) # (w,h)
+fig = plt.figure(figsize=(8,8)) # (w,h)
 #fig.subplots_adjust(hspace=0.0)
 
-ax1 = plt.subplot(111)
-#ax1 = plt.subplot(211)
-#ax2 = plt.subplot(212, sharex=ax1)
+#ax1 = plt.subplot(111)
+ax1 = plt.subplot(211)
+ax2 = plt.subplot(212, sharex=ax1)
 alpha = 1.0
-ax1.plot(shear_strain[0], friction[0], label='dry', linewidth=1, alpha=alpha)
+#ax1.plot(shear_strain[0], friction[0], label='dry', linewidth=1, alpha=alpha)
 
 color = ['b','g','r','c']
 for c in numpy.arange(0,len(k_c_vals)+1):
 
     if c == 0:
-        label = 'wet, relatively permeable'
+        label = 'dry'
     elif c == 1:
+        label = 'wet, relatively permeable'
+    elif c == 2:
         label = 'wet, relatively impermeable'
     else:
         label = '$k_c$ = %.1e m$^2$' % (k_c_vals[c-1])
 
-    arr = shear_strain[200:1999]
-    t = numpy.linspace(0.0, sim.time_total[0], shear_strain.size)
+    str_arr = shear_strain[c][200:1999]
+    dil_arr = dilation[c][200:1999]
+    t = numpy.linspace(0.0, sim.time_total[0], shear_strain[c].size)
 
-    freqs = scipy.fftpack.fftfreq(arr.size, t[1]-t[0])
-    yf    = scipy.fftpack.fft(arr)
+    freqs = scipy.fftpack.fftfreq(str_arr.size, t[1]-t[0])
+    str_yf    = numpy.abs(scipy.fftpack.fft(str_arr))
+    dil_yf    = numpy.abs(scipy.fftpack.fft(dil_arr))
 
-    ax1.plot(freqs, yf, label=label, linewidth=1, alpha=alpha)
+    ax1.plot(freqs, str_yf, label=label, linewidth=1, alpha=alpha)
+    ax2.plot(freqs, dil_yf, label=label, linewidth=1, alpha=alpha)
 
-ax1.set_xlabel('Frequency [s$^{-1}$]')
+ax2.set_xlabel('Frequency [s$^{-1}$]')
 
 #ax1.set_ylabel('Shear friction $\\tau/\\sigma\'$ [-]')
 #ax2.set_ylabel('Dilation $\\Delta h/(2r)$ [-]')
-#plt.setp(ax1.get_xticklabels(), visible=False)
 
+ax1.set_xlim([0.0,12.0])
+plt.setp(ax1.get_xticklabels(), visible=False)
 
 ax1.grid()
-#ax2.grid()
+ax2.grid()
 
 legend_alpha=0.5
 ax1.legend(loc='best', prop={'size':18}, fancybox=True,
