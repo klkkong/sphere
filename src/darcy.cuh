@@ -892,15 +892,15 @@ __global__ void firstDarcySolution(
     // Perform the epsilon updates for all non-ghost nodes except the Dirichlet
     // boundaries at z=0 and z=nz-1.
     // Adjust z range if a boundary has the Dirichlet boundary condition.
-    /*int z_min = 0;
+    int z_min = 0;
     int z_max = nz-1;
     if (bc_bot == 0)
         z_min = 1;
     if (bc_top == 0)
-        z_max = nz-2;*/
+        z_max = nz-2;
 
-    //if (x < nx && y < ny && z >= z_min && z <= z_max) {
-    if (x < nx && y < ny && z < nz) {
+    //if (x < nx && y < ny && z < nz) {
+    if (x < nx && y < ny && z >= z_min && z <= z_max) {
 
         // 1D thread index
         const unsigned int cellidx = d_idx(x,y,z);
@@ -1051,15 +1051,15 @@ __global__ void updateDarcySolution(
     // Perform the epsilon updates for all non-ghost nodes except the Dirichlet
     // boundaries at z=0 and z=nz-1.
     // Adjust z range if a boundary has the Dirichlet boundary condition.
-    /*int z_min = 0;
+    int z_min = 0;
     int z_max = nz-1;
     if (bc_bot == 0)
         z_min = 1;
     if (bc_top == 0)
-        z_max = nz-2;*/
+        z_max = nz-2;
 
-    //if (x < nx && y < ny && z >= z_min && z <= z_max) {
-    if (x < nx && y < ny && z < nz) {
+    //if (x < nx && y < ny && z < nz) {
+    if (x < nx && y < ny && z >= z_min && z <= z_max) {
 
         // 1D thread index
         const unsigned int cellidx = d_idx(x,y,z);
