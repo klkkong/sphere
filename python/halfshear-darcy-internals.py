@@ -13,14 +13,20 @@ from permeabilitycalculator import *
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
-steps = [10, 50, 100, 1000, 1999]
-nsteps_avg = 1 # no. of steps to average over
-#nsteps_avg = 100 # no. of steps to average over
-
 #sigma0 = float(sys.argv[1])
 sigma0 = 20000.0
 #k_c = 3.5e-13
 k_c = float(sys.argv[1])
+
+if k_c == 3.5e-15:
+    steps = [1232, 1332, 1433, 1534, 1635]
+elif k_c == 3.5e-13:
+    steps = [100, 200, 300, 410, 515]
+else:
+    steps = [10, 50, 100, 1000, 1999]
+nsteps_avg = 1 # no. of steps to average over
+#nsteps_avg = 100 # no. of steps to average over
+
 
 sid = 'halfshear-darcy-sigma0=' + str(sigma0) + '-k_c=' + str(k_c) + \
         '-mu=1.797e-06-velfac=1.0-shear'
@@ -213,5 +219,5 @@ ax[3].locator_params(nbins=3)
 
 filename = 'halfshear-darcy-internals-k_c=%.0e.pdf' % (k_c)
 plt.savefig(filename)
-shutil.copyfile(filename, '/Users/adc/articles/own/2/graphics/' + filename)
+shutil.copyfile(filename, '/home/adc/articles/own/2/graphics/' + filename)
 print(filename)
