@@ -235,7 +235,7 @@ __global__ void setDarcyGhostNodes(
         // z
         if (z == 0 && bc_bot == 0)
             dev_scalarfield[idx(x,y,-1)] = val;     // Dirichlet
-        if (z == 0 && bc_bot == 1)
+        if (z == 1 && bc_bot == 1)
             dev_scalarfield[idx(x,y,-1)] = val;     // Neumann
         if (z == 0 && bc_bot == 2)
             dev_scalarfield[idx(x,y,nz)] = val;     // Periodic -z
@@ -889,18 +889,7 @@ __global__ void firstDarcySolution(
     const Float dy = devC_grid.L[1]/ny;
     const Float dz = devC_grid.L[2]/nz;
 
-    // Perform the epsilon updates for all non-ghost nodes except the Dirichlet
-    // boundaries at z=0 and z=nz-1.
-    // Adjust z range if a boundary has the Dirichlet boundary condition.
-    int z_min = 0;
-    int z_max = nz-1;
-    if (bc_bot == 0)
-        z_min = 1;
-    if (bc_top == 0)
-        z_max = nz-2;
-
-    //if (x < nx && y < ny && z < nz) {
-    if (x < nx && y < ny && z >= z_min && z <= z_max) {
+    if (x < nx && y < ny && z < nz) {
 
         // 1D thread index
         const unsigned int cellidx = d_idx(x,y,z);
@@ -1048,18 +1037,7 @@ __global__ void updateDarcySolution(
     const Float dy = devC_grid.L[1]/ny;
     const Float dz = devC_grid.L[2]/nz;
 
-    // Perform the epsilon updates for all non-ghost nodes except the Dirichlet
-    // boundaries at z=0 and z=nz-1.
-    // Adjust z range if a boundary has the Dirichlet boundary condition.
-    int z_min = 0;
-    int z_max = nz-1;
-    if (bc_bot == 0)
-        z_min = 1;
-    if (bc_top == 0)
-        z_max = nz-2;
-
-    //if (x < nx && y < ny && z < nz) {
-    if (x < nx && y < ny && z >= z_min && z <= z_max) {
+    if (x < nx && y < ny && z < nz) {
 
         // 1D thread index
         const unsigned int cellidx = d_idx(x,y,z);
