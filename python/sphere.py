@@ -5361,7 +5361,8 @@ class sim:
         method.
 
         :param method: The type of plot to render. Possible values are 'energy',
-            'walls', 'triaxial' and 'shear'
+            'walls', 'triaxial', 'mean-fluid-pressure', 'fluid-pressure' and
+            'shear'
         :type method: str
         :param savefig: Save the image instead of showing it on screen
         :type savefig: bool
@@ -5726,7 +5727,7 @@ class sim:
                     if fh is not None:
                         fh.close()
 
-        elif method == 'fluid-pressure':
+        elif method == 'mean-fluid-pressure':
 
             # Read pressure values from simulation binaries
             for i in range(lastfile+1):
@@ -5750,6 +5751,48 @@ class sim:
                 ax1.plot(t, p_mean, '+-')
                 #ax1.legend()
                 ax1.grid()
+
+        elif method == 'fluid-pressure':
+
+            sb.readfirst(verbose=False)
+
+            # cell midpoint cell positions
+            zpos_c = numpy.zeros(sb.num[2])
+            dz = sb.L[2]/sb.num[2]
+            for i in numpy.arange(sb.num[2]):
+                zpos_c[i] = i*dz + 0.5*dz
+
+            shear_strain = numpy.zeros(sb.status())
+            pres = numpy.zeros((sb.num[2], sb.status()))
+
+            # Read pressure values from simulation binaries
+            for i in numpy.arange(sb.status()):
+                sb.readstep(i, verbose = False)
+                pres[:,i] = numpy.average(numpy.average(sb.p_f, axis=0), axis=0)
+
+            shear_strain[i] = sb.shearStrain()
+
+            t = numpy.linspace(0.0, sb.time_current, lastfile+1)
+
+            # Plotting
+            if (outformat != 'txt'):
+
+                ax = plt.subplot(1,1,1)
+
+                im1 = ax.pcolormesh(shear_strain, zpos_c, pres/1000.0,
+                        rasterized=True)
+                ax.set_xlim([0, numpy.max(shear_strain)])
+                ax.set_ylim([zpos_c[0], sim.w_x[0]])
+                ax.set_xlabel('Shear strain $\\gamma$ [-]')
+                ax.set_ylabel('Vertical position $z$ [m]')
+
+                ax.set_title(sb.id())
+
+                cb = plt.colorbar(im1)
+                cb.set_label('$p_\\text{f}$ [kPa]')
+                cb.solids.set_rasterized(True)
+                plt.tight_layout()
+                plt.subplots_adjust(wspace = .05)
 
         else :
             print("Visualization type '" + method + "' not understood")
