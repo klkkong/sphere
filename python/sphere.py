@@ -5787,8 +5787,8 @@ class sim:
                 p_ext = numpy.max(numpy.abs(pres))
 
                 im1 = ax.pcolormesh(t, zpos_c, pres,
-                        #cmap=matplotlib.cm.get_cmap('bwr'),
-                        cmap=matplotlib.cm.get_cmap('coolwarm'),
+                        cmap=matplotlib.cm.get_cmap('bwr'),
+                        #cmap=matplotlib.cm.get_cmap('coolwarm'),
                         vmin=-p_ext, vmax=p_ext,
                         rasterized=True)
                 #ax.set_xlim([0, numpy.max(shear_strain)])
