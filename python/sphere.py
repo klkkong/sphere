@@ -5668,6 +5668,8 @@ class sim:
                 if numpy.isnan(d_bar):
                     raise Exception("Error, d_bar is NaN. Please check that the"
                             + " radii are initialized.")
+                    self.readfirst(verbose=False)
+                    d_bar = numpy.mean(self.radius)*2.0
                 self.dilation[i] = (sb.w_x[0] - w_x0)/d_bar
 
                 # Test if this was the max. shear stress
@@ -5747,8 +5749,8 @@ class sim:
                 # linear plot of deviatoric stress
                 ax1 = plt.subplot2grid((1,1),(0,0))
                 ax1.set_xlabel('Time $t$, [s]')
-                ax1.set_ylabel('Mean fluid pressure, $\\bar{p}_f$, [Pa]')
-                ax1.plot(t, p_mean, '+-')
+                ax1.set_ylabel('Mean fluid pressure, $\\bar{p}_f$, [kPa]')
+                ax1.plot(t, p_mean/1000.0, '+-')
                 #ax1.legend()
                 ax1.grid()
 
@@ -5782,14 +5784,14 @@ class sim:
                 im1 = ax.pcolormesh(shear_strain, zpos_c, pres/1000.0,
                         rasterized=True)
                 ax.set_xlim([0, numpy.max(shear_strain)])
-                ax.set_ylim([zpos_c[0], sim.w_x[0]])
+                ax.set_ylim([zpos_c[0], sb.w_x[0]])
                 ax.set_xlabel('Shear strain $\\gamma$ [-]')
                 ax.set_ylabel('Vertical position $z$ [m]')
 
                 ax.set_title(sb.id())
 
                 cb = plt.colorbar(im1)
-                cb.set_label('$p_\\text{f}$ [kPa]')
+                cb.set_label('$p_f$ [kPa]')
                 cb.solids.set_rasterized(True)
                 plt.tight_layout()
                 plt.subplots_adjust(wspace = .05)
