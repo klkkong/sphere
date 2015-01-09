@@ -5666,9 +5666,11 @@ class sim:
                 # dilation in number of mean particle diameters
                 d_bar = numpy.mean(self.radius)*2.0
                 if numpy.isnan(d_bar):
-                    raise Exception("Error, d_bar is NaN. Please check that the"
-                            + " radii are initialized.")
-                    self.readfirst(verbose=False)
+                    #raise Exception("Error, d_bar is NaN. Please check that the"
+                    #        + " radii are initialized.")
+                    print('No radii in self.radius, attempting to read first '
+                            + 'file')
+                    self.readfirst()
                     d_bar = numpy.mean(self.radius)*2.0
                 self.dilation[i] = (sb.w_x[0] - w_x0)/d_bar
 
