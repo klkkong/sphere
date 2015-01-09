@@ -5766,7 +5766,7 @@ class sim:
             for i in numpy.arange(sb.num[2]):
                 zpos_c[i] = i*dz + 0.5*dz
 
-            shear_strain = numpy.zeros(sb.status())
+            #shear_strain = numpy.zeros(sb.status())
             pres = numpy.zeros((sb.num[2], sb.status()))
 
             # Read pressure values from simulation binaries
@@ -5774,8 +5774,7 @@ class sim:
                 sb.readstep(i, verbose = False)
                 pres[:,i] = numpy.average(numpy.average(sb.p_f, axis=0), axis=0)
 
-            shear_strain[i] = sb.shearStrain()
-
+            #shear_strain[i] = sb.shearStrain()
             t = numpy.linspace(0.0, sb.time_current, lastfile+1)
 
             # Plotting
@@ -5783,11 +5782,13 @@ class sim:
 
                 ax = plt.subplot(1,1,1)
 
-                im1 = ax.pcolormesh(shear_strain, zpos_c, pres/1000.0,
+                im1 = ax.pcolormesh(t, zpos_c, pres/1000.0,
                         rasterized=True)
-                ax.set_xlim([0, numpy.max(shear_strain)])
-                ax.set_ylim([zpos_c[0], sb.w_x[0]])
-                ax.set_xlabel('Shear strain $\\gamma$ [-]')
+                #ax.set_xlim([0, numpy.max(shear_strain)])
+                ax.set_xlim([0, numpy.max(t)])
+                ax.set_ylim([zpos_c[0], zpos_c[-1]])
+                #ax.set_xlabel('Shear strain $\\gamma$ [-]')
+                ax.set_xlabel('Time $t$ [s]')
                 ax.set_ylabel('Vertical position $z$ [m]')
 
                 ax.set_title(sb.id())
