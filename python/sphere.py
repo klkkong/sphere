@@ -5782,7 +5782,14 @@ class sim:
 
                 ax = plt.subplot(1,1,1)
 
-                im1 = ax.pcolormesh(t, zpos_c, pres/1000.0,
+                pres /= 1000.0 # Pa to kPa
+                # use largest difference in p from 0 as +/- limit on colormap
+                p_ext = numpy.max(numpy.abs(pres))
+
+                im1 = ax.pcolormesh(t, zpos_c, pres,
+                        #cmap=matplotlib.cm.get_cmap('bwr'),
+                        cmap=matplotlib.cm.get_cmap('coolwarm'),
+                        vmin=-p_ext, vmax=p_ext,
                         rasterized=True)
                 #ax.set_xlim([0, numpy.max(shear_strain)])
                 ax.set_xlim([0, numpy.max(t)])
