@@ -698,6 +698,28 @@ __global__ void setDarcyTopWallPressure(
     }
 }
 
+// Enforce fixed-flow BC at top wall
+__global__ void setDarcyTopWallFixedFlow(
+    const unsigned int wall0_iz,
+    Float* __restrict__ dev_darcy_p)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+    
+    // check that the thread is located at the top boundary
+    if (x < devC_grid.num[0] &&
+        y < devC_grid.num[1] &&
+        z == wall0_iz+1) {
+
+        // Write the new pressure the top boundary cells
+        __syncthreads();
+        const Float new_pressure = dev_darcy_p[idx(x,y,z-2)];
+        dev_darcy_p[idx(x,y,z)] = new_pressure;
+    }
+}
+
 
 // Find the cell permeabilities from the Kozeny-Carman equation
 __global__ void findDarcyPermeabilities(

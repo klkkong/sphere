@@ -2021,6 +2021,21 @@ __host__ void DEM::startTime()
                         checkForCudaErrorsIter("Post updateDarcySolution",
                                 iter);
 
+                        if (darcy.bc_top == 1) {
+                            if (PROFILING == 1)
+                                startTimer(&kernel_tic);
+                            setDarcyTopWallFixedFlow
+                                <<<dimGridFluid, dimBlockFluid>>>
+                                (wall0_iz, dev_darcy_p);
+                            cudaThreadSynchronize();
+                            if (PROFILING == 1)
+                                stopTimer(&kernel_tic, &kernel_toc,
+                                        &kernel_elapsed,
+                                        &t_updateDarcySolution);
+                            checkForCudaErrorsIter(
+                                    "Post setDarcyTopWallFixedFlow", iter);
+                        }
+
                         // Copy new values to current values
                         if (PROFILING == 1)
                             startTimer(&kernel_tic);
