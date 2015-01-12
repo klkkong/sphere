@@ -4,6 +4,9 @@ import numpy
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+matplotlib.rcParams.update({'font.size': 18, 'font.family': 'serif'})
+matplotlib.rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 from matplotlib.font_manager import FontProperties
 import subprocess
 try:
@@ -5375,7 +5378,7 @@ class sim:
 
         ### Plotting
         if (outformat != 'txt'):
-            fig = plt.figure(figsize=(15,10),dpi=300)
+            fig = plt.figure(figsize=(8,8))
 
         if method == 'energy':
 
@@ -5766,16 +5769,15 @@ class sim:
             for i in numpy.arange(sb.num[2]):
                 zpos_c[i] = i*dz + 0.5*dz
 
-            #shear_strain = numpy.zeros(sb.status())
+            shear_strain = numpy.zeros(sb.status())
             pres = numpy.zeros((sb.num[2], sb.status()))
 
             # Read pressure values from simulation binaries
             for i in numpy.arange(sb.status()):
                 sb.readstep(i, verbose = False)
                 pres[:,i] = numpy.average(numpy.average(sb.p_f, axis=0), axis=0)
-
-            #shear_strain[i] = sb.shearStrain()
-            t = numpy.linspace(0.0, sb.time_current, lastfile+1)
+                shear_strain[i] = sb.shearStrain()
+            #t = numpy.linspace(0.0, sb.time_current, lastfile+1)
 
             # Plotting
             if (outformat != 'txt'):
@@ -5786,22 +5788,27 @@ class sim:
                 # use largest difference in p from 0 as +/- limit on colormap
                 p_ext = numpy.max(numpy.abs(pres))
 
-                im1 = ax.pcolormesh(t, zpos_c, pres,
+                im1 = ax.pcolormesh(
+                        #t, zpos_c, pres,
+                        shear_strain, zpos_c, pres,
                         cmap=matplotlib.cm.get_cmap('bwr'),
                         #cmap=matplotlib.cm.get_cmap('coolwarm'),
                         vmin=-p_ext, vmax=p_ext,
                         rasterized=True)
-                #ax.set_xlim([0, numpy.max(shear_strain)])
-                ax.set_xlim([0, numpy.max(t)])
-                ax.set_ylim([zpos_c[0], zpos_c[-1]])
-                #ax.set_xlabel('Shear strain $\\gamma$ [-]')
-                ax.set_xlabel('Time $t$ [s]')
+                ax.set_xlim([0, numpy.max(shear_strain)])
+                #ax.set_xlim([0, numpy.max(t)])
+                if sb.w_x[0] < sb.L[2]:
+                    ax.set_ylim([zpos_c[0], sb.w_x[0]])
+                else:
+                    ax.set_ylim([zpos_c[0], zpos_c[-1]])
+                ax.set_xlabel('Shear strain $\\gamma$ [-]')
+                #ax.set_xlabel('Time $t$ [s]')
                 ax.set_ylabel('Vertical position $z$ [m]')
 
-                ax.set_title(sb.id())
+                #ax.set_title(sb.id())
 
                 cb = plt.colorbar(im1)
-                cb.set_label('$p_f$ [kPa]')
+                cb.set_label('$p_\\text{f}$ [kPa]')
                 cb.solids.set_rasterized(True)
                 plt.tight_layout()
                 plt.subplots_adjust(wspace = .05)
@@ -5815,7 +5822,7 @@ class sim:
             if savefig:
                 fig.savefig("{0}-{1}.{2}".format(self.sid, method, outformat))
                 fig.clf()
-            else :
+            else:
                 plt.show()
 
 
