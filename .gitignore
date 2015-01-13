@@ -57,3 +57,9 @@ src/porosity.dir
 src/porousflow.dir
 src/sphere.dir
 tests/CMakeFiles
+
+# ctags
+tags
+
+# OS X temporary files
+.DS_Store
