@@ -1042,6 +1042,8 @@ class sim:
                 self.w_sigma0_f = numpy.fromfile(fh, dtype=numpy.float64, count=1)
             if self.version >= 2.1:
                 self.w_tau_x = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+            else:
+                self.w_tau_x = numpy.zeros(1, dtype=numpy.float64)
 
             if bonds:
                 # Inter-particle bonds
