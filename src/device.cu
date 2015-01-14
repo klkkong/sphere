@@ -2159,6 +2159,36 @@ __host__ void DEM::startTime()
         //break; // end after first iteration
 
         if (np > 0) {
+
+            // Find shear stresses on upper fixed particles if a shear stress BC
+            // is specified (wmode[0] == 3)
+            if (walls.nw > 0 && walls.wmode[0] == 3) {
+
+                if (PROFILING == 1)
+                    startTimer(&kernel_tic);
+                findShearStressOnFixedMovingParticles<<<dimGrid, dimBlock>>>
+                    (dev_x,
+                     dev_vel,
+                     dev_force,
+                     dev_walls_tau_eff_x_pp);
+                cudaThreadSynchronize();
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_summation);
+                checkForCudaErrorsIter(
+                        "Post findShearStressOnFixedMovingParticles", iter);
+
+                if (PROFILING == 1)
+                    startTimer(&kernel_tic);
+                summation<<<dimGrid, dimBlock>>>(dev_walls_tau_eff_x_pp,
+                        dev_walls_tau_eff_x_partial);
+                cudaThreadSynchronize();
+                if (PROFILING == 1)
+                    stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                            &t_summation);
+                checkForCudaErrorsIter("Post shear stress summation", iter);
+            }
+
             // Update particle kinematics
             if (PROFILING == 1)
                 startTimer(&kernel_tic);
@@ -2177,7 +2207,13 @@ __host__ void DEM::startTime()
                     dev_angvel0,
                     dev_xyzsum,
                     dev_gridParticleIndex,
-                    iter);
+                    iter,
+                    dev_walls_wmode,
+                    dev_walls_mvfd,
+                    dev_walls_tau_eff_x_partial,
+                    dev_walls_tau_x,
+                    walls.tau_x[0],
+                    blocksPerGrid);
             cudaThreadSynchronize();
             checkForCudaErrorsIter("Post integrate", iter);
             if (PROFILING == 1)

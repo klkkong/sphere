@@ -29,8 +29,10 @@ __global__ void integrate(
     const unsigned int* __restrict__ dev_gridParticleIndex,
     const unsigned int iter,
     const int* __restrict__ dev_walls_wmode,
+    const Float4* __restrict__ dev_walls_mvfd,
     const Float* __restrict__ dev_walls_tau_eff_x_partial,
     const Float* __restrict__ dev_walls_tau_x,
+    const Float tau_x,
     const unsigned int blocksPerGrid)
 {
     unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x; // Thread id
@@ -50,12 +52,16 @@ __global__ void integrate(
         Float4 xyzsum = dev_xyzsum[orig_idx];
 
         // Read the mode of the top wall
-        const int wall0mode = dev_walls_wmode[0];
-        const Float wall0mass = dev_walls_mvfd[0].x;
+        int wall0mode;
+        Float wall0mass;
+        if (devC_nw > 0) {
+            wall0mode = dev_walls_wmode[0];
+            wall0mass = dev_walls_mvfd[0].x;
+        }
 
         // Find the final sum of shear stresses on the top particles
         Float tau_eff_x = 0.0;
-        if (wall0mode == 3)
+        if (devC_nw > 0 && wall0mode == 3)
             for (int i=0; i<blocksPerGrid; ++i)
                 tau_eff_x += dev_walls_tau_eff_x_partial[i];
 
@@ -108,9 +114,9 @@ __global__ void integrate(
         // Fixed shear stress BC
         if (wall0mode == 3 && vel.w > 0.0001 && x.z > devC_grid.L[2]*0.5) {
 
-            // the force should be positive when abs(tau) > abs(tau_eff_x)
+            // the force should be positive when abs(tau_x) > abs(tau_eff_x)
             const Float f_tau_x =
-                (tau + tau_eff_x)*devC_grid.L[0]*devC_grid.L[1];
+                (tau_x + tau_eff_x)*devC_grid.L[0]*devC_grid.L[1];
 
             acc.x = f_tau_x/wall0mass;  // acceleration = force/mass
             acc.y = 0.0;
@@ -449,15 +455,15 @@ __global__ void findShearStressOnFixedMovingParticles(
         // Copy data to temporary arrays to avoid any potential
         // read-after-write, write-after-read, or write-after-write hazards. 
         __syncthreads();
-        const Float4 x     = dev_x[idx];
-        const Float4 force = dev_force[orig_idx];
+        const Float4 x       = dev_x[idx];
+        const Float  force_x = dev_force[idx].x;
 
-        Float4 f_x = 0.0;
+        Float f_x = 0.0;
 
         // Only select fixed velocity (fixvel > 0.0, fixvel = vel.w) particles
         // at the top boundary (z > L[0]/2)
         if (vel.w > 0.0 && x.z > devC_grid.L[2]*0.5)
-            f_x = force.x;
+            f_x = force_x;
 
         __syncthreads();
         // Convert force to shear stress and save
