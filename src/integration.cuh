@@ -442,6 +442,8 @@ __global__ void integrateWalls(
 
 // Finds shear stress per particle adjacent to top wall (idx=0).
 // The fixvel value is saved in vel.w.
+// Particles who do not fulfill the criteria will have a value of 0.0 written to
+// dev_walls_tau_eff_x_pp.
 __global__ void findShearStressOnFixedMovingParticles(
     const Float4* __restrict__ dev_x,
     const Float4* __restrict__ dev_vel,
