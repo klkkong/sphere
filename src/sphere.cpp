@@ -406,6 +406,9 @@ void DEM::reportValues()
         else if (walls.wmode[0] == 2)
             cout << "Velocity, "
                 << walls.mvfd[0].y << " m/s\n";
+        else if (walls.wmode[0] == 3)
+            cout << "Shear stress, "
+                << walls.tau_x[0] << " Pa\n";
         else {
             cerr << "Top BC not recognized!\n";
             exit(1);
