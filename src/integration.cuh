@@ -455,19 +455,19 @@ __global__ void findShearStressOnFixedMovingParticles(
         // Copy data to temporary arrays to avoid any potential
         // read-after-write, write-after-read, or write-after-write hazards. 
         __syncthreads();
-        const Float4 x       = dev_x[idx];
-        const Float  force_x = dev_force[idx].x;
-
-        Float f_x = 0.0;
+        const Float z       = dev_x[idx].z;
+        const Float fixvel  = dev_vel[idx].w;
+        const Float force_x = dev_force[idx].x;
 
         // Only select fixed velocity (fixvel > 0.0, fixvel = vel.w) particles
         // at the top boundary (z > L[0]/2)
-        if (vel.w > 0.0 && x.z > devC_grid.L[2]*0.5)
+        Float f_x = 0.0;
+        if (fixvel > 0.0 && z > devC_grid.L[2]*0.5)
             f_x = force_x;
 
         __syncthreads();
         // Convert force to shear stress and save
-        dev_walls_tau_eff_x_pp[idx] = f_x/(devC_grid.L[0]*devC_grid.L[1];
+        dev_walls_tau_eff_x_pp[idx] = f_x/(devC_grid.L[0]*devC_grid.L[1]);
     }
 }
 #endif
