@@ -80,11 +80,35 @@ Publications
 ``sphere`` has been used to produce results in the following scientific
 publications:
 
-- Damsgaard, A., D. L. Egholm, J. A. Piotrowski, S. Tulaczyk, N. K. Larsen, and
+- Damsgaard, A., D.L. Egholm, J.A. Piotrowski, S. Tulaczyk, N.K. Larsen, and
+  C.F. Brædstrup (2014), Numerical modeling of particle-fluid mixtures in a
+  subglacial setting. `Poster at Americal Geophysical Union Fall Meeting
+  <https://cs.au.dk/~adc/files/AGU2014-Poster.pdf>`_.
+- Damsgaard, A., D.L. Egholm, J.A. Piotrowski, S. Tulaczyk, N.K. Larsen, and
   K. Tylmann (2013), Discrete element modeling of subglacial sediment
   deformation, J. Geophys. Res. Earth Surf., 118, 2230–2242,
   `doi:10.1002/2013JF002830 <http://dx.doi.org/10.1002/2013JF002830>`_.
 
+- Damsgaard, A., D.L. Egholm, J.A. Piotrowski, S. Tulaczyk, and N.K. Larsen
+  (2013), Discrete element modeling of subglacial sediment deformation.
+  Talk at American Geophysical Fall Meeting 2013.
+- Damsgaard, A., D.L. Egholm, J.A. Piotrowski, S. Tulaczyk, and N.K. Larsen
+  (2013), Numerical modelling of granular subglacial deformation using the
+  discrete element method. `Poster at European Geosciences Union General
+  Assembly 2013
+  <https://cs.au.dk/~adc/files/EGU2013-Poster.pdf>`_.
+- Damsgaard, A., D.L. Egholm, J.A. Piotrowski, and S. Tulaczyk
+  (2012), Discrete element modelling of subglacial sediment deformation.
+  `Poster at European Geosciences Union General Assembly 2012
+  <https://cs.au.dk/~adc/files/EGU2012-Poster.pdf>`_.
+- Damsgaard, A., D.L. Egholm, and J.A. Piotrowski
+  (2011), Numerical modelling of sediment deformation by glacial stress.
+  `Poster at European Geosciences Union General Assembly 2011
+  <https://cs.au.dk/~adc/files/INQUA2011-Poster.pdf>`_.
+- Damsgaard, A., D.L. Egholm, and J.A. Piotrowski
+  (2011), Numerical modelling of subglacial sediment deformation.
+  `Poster at European Geosciences Union General Assembly 2011
+  <https://cs.au.dk/~adc/files/EGU2011-Poster.pdf>`_.
 Author
 ------
 Anders Damsgaard, `anders.damsgaard@geo.au.dk <mailto:anders.damsgaard@geo.au.dk>`_,
