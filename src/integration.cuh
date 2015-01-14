@@ -399,11 +399,41 @@ __global__ void integrateWalls(
             __syncthreads();
             dev_walls_nx[idx]   = w_nx;
             dev_walls_mvfd[idx] = w_mvfd;
-            dev_walls_acc[idx] = acc;
+            dev_walls_acc[idx]  = acc;
         }
     }
 } // End of integrateWalls(...)
 
 
+// Finds shear stresses on particles adjacent to top wall (idx=0).
+// The fixvel value is saved in vel.w.
+__global__ void findShearStressOnFixedMovingParticles(
+    const Float4* __restrict__ dev_x,
+    const Float4* __restrict__ dev_vel,
+    const Float4* __restrict__ dev_force,
+    Float* __restrict__ dev_walls_tau_eff_x_pp)
+{
+    unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x; // Thread id
+
+    if (idx < devC_np) { // Condition prevents block size error
+
+        // Copy data to temporary arrays to avoid any potential
+        // read-after-write, write-after-read, or write-after-write hazards. 
+        __syncthreads();
+        const Float4 x     = dev_x[idx];
+        const Float4 force = dev_force[orig_idx];
+
+        Float4 f_x = 0.0;
+
+        // Only select fixed velocity (fixvel > 0.0, fixvel = vel.w) particles
+        // at the top boundary (z > L[0]/2)
+        if (vel.w > 0.0 && x.z > devC_grid.L[2]*0.5)
+            f_x = force.x;
+
+        __syncthreads();
+        // Convert force to shear stress and save
+        dev_walls_tau_eff_x_pp[idx] = f_x/(devC_grid.L[0]*devC_grid.L[1];
+    }
+}
 #endif
 // vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4

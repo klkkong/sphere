@@ -101,6 +101,8 @@ class DEM {
         Float         *dev_walls_force_partial; // Pre-sum per wall
         Float         *dev_walls_force_pp;  // Force per particle per wall
         Float         *dev_walls_acc;       // Wall acceleration
+        Float         *dev_walls_tau_eff_x_pp;      // Shear force per particle
+        Float         *dev_walls_tau_eff_x_partial; // Pre-sum of shear force
 
         // Bond arrays
         uint2         *dev_bonds;           // Particle bond pairs

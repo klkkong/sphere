@@ -382,9 +382,11 @@ __host__ void DEM::allocateGlobalDeviceMemory(void)
     cudaMalloc((void**)&dev_walls_nx, sizeof(Float4)*walls.nw);
     cudaMalloc((void**)&dev_walls_mvfd, sizeof(Float4)*walls.nw);
     cudaMalloc((void**)&dev_walls_tau_x, sizeof(Float)*walls.nw);
+    cudaMalloc((void**)&dev_walls_tau_eff_x_pp, sizeof(Float)*walls.nw*np);
     cudaMalloc((void**)&dev_walls_force_pp, sizeof(Float)*walls.nw*np);
     cudaMalloc((void**)&dev_walls_acc, sizeof(Float)*walls.nw);
     // dev_walls_force_partial allocated later
+    // dev_walls_tau_eff_x_partial allocated later
 
     checkForCudaErrors("End of allocateGlobalDeviceMemory");
     if (verbose == 1)
@@ -551,6 +553,8 @@ __host__ void DEM::freeGlobalDeviceMemory()
     cudaFree(dev_walls_force_partial);
     cudaFree(dev_walls_force_pp);
     cudaFree(dev_walls_acc);
+    cudaFree(dev_walls_tau_eff_x_pp);
+    cudaFree(dev_walls_tau_eff_x_partial);
 
     // Fluid arrays
     if (fluid == 1 && cfd_solver == 0) {
@@ -799,6 +803,10 @@ __host__ void DEM::startTime()
 
     // Pre-sum of force per wall
     cudaMalloc((void**)&dev_walls_force_partial,
+            sizeof(Float)*dimGrid.x*walls.nw);
+
+    // Pre-sum of shear stress per wall
+    cudaMalloc((void**)&dev_walls_tau_eff_x_partial,
             sizeof(Float)*dimGrid.x*walls.nw);
 
     // Report to stdout
