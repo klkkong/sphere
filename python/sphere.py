@@ -2704,15 +2704,19 @@ class sim:
         for i in range(5):
             self.adjustWall(idx=i)
 
-    def shear(self, shear_strain_rate = 1.0):
+    def shear(self, shear_strain_rate = 1.0, shear_stress = False):
         '''
-        Setup shear experiment. The shear strain rate is the shear velocity
-        divided by the initial height per second. The shear movement is along
-        the positive x axis. The function zeroes the tangential wall viscosity
-        (gamma_wt) and the wall friction coefficients (mu_ws, mu_wn).
+        Setup shear experiment either by a constant shear rate or a constant
+        shear stress.  The shear strain rate is the shear velocity divided by
+        the initial height per second. The shear movement is along the positive
+        x axis. The function zeroes the tangential wall viscosity (gamma_wt) and
+        the wall friction coefficients (mu_ws, mu_wn).
 
-        :param shear_strain_rate: The shear strain rate to use.
+        :param shear_strain_rate: The shear strain rate [-] to use if
+            shear_stress isn't False.
         :type shear_strain_rate: float
+        :param shear_stress: The shear stress value to use [Pa].
+        :type shear_stress: float or bool
         '''
 
         self.nw[0] = 1
@@ -2754,7 +2758,12 @@ class sim:
         self.angvel[I,0] = 0.0
         self.angvel[I,1] = 0.0
         self.angvel[I,2] = 0.0
-        self.vel[I,0] = (z_max-z_min)*shear_strain_rate
+        if shear_stress == False:
+            self.vel[I,0] = (z_max-z_min)*shear_strain_rate
+        else:
+            self.vel[I,0] = 0.0
+            self.wmode[0] = 3
+            self.w_tau_x[0] = float(shear_stress)
         self.vel[I,1] = 0.0 # y-dim
         self.color[I] = -1
 
