@@ -314,7 +314,7 @@ __global__ void integrateWalls(
         // read-after-write, write-after-read, or write-after-write hazards. 
         Float4 w_nx   = dev_walls_nx[idx];
         Float4 w_mvfd = dev_walls_mvfd[idx];
-        int wmode = dev_walls_wmode[idx];  // Wall BC, 0: fixed, 1: devs, 2: vel
+        int wmode = dev_walls_wmode[idx];  // Wall BC, 0: fixed, 1: sigma0, 2: vel
 
         if (wmode != 0) { // wmode == 0: Wall fixed: do nothing
 
@@ -336,7 +336,7 @@ __global__ void integrateWalls(
 
             // Apply sinusoidal variation if specified
             const Float sigma_0 = w_mvfd.w
-                + devC_params.devs_A*sin(2.0*PI*devC_params.devs_f * t_current);
+                + devC_params.sigma0_A*sin(2.0*PI*devC_params.sigma0_f * t_current);
 
             // Normal load = Normal stress times wall surface area,
             // directed downwards.

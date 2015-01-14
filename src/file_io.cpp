@@ -217,8 +217,8 @@ void DEM::readbin(const char *target)
         ifs.read(as_bytes(walls.mvfd[i].z), sizeof(Float));
         ifs.read(as_bytes(walls.mvfd[i].w), sizeof(Float));
     }
-    ifs.read(as_bytes(params.devs_A), sizeof(params.devs_A));
-    ifs.read(as_bytes(params.devs_f), sizeof(params.devs_f));
+    ifs.read(as_bytes(params.sigma0_A), sizeof(params.sigma0_A));
+    ifs.read(as_bytes(params.sigma0_f), sizeof(params.sigma0_f));
 
 
     // Read bond parameters
@@ -519,8 +519,8 @@ void DEM::writebin(const char *target)
             ofs.write(as_bytes(walls.mvfd[i].z), sizeof(Float));
             ofs.write(as_bytes(walls.mvfd[i].w), sizeof(Float));
         }
-        ofs.write(as_bytes(params.devs_A), sizeof(params.devs_A));
-        ofs.write(as_bytes(params.devs_f), sizeof(params.devs_f));
+        ofs.write(as_bytes(params.sigma0_A), sizeof(params.sigma0_A));
+        ofs.write(as_bytes(params.sigma0_f), sizeof(params.sigma0_f));
 
         // Write bond parameters
         ofs.write(as_bytes(params.lambda_bar), sizeof(params.lambda_bar));

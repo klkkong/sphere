@@ -2,6 +2,7 @@
 #define CONSTANTS_H_
 
 #include "typedefs.h"
+#include "version.h"
 
 ////////////////////////
 // SYMBOLIC CONSTANTS //
@@ -14,9 +15,6 @@ const Float PI = 3.14159265358979;
 
 // Number of dimensions (1 and 2 NOT functional)
 const unsigned int ND = 3;
-
-// Define source code version
-const double VERSION = 2.00;
 
 // Max. number of contacts per particle
 //const int NC = 16;

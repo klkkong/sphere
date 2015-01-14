@@ -434,7 +434,7 @@ __global__ void interact(
         w_3_nx = MAKE_FLOAT4( 0.0f,-1.0f, 0.0f, L.y);
         w_4_nx = MAKE_FLOAT4( 0.0f, 1.0f, 0.0f, 0.0f);
 
-        // default wall mass, vel, force, and devs
+        // default wall mass, vel, force, and sigma0
         w_0_mvfd = MAKE_FLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
         w_1_mvfd = MAKE_FLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
         w_2_mvfd = MAKE_FLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
