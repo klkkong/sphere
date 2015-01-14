@@ -202,6 +202,7 @@ void DEM::readbin(const char *target)
     // Wall mass (x), velocity (y), force (z), and deviatoric stress (w)
     walls.nx    = new Float4[walls.nw];
     walls.mvfd  = new Float4[walls.nw];
+    walls.tau   = new Float[walls.nw];
 
     for (i = 0; i<walls.nw; ++i)
         ifs.read(as_bytes(walls.wmode[i]), sizeof(walls.wmode[i]));
@@ -219,7 +220,7 @@ void DEM::readbin(const char *target)
     }
     ifs.read(as_bytes(params.sigma0_A), sizeof(params.sigma0_A));
     ifs.read(as_bytes(params.sigma0_f), sizeof(params.sigma0_f));
-
+    ifs.read(as_bytes(walls.tau), sizeof(walls.tau));
 
     // Read bond parameters
     ifs.read(as_bytes(params.lambda_bar), sizeof(params.lambda_bar));
@@ -521,6 +522,7 @@ void DEM::writebin(const char *target)
         }
         ofs.write(as_bytes(params.sigma0_A), sizeof(params.sigma0_A));
         ofs.write(as_bytes(params.sigma0_f), sizeof(params.sigma0_f));
+        ofs.write(as_bytes(walls.tau), sizeof(walls.tau));
 
         // Write bond parameters
         ofs.write(as_bytes(params.lambda_bar), sizeof(params.lambda_bar));
