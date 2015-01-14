@@ -56,7 +56,7 @@ if fluid:
     sim.setPermeabilityPrefactor(k_c)
     sim.setFluidCompressibility(1.0/K_w_sim)
 
-sim.w_devs[0] = sigma0
+sim.w_sigma0[0] = sigma0
 sim.w_m[0] = numpy.abs(sigma0*sim.L[0]*sim.L[1]/sim.g[2])
 
 #sim.setStiffnessNormal(36.4e9 * 0.1 / 2.0)

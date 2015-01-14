@@ -27,7 +27,7 @@ sim.cleanup()
 sim.zeroKinematics()
 
 #sim.consolidate(normal_stress = sigma0)
-sim.w_devs[0] = sigma0
+sim.w_sigma0[0] = sigma0
 
 sim.L[2] *= 2.0
 sim.num[2] *= 2

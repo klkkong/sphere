@@ -50,7 +50,7 @@ if fluid:
     sim.c_a[0] = c_a
 
 sim.initTemporal(total = 20.0, file_dt = 0.01, epsilon=0.07)
-sim.w_devs[0] = sigma0
+sim.w_sigma0[0] = sigma0
 sim.w_m[0] = numpy.abs(sigma0*sim.L[0]*sim.L[1]/sim.g[2])
 sim.mu_s[0] = 0.5
 sim.mu_d[0] = 0.5

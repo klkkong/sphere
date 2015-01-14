@@ -22,7 +22,7 @@ numpy.seterr(all='warn', over='raise')
 
 # Sphere version number. This field should correspond to the value in
 # `../src/constants.h`.
-VERSION=2.0
+VERSION=2.1
 
 class sim:
     '''
@@ -204,13 +204,16 @@ class sim:
 
         ## Wall data
         # Number of dynamic walls
-        # nw = 1: Uniaxial
+        # nw = 1: Uniaxial (also used for shear experiments)
         # nw = 2: Biaxial
         # nw = 5: Triaxial
         self.nw      = numpy.ones(1, dtype=numpy.uint32) * nw
 
         # Wall modes
-        # 0: Fixed, 1: Normal stress condition, 2: Normal velocity condition
+        # 0: Fixed
+        # 1: Normal stress condition
+        # 2: Normal velocity condition
+        # 3: Normal stress and shear stress condition
         self.wmode   = numpy.zeros(self.nw, dtype=numpy.int32)
 
         # Wall normals
@@ -239,13 +242,13 @@ class sim:
         self.w_force = numpy.zeros(self.nw, dtype=numpy.float64)
 
         # Wall stress on the axes that are parallel to the wall normal [Pa]
-        self.w_devs  = numpy.zeros(self.nw, dtype=numpy.float64)
+        self.w_sigma0  = numpy.zeros(self.nw, dtype=numpy.float64)
 
         # Wall stress modulation amplitude [Pa]
-        self.w_devs_A = numpy.zeros(1, dtype=numpy.float64)
+        self.w_sigma0_A = numpy.zeros(1, dtype=numpy.float64)
 
         # Wall stress modulation frequency [Hz]
-        self.w_devs_f = numpy.zeros(1, dtype=numpy.float64)
+        self.w_sigma0_f = numpy.zeros(1, dtype=numpy.float64)
 
         ## Bond parameters
         # Radius multiplier to the parallel-bond radii
@@ -549,13 +552,13 @@ class sim:
         elif ((self.w_force != other.w_force).any()):
             print(49)
             return 49
-        elif ((self.w_devs != other.w_devs).any()):
+        elif ((self.w_sigma0 != other.w_sigma0).any()):
             print(50)
             return 50
-        elif (self.w_devs_A != other.w_devs_A):
+        elif (self.w_sigma0_A != other.w_sigma0_A):
             print(51)
             return 51
-        elif (self.w_devs_f != other.w_devs_f):
+        elif (self.w_sigma0_f != other.w_sigma0_f):
             print(52)
             return 52
         elif (self.gamma_wn != other.gamma_wn):
@@ -877,7 +880,7 @@ class sim:
         self.f_v     = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
         self.f_sum   = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
 
-    def readbin(self, targetbin, verbose = True, bonds = True, devsmod = True,
+    def readbin(self, targetbin, verbose = True, bonds = True, sigma0mod = True,
             esysparticle = False):
         '''
         Reads a target ``sphere`` binary file.
@@ -892,10 +895,10 @@ class sim:
         :param bonds: The input file contains bond information (default = True).
             This parameter should be true for all recent ``sphere`` versions.
         :type bonds: bool
-        :param devsmod: The input file contains information about modulating
+        :param sigma0mod: The input file contains information about modulating
             stresses at the top wall (default = True). This parameter should be
             true for all recent ``sphere`` versions.
-        :type devsmod: bool
+        :type sigma0mod: bool
         :param esysparticle: Stop reading the file after reading the kinematics,
             which is useful for reading output files from other DEM programs.
             (default = False)
@@ -1015,7 +1018,7 @@ class sim:
             self.w_m     = numpy.empty(self.nw, dtype=numpy.float64)
             self.w_vel   = numpy.empty(self.nw, dtype=numpy.float64)
             self.w_force = numpy.empty(self.nw, dtype=numpy.float64)
-            self.w_devs  = numpy.empty(self.nw, dtype=numpy.float64)
+            self.w_sigma0  = numpy.empty(self.nw, dtype=numpy.float64)
 
             self.wmode   = numpy.fromfile(fh, dtype=numpy.int32, count=self.nw)
             for i in numpy.arange(self.nw):
@@ -1027,10 +1030,10 @@ class sim:
                 self.w_vel[i] = numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.w_force[i] =\
                         numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                self.w_devs[i]= numpy.fromfile(fh, dtype=numpy.float64, count=1)
-            if devsmod:
-                self.w_devs_A = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                self.w_devs_f = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                self.w_sigma0[i]= numpy.fromfile(fh, dtype=numpy.float64, count=1)
+            if sigma0mod:
+                self.w_sigma0_A = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                self.w_sigma0_f = numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
             if bonds:
                 # Inter-particle bonds
@@ -1316,9 +1319,9 @@ class sim:
                 fh.write(self.w_m[i].astype(numpy.float64))
                 fh.write(self.w_vel[i].astype(numpy.float64))
                 fh.write(self.w_force[i].astype(numpy.float64))
-                fh.write(self.w_devs[i].astype(numpy.float64))
-            fh.write(self.w_devs_A.astype(numpy.float64))
-            fh.write(self.w_devs_f.astype(numpy.float64))
+                fh.write(self.w_sigma0[i].astype(numpy.float64))
+            fh.write(self.w_sigma0_A.astype(numpy.float64))
+            fh.write(self.w_sigma0_f.astype(numpy.float64))
 
             fh.write(self.lambda_bar.astype(numpy.float64))
             fh.write(self.nb0.astype(numpy.uint32))
@@ -2561,7 +2564,7 @@ class sim:
         self.w_n[0,2] = -1.0
         self.w_vel = numpy.zeros(1)
         self.w_force = numpy.zeros(1)
-        self.w_devs = numpy.zeros(1)
+        self.w_sigma0 = numpy.zeros(1)
 
         self.w_x = numpy.zeros(1)
         self.w_m = numpy.zeros(1)
@@ -2636,11 +2639,11 @@ class sim:
 
         # Set the top wall BC to a value of normal stress
         self.wmode = numpy.array([1])
-        self.w_devs = numpy.ones(1) * normal_stress
+        self.w_sigma0 = numpy.ones(1) * normal_stress
 
         # Set top wall to a certain mass corresponding to the selected normal
         # stress
-        #self.w_devs = numpy.zeros(1)
+        #self.w_sigma0 = numpy.zeros(1)
         self.w_m[0] = numpy.abs(normal_stress*self.L[0]*self.L[1]/self.g[2])
 
     def uniaxialStrainRate(self, wvel = -0.001):
@@ -2681,7 +2684,7 @@ class sim:
         self.nw[0] = 5  # five dynamic walls
         self.wmode  = numpy.array([2,1,1,1,1]) # BCs (vel, stress, stress, ...)
         self.w_vel  = numpy.array([1,0,0,0,0]) * wvel
-        self.w_devs = numpy.array([0,1,1,1,1]) * normal_stress
+        self.w_sigma0 = numpy.array([0,1,1,1,1]) * normal_stress
         self.w_n = numpy.array(([0,0,-1], [-1,0,0], [1,0,0], [0,-1,0], [0,1,0]),
                 dtype=numpy.float64)
         self.w_x = numpy.zeros(5)
@@ -3524,7 +3527,7 @@ class sim:
         :returns: The current top wall normal stress in Pascal
         :return type: float
         '''
-        return w_devs[0] + w_devs_A*numpy.sin(2.0*numpy.pi*self.time_current)
+        return w_sigma0[0] + w_sigma0_A*numpy.sin(2.0*numpy.pi*self.time_current)
 
     def volume(self, idx):
         '''
@@ -4200,7 +4203,7 @@ class sim:
         See also: :func:`shearStrainRate()` and :func:`shearVel()`
         '''
         return self.shearStrainRate() * numpy.mean(self.radius) \
-                * numpy.sqrt(self.rho[0]/self.w_devs[0])
+                * numpy.sqrt(self.rho[0]/self.w_sigma0[0])
 
     def findOverlaps(self):
         '''
@@ -5073,7 +5076,7 @@ class sim:
         for i in numpy.arange(1, self.status()+1):
             sb.readstep(i, verbose=False)
             if i == 0:
-                load = sb.w_devs[0]
+                load = sb.w_sigma0[0]
             t[i-1]  = sb.time_current[0]
             H[i-1] = sb.w_x[0]
 
@@ -5108,7 +5111,7 @@ class sim:
         plt.xlabel('Time [s]')
         plt.ylabel('Height [m]')
         plt.title('$c_v$ = %.2e m$^2$ s$^{-1}$ at %.1f kPa and $e$ = %.2f' \
-                % (self.c_coeff, sb.w_devs[0]/1000.0, e))
+                % (self.c_coeff, sb.w_sigma0[0]/1000.0, e))
         plt.semilogx(t, H, '+-')
         plt.axhline(y = self.H0, color='gray')
         plt.axhline(y = self.H50, color='gray')
@@ -5501,7 +5504,7 @@ class sim:
                             dtype=numpy.float64).reshape((lastfile+1), sb.nw[0])
                     wpos   = numpy.zeros((lastfile+1)*sb.nw[0],\
                             dtype=numpy.float64).reshape((lastfile+1), sb.nw[0])
-                    wdevs  = numpy.zeros((lastfile+1)*sb.nw[0],\
+                    wsigma0  = numpy.zeros((lastfile+1)*sb.nw[0],\
                             dtype=numpy.float64).reshape((lastfile+1), sb.nw[0])
                     maxpos = numpy.zeros((lastfile+1), dtype=numpy.float64)
                     logstress = numpy.zeros((lastfile+1), dtype=numpy.float64)
@@ -5510,7 +5513,7 @@ class sim:
                 wforce[i] = sb.w_force[0]
                 wvel[i]   = sb.w_vel[0]
                 wpos[i]   = sb.w_x[0]
-                wdevs[i]  = sb.w_devs[0]
+                wsigma0[i]  = sb.w_sigma0[0]
                 maxpos[i] = numpy.max(sb.x[:,2]+sb.radius)
                 logstress[i] =\
                         numpy.log((sb.w_force[0]/(sb.L[0]*sb.L[1]))/1000.0)
@@ -5552,7 +5555,7 @@ class sim:
                 ax4 = plt.subplot2grid((2,2),(1,1))
                 ax4.set_xlabel('Time [s]')
                 ax4.set_ylabel('Deviatoric stress [Pa]')
-                ax4.plot(t, wdevs, '+-', label="$\sigma_0$")
+                ax4.plot(t, wsigma0, '+-', label="$\sigma_0$")
                 ax4.plot(t, wforce/(sb.L[0]*sb.L[1]), '+-', label="$\sigma'$")
                 ax4.legend(loc=4)
                 ax4.grid()
@@ -5582,7 +5585,7 @@ class sim:
 
                 axial_strain[i] = (w0pos0 - sb.w_x[0])/w0pos0
                 volumetric_strain[i] = (vol0-vol)/vol0
-                deviatoric_stress[i] = sigma1 / sb.w_devs[1]
+                deviatoric_stress[i] = sigma1 / sb.w_sigma0[1]
 
             #print(lastfile)
             #print(axial_strain)
@@ -5658,7 +5661,7 @@ class sim:
                 if (i > 0):
                     self.xdisp[i] = self.xdisp[i-1] +sb.time_file_dt[0]*shearvel
                 self.sigma_eff[i] = sb.w_force[0] / A
-                self.sigma_def[i] = sb.w_devs[0]
+                self.sigma_def[i] = sb.w_sigma0[0]
 
                 # dilation in meters
                 #dilation[i] = sb.w_x[0] - w_x0
@@ -5975,7 +5978,7 @@ def thinsectionVideo(project,
         fn = "../output/{0}.output{1:0=5}.bin".format(project, i)
         sb.sid = project + ".output{:0=5}".format(i)
         sb.readbin(fn, verbose = False)
-        sb.thinsection_x1x3(cbmax = sb.w_devs[0]*4.0)
+        sb.thinsection_x1x3(cbmax = sb.w_sigma0[0]*4.0)
 
     # Combine images to animation
     # Possible loglevels:

@@ -88,7 +88,7 @@ for devs in devslist:
             + '-init.output{:0=5}.bin'.format(lastf), verbose=False)
 
     # Setup consolidation experiment
-    cons.consolidate(deviatoric_stress = devs, periodic = init.periodic)
+    cons.consolidate(normal_stress = devs, periodic = init.periodic)
 
     # Set duration of simulation
     cons.initTemporal(total = 1.5)

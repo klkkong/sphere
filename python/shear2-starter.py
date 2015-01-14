@@ -54,7 +54,7 @@ if fluid:
     sim.setMaxIterations(2e5)
     sim.c_phi[0] = c_phi
     sim.c_grad_p[0] = c_grad_p
-    sim.w_devs[0] = sigma0
+    sim.w_sigma0[0] = sigma0
 
 sim.initTemporal(total = 20.0, file_dt = 0.01, epsilon=0.07)
 #sim.initTemporal(total = 20.0, file_dt = 0.01, epsilon=0.05)

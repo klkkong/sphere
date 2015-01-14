@@ -78,7 +78,7 @@ for devs in devslist:
     cons.periodicBoundariesXY()
 
     # Setup consolidation experiment
-    cons.consolidate(deviatoric_stress = devs, periodic = init.periodic)
+    cons.consolidate(normal_stress = devs, periodic = init.periodic)
 
 
     # Set duration of simulation
