@@ -654,17 +654,19 @@ __global__ void findDarcyPressureForce(
 
 // Set the pressure at the top boundary to new_pressure
 __global__ void setDarcyTopPressure(
-    const Float new_pressure, Float* __restrict__ dev_darcy_p)
+    const Float new_pressure,
+    Float* __restrict__ dev_darcy_p,
+    const unsigned int wall0_iz)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
     const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
     const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
     
-    // check that the thread is located at the top boundary
+    // check that the thread is located at the top boundary or at the top wall
     if (x < devC_grid.num[0] &&
         y < devC_grid.num[1] &&
-        z == devC_grid.num[2]-1) {
+        z == devC_grid.num[2]-1 || z == wall0_iz) {
 
         const unsigned int cellidx = idx(x,y,z);
 

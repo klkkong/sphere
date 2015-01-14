@@ -1878,7 +1878,8 @@ __host__ void DEM::startTime()
                             startTimer(&kernel_tic);
                         setDarcyTopPressure<<<dimGridFluid, dimBlockFluid>>>(
                                 new_pressure,
-                                dev_darcy_p);
+                                dev_darcy_p,
+                                wall0_iz);
                         if (PROFILING == 1)
                             stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                                     &t_setDarcyTopPressure);
