@@ -27,7 +27,11 @@ __global__ void integrate(
     Float4* __restrict__ dev_angvel0,
     Float4* __restrict__ dev_xyzsum,
     const unsigned int* __restrict__ dev_gridParticleIndex,
-    const unsigned int iter)
+    const unsigned int iter,
+    const int* __restrict__ dev_walls_wmode,
+    const Float* __restrict__ dev_walls_tau_eff_x_partial,
+    const Float* __restrict__ dev_walls_tau_x,
+    const unsigned int blocksPerGrid)
 {
     unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x; // Thread id
 
@@ -44,6 +48,16 @@ __global__ void integrate(
         const Float4 vel      = dev_vel_sorted[idx];
         const Float4 angvel   = dev_angvel_sorted[idx];
         Float4 xyzsum = dev_xyzsum[orig_idx];
+
+        // Read the mode of the top wall
+        const int wall0mode = dev_walls_wmode[0];
+        const Float wall0mass = dev_walls_mvfd[0].x;
+
+        // Find the final sum of shear stresses on the top particles
+        Float tau_eff_x = 0.0;
+        if (wall0mode == 3)
+            for (int i=0; i<blocksPerGrid; ++i)
+                tau_eff_x += dev_walls_tau_eff_x_partial[i];
 
         // Get old accelerations for three-term Taylor expansion. These values
         // don't exist in the first time step
@@ -91,11 +105,26 @@ __global__ void integrate(
         angacc.y = torque.y * 1.0 / (2.0/5.0 * m * radius*radius);
         angacc.z = torque.z * 1.0 / (2.0/5.0 * m * radius*radius);
 
+        // Fixed shear stress BC
+        if (wall0mode == 3 && vel.w > 0.0001 && x.z > devC_grid.L[2]*0.5) {
+
+            // the force should be positive when abs(tau) > abs(tau_eff_x)
+            const Float f_tau_x =
+                (tau + tau_eff_x)*devC_grid.L[0]*devC_grid.L[1];
+
+            acc.x = f_tau_x/wall0mass;  // acceleration = force/mass
+            acc.y = 0.0;
+            acc.z -= devC_params.g[2];
+
+            // disable rotation
+            angacc = MAKE_FLOAT4(0.0, 0.0, 0.0, 0.0);
+        }
+
         // Modify the acceleration if the particle is marked as having a fixed
         // velocity. In that case, zero the horizontal acceleration and disable
         // gravity to counteract segregation. Particles may move in the
         // z-dimension, to allow for dilation.
-        if (vel.w > 0.0001 && vel.w < 10.0) {
+        else if (vel.w > 0.0001 && vel.w < 10.0) {
 
             acc.x = 0.0;
             acc.y = 0.0;
