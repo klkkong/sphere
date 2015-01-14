@@ -16,6 +16,7 @@
 #include "utility.h"
 #include "constants.cuh"
 #include "debug.h"
+#include "version.h"
 
 #include "sorting.cuh"
 #include "contactmodels.cuh"
@@ -380,6 +381,7 @@ __host__ void DEM::allocateGlobalDeviceMemory(void)
     cudaMalloc((void**)&dev_walls_wmode, sizeof(int)*walls.nw);
     cudaMalloc((void**)&dev_walls_nx, sizeof(Float4)*walls.nw);
     cudaMalloc((void**)&dev_walls_mvfd, sizeof(Float4)*walls.nw);
+    cudaMalloc((void**)&dev_walls_tau_x, sizeof(Float)*walls.nw);
     cudaMalloc((void**)&dev_walls_force_pp, sizeof(Float)*walls.nw*np);
     cudaMalloc((void**)&dev_walls_acc, sizeof(Float)*walls.nw);
     // dev_walls_force_partial allocated later
@@ -545,6 +547,7 @@ __host__ void DEM::freeGlobalDeviceMemory()
     // Wall arrays
     cudaFree(dev_walls_nx);
     cudaFree(dev_walls_mvfd);
+    cudaFree(dev_walls_tau_x);
     cudaFree(dev_walls_force_partial);
     cudaFree(dev_walls_force_pp);
     cudaFree(dev_walls_acc);
@@ -631,6 +634,8 @@ __host__ void DEM::transferToGlobalDeviceMemory(int statusmsg)
                 sizeof(Float4)*walls.nw, cudaMemcpyHostToDevice);
     cudaMemcpy( dev_walls_mvfd,  walls.mvfd,
                 sizeof(Float4)*walls.nw, cudaMemcpyHostToDevice);
+    cudaMemcpy( dev_walls_tau_x,  walls.tau_x,
+                sizeof(Float)*walls.nw, cudaMemcpyHostToDevice);
 
     // Fluid arrays
     if (fluid == 1) {
@@ -711,6 +716,8 @@ __host__ void DEM::transferFromGlobalDeviceMemory()
             sizeof(Float4)*walls.nw, cudaMemcpyDeviceToHost);
     cudaMemcpy( walls.mvfd, dev_walls_mvfd,
             sizeof(Float4)*walls.nw, cudaMemcpyDeviceToHost);
+    cudaMemcpy( walls.tau_x, dev_walls_tau_x,
+            sizeof(Float)*walls.nw, cudaMemcpyDeviceToHost);
 
     // Fluid arrays
     if (fluid == 1 && cfd_solver == 0) {

@@ -251,7 +251,7 @@ class sim:
         self.w_sigma0_f = numpy.zeros(1, dtype=numpy.float64)
 
         # Wall shear stress, enforced when wmode == 3
-        self.w_tau = numpy.zeros(1, dtype=numpy.float64)
+        self.w_tau_x = numpy.zeros(1, dtype=numpy.float64)
 
         ## Bond parameters
         # Radius multiplier to the parallel-bond radii
@@ -564,7 +564,7 @@ class sim:
         elif (self.w_sigma0_f != other.w_sigma0_f):
             print(52)
             return 52
-        elif (self.w_tau != other.w_tau):
+        elif (self.w_tau_x != other.w_tau_x):
             print(52.5)
             return 52.5
         elif (self.gamma_wn != other.gamma_wn):
@@ -1041,7 +1041,7 @@ class sim:
                 self.w_sigma0_A = numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.w_sigma0_f = numpy.fromfile(fh, dtype=numpy.float64, count=1)
             if self.version >= 2.1:
-                self.w_tau = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                self.w_tau_x = numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
             if bonds:
                 # Inter-particle bonds
@@ -1330,7 +1330,7 @@ class sim:
                 fh.write(self.w_sigma0[i].astype(numpy.float64))
             fh.write(self.w_sigma0_A.astype(numpy.float64))
             fh.write(self.w_sigma0_f.astype(numpy.float64))
-            fh.write(self.w_tau.astype(numpy.float64))
+            fh.write(self.w_tau_x.astype(numpy.float64))
 
             fh.write(self.lambda_bar.astype(numpy.float64))
             fh.write(self.nb0.astype(numpy.uint32))
@@ -5349,15 +5349,13 @@ class sim:
     def shearStress(self):
         '''
         Calculates the sum of shear stress values measured on any moving
-        particles.
+        particles with a finite and fixed velocity.
 
         :returns: The shear stress in Pa
         :return type: numpy.array
         '''
 
         fixvel = numpy.nonzero(self.fixvel > 0.0)
-        shearvel = self.shearVel()
-
         force = numpy.zeros(3)
 
         # Summation of shear stress contributions

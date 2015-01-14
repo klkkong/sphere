@@ -97,6 +97,7 @@ class DEM {
         int           *dev_walls_wmode;
         Float4        *dev_walls_nx;        // normal, pos.
         Float4        *dev_walls_mvfd;      // mass, velo., force, dev. stress
+        Float         *dev_walls_tau_x;     // wall shear stress
         Float         *dev_walls_force_partial; // Pre-sum per wall
         Float         *dev_walls_force_pp;  // Force per particle per wall
         Float         *dev_walls_acc;       // Wall acceleration

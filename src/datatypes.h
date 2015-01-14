@@ -104,7 +104,7 @@ struct Walls {
     int wmode[MAXWALLS]; // Wall modes
     Float4* nx;          // Wall normal and position
     Float4* mvfd;        // Wall mass, velocity, force and normal stress
-    Float*  tau;         // Wall shear stress
+    Float*  tau_x;       // Wall shear stress
 };
 
 // Structures containing fluid parameters
