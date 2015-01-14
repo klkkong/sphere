@@ -78,7 +78,7 @@ All examples are visualized using `ParaView <http://www.paraview.org>`_.
 Publications
 ------------
 ``sphere`` has been used to produce results in the following scientific
-publications:
+publications and presentations:
 
 - Damsgaard, A., D.L. Egholm, J.A. Piotrowski, S. Tulaczyk, N.K. Larsen, and
   C.F. Brædstrup (2014), Numerical modeling of particle-fluid mixtures in a
@@ -88,7 +88,6 @@ publications:
   K. Tylmann (2013), Discrete element modeling of subglacial sediment
   deformation, J. Geophys. Res. Earth Surf., 118, 2230–2242,
   `doi:10.1002/2013JF002830 <http://dx.doi.org/10.1002/2013JF002830>`_.
-
 - Damsgaard, A., D.L. Egholm, J.A. Piotrowski, S. Tulaczyk, and N.K. Larsen
   (2013), Discrete element modeling of subglacial sediment deformation.
   Talk at American Geophysical Fall Meeting 2013.
@@ -103,7 +102,7 @@ publications:
   <https://cs.au.dk/~adc/files/EGU2012-Poster.pdf>`_.
 - Damsgaard, A., D.L. Egholm, and J.A. Piotrowski
   (2011), Numerical modelling of sediment deformation by glacial stress.
-  `Poster at European Geosciences Union General Assembly 2011
+  `Poster at International Union for Quaternary Research Congress 2011
   <https://cs.au.dk/~adc/files/INQUA2011-Poster.pdf>`_.
 - Damsgaard, A., D.L. Egholm, and J.A. Piotrowski
   (2011), Numerical modelling of subglacial sediment deformation.
