@@ -5864,7 +5864,7 @@ class sim:
                 # Lower plot
                 ax3 = plt.subplot(2, 1, 2, sharex=ax1)
                 ax3.plot(time, self.tau_eff/self.w_sigma0[0],
-                        '-', label="$Shear friction$")
+                        '-k', label="$Shear friction$")
                 ax3.plot([0, time[-1]],
                     [self.w_tau_x/self.sigma_def, self.w_tau_x/self.sigma_def],
                         '--k', label="$Applied shear friction$")
