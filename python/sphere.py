@@ -5873,7 +5873,7 @@ class sim:
 
                 if self.fluid:
                     ax4 = ax3.twinx()
-                    ax4.plot(time, self.phi_bar/1000.0, 'r', label='Porosity')
+                    ax4.plot(time, self.p_f_bar/1000.0, 'b', label='Pressure')
                     ax4.set_ylabel('Mean fluid pressure '
                             + '$\\bar{p_\\text{f}}$ [kPa]')
 
