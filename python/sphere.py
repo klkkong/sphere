@@ -5385,8 +5385,8 @@ class sim:
         method.
 
         :param method: The type of plot to render. Possible values are 'energy',
-            'walls', 'triaxial', 'mean-fluid-pressure', 'fluid-pressure' and
-            'shear'
+            'walls', 'triaxial', 'mean-fluid-pressure', 'fluid-pressure', 
+            'shear', and 'shear-displacement'
         :type method: str
         :param savefig: Save the image instead of showing it on screen
         :type savefig: bool
@@ -5754,6 +5754,143 @@ class sim:
                 finally :
                     if fh is not None:
                         fh.close()
+
+        elif method == 'shear-displacement':
+
+            # Read stress values from simulation binaries
+            for i in range(lastfile+1):
+                sb.readstep(i, verbose = False)
+
+                # First iteration: Allocate arrays and find constant values
+                if (i == 0):
+                    # Shear displacement
+                    time = numpy.zeros(lastfile+1, dtype=numpy.float64)
+
+                    # Shear displacement
+                    self.xdisp    = numpy.zeros(lastfile+1, dtype=numpy.float64)
+
+                    # Normal stress
+                    self.sigma_eff= numpy.zeros(lastfile+1, dtype=numpy.float64)
+
+                    # Normal stress
+                    self.sigma_def= numpy.zeros(lastfile+1, dtype=numpy.float64)
+
+                    # Shear stress
+                    self.tau_eff  = numpy.zeros(lastfile+1, dtype=numpy.float64)
+
+                    # Upper wall position
+                    self.dilation = numpy.zeros(lastfile+1, dtype=numpy.float64)
+
+                    # Mean porosity
+                    self.phi_bar = numpy.zeros(lastfile+1, dtype=numpy.float64)
+
+                    # Mean fluid pressure
+                    self.p_f_bar = numpy.zeros(lastfile+1, dtype=numpy.float64)
+
+                    # Upper wall position
+                    self.tau_p = 0.0             # Peak shear stress
+                    # Shear strain value of peak sh. stress
+                    self.tau_p_shearstrain = 0.0
+
+                    fixvel = numpy.nonzero(sb.fixvel > 0.0)
+                    #fixvel_upper = numpy.nonzero(sb.vel[fixvel,0] > 0.0)
+                    w_x0 = sb.w_x[0]      # Original height
+                    A = sb.L[0]*sb.L[1]   # Upper surface area
+
+                    d_bar = numpy.mean(self.radius)*2.0
+                    if numpy.isnan(d_bar):
+                        print('No radii in self.radius, attempting to read '
+                                + 'first file')
+                        self.readfirst()
+                        d_bar = numpy.mean(self.radius)*2.0
+
+                time[i] = sb.time_current[0]
+
+                if (i == 1):
+                    w_x0 = sb.w_x[0] # Original height
+
+                # Summation of shear stress contributions
+                for j in fixvel[0]:
+                    if (sb.vel[j,0] > 0.0):
+                        self.tau_eff[i] += -sb.force[j,0]/A
+
+                if (i > 0):
+                    self.xdisp[i] = sb.xyzsum[fixvel,0].max()
+
+                self.sigma_eff[i] = sb.w_force[0]/A
+                self.sigma_def[i] = sb.w_sigma0[0]
+
+                # dilation in number of mean particle diameters
+                self.dilation[i] = (sb.w_x[0] - w_x0)/d_bar
+
+                wall0_iz = int(sb.w_x[0]/(sb.L[2]/sb.num[2]))
+
+                if self.fluid:
+                    if i > 0:
+                        self.phi_bar[i] = numpy.mean(sb.phi[:,:,0:wall0_iz])
+                    if i == 1:
+                        self.phi_bar[0] = self.phi_bar[1]
+                    self.p_f_bar[i] = numpy.mean(sb.p_f[:,:,0:wall0_iz])
+
+                # Test if this was the max. shear stress
+                if (self.tau_eff[i] > self.tau_p):
+                    self.tau_p = self.tau_eff[i]
+                    self.tau_p_shearstrain = self.xdisp[i]/w_x0
+
+            self.shear_strain = self.xdisp/w_x0
+
+            # Plot stresses
+            if (outformat != 'txt'):
+
+                #shearinfo = "$\\tau_p$ = {:.3} Pa at $\gamma$ = {:.3}".format(\
+                        #self.tau_p, self.tau_p_shearstrain)
+                #fig.text(0.01, 0.01, shearinfo, horizontalalignment='left',
+                         #fontproperties=FontProperties(size=14))
+
+                # Upper plot
+                ax1 = plt.subplot(2, 1, 1)
+                ax1.plot(time, self.xdisp, 'k', label='Displacement')
+                ax1.set_ylabel('Horizontal displacement [m]')
+
+                ax2 = ax1.twinx()
+
+                if self.fluid:
+                    ax2.plot(time, self.phi_bar, 'r', label='Porosity')
+                    ax2.set_ylabel('Mean porosity $\\bar{\\phi}$ [-]')
+                else:
+                    ax2.plot(time, self.dilation, 'r', label='Dilation')
+                    ax2.set_ylabel('Dilation, $\Delta h/(2\\bar{r})$ [-]')
+
+                # Lower plot
+                ax3 = plt.subplot(2, 1, 2, sharex=ax1)
+                ax3.plot(time, self.tau_eff/self.w_sigma0[0],
+                        '-', label="$Shear friction$")
+                ax3.plot([0, time[-1]],
+                    [self.w_tau_x/self.sigma_def, self.w_tau_x/self.sigma_def],
+                        '--k', label="$Applied shear friction$")
+                ax3.set_ylabel('Shear friction $\\tau\'/\\sigma_0$ [-]')
+
+
+                if self.fluid:
+                    ax4 = ax3.twinx()
+                    ax4.plot(time, self.phi_bar/1000.0, 'r', label='Porosity')
+                    ax4.set_ylabel('Mean fluid pressure '
+                            + '$\\bar{p_\\text{f}}$ [kPa]')
+
+                # axis limits
+                ax3.set_ylim([self.w_tau_x/self.sigma_def[0]*0.5,
+                    self.w_tau_x/self.sigma_def[0]*1.5])
+
+                # aesthetics
+                ax3.set_xlabel('Time [s]')
+                ax1.grid()
+                ax3.grid()
+                if self.fluid:
+                    ax4.grid()
+
+                plt.setp(ax1.get_xticklabels(), visible=False)
+                fig.tight_layout()
+                plt.subplots_adjust(hspace=0.05)
 
         elif method == 'mean-fluid-pressure':
 
