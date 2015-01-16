@@ -5885,8 +5885,6 @@ class sim:
                 ax3.set_xlabel('Time [s]')
                 ax1.grid()
                 ax3.grid()
-                if self.fluid:
-                    ax4.grid()
 
                 plt.setp(ax1.get_xticklabels(), visible=False)
                 fig.tight_layout()
