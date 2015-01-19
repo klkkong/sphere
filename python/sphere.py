@@ -5863,7 +5863,7 @@ class sim:
                     ax2.plot(time, self.dilation, color=ax2color,
                             label='Dilation')
                     ax2.set_ylabel('Dilation, $\Delta h/(2\\bar{r})$ [-]')
-                for tl in ax2.get_xticklabels():
+                for tl in ax2.get_yticklabels():
                     tl.set_color(ax2color)
 
                 # Lower plot
@@ -5883,7 +5883,7 @@ class sim:
                             label='Pressure')
                     ax4.set_ylabel('Mean fluid pressure '
                             + '$\\bar{p_\\text{f}}$ [kPa]')
-                    for tl in ax4.get_xticklabels():
+                    for tl in ax4.get_yticklabels():
                         tl.set_color(ax4color)
 
                 # axis limits
