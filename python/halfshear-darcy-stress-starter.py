@@ -52,7 +52,6 @@ if fluid:
     sim.initFluid(mu = mu, p = 0.0, cfd_solver = 1)
     sim.setFluidBottomNoFlow()
     sim.setFluidTopFixedPressure()
-    sim.wmode[0] = 3
     #sim.setDEMstepsPerCFDstep(10)
     sim.setMaxIterations(2e5)
     sim.setPermeabilityPrefactor(k_c)

@@ -1259,7 +1259,8 @@ __host__ void DEM::startTime()
 #endif
 
                     // find cell containing top wall
-                    if (walls.nw > 0 && walls.wmode[0] == 1) {
+                    if (walls.nw > 0 &&
+                            (walls.wmode[0] == 1 || walls.wmode[0] == 3)) {
                         wall0_iz = walls.nx->w/(grid.L[2]/grid.num[2]);
                         setNSepsilonAtTopWall<<<dimGridFluid, dimBlockFluid>>>(
                                 dev_ns_epsilon,
