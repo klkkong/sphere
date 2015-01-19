@@ -1824,14 +1824,25 @@ __host__ void DEM::startTime()
                 if (walls.nw > 0 &&
                         (walls.wmode[0] == 1 || walls.wmode[0] == 3)) {
                     wall0_iz = walls.nx->w/(grid.L[2]/grid.num[2]);
-                    /*setDarcyTopWallPressure
+
+                    // Modulate the pressures at the upper boundary cells
+                    if ((darcy.p_mod_A > 1.0e-5 || darcy.p_mod_A < -1.0e-5) &&
+                            darcy.p_mod_f > 1.0e-7) {
+                        // original pressure
+                        Float new_pressure =
+                            darcy.p[d_idx(0,0,darcy.nz-1)] //orig p
+                            + darcy.p_mod_A
+                            *sin(2.0*M_PI*darcy.p_mod_f*time.current
+                                    + darcy.p_mod_phi);
+
+                    setDarcyTopWallPressure
                       <<<dimGridFluid, dimBlockFluid>>>(
                       new_pressure,
                       wall0_iz,
                       dev_darcy_p);
                       cudaThreadSynchronize();
                       checkForCudaErrorsIter("Post setDarcyTopWallPressure",
-                      iter);*/
+                      iter);
                 }
 
                 if (np > 0) {
