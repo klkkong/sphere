@@ -2037,7 +2037,7 @@ __host__ void DEM::startTime()
                         checkForCudaErrorsIter("Post updateDarcySolution",
                                 iter);
 
-                        if (darcy.bc_top == 1 || darcy.bc_top == 3) {
+                        if (darcy.bc_top == 1) {
                             if (PROFILING == 1)
                                 startTimer(&kernel_tic);
                             setDarcyTopWallFixedFlow

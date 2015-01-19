@@ -240,7 +240,7 @@ __global__ void setDarcyGhostNodes(
         if (z == 0 && bc_bot == 2)
             dev_scalarfield[idx(x,y,nz)] = val;     // Periodic -z
 
-        if (z == nz-1 && (bc_top == 0 || bc_top == 3))
+        if (z == nz-1 && bc_top == 0)
             dev_scalarfield[idx(x,y,nz)] = val;     // Dirichlet
         if (z == nz-2 && bc_top == 1)
             dev_scalarfield[idx(x,y,nz)] = val;     // Neumann
@@ -938,7 +938,7 @@ __global__ void firstDarcySolution(
         if (z == 0 && bc_bot == 1)
             p_zn = p;
         //if ((z == nz-1 && bc_top == 1) || z >= wall0_iz)
-        if (z == nz-1 && (bc_top == 1 || bc_top == 3))
+        if (z == nz-1 && bc_top == 1)
             p_zp = p;
 
         // upwind coefficients for grad(p) determined from values of k
@@ -1089,7 +1089,7 @@ __global__ void updateDarcySolution(
         if (z == 0 && bc_bot == 1)
             p_zn = p;
         //if ((z == nz-1 && bc_top == 1) || z >= wall0_iz)
-        if (z == nz-1 && (bc_top == 1 || bc_top == 3))
+        if (z == nz-1 && bc_top == 1)
             p_zp = p;
 
         // upwind coefficients for grad(p) determined from values of k
