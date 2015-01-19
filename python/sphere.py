@@ -5854,12 +5854,17 @@ class sim:
 
                 ax2 = ax1.twinx()
 
+                ax2color = '#666666'
                 if self.fluid:
-                    ax2.plot(time, self.phi_bar, 'r', label='Porosity')
+                    ax2.plot(time, self.phi_bar, color=ax2color,
+                            label='Porosity')
                     ax2.set_ylabel('Mean porosity $\\bar{\\phi}$ [-]')
                 else:
-                    ax2.plot(time, self.dilation, 'r', label='Dilation')
+                    ax2.plot(time, self.dilation, color=ax2color,
+                            label='Dilation')
                     ax2.set_ylabel('Dilation, $\Delta h/(2\\bar{r})$ [-]')
+                for tl in ax2.get_xticklabels():
+                    tl.set_color(ax2color)
 
                 # Lower plot
                 ax3 = plt.subplot(2, 1, 2, sharex=ax1)
@@ -5873,9 +5878,13 @@ class sim:
 
                 if self.fluid:
                     ax4 = ax3.twinx()
-                    ax4.plot(time, self.p_f_bar/1000.0, 'b', label='Pressure')
+                    ax4color = '#666666'
+                    ax4.plot(time, self.p_f_bar/1000.0, color=ax4color,
+                            label='Pressure')
                     ax4.set_ylabel('Mean fluid pressure '
                             + '$\\bar{p_\\text{f}}$ [kPa]')
+                    for tl in ax4.get_xticklabels():
+                        tl.set_color(ax4color)
 
                 # axis limits
                 ax3.set_ylim([self.w_tau_x/self.sigma_def[0]*0.5,
@@ -5976,7 +5985,7 @@ class sim:
         # Optional save of figure
         if (outformat != 'txt'):
             if savefig:
-                filename = "{0}-{1}.{2}".format(self.sid, method, outformat))
+                filename = "{0}-{1}.{2}".format(self.sid, method, outformat)
                 fig.savefig(filename)
                 print(filename)
                 fig.clf()
