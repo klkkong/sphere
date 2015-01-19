@@ -1822,7 +1822,7 @@ __host__ void DEM::startTime()
                 }
 
                 if (walls.nw > 0 &&
-                        (walls.wmode[0] == 1 || walls.wmode[0] == 3) {
+                        (walls.wmode[0] == 1 || walls.wmode[0] == 3)) {
                     wall0_iz = walls.nx->w/(grid.L[2]/grid.num[2]);
                     /*setDarcyTopWallPressure
                       <<<dimGridFluid, dimBlockFluid>>>(
