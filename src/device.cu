@@ -1836,13 +1836,13 @@ __host__ void DEM::startTime()
                                     + darcy.p_mod_phi);
 
                     setDarcyTopWallPressure
-                      <<<dimGridFluid, dimBlockFluid>>>(
-                      new_pressure,
-                      wall0_iz,
-                      dev_darcy_p);
-                      cudaThreadSynchronize();
-                      checkForCudaErrorsIter("Post setDarcyTopWallPressure",
-                      iter);
+                        <<<dimGridFluid, dimBlockFluid>>>(
+                                new_pressure,
+                                wall0_iz,
+                                dev_darcy_p);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("Post setDarcyTopWallPressure",
+                            iter);
                 }
 
                 if (np > 0) {
