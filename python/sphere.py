@@ -5976,7 +5976,9 @@ class sim:
         # Optional save of figure
         if (outformat != 'txt'):
             if savefig:
-                fig.savefig("{0}-{1}.{2}".format(self.sid, method, outformat))
+                filename = "{0}-{1}.{2}".format(self.sid, method, outformat))
+                fig.savefig(filename)
+                print(filename)
                 fig.clf()
             else:
                 plt.show()
