@@ -5854,7 +5854,8 @@ class sim:
 
                 ax2 = ax1.twinx()
 
-                ax2color = '#666666'
+                #ax2color = '#666666'
+                ax2color = 'blue'
                 if self.fluid:
                     ax2.plot(time, self.phi_bar, color=ax2color,
                             label='Porosity')
@@ -5878,7 +5879,8 @@ class sim:
 
                 if self.fluid:
                     ax4 = ax3.twinx()
-                    ax4color = '#666666'
+                    #ax4color = '#666666'
+                    ax4color = ax2color
                     ax4.plot(time, self.p_f_bar/1000.0, color=ax4color,
                             label='Pressure')
                     ax4.set_ylabel('Mean fluid pressure '
