@@ -5186,7 +5186,8 @@ class sim:
         :param f: Fluctuation frequency [Hz]
         :type f: float
 
-        See also: :func:`setFluidPressureModulation()`
+        See also: :func:`setFluidPressureModulation()` and
+        :func:`disableTopWallNormalStressModulation()`
         '''
         self.sigma0_A[0] = A
         self.sigma0_mod_f[0] = f
@@ -5212,7 +5213,8 @@ class sim:
         :param phi: Fluctuation phase shift (default=0.0)
         :type phi: float
 
-        See also: :func:`disableFluidPressureModulation()`
+        See also: :func:`setTopWallNormalStressModulation()` and
+        :func:`disableFluidPressureModulation()`
         '''
         self.p_mod_A[0] = A
         self.p_mod_f[0] = f
