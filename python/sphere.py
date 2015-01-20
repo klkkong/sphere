@@ -2048,7 +2048,7 @@ class sim:
 
         # Show radii as histogram
         if histogram:
-            fig = plt.figure(figsize=(15,10), dpi=300)
+            fig = plt.figure(figsize=(8,8))
             figtitle = 'Particle size distribution, {0} particles'.format(\
                     self.np[0])
             fig.text(0.5,0.95,figtitle,horizontalalignment='center',\
@@ -5200,7 +5200,7 @@ class sim:
         :param outformat: File format of the output plot
         :type outformat: str
         '''
-        fig = plt.figure(8,6)
+        fig = plt.figure(figsize=[8,6])
         t = numpy.linspace(self.time_current[0], self.time_total[0])
         f = A*numpy.sin(2.0*numpy.pi*f*t + phi)
         plt.plot(t, f)
