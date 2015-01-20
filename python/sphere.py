@@ -5209,6 +5209,7 @@ class sim:
         t = numpy.linspace(self.time_current[0], self.time_total[0], steps_left)
         f = A*numpy.sin(2.0*numpy.pi*f*t + phi)
         plt.plot(t, f, plotstyle)
+        plt.grid()
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         filename = self.sid + '-sin.' + outformat
