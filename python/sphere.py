@@ -5191,7 +5191,7 @@ class sim:
         :type baseval: float
         :param A: The fluctuation amplitude
         :type A: float
-        :param phi: The phase shift [t]
+        :param phi: The phase shift [s]
         :type phi: float
         :param xlabel: The label for the x axis
         :type xlabel: str
@@ -5209,6 +5209,8 @@ class sim:
         filename = self.sid + '-sin.' + outformat
         plt.savefig(filename)
         print(filename)
+        plt.clf()
+        plt.close(fig)
 
     def setTopWallNormalStressModulation(self, A, f, plot=True):
         '''
@@ -5229,7 +5231,7 @@ class sim:
         self.sigma0_mod_f[0] = f
 
         if plot:
-            plotSinFunction(A, f, phi=0.0,
+            self.plotSinFunction(self.w_sigma0[0], A, f, phi=0.0,
                     xlabel='$t$ [s]', ylabel='$\\sigma_0$ [Pa]')
 
     def disableTopWallNormalStressModulation(self):
@@ -5263,7 +5265,7 @@ class sim:
         self.p_mod_phi[0] = phi
 
         if plot:
-            plotSinFunction(A, f, phi=0.0,
+            self.plotSinFunction(self.p_f[0,0,-1], A, f, phi=0.0,
                     xlabel='$t$ [s]', ylabel='$p_f$ [Pa]')
 
     def disableFluidPressureModulation(self):
