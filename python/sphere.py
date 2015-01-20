@@ -5176,7 +5176,41 @@ class sim:
         plt.clf()
         plt.close(fig)
 
-    def setTopWallNormalStressModulation(self, A, f):
+    def plotSinFunction(self,
+            baseval, A, f, phi = 0.0,
+            xlabel = '$t$ [s]', ylabel = '$y$',
+            outformat = 'png'):
+        '''
+        Plot the values of a sinusoidal modulated base value. Saves the output
+        as a plot in the current folder.
+        The time values will range from `self.time_current` to
+        `self.time_total`.
+
+        :param baseval: The center value which the sinusoidal fluctuations are
+            modulating
+        :type baseval: float
+        :param A: The fluctuation amplitude
+        :type A: float
+        :param phi: The phase shift [t]
+        :type phi: float
+        :param xlabel: The label for the x axis
+        :type xlabel: str
+        :param ylabel: The label for the y axis
+        :type ylabel: str
+        :param outformat: File format of the output plot
+        :type outformat: str
+        '''
+        fig = plt.figure(8,6)
+        t = numpy.linspace(self.time_current[0], self.time_total[0])
+        f = A*numpy.sin(2.0*numpy.pi*f*t + phi)
+        plt.plot(t, f)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        filename = self.sid + '-sin.' + outformat
+        plt.savefig(filename)
+        print(filename)
+
+    def setTopWallNormalStressModulation(self, A, f, plot=True):
         '''
         Set the parameters for the sine wave modulating the normal stress
         at the top wall. Note that a cos-wave is obtained with phi=pi/2.
@@ -5185,12 +5219,18 @@ class sim:
         :type A: float
         :param f: Fluctuation frequency [Hz]
         :type f: float
+        :param plot: Show a plot of the resulting modulation
+        :type plot: bool
 
         See also: :func:`setFluidPressureModulation()` and
         :func:`disableTopWallNormalStressModulation()`
         '''
         self.sigma0_A[0] = A
         self.sigma0_mod_f[0] = f
+
+        if plot:
+            plotSinFunction(A, f, phi=0.0,
+                    xlabel='$t$ [s]', ylabel='$\\sigma_0$ [Pa]')
 
     def disableTopWallNormalStressModulation(self):
         '''
@@ -5210,7 +5250,7 @@ class sim:
         :type A: float
         :param f: Fluctuation frequency [Hz]
         :type f: float
-        :param phi: Fluctuation phase shift (default=0.0)
+        :param phi: Fluctuation phase shift (default=0.0) [t]
         :type phi: float
 
         See also: :func:`setTopWallNormalStressModulation()` and
@@ -5219,6 +5259,10 @@ class sim:
         self.p_mod_A[0] = A
         self.p_mod_f[0] = f
         self.p_mod_phi[0] = phi
+
+        if plot:
+            plotSinFunction(A, f, phi=0.0,
+                    xlabel='$t$ [s]', ylabel='$p_f$ [Pa]')
 
     def disableFluidPressureModulation(self):
         '''
