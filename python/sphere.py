@@ -5241,7 +5241,7 @@ class sim:
         '''
         self.setTopWallNormalStressModulation(A = 0.0, f = 0.0)
 
-    def setFluidPressureModulation(self, A, f, phi=0.0):
+    def setFluidPressureModulation(self, A, f, phi=0.0, plot=True):
         '''
         Set the parameters for the sine wave modulating the fluid pressures
         at the top boundary. Note that a cos-wave is obtained with phi=pi/2.
@@ -5252,6 +5252,8 @@ class sim:
         :type f: float
         :param phi: Fluctuation phase shift (default=0.0) [t]
         :type phi: float
+        :param plot: Show a plot of the resulting modulation
+        :type plot: bool
 
         See also: :func:`setTopWallNormalStressModulation()` and
         :func:`disableFluidPressureModulation()`
