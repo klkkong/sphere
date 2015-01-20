@@ -5179,6 +5179,7 @@ class sim:
     def plotSinFunction(self,
             baseval, A, f, phi = 0.0,
             xlabel = '$t$ [s]', ylabel = '$y$',
+            plotstyle = '.',
             outformat = 'png'):
         '''
         Plot the values of a sinusoidal modulated base value. Saves the output
@@ -5197,13 +5198,17 @@ class sim:
         :type xlabel: str
         :param ylabel: The label for the y axis
         :type ylabel: str
+        :param plotstyle: Matplotlib-string for specifying plotting style
+        :type plotstyle: str
         :param outformat: File format of the output plot
         :type outformat: str
         '''
         fig = plt.figure(figsize=[8,6])
-        t = numpy.linspace(self.time_current[0], self.time_total[0])
+        steps_left = (self.time_total[0] - self.time_current[0]) \
+                /self.time_file_dt[0]
+        t = numpy.linspace(self.time_current[0], self.time_total[0], steps_left)
         f = A*numpy.sin(2.0*numpy.pi*f*t + phi)
-        plt.plot(t, f)
+        plt.plot(t, f, plotstyle)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         filename = self.sid + '-sin.' + outformat
