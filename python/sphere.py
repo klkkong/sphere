@@ -5176,6 +5176,30 @@ class sim:
         plt.clf()
         plt.close(fig)
 
+    def setTopWallNormalStressModulation(self, A, f):
+        '''
+        Set the parameters for the sine wave modulating the normal stress
+        at the top wall. Note that a cos-wave is obtained with phi=pi/2.
+
+        :param A: Fluctuation amplitude [Pa]
+        :type A: float
+        :param f: Fluctuation frequency [Hz]
+        :type f: float
+
+        See also: :func:`setFluidPressureModulation()`
+        '''
+        self.sigma0_A[0] = A
+        self.sigma0_mod_f[0] = f
+
+    def disableTopWallNormalStressModulation(self):
+        '''
+        Set the parameters for the sine wave modulating the normal stress
+        at the top dynamic wall to zero.
+
+        See also: :func:`setTopWallNormalStressModulation()`
+        '''
+        self.setTopWallNormalStressModulation(A = 0.0, f = 0.0)
+
     def setFluidPressureModulation(self, A, f, phi=0.0):
         '''
         Set the parameters for the sine wave modulating the fluid pressures
