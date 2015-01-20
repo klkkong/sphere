@@ -5231,8 +5231,8 @@ class sim:
         self.sigma0_mod_f[0] = f
 
         if plot:
-            self.plotSinFunction(self.w_sigma0[0], A, f, phi=0.0,
-                    xlabel='$t$ [s]', ylabel='$\\sigma_0$ [Pa]')
+            self.plotSinFunction(self.w_sigma0[0], A/1000.0, f, phi=0.0,
+                    xlabel='$t$ [s]', ylabel='$\\sigma_0$ [kPa]')
 
     def disableTopWallNormalStressModulation(self):
         '''
@@ -5265,8 +5265,8 @@ class sim:
         self.p_mod_phi[0] = phi
 
         if plot:
-            self.plotSinFunction(self.p_f[0,0,-1], A, f, phi=0.0,
-                    xlabel='$t$ [s]', ylabel='$p_f$ [Pa]')
+            self.plotSinFunction(self.p_f[0,0,-1], A/1000.0, f, phi=0.0,
+                    xlabel='$t$ [s]', ylabel='$p_f$ [kPa]')
 
     def disableFluidPressureModulation(self):
         '''
