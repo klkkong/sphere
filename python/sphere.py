@@ -5233,8 +5233,8 @@ class sim:
         See also: :func:`setFluidPressureModulation()` and
         :func:`disableTopWallNormalStressModulation()`
         '''
-        self.sigma0_A[0] = A
-        self.sigma0_mod_f[0] = f
+        self.w_sigma0_A[0] = A
+        self.w_sigma0_f[0] = f
 
         if plot:
             self.plotSinFunction(self.w_sigma0[0], A/1000.0, f, phi=0.0,
