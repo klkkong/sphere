@@ -5212,6 +5212,7 @@ class sim:
         plt.grid()
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
+        plt.tight_layout()
         filename = self.sid + '-sin.' + outformat
         plt.savefig(filename)
         print(filename)
