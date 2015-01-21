@@ -63,7 +63,6 @@ if fluid:
 
 sim.w_sigma0[0] = sigma0
 sim.w_m[0] = numpy.abs(sigma0*sim.L[0]*sim.L[1]/sim.g[2])
-sim.setTopWallNormalStressModulation(A=mod_A, f=mod_f)
 
 #sim.setStiffnessNormal(36.4e9 * 0.1 / 2.0)
 #sim.setStiffnessTangential(36.4e9/3.0 * 0.1 / 2.0)
@@ -80,6 +79,7 @@ sim.initTemporal(total = 20.0, file_dt = 0.01, epsilon=0.07)
 #sim.initTemporal(total = 20.0, file_dt = 0.00001, epsilon=0.07)
 #sim.time_dt[0] *= 1.0e-2
 #sim.initTemporal(total = 1.0e-4, file_dt = 1.0e-5, epsilon=0.07)
+sim.setTopWallNormalStressModulation(A=mod_A, f=mod_f)
 
 # Fix lowermost particles
 #dz = sim.L[2]/sim.num[2]

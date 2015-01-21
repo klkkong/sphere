@@ -5207,7 +5207,7 @@ class sim:
         steps_left = (self.time_total[0] - self.time_current[0]) \
                 /self.time_file_dt[0]
         t = numpy.linspace(self.time_current[0], self.time_total[0], steps_left)
-        f = A*numpy.sin(2.0*numpy.pi*f*t + phi)
+        f = baseval + A*numpy.sin(2.0*numpy.pi*f*t + phi)
         plt.plot(t, f, plotstyle)
         plt.grid()
         plt.xlabel(xlabel)
