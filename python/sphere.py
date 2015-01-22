@@ -5954,10 +5954,10 @@ class sim:
                 if self.w_sigma0_A > 1.0e-3:
                     ax3.plot(time, self.sigma_eff/1000.0,
                             '-k', label="$\\sigma'$")
-                    ax3.plot(time, self.tau_eff/1000.0,
-                            '--k', label="$\\tau'$")
                     ax3.plot(time, numpy.ones_like(time)*self.w_tau_x/1000.0,
-                            ':k', label="$\\tau_0$")
+                            '--k', label="$\\tau$")
+                    ax3.plot(time, self.tau_eff/1000.0,
+                            ':k', label="$\\tau'$")
                     ax3.set_ylabel('Stress [kPa]')
                     ax3.legend()
                 else:
