@@ -3547,7 +3547,8 @@ class sim:
         :returns: The current top wall normal stress in Pascal
         :return type: float
         '''
-        return w_sigma0[0] + w_sigma0_A*numpy.sin(2.0*numpy.pi*self.time_current)
+        return self.w_sigma0[0] \
+                + self.w_sigma0_A*numpy.sin(2.0*numpy.pi*self.time_current)
 
     def volume(self, idx):
         '''
@@ -5212,7 +5213,6 @@ class sim:
         plt.grid()
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        plt.tight_layout()
         filename = self.sid + '-sin.' + outformat
         plt.savefig(filename)
         print(filename)
@@ -5273,7 +5273,7 @@ class sim:
 
         if plot:
             self.plotSinFunction(self.p_f[0,0,-1], A, f, phi=0.0,
-                    xlabel='$t$ [s]', ylabel='$p_f$ [Pa]')
+                    xlabel='$t$ [s]', ylabel='$p_f$ [kPa]')
 
     def disableFluidPressureModulation(self):
         '''
@@ -5899,7 +5899,7 @@ class sim:
                     self.xdisp[i] = sb.xyzsum[fixvel,0].max()
 
                 self.sigma_eff[i] = sb.w_force[0]/A
-                self.sigma_def[i] = sb.w_sigma0[0]
+                self.sigma_def[i] = sb.currentNormalStress()
 
                 # dilation in number of mean particle diameters
                 self.dilation[i] = (sb.w_x[0] - w_x0)/d_bar
@@ -5950,12 +5950,26 @@ class sim:
 
                 # Lower plot
                 ax3 = plt.subplot(2, 1, 2, sharex=ax1)
-                ax3.plot(time, self.tau_eff/self.w_sigma0[0],
-                        '-k', label="$Shear friction$")
-                ax3.plot([0, time[-1]],
-                    [self.w_tau_x/self.sigma_def, self.w_tau_x/self.sigma_def],
-                        '--k', label="$Applied shear friction$")
-                ax3.set_ylabel('Shear friction $\\tau\'/\\sigma_0$ [-]')
+                if self.w_sigma0_A > 1.0e-3:
+                    ax3.plot(time, self.sigma_eff/1000.0,
+                            '-k', label="$\\sigma'$")
+                    ax3.plot(time, self.tau_eff/1000.0,
+                            '--k', label="$\\tau'$")
+                    ax3.plot(time, numpy.ones_like(time)*self.w_tau_x/1000.0,
+                            ':k', label="$\\tau_0$")
+                    ax3.set_ylabel('Stress [kPa]')
+                    ax3.legend()
+                else:
+                    ax3.plot(time, self.tau_eff/self.w_sigma0[0],
+                            '-k', label="$Shear friction$")
+                    ax3.plot([0, time[-1]],
+                        [self.w_tau_x/self.sigma_def,
+                            self.w_tau_x/self.sigma_def],
+                            '--k', label="$Applied shear friction$")
+                    ax3.set_ylabel('Shear friction $\\tau\'/\\sigma_0$ [-]')
+                    # axis limits
+                    ax3.set_ylim([self.w_tau_x/self.sigma_def[0]*0.5,
+                        self.w_tau_x/self.sigma_def[0]*1.5])
 
 
                 if self.fluid:
@@ -5969,14 +5983,11 @@ class sim:
                     for tl in ax4.get_yticklabels():
                         tl.set_color(ax4color)
 
-                # axis limits
-                ax3.set_ylim([self.w_tau_x/self.sigma_def[0]*0.5,
-                    self.w_tau_x/self.sigma_def[0]*1.5])
 
                 # aesthetics
                 ax3.set_xlabel('Time [s]')
-                ax1.grid()
-                ax3.grid()
+                #ax1.grid()
+                #ax3.grid()
 
                 plt.setp(ax1.get_xticklabels(), visible=False)
                 fig.tight_layout()
