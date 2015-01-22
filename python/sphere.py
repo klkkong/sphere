@@ -3548,7 +3548,8 @@ class sim:
         :return type: float
         '''
         return self.w_sigma0[0] \
-                + self.w_sigma0_A*numpy.sin(2.0*numpy.pi*self.time_current)
+                + self.w_sigma0_A[0] \
+                *numpy.sin(2.0*numpy.pi*self.time_current[0])
 
     def volume(self, idx):
         '''
