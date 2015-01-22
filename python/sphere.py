@@ -5959,7 +5959,7 @@ class sim:
                     ax3.plot(time, self.tau_eff/1000.0,
                             ':k', label="$\\tau'$")
                     ax3.set_ylabel('Stress [kPa]')
-                    ax3.legend()
+                    ax3.legend(loc='upper left')
                 else:
                     ax3.plot(time, self.tau_eff/self.w_sigma0[0],
                             '-k', label="$Shear friction$")
@@ -5978,12 +5978,13 @@ class sim:
                     #ax4color = '#666666'
                     ax4color = ax2color
                     ax4.plot(time, self.p_f_bar/1000.0, color=ax4color,
-                            label='Pressure')
+                            label='$\\bar{p}_\\text{f}$')
                     ax4.set_ylabel('Mean fluid pressure '
                             + '$\\bar{p_\\text{f}}$ [kPa]')
                     for tl in ax4.get_yticklabels():
                         tl.set_color(ax4color)
-
+                    if self.w_sigma0_A > 1.0e-3:
+                        ax4.legend(loc='upper right')
 
                 # aesthetics
                 ax3.set_xlabel('Time [s]')
@@ -6084,6 +6085,7 @@ class sim:
                 fig.savefig(filename)
                 print(filename)
                 fig.clf()
+                plt.close()
             else:
                 plt.show()
 
