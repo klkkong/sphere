@@ -5952,14 +5952,15 @@ class sim:
                 # Lower plot
                 ax3 = plt.subplot(2, 1, 2, sharex=ax1)
                 if self.w_sigma0_A > 1.0e-3:
-                    ax3.plot(time, self.sigma_eff/1000.0,
+                    lns1 = ax3.plot(time, self.sigma_eff/1000.0,
                             '-k', label="$\\sigma'$")
-                    ax3.plot(time, numpy.ones_like(time)*self.w_tau_x/1000.0,
+                    lns2 = ax3.plot(time,
+                            numpy.ones_like(time)*self.w_tau_x/1000.0,
                             '--k', label="$\\tau$")
-                    ax3.plot(time, self.tau_eff/1000.0,
+                    lns3 = ax3.plot(time, self.tau_eff/1000.0,
                             ':k', label="$\\tau'$")
                     ax3.set_ylabel('Stress [kPa]')
-                    ax3.legend(loc='upper left')
+                    #ax3.legend(loc='upper left')
                 else:
                     ax3.plot(time, self.tau_eff/self.w_sigma0[0],
                             '-k', label="$Shear friction$")
@@ -5977,14 +5978,17 @@ class sim:
                     ax4 = ax3.twinx()
                     #ax4color = '#666666'
                     ax4color = ax2color
-                    ax4.plot(time, self.p_f_bar/1000.0, color=ax4color,
+                    lns4 = ax4.plot(time, self.p_f_bar/1000.0, color=ax4color,
                             label='$\\bar{p}_\\text{f}$')
                     ax4.set_ylabel('Mean fluid pressure '
                             + '$\\bar{p_\\text{f}}$ [kPa]')
                     for tl in ax4.get_yticklabels():
                         tl.set_color(ax4color)
                     if self.w_sigma0_A > 1.0e-3:
-                        ax4.legend(loc='upper right')
+                        #ax4.legend(loc='upper right')
+                        lns = lns1+lns2+lns3+lns4
+                        labs = [l.get_label() for l in lns]
+                        ax4.legend(lns, labs, loc='upper right')
 
                 # aesthetics
                 ax3.set_xlabel('Time [s]')
