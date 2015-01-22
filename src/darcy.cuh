@@ -976,7 +976,6 @@ __global__ void firstDarcySolution(
         // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
         // grid if the wall isn't dynamic
         if ((bc_bot == 0 && z == 0) || (bc_top == 0 && z == nz-1)
-                //|| (z >= wall0_iz - 1 && bc_top == 0))
                 || (z >= wall0_iz && bc_top == 0))
             dp_expl = 0.0;
 
@@ -1129,7 +1128,6 @@ __global__ void updateDarcySolution(
         // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
         // grid if the wall isn't dynamic
         if ((bc_bot == 0 && z == 0) || (bc_top == 0 && z == nz-1)
-                //|| (z >= wall0_iz - 1 && bc_top == 0))
                 || (z >= wall0_iz && bc_top == 0))
             dp_impl = 0.0;
             //p_new = p;
