@@ -5879,12 +5879,7 @@ class sim:
                     w_x0 = sb.w_x[0]      # Original height
                     A = sb.L[0]*sb.L[1]   # Upper surface area
 
-                    d_bar = numpy.mean(self.radius)*2.0
-                    if numpy.isnan(d_bar):
-                        print('No radii in self.radius, attempting to read '
-                                + 'first file')
-                        self.readfirst()
-                        d_bar = numpy.mean(self.radius)*2.0
+                    d_bar = numpy.mean(sb.radius)*2.0
 
                 time[i] = sb.time_current[0]
 
@@ -5951,7 +5946,7 @@ class sim:
 
                 # Lower plot
                 ax3 = plt.subplot(2, 1, 2, sharex=ax1)
-                if self.w_sigma0_A > 1.0e-3:
+                if sb.w_sigma0_A > 1.0e-3:
                     lns1 = ax3.plot(time, self.sigma_eff/1000.0,
                             '-k', label="$\\sigma'$")
                     lns2 = ax3.plot(time,
