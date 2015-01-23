@@ -158,6 +158,7 @@ struct Darcy {
     Float*  phi;            // Cell porosity
     Float*  dphi;           // Cell porosity change
     Float*  norm;           // Normalized residual of epsilon updates
+    Float   p_top_orig;     // Pressure at top boundary at t=0
     Float   p_mod_A;        // Pressure modulation amplitude at top
     Float   p_mod_f;        // Pressure modulation frequency at top
     Float   p_mod_phi;      // Pressure modulation phase at top

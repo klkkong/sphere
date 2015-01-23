@@ -910,8 +910,15 @@ __host__ void DEM::startTime()
     Float dp_dz;
     if (cfd_solver == 0)
         dp_dz = fabs(ns.rho_f*params.g[2]*grid.L[2]/grid.num[2]);
-    else if (cfd_solver == 1)
+    else if (cfd_solver == 1) {
         dp_dz = fabs(darcy.rho_f*params.g[2]*grid.L[2]/grid.num[2]);
+
+        // determine pressure at top wall at t=0
+        darcy.p_top_orig = darcy.p[d_idx(0,0,darcy.nz-1)]
+                            - darcy.p_mod_A
+                            *sin(2.0*M_PI*darcy.p_mod_f*time.current
+                                    + darcy.p_mod_phi);
+    }
     //std::cout << "dp_dz = " << dp_dz << std::endl;
 
     // Write a log file of the number of iterations it took before
@@ -1784,66 +1791,9 @@ __host__ void DEM::startTime()
                         << std::endl;
 #endif
 
-                if ((iter % darcy.ndem) == 0) {
-                    //if (PROFILING == 1)
-                        //startTimer(&kernel_tic);
-                    /*findDarcyParticleVelocities
-                        <<<dimGridFluidFace, dimBlockFluidFace>>>(
-                                dev_cellStart,
-                                dev_cellEnd,
-                                dev_x_sorted,
-                                dev_vel_sorted,
-                                np,
-                                dev_darcy_v_p_x,
-                                dev_darcy_v_p_y,
-                                dev_darcy_v_p_z);
-                    cudaThreadSynchronize();
-                    checkForCudaErrorsIter("Post findDarcyVelocities", iter);*/
-
-                    if (PROFILING == 1)
-                        startTimer(&kernel_tic);
-                    findDarcyPorosities<<<dimGridFluid, dimBlockFluid>>>(
-                            dev_cellStart,
-                            dev_cellEnd,
-                            dev_x_sorted,
-                            dev_vel_sorted,
-                            iter,
-                            darcy.ndem,
-                            np,
-                            darcy.c_phi,
-                            dev_darcy_phi,
-                            dev_darcy_dphi);//,
-                            //dev_darcy_div_v_p);
-                    cudaThreadSynchronize();
-                    if (PROFILING == 1)
-                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                                &t_findDarcyPorosities);
-                    checkForCudaErrorsIter("Post findDarcyPorosities", iter);
-                }
-
                 if (walls.nw > 0 &&
                         (walls.wmode[0] == 1 || walls.wmode[0] == 3)) {
                     wall0_iz = walls.nx->w/(grid.L[2]/grid.num[2]);
-
-                    // Modulate the pressures at the upper boundary cells
-                    if ((darcy.p_mod_A > 1.0e-5 || darcy.p_mod_A < -1.0e-5) &&
-                            darcy.p_mod_f > 1.0e-7) {
-                        // original pressure
-                        Float new_pressure =
-                            darcy.p[d_idx(0,0,darcy.nz-1)] //orig p
-                            + darcy.p_mod_A
-                            *sin(2.0*M_PI*darcy.p_mod_f*time.current
-                                    + darcy.p_mod_phi);
-
-                        setDarcyTopWallPressure
-                            <<<dimGridFluid, dimBlockFluid>>>(
-                                    new_pressure,
-                                    wall0_iz,
-                                    dev_darcy_p);
-                        cudaThreadSynchronize();
-                        checkForCudaErrorsIter("Post setDarcyTopWallPressure",
-                                iter);
-                    }
                 }
 
                 if (np > 0) {
@@ -1864,7 +1814,6 @@ __host__ void DEM::startTime()
                     findDarcyPressureForce<<<dimGrid, dimBlock>>>(
                             dev_x,
                             dev_darcy_p,
-                            //dev_darcy_phi,
                             wall0_iz,
                             darcy.rho_f,
                             dev_force,
@@ -1879,13 +1828,31 @@ __host__ void DEM::startTime()
 
                 if ((iter % darcy.ndem) == 0) {
 
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
+                    findDarcyPorosities<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_cellStart,
+                            dev_cellEnd,
+                            dev_x_sorted,
+                            dev_vel_sorted,
+                            iter,
+                            darcy.ndem,
+                            np,
+                            darcy.c_phi,
+                            dev_darcy_phi,
+                            dev_darcy_dphi);//,
+                    cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_findDarcyPorosities);
+                    checkForCudaErrorsIter("Post findDarcyPorosities", iter);
+
                     // Modulate the pressures at the upper boundary cells
                     if ((darcy.p_mod_A > 1.0e-5 || darcy.p_mod_A < -1.0e-5) &&
                             darcy.p_mod_f > 1.0e-7) {
                         // original pressure
                         Float new_pressure =
-                            darcy.p[d_idx(0,0,darcy.nz-1)] //orig p
-                            + darcy.p_mod_A
+                            darcy.p_top_orig + darcy.p_mod_A
                             *sin(2.0*M_PI*darcy.p_mod_f*time.current
                                     + darcy.p_mod_phi);
                         if (PROFILING == 1)
@@ -1898,6 +1865,16 @@ __host__ void DEM::startTime()
                             stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                                     &t_setDarcyTopPressure);
                         cudaThreadSynchronize();
+
+                        // Modulate the pressures at the top wall
+                        setDarcyTopWallPressure
+                            <<<dimGridFluid, dimBlockFluid>>>(
+                                    new_pressure,
+                                    wall0_iz,
+                                    dev_darcy_p);
+                        cudaThreadSynchronize();
+                        checkForCudaErrorsIter("Post setDarcyTopWallPressure",
+                                iter);
                         checkForCudaErrorsIter("Post setUpperPressureNS", iter);
                     }
 
