@@ -6069,7 +6069,7 @@ class sim:
                     ax.set_ylim([zpos_c[0], sb.w_x[0]])
                 else:
                     ax.set_ylim([zpos_c[0], zpos_c[-1]])
-                if numpy.abs(self.p_mod_A) > 1.0e-3:
+                if self.wmode[0] == 3:
                     ax.set_xlabel('Time $t$ [s]')
                 else:
                     ax.set_xlabel('Shear strain $\\gamma$ [-]')
