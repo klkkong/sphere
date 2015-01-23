@@ -1861,10 +1861,8 @@ __host__ void DEM::startTime()
                                 new_pressure,
                                 dev_darcy_p,
                                 wall0_iz);
-                        if (PROFILING == 1)
-                            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                                    &t_setDarcyTopPressure);
                         cudaThreadSynchronize();
+                        checkForCudaErrorsIter("Post setUpperPressureNS", iter);
 
                         // Modulate the pressures at the top wall
                         setDarcyTopWallPressure
@@ -1875,7 +1873,10 @@ __host__ void DEM::startTime()
                         cudaThreadSynchronize();
                         checkForCudaErrorsIter("Post setDarcyTopWallPressure",
                                 iter);
-                        checkForCudaErrorsIter("Post setUpperPressureNS", iter);
+
+                        if (PROFILING == 1)
+                            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                    &t_setDarcyTopPressure);
                     }
 
                     if (PROFILING == 1)
