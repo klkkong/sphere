@@ -5979,7 +5979,7 @@ class sim:
                             + '$\\bar{p_\\text{f}}$ [kPa]')
                     for tl in ax4.get_yticklabels():
                         tl.set_color(ax4color)
-                    if self.w_sigma0_A > 1.0e-3:
+                    if sb.w_sigma0_A > 1.0e-3:
                         #ax4.legend(loc='upper right')
                         lns = lns1+lns2+lns3+lns4
                         labs = [l.get_label() for l in lns]
