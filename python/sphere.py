@@ -6058,8 +6058,7 @@ class sim:
                         #cmap=matplotlib.cm.get_cmap('coolwarm'),
                         vmin=-p_ext, vmax=p_ext,
                         rasterized=True)
-                ax.set_xlim([0, numpy.max(shear_strain)])
-                #ax.set_xlim([0, numpy.max(t)])
+                ax.set_xlim([0, numpy.max(x)])
                 if sb.w_x[0] < sb.L[2]:
                     ax.set_ylim([zpos_c[0], sb.w_x[0]])
                 else:
