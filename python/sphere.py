@@ -6042,7 +6042,7 @@ class sim:
                 sb.readstep(i, verbose = False)
                 pres[:,i] = numpy.average(numpy.average(sb.p_f, axis=0), axis=0)
                 shear_strain[i] = sb.shearStrain()
-            #t = numpy.linspace(0.0, sb.time_current, lastfile+1)
+            t = numpy.linspace(0.0, sb.time_current, lastfile+1)
 
             # Plotting
             if (outformat != 'txt'):
@@ -6053,9 +6053,12 @@ class sim:
                 # use largest difference in p from 0 as +/- limit on colormap
                 p_ext = numpy.max(numpy.abs(pres))
 
+                if self.wmode[0] == 3:
+                    x = t
+                else:
+                    x = shear_strain
                 im1 = ax.pcolormesh(
-                        #t, zpos_c, pres,
-                        shear_strain, zpos_c, pres,
+                        x, zpos_c, pres,
                         cmap=matplotlib.cm.get_cmap('bwr'),
                         #cmap=matplotlib.cm.get_cmap('coolwarm'),
                         vmin=-p_ext, vmax=p_ext,
@@ -6066,7 +6069,10 @@ class sim:
                     ax.set_ylim([zpos_c[0], sb.w_x[0]])
                 else:
                     ax.set_ylim([zpos_c[0], zpos_c[-1]])
-                ax.set_xlabel('Shear strain $\\gamma$ [-]')
+                if numpy.abs(self.p_mod_A) > 1.0e-3:
+                    ax.set_xlabel('Time $t$ [s]')
+                else:
+                    ax.set_xlabel('Shear strain $\\gamma$ [-]')
                 #ax.set_xlabel('Time $t$ [s]')
                 ax.set_ylabel('Vertical position $z$ [m]')
 
