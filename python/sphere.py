@@ -5966,8 +5966,8 @@ class sim:
                             '--k', label="$Applied shear friction$")
                     ax3.set_ylabel('Shear friction $\\tau\'/\\sigma_0$ [-]')
                     # axis limits
-                    ax3.set_ylim([self.w_tau_x/sb.sigma_def[0]*0.5,
-                        self.w_tau_x/sb.sigma_def[0]*1.5])
+                    ax3.set_ylim([sb.w_tau_x/self.sigma_def[0]*0.5,
+                        sb.w_tau_x/self.sigma_def[0]*1.5])
 
 
                 if self.fluid:
