@@ -9,6 +9,7 @@ matplotlib.rc('text', usetex=True)
 matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 from matplotlib.font_manager import FontProperties
 import subprocess
+import pickle as pl
 try:
     import vtk
 except ImportError:
@@ -5460,7 +5461,8 @@ class sim:
         return force/(sim.L[0]*sim.L[1])
 
 
-    def visualize(self, method = 'energy', savefig = True, outformat = 'png'):
+    def visualize(self, method = 'energy', savefig = True, outformat = 'png',
+            pickle=False):
         '''
         Visualize output from the simulation, where the temporal progress is
         of interest. The output will be saved in the current folder with a name
@@ -5475,6 +5477,9 @@ class sim:
         :type savefig: bool
         :param outformat: The output format of the plot data. This can be an
             image format, or in text ('txt').
+        :param pickle: Save all figure content as a Python pickle file. It can
+            be opened later using `fig = pickle.load(open('file.pickle','rb'))`.
+        :type pickle: bool
         '''
 
         lastfile = self.status()
@@ -6079,14 +6084,18 @@ class sim:
                 plt.tight_layout()
                 plt.subplots_adjust(wspace = .05)
 
-        else :
+        else:
             print("Visualization type '" + method + "' not understood")
             return
+
+        # Optional save of figure content
+        filename = '{0}-{1}.{2}'.format(self.sid, method, outformat)
+        if pickle:
+            pl.dump(fig, file(filename + '.pickle', 'w'))
 
         # Optional save of figure
         if (outformat != 'txt'):
             if savefig:
-                filename = "{0}-{1}.{2}".format(self.sid, method, outformat)
                 fig.savefig(filename)
                 print(filename)
                 fig.clf()
