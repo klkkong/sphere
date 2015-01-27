@@ -59,7 +59,9 @@ if fluid:
     sim.setMaxIterations(2e5)
     sim.setPermeabilityPrefactor(k_c)
     sim.setFluidCompressibility(1.0/K_w_sim)
-    sim.setFluidPressureModulation(A=mod_A, f=mod_f)
+    # the fluid modulation should be 180 degree out of phase with the wall
+    # modulation
+    sim.setFluidPressureModulation(A=mod_A, f=mod_f, phi=numpy.pi)
 
 sim.w_sigma0[0] = sigma0
 sim.w_m[0] = numpy.abs(sigma0*sim.L[0]*sim.L[1]/sim.g[2])
