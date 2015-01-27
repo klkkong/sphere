@@ -5260,7 +5260,7 @@ class sim:
         :type A: float
         :param f: Fluctuation frequency [Hz]
         :type f: float
-        :param phi: Fluctuation phase shift (default=0.0) [t]
+        :param phi: Fluctuation phase shift (default=0.0) [rad]
         :type phi: float
         :param plot: Show a plot of the resulting modulation
         :type plot: bool
