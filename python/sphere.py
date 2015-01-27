@@ -6048,7 +6048,7 @@ class sim:
                 # use largest difference in p from 0 as +/- limit on colormap
                 p_ext = numpy.max(numpy.abs(pres))
 
-                if self.wmode[0] == 3:
+                if sb.wmode[0] == 3:
                     x = t
                 else:
                     x = shear_strain
@@ -6063,7 +6063,7 @@ class sim:
                     ax.set_ylim([zpos_c[0], sb.w_x[0]])
                 else:
                     ax.set_ylim([zpos_c[0], zpos_c[-1]])
-                if self.wmode[0] == 3:
+                if sb.wmode[0] == 3:
                     ax.set_xlabel('Time $t$ [s]')
                 else:
                     ax.set_xlabel('Shear strain $\\gamma$ [-]')
