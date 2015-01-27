@@ -5958,7 +5958,7 @@ class sim:
                     ax3.set_ylabel('Stress [kPa]')
                     #ax3.legend(loc='upper left')
                 else:
-                    ax3.plot(time, self.tau_eff/self.w_sigma0[0],
+                    ax3.plot(time, self.tau_eff/sb.w_sigma0[0],
                             '-k', label="$Shear friction$")
                     ax3.plot([0, time[-1]],
                         [self.w_tau_x/self.sigma_def,
@@ -5966,8 +5966,8 @@ class sim:
                             '--k', label="$Applied shear friction$")
                     ax3.set_ylabel('Shear friction $\\tau\'/\\sigma_0$ [-]')
                     # axis limits
-                    ax3.set_ylim([self.w_tau_x/self.sigma_def[0]*0.5,
-                        self.w_tau_x/self.sigma_def[0]*1.5])
+                    ax3.set_ylim([self.w_tau_x/sb.sigma_def[0]*0.5,
+                        self.w_tau_x/sb.sigma_def[0]*1.5])
 
 
                 if self.fluid:
