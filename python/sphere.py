@@ -1736,7 +1736,7 @@ class sim:
             fh.write('        </DataArray>\n')
 
             # Color
-            fh.write('        <DataArray type="Int32" Name="Color" '
+            fh.write('        <DataArray type="Int32" Name="Type color" '
                     + 'format="ascii">\n')
             fh.write('          ')
             for i in range(self.np):
@@ -5956,7 +5956,7 @@ class sim:
                     lns1 = ax3.plot(time, self.sigma_eff/1000.0,
                             '-k', label="$\\sigma'$")
                     lns2 = ax3.plot(time,
-                            numpy.ones_like(time)*self.w_tau_x/1000.0,
+                            numpy.ones_like(time)*sb.w_tau_x/1000.0,
                             '--k', label="$\\tau$")
                     lns3 = ax3.plot(time, self.tau_eff/1000.0,
                             ':k', label="$\\tau'$")
@@ -5966,8 +5966,8 @@ class sim:
                     ax3.plot(time, self.tau_eff/sb.w_sigma0[0],
                             '-k', label="$Shear friction$")
                     ax3.plot([0, time[-1]],
-                        [self.w_tau_x/self.sigma_def,
-                            self.w_tau_x/self.sigma_def],
+                        [sb.w_tau_x/self.sigma_def,
+                            sb.w_tau_x/self.sigma_def],
                             '--k', label="$Applied shear friction$")
                     ax3.set_ylabel('Shear friction $\\tau\'/\\sigma_0$ [-]')
                     # axis limits
