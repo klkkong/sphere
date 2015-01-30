@@ -5471,7 +5471,7 @@ class sim:
 
         :param method: The type of plot to render. Possible values are 'energy',
             'walls', 'triaxial', 'mean-fluid-pressure', 'fluid-pressure', 
-            'shear', and 'shear-displacement'
+            'shear', 'shear-displacement', 'porosity'
         :type method: str
         :param savefig: Save the image instead of showing it on screen
         :type savefig: bool
@@ -6080,6 +6080,64 @@ class sim:
 
                 cb = plt.colorbar(im1)
                 cb.set_label('$p_\\text{f}$ [kPa]')
+                cb.solids.set_rasterized(True)
+                plt.tight_layout()
+                plt.subplots_adjust(wspace = .05)
+
+        elif method == 'porosity':
+
+            sb.readfirst(verbose=False)
+            if sb.fluid == False:
+                raise Exception('Porosities can only be visualized in wet ' +
+                        'simulations')
+
+            # cell midpoint cell positions
+            zpos_c = numpy.zeros(sb.num[2])
+            dz = sb.L[2]/sb.num[2]
+            for i in numpy.arange(sb.num[2]):
+                zpos_c[i] = i*dz + 0.5*dz
+
+            shear_strain = numpy.zeros(sb.status())
+            poros = numpy.zeros((sb.num[2], sb.status()))
+
+            # Read pressure values from simulation binaries
+            for i in numpy.arange(sb.status()):
+                sb.readstep(i, verbose = False)
+                poros[:,i] = numpy.average(numpy.average(sb.phi, axis=0),axis=0)
+                shear_strain[i] = sb.shearStrain()
+            t = numpy.linspace(0.0, sb.time_current, lastfile+1)
+
+            # Plotting
+            if (outformat != 'txt'):
+
+                ax = plt.subplot(1,1,1)
+
+                if sb.wmode[0] == 3:
+                    x = t
+                else:
+                    x = shear_strain
+                im1 = ax.pcolormesh(
+                        x, zpos_c, poros,
+                        #cmap=matplotlib.cm.get_cmap('bwr'),
+                        #cmap=matplotlib.cm.get_cmap('coolwarm'),
+                        #vmin=-p_ext, vmax=p_ext,
+                        rasterized=True)
+                ax.set_xlim([0, numpy.max(x)])
+                if sb.w_x[0] < sb.L[2]:
+                    ax.set_ylim([zpos_c[0], sb.w_x[0]])
+                else:
+                    ax.set_ylim([zpos_c[0], zpos_c[-1]])
+                if sb.wmode[0] == 3:
+                    ax.set_xlabel('Time $t$ [s]')
+                else:
+                    ax.set_xlabel('Shear strain $\\gamma$ [-]')
+                #ax.set_xlabel('Time $t$ [s]')
+                ax.set_ylabel('Vertical position $z$ [m]')
+
+                #ax.set_title(sb.id())
+
+                cb = plt.colorbar(im1)
+                cb.set_label('$\\bar{\phi}$ [-]')
                 cb.solids.set_rasterized(True)
                 plt.tight_layout()
                 plt.subplots_adjust(wspace = .05)
