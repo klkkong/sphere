@@ -6091,6 +6091,8 @@ class sim:
                 raise Exception('Porosities can only be visualized in wet ' +
                         'simulations')
 
+            wall0_iz = int(sb.w_x[0]/(sb.L[2]/sb.num[2]))
+
             # cell midpoint cell positions
             zpos_c = numpy.zeros(sb.num[2])
             dz = sb.L[2]/sb.num[2]
@@ -6112,15 +6114,20 @@ class sim:
 
                 ax = plt.subplot(1,1,1)
 
+                poros_max = numpy.max(poros[0:wall0_iz-1,1:])
+                poros_min = numpy.min(poros)
+
                 if sb.wmode[0] == 3:
                     x = t
                 else:
                     x = shear_strain
                 im1 = ax.pcolormesh(
                         x, zpos_c, poros,
+                        cmap=matplotlib.cm.get_cmap('Blues_r'),
                         #cmap=matplotlib.cm.get_cmap('bwr'),
                         #cmap=matplotlib.cm.get_cmap('coolwarm'),
                         #vmin=-p_ext, vmax=p_ext,
+                        vmin=poros_min, vmax=poros_max,
                         rasterized=True)
                 ax.set_xlim([0, numpy.max(x)])
                 if sb.w_x[0] < sb.L[2]:
