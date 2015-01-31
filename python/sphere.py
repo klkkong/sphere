@@ -5874,6 +5874,7 @@ class sim:
 
                     # Mean fluid pressure
                     self.p_f_bar = numpy.zeros(lastfile+1, dtype=numpy.float64)
+                    self.p_f_top = numpy.zeros(lastfile+1, dtype=numpy.float64)
 
                     # Upper wall position
                     self.tau_p = 0.0             # Peak shear stress
@@ -5914,6 +5915,7 @@ class sim:
                     if i == 1:
                         self.phi_bar[0] = self.phi_bar[1]
                     self.p_f_bar[i] = numpy.mean(sb.p_f[:,:,0:wall0_iz])
+                    self.p_f_top[i] = sb.p_f[0,0,-1]
 
                 # Test if this was the max. shear stress
                 if (self.tau_eff[i] > self.tau_p):
@@ -5979,7 +5981,11 @@ class sim:
                     ax4 = ax3.twinx()
                     #ax4color = '#666666'
                     ax4color = ax2color
-                    lns4 = ax4.plot(time, self.p_f_bar/1000.0, color=ax4color,
+                    lns4 = ax4.plot(time, self.p_f_top/1000.0, '-',
+                            color=ax4color,
+                            label='$p_\\text{f}^\\text{forcing}$')
+                    lns5 = ax4.plot(time, self.p_f_bar/1000.0, '--',
+                            color=ax4color,
                             label='$\\bar{p}_\\text{f}$')
                     ax4.set_ylabel('Mean fluid pressure '
                             + '$\\bar{p_\\text{f}}$ [kPa]')
@@ -5987,7 +5993,7 @@ class sim:
                         tl.set_color(ax4color)
                     if sb.w_sigma0_A > 1.0e-3:
                         #ax4.legend(loc='upper right')
-                        lns = lns1+lns2+lns3+lns4
+                        lns = lns1+lns2+lns3+lns4+lns5
                         labs = [l.get_label() for l in lns]
                         ax4.legend(lns, labs, loc='upper right')
 
