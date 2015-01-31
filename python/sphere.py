@@ -23,7 +23,10 @@ numpy.seterr(all='warn', over='raise')
 
 # Sphere version number. This field should correspond to the value in
 # `../src/constants.h`.
-VERSION=2.1
+VERSION = 2.1
+
+# Transparency on plot legends
+legend_alpha = 0.5
 
 class sim:
     '''
@@ -5997,7 +6000,8 @@ class sim:
                         #ax4.legend(loc='upper right')
                         lns = lns0+lns1+lns2+lns3+lns4+lns5
                         labs = [l.get_label() for l in lns]
-                        ax4.legend(lns, labs, loc='upper right')
+                        ax4.legend(lns, labs, loc='upper right',
+                                fancybox=True, framealpha=legend_alpha)
 
                 # aesthetics
                 ax3.set_xlabel('Time [s]')
