@@ -5961,9 +5961,9 @@ class sim:
                             '--k', label="$\\sigma'$")
                     lns2 = ax3.plot(time,
                             numpy.ones_like(time)*sb.w_tau_x/1000.0,
-                            '--k', label="$\\tau$")
+                            '-r', label="$\\tau$")
                     lns3 = ax3.plot(time, self.tau_eff/1000.0,
-                            ':k', label="$\\tau'$")
+                            '--r', label="$\\tau'$")
                     ax3.set_ylabel('Stress [kPa]')
                     #ax3.legend(loc='upper left')
                 else:
