@@ -3550,7 +3550,7 @@ class sim:
         '''
         return self.w_sigma0[0] \
                 + self.w_sigma0_A[0] \
-                *numpy.sin(2.0*numpy.pi*self.time_current[0])
+                *numpy.sin(2.0*numpy.pi*self.w_sigma0_f[0]*self.time_current[0])
 
     def volume(self, idx):
         '''
@@ -5955,8 +5955,10 @@ class sim:
                 # Lower plot
                 ax3 = plt.subplot(2, 1, 2, sharex=ax1)
                 if sb.w_sigma0_A > 1.0e-3:
+                    lns0 = ax3.plot(time, self.sigma_def/1000.0,
+                            '-k', label="$\\sigma_0$")
                     lns1 = ax3.plot(time, self.sigma_eff/1000.0,
-                            '-k', label="$\\sigma'$")
+                            '--k', label="$\\sigma'$")
                     lns2 = ax3.plot(time,
                             numpy.ones_like(time)*sb.w_tau_x/1000.0,
                             '--k', label="$\\tau$")
@@ -5993,7 +5995,7 @@ class sim:
                         tl.set_color(ax4color)
                     if sb.w_sigma0_A > 1.0e-3:
                         #ax4.legend(loc='upper right')
-                        lns = lns1+lns2+lns3+lns4+lns5
+                        lns = lns0+lns1+lns2+lns3+lns4+lns5
                         labs = [l.get_label() for l in lns]
                         ax4.legend(lns, labs, loc='upper right')
 
