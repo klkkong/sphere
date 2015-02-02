@@ -2879,7 +2879,8 @@ class sim:
         for the Darcy solver (`self.cfd_solver == 1`)
         '''
         if self.cfd_solver[0] == 1:
-            self.K_c = self.k_c*self.rho_f*g/self.mu
+            self.K_c = self.k_c*self.rho_f*numpy.abs(self.g[2])/self.mu
+            return self.K_c
         else:
             raise Exception('This function only works for the Darcy solver')
 
@@ -2907,7 +2908,7 @@ class sim:
         if self.cfd_solver[0] == 1:
                 self.hydraulicConductivity()
                 phi_bar = numpy.mean(self.phi)
-                alpha = self.K_c/(self.rho_f*g*(self.k_n[0] + phi_bar*K))
+                self.D = self.K_c/(self.rho_f*g*(self.k_n[0] + phi_bar*K))
         else:
             raise Exception('This function only works for the Darcy solver')
 
@@ -4216,7 +4217,7 @@ class sim:
 
         See also: :func:`shearStrain()` and :func:`shearVel()`
         '''
-        return self.shearStrain()/self.time_current[0]
+        return self.shearStrain()/self.time_current[1]
 
     def inertiaParameterPlanarShear(self):
         '''
