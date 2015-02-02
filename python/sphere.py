@@ -2886,7 +2886,7 @@ class sim:
         if self.cfd_solver[0] == 1:
             k = self.k_c * phi**3/(1.0 - phi**2)
             self.K_c = k*self.rho_f*numpy.abs(self.g[2])/self.mu
-            return self.K_c
+            return self.K_c[0]
         else:
             raise Exception('This function only works for the Darcy solver')
 
