@@ -2872,15 +2872,20 @@ class sim:
         '''
         self.dx = self.L/self.num
 
-    def hydraulicConductivity(self):
+    def hydraulicConductivity(self, phi=0.35):
         '''
         Determine the hydraulic conductivity (K) [m/s] from the permeability
-        prefactor. This value is stored in `self.K_c`. This function only works
-        for the Darcy solver (`self.cfd_solver == 1`)
+        prefactor and a chosen porosity.  This value is stored in `self.K_c`.
+        This function only works for the Darcy solver (`self.cfd_solver == 1`)
+
+        :param phi: The porosity to use in the Kozeny-Carman relationship
+        :type phi: float
+        :returns: The hydraulic conductivity [m/s]
+        :return type: float
         '''
         if self.cfd_solver[0] == 1:
-            self.K_c = self.k_c*self.rho_f*numpy.abs(self.g[2])/self.mu
-            return self.K_c
+            k = self.k_c * phi**3/(1.0 - phi**2)
+            self.K_c = k*self.rho_f*numpy.abs(self.g[2])/self.mu
         else:
             raise Exception('This function only works for the Darcy solver')
 
