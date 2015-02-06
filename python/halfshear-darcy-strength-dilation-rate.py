@@ -132,10 +132,10 @@ for c, mu_f in enumerate(mu_f_vals):
 
     if numpy.isclose(mu_f, 1.797e-6):
         label = 'ref. shear velocity'
-    elif numpy.isclose(mu_f, 1.204-6):
-        label = 'ref. shear velocity$\\times 0.67$'
+    elif numpy.isclose(mu_f, 1.204e-6):
+        label = 'ref. shear velocity$\\times$0.67'
     elif numpy.isclose(mu_f, 1.797e-8):
-        label = 'ref. shear velocity$\\times 0.01$'
+        label = 'ref. shear velocity$\\times$0.01'
     else:
         label = '$\\mu_\\text{{f}}$ = {:.3e} Pa s'.format(mu_f)
 
@@ -199,11 +199,11 @@ if zflow or pressures:
 legend_alpha=0.5
 ax1.legend(loc='upper right', prop={'size':18}, fancybox=True,
         framealpha=legend_alpha)
-ax2.legend(loc='lower right', prop={'size':18}, fancybox=True,
-        framealpha=legend_alpha)
-if zflow or pressures:
-    ax3.legend(loc='upper right', prop={'size':18}, fancybox=True,
-            framealpha=legend_alpha)
+#ax2.legend(loc='lower right', prop={'size':18}, fancybox=True,
+        #framealpha=legend_alpha)
+#if zflow or pressures:
+    #ax3.legend(loc='upper right', prop={'size':18}, fancybox=True,
+            #framealpha=legend_alpha)
 #ax4.legend(loc='best', prop={'size':18}, fancybox=True,
         #framealpha=legend_alpha)
 
