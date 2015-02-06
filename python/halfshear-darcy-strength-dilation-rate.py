@@ -128,8 +128,6 @@ color = ['b','g','r','c']
 #color = ['g','r','c']
 for c, mu_f in enumerate(mu_f_vals):
 
-    print('c = {}, mu_f = {}'.format(c, mu_f))
-
     if numpy.isclose(mu_f, 1.797e-6):
         label = 'ref. shear velocity'
     elif numpy.isclose(mu_f, 1.204e-6):
