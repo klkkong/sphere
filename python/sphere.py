@@ -5500,6 +5500,7 @@ class sim:
             fig = plt.figure(figsize=(8,8))
 
         if method == 'energy':
+            fig = plt.figure(figsuze=(20,8))
 
             # Allocate arrays
             Epot = numpy.zeros(lastfile+1)
