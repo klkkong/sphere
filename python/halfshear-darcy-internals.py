@@ -175,9 +175,11 @@ ax[0].set_ylim([0, max_z])
 ax[0].set_xlim([0, 0.5])
 
 if k_c == 3.5e-15:
-    ax[1].set_xlim([1e-14, 1e-12])
+    #ax[1].set_xlim([1e-14, 1e-12])
+    ax[1].set_xlim([1e-16, 1e-14])
 elif k_c == 3.5e-13:
-    ax[1].set_xlim([1e-12, 1e-10])
+    #ax[1].set_xlim([1e-12, 1e-10])
+    ax[1].set_xlim([1e-14, 1e-12])
 
 ax[0].set_ylabel('Vertical position $z$ [m]')
 ax[0].set_xlabel('$\\bar{\\boldsymbol{x}}^x_\\text{p}$ [m]')
