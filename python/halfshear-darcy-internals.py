@@ -145,7 +145,7 @@ for step_str in steps:
         ax[0].plot(xdisp_mean[s], zpos_c[s], label='$\gamma$ = %.2f' %
                 (shear_strain_start[s]))
 
-        ax[1].semilogx(k_bar[s]*100.0, zpos_c[s], label='$\gamma$ = %.2f' %
+        ax[1].semilogx(k_bar[s], zpos_c[s], label='$\gamma$ = %.2f' %
                 (shear_strain_start[s]))
 
         ax[2].plot(p[s]/1000.0, zpos_c[s], label='$\gamma$ = %.2f' %
