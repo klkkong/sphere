@@ -5472,7 +5472,7 @@ class sim:
 
 
     def visualize(self, method = 'energy', savefig = True, outformat = 'png',
-            pickle=False):
+            pickle=False, xlim=False):
         '''
         Visualize output from the simulation, where the temporal progress is
         of interest. The output will be saved in the current folder with a name
@@ -5490,6 +5490,9 @@ class sim:
         :param pickle: Save all figure content as a Python pickle file. It can
             be opened later using `fig = pickle.load(open('file.pickle','rb'))`.
         :type pickle: bool
+        :param xlim: Set custom limits to the x axis. If not specified, the x
+            range will correspond to the entire data interval.
+        :type xlim: array
         '''
 
         lastfile = self.status()
@@ -5605,6 +5608,18 @@ class sim:
                         '$\sum E_{rot}$'), 'upper right', shadow=True)
                 ax10.grid()
 
+                if xlim:
+                    ax1.set_xlim(xlim)
+                    ax2.set_xlim(xlim)
+                    ax3.set_xlim(xlim)
+                    ax4.set_xlim(xlim)
+                    ax5.set_xlim(xlim)
+                    ax6.set_xlim(xlim)
+                    ax7.set_xlim(xlim)
+                    ax8.set_xlim(xlim)
+                    ax9.set_xlim(xlim)
+                    ax10.set_xlim(xlim)
+
                 fig.tight_layout()
 
         elif method == 'walls':
@@ -5677,6 +5692,12 @@ class sim:
                 ax4.legend(loc=4)
                 ax4.grid()
 
+                if xlim:
+                    ax1.set_xlim(xlim)
+                    ax2.set_xlim(xlim)
+                    ax3.set_xlim(xlim)
+                    ax4.set_xlim(xlim)
+
         elif method == 'triaxial':
 
             # Read energy values from simulation binaries
@@ -5732,6 +5753,9 @@ class sim:
                 ax2.plot(axial_strain, volumetric_strain, '+-')
                 ax2.grid()
 
+                if xlim:
+                    ax1.set_xlim(xlim)
+                    ax2.set_xlim(xlim)
 
         elif method == 'shear':
 
@@ -5802,7 +5826,6 @@ class sim:
                     self.tau_p = self.tau[i]
                     self.tau_p_shearstrain = self.xdisp[i]/w_x0
 
-
             self.shear_strain = self.xdisp/w_x0
 
             # Plot stresses
@@ -5832,6 +5855,10 @@ class sim:
                 ax2.set_ylabel('Dilation, $\Delta h/(2\\bar{r})$ [m]')
                 ax2.plot(self.shear_strain, self.dilation, '.-')
                 ax2.grid()
+
+                if xlim:
+                    ax1.set_xlim(xlim)
+                    ax2.set_xlim(xlim)
 
                 fig.tight_layout()
 
@@ -6010,11 +6037,18 @@ class sim:
                         labs = [l.get_label() for l in lns]
                         ax4.legend(lns, labs, loc='upper right',
                                 fancybox=True, framealpha=legend_alpha)
+                    if xlim:
+                        ax4.set_xlim(xlim)
 
                 # aesthetics
                 ax3.set_xlabel('Time [s]')
                 #ax1.grid()
                 #ax3.grid()
+
+                if xlim:
+                    ax1.set_xlim(xlim)
+                    ax2.set_xlim(xlim)
+                    ax3.set_xlim(xlim)
 
                 plt.setp(ax1.get_xticklabels(), visible=False)
                 fig.tight_layout()
@@ -6037,6 +6071,9 @@ class sim:
             # Plotting
             if (outformat != 'txt'):
 
+                if xlim:
+                    ax1.set_xlim(xlim)
+
                 # linear plot of deviatoric stress
                 ax1 = plt.subplot2grid((1,1),(0,0))
                 ax1.set_xlabel('Time $t$, [s]')
@@ -6046,6 +6083,8 @@ class sim:
                 ax1.grid()
 
         elif method == 'fluid-pressure':
+
+            fig = plt.figure(figsize=(8,6))
 
             sb.readfirst(verbose=False)
 
@@ -6097,6 +6136,9 @@ class sim:
                 ax.set_ylabel('Vertical position $z$ [m]')
 
                 #ax.set_title(sb.id())
+
+                if xlim:
+                    ax.set_xlim(xlim)
 
                 cb = plt.colorbar(im1)
                 cb.set_label('$p_\\text{f}$ [kPa]')
@@ -6161,6 +6203,9 @@ class sim:
                 #ax.set_xlabel('Time $t$ [s]')
                 ax.set_ylabel('Vertical position $z$ [m]')
 
+                if xlim:
+                    ax.set_xlim(xlim)
+
                 #ax.set_title(sb.id())
 
                 cb = plt.colorbar(im1)
@@ -6174,7 +6219,11 @@ class sim:
             return
 
         # Optional save of figure content
-        filename = '{0}-{1}.{2}'.format(self.sid, method, outformat)
+        if xlim:
+            filename = '{0}-{1}-{3}.{2}'.format(self.sid, method, outformat,
+                    xlim[-1])
+        else:
+            filename = '{0}-{1}.{2}'.format(self.sid, method, outformat)
         if pickle:
             pl.dump(fig, file(filename + '.pickle', 'w'))
 
