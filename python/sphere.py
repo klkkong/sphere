@@ -5945,7 +5945,7 @@ class sim:
 
                 if (i > 0):
                     self.xdisp[i] = sb.xyzsum[fixvel,0].max()
-                    self.v[i] = sb.vel[fixvel,0].max()
+                    self.v[i]     = sb.vel[fixvel,0].max()
 
                 self.sigma_eff[i] = sb.w_force[0]/A
                 self.sigma_def[i] = sb.currentNormalStress()
@@ -6000,7 +6000,7 @@ class sim:
 
                 # Middle plot
                 ax5 = plt.subplot(3, 1, 2, sharex=ax1)
-                ax5.semilogy(time[1:], self.vel[1:], label='Shear velocity')
+                ax5.semilogy(time[1:], self.v[1:], label='Shear velocity')
                 ax5.set_ylabel('Shear velocity [ms$^{-1}$]')
 
                 # Lower plot
