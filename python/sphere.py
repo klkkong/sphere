@@ -5972,7 +5972,7 @@ class sim:
 
             # Plot stresses
             if (outformat != 'txt'):
-                fig = plt.figure(figsuze=(8,12))
+                fig = plt.figure(figsize=(8,12))
 
                 #shearinfo = "$\\tau_p$ = {:.3} Pa at $\gamma$ = {:.3}".format(\
                         #self.tau_p, self.tau_p_shearstrain)
