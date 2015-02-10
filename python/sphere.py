@@ -4,6 +4,7 @@ import numpy
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import matplotlib.collections
 matplotlib.rcParams.update({'font.size': 18, 'font.family': 'serif'})
 matplotlib.rc('text', usetex=True)
 matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
@@ -5503,7 +5504,7 @@ class sim:
             fig = plt.figure(figsize=(8,8))
 
         if method == 'energy':
-            fig = plt.figure(figsuze=(20,8))
+            fig = plt.figure(figsize=(20,8))
 
             # Allocate arrays
             Epot = numpy.zeros(lastfile+1)
@@ -6003,6 +6004,15 @@ class sim:
                 ax5 = plt.subplot(3, 1, 2, sharex=ax1)
                 ax5.semilogy(time[1:], self.v[1:], label='Shear velocity')
                 ax5.set_ylabel('Shear velocity [ms$^{-1}$]')
+                
+                # shade stick periods
+                collection = \
+                        matplotlib.collections.BrokenBarHCollection.span_where(
+                                time, ymin=1.0e-7, ymax=1.0,
+                                where=numpy.isclose(self.v, 0.0),
+                                facecolor='black', alpha=0.2,
+                                linewidth=0)
+                ax5.add_collection(collection)
 
                 # Lower plot
                 ax3 = plt.subplot(3, 1, 3, sharex=ax1)
