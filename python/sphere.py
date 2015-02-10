@@ -6057,8 +6057,10 @@ class sim:
 
                 # aesthetics
                 ax3.set_xlabel('Time [s]')
-                #ax1.grid()
-                #ax3.grid()
+
+                ax1.grid()
+                ax3.grid()
+                ax5.grid()
 
                 if xlim:
                     ax1.set_xlim(xlim)
