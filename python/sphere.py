@@ -5837,13 +5837,16 @@ class sim:
                 ax1 = plt.subplot2grid((2,1), (0,0))
                 ax1.set_xlabel('Shear strain [-]')
                 #ax1.set_ylabel('Stress [Pa]')
-                ax1.set_ylabel('Shear friction $\\tau/\\sigma\'$ [-]')
+                #ax1.set_ylabel('Shear friction $\\tau/\\sigma\'$ [-]')
+                ax1.set_ylabel('Shear friction $\\tau/\\sigma_0$ [-]')
                 #ax1.plot(xdisp / w_x0, sigma_eff, '+-g', label="$\sigma'$")
                 #ax1.plot(xdisp / w_x0, sigma_def, '+-b', label="$\sigma_0$")
                 #ax1.plot(xdisp / w_x0, tau, '+-r', label="$\\tau$")
                 ax1.plot(self.shear_strain[1:],\
-                        self.tau[1:]/self.sigma_eff[1:],\
-                        '.-', label="$\\tau$")
+                        self.tau[1:]/self.sigma_def[1:],\
+                        #self.tau[1:]/self.sigma_eff[1:],\
+                        '-', label="$\\tau/\\sigma_0$")
+                        #'.-', label="$\\tau$")
                 #ax1.legend(loc=4)
                 ax1.grid()
 
@@ -5853,7 +5856,8 @@ class sim:
                 #ax2.set_ylabel('Dilation [m]')
                 #ax2.set_ylabel('Dilation [%]')
                 ax2.set_ylabel('Dilation, $\Delta h/(2\\bar{r})$ [m]')
-                ax2.plot(self.shear_strain, self.dilation, '.-')
+                #ax2.plot(self.shear_strain, self.dilation, '.-')
+                ax2.plot(self.shear_strain, self.dilation, '-')
                 ax2.grid()
 
                 if xlim:
