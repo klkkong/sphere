@@ -5972,6 +5972,7 @@ class sim:
 
             # Plot stresses
             if (outformat != 'txt'):
+                fig = plt.figure(figsuze=(8,12))
 
                 #shearinfo = "$\\tau_p$ = {:.3} Pa at $\gamma$ = {:.3}".format(\
                         #self.tau_p, self.tau_p_shearstrain)
@@ -6066,6 +6067,7 @@ class sim:
                     ax5.set_xlim(xlim)
 
                 plt.setp(ax1.get_xticklabels(), visible=False)
+                plt.setp(ax5.get_xticklabels(), visible=False)
                 fig.tight_layout()
                 plt.subplots_adjust(hspace=0.05)
 
