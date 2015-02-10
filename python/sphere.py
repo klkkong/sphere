@@ -5930,6 +5930,9 @@ class sim:
 
                     d_bar = numpy.mean(sb.radius)*2.0
 
+                    # Shear velocity
+                    self.v = numpy.zeros(lastfile+1, dtype=numpy.float64)
+
                 time[i] = sb.time_current[0]
 
                 if (i == 1):
@@ -5942,6 +5945,7 @@ class sim:
 
                 if (i > 0):
                     self.xdisp[i] = sb.xyzsum[fixvel,0].max()
+                    self.v[i] = sb.vel[fixvel,0].max()
 
                 self.sigma_eff[i] = sb.w_force[0]/A
                 self.sigma_def[i] = sb.currentNormalStress()
@@ -5975,7 +5979,7 @@ class sim:
                          #fontproperties=FontProperties(size=14))
 
                 # Upper plot
-                ax1 = plt.subplot(2, 1, 1)
+                ax1 = plt.subplot(3,1,1)
                 ax1.plot(time, self.xdisp, 'k', label='Displacement')
                 ax1.set_ylabel('Horizontal displacement [m]')
 
@@ -5994,8 +5998,13 @@ class sim:
                 for tl in ax2.get_yticklabels():
                     tl.set_color(ax2color)
 
+                # Middle plot
+                ax5 = plt.subplot(3, 1, 2, sharex=ax1)
+                ax5.semilogy(time[1:], self.vel[1:], label='Shear velocity')
+                ax5.set_ylabel('Shear velocity [ms$^{-1}$]')
+
                 # Lower plot
-                ax3 = plt.subplot(2, 1, 2, sharex=ax1)
+                ax3 = plt.subplot(3, 1, 3, sharex=ax1)
                 if sb.w_sigma0_A > 1.0e-3:
                     lns0 = ax3.plot(time, self.sigma_def/1000.0,
                             '-k', label="$\\sigma_0$")
@@ -6044,6 +6053,7 @@ class sim:
                     if xlim:
                         ax4.set_xlim(xlim)
 
+
                 # aesthetics
                 ax3.set_xlabel('Time [s]')
                 #ax1.grid()
@@ -6053,6 +6063,7 @@ class sim:
                     ax1.set_xlim(xlim)
                     ax2.set_xlim(xlim)
                     ax3.set_xlim(xlim)
+                    ax5.set_xlim(xlim)
 
                 plt.setp(ax1.get_xticklabels(), visible=False)
                 fig.tight_layout()

@@ -22,8 +22,11 @@ sigma0 = 20000.0
 #k_c_vals = [3.5e-13, 3.5e-15]
 k_c = 3.5e-15
 #k_c = 3.5e-13
-mu_f_vals = [1.797e-06, 1.204e-06, 5.0e-8, 1.797e-08]
-#velfac_vals = [0.5, 1.0, 2.0]
+
+# 5.0e-8 results present
+#mu_f_vals = [1.797e-06, 1.204e-06, 5.0e-8, 1.797e-08]
+#mu_f_vals = [1.797e-06, 1.204e-06, 3.594e-07, 1.797e-08]
+mu_f_vals = [1.797e-06, 1.204e-06, 1.797e-08]
 velfac = 1.0
 
 
@@ -130,12 +133,13 @@ for c, mu_f in enumerate(mu_f_vals):
 
     if numpy.isclose(mu_f, 1.797e-6):
         label = 'ref. shear velocity'
-    elif numpy.isclose(mu_f, 1.204e-6):
-        label = 'ref. shear velocity$\\times$0.67'
-    elif numpy.isclose(mu_f, 1.797e-8):
-        label = 'ref. shear velocity$\\times$0.01'
+    #elif numpy.isclose(mu_f, 1.204e-6):
+        #label = 'ref. shear velocity$\\times$0.67'
+    #elif numpy.isclose(mu_f, 1.797e-8):
+        #label = 'ref. shear velocity$\\times$0.01'
     else:
-        label = '$\\mu_\\text{{f}}$ = {:.3e} Pa s'.format(mu_f)
+        #label = '$\\mu_\\text{{f}}$ = {:.3e} Pa s'.format(mu_f)
+        label = 'ref. shear velocity$\\times${:.2}'.format(mu_f/mu_f_vals[0])
 
     ax1.plot(shear_strain[c][1:], friction[c][1:], \
             label=label, linewidth=1,
@@ -206,6 +210,7 @@ ax1.legend(loc='upper right', prop={'size':18}, fancybox=True,
         #framealpha=legend_alpha)
 
 ax1.set_xlim([0.0, 0.2])
+ax1.set_ylim([-7, 45])
 ax2.set_xlim([0.0, 0.2])
 #ax1.set_ylim([0.0, 1.0])
 if pressures:
