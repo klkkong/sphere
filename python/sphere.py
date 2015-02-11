@@ -6238,7 +6238,7 @@ class sim:
                 #ax.set_title(sb.id())
 
                 cb = plt.colorbar(im1)
-                cb.set_label('$\\bar{\phi}$ [-]')
+                cb.set_label('Mean horizontal porosity $\\bar{\phi}$ [-]')
                 cb.solids.set_rasterized(True)
                 plt.tight_layout()
                 plt.subplots_adjust(wspace = .05)

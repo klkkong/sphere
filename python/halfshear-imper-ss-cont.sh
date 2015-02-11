@@ -39,9 +39,9 @@ nvidia-smi
 rm CMakeCache.txt
 cmake . && make
 cd python
-python continue_sim.py halfshear-darcy-sigma0=20000.0-k_c=3.5e-15-mu=1.797e-06-ss=10000.0-shear 0 1 &
+python continue_sim.py halfshear-darcy-sigma0=20000.0-k_c=3.5e-15-mu=1.797e-06-ss=10000.0-shear 1 0 &
 python continue_sim.py halfshear-darcy-sigma0=20000.0-k_c=3.5e-15-mu=1.797e-06-ss=12500.0-shear 1 1 &
-python continue_sim.py halfshear-darcy-sigma0=20000.0-k_c=3.5e-15-mu=1.797e-06-ss=15000.0-shear 2 1 &
+python continue_sim.py halfshear-darcy-sigma0=20000.0-k_c=3.5e-15-mu=1.797e-06-ss=15000.0-shear 1 2 &
 wait
 
 #cp $WORKDIR/output/* $ORIGDIR/output/
