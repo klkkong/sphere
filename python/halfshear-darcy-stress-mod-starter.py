@@ -4,7 +4,8 @@ import numpy
 import sys
 
 # launch with:
-# $ ipython halfshear-darcy-stress-starter.py <device> <fluid> <c_phi> <k_c> <sigma_0> <mu> <shear_stress> <mod_A> <mod_f>
+# $ ipython halfshear-darcy-stress-starter.py <device> <fluid> <c_phi> <k_c>
+#     <sigma_0> <mu> <shear_stress> <mod_A> <mod_f> <timefactor>
 
 device = int(sys.argv[1])
 wet = int(sys.argv[2])
@@ -15,6 +16,7 @@ mu = float(sys.argv[6])
 shear_stress = float(sys.argv[7])
 mod_A = float(sys.argv[8])
 mod_f = float(sys.argv[9])
+timefac = float(sys.argv[10])
 
 if wet == 1:
     fluid = True
@@ -61,7 +63,7 @@ if fluid:
     sim.setFluidCompressibility(1.0/K_w_sim)
     # the fluid modulation should be 180 degree out of phase with the wall
     # modulation
-    sim.setFluidPressureModulation(A=mod_A, f=mod_f, phi=numpy.pi)
+    sim.setFluidPressureModulation(A=mod_A, f=mod_f/timefac, phi=numpy.pi)
 
 sim.w_sigma0[0] = sigma0
 sim.w_m[0] = numpy.abs(sigma0*sim.L[0]*sim.L[1]/sim.g[2])
@@ -77,11 +79,11 @@ sim.setDampingTangential(0.0)
 #sim.deleteAllParticles()
 #sim.fixvel[:] = -1.0
 
-sim.initTemporal(total = 20.0, file_dt = 0.01, epsilon=0.07)
+sim.initTemporal(total = 20.0*timefac, file_dt = 0.01, epsilon=0.07)
 #sim.initTemporal(total = 20.0, file_dt = 0.00001, epsilon=0.07)
 #sim.time_dt[0] *= 1.0e-2
 #sim.initTemporal(total = 1.0e-4, file_dt = 1.0e-5, epsilon=0.07)
-sim.setTopWallNormalStressModulation(A=mod_A, f=mod_f)
+sim.setTopWallNormalStressModulation(A=mod_A, f=mod_f/timefac)
 
 # Fix lowermost particles
 #dz = sim.L[2]/sim.num[2]

@@ -212,6 +212,7 @@ ax1.legend(loc='upper right', prop={'size':18}, fancybox=True,
 ax1.set_xlim([0.0, 0.2])
 ax1.set_ylim([-7, 45])
 ax2.set_xlim([0.0, 0.2])
+ax2.set_ylim([0.0, 0.8])
 #ax1.set_ylim([0.0, 1.0])
 if pressures:
     #ax3.set_ylim([-1400, 900])
