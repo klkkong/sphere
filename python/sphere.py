@@ -6139,13 +6139,26 @@ class sim:
                 ax = plt.subplot(1,1,1)
 
                 pres /= 1000.0 # Pa to kPa
+
+                if xlim:
+                    sb.readstep(10,verbose=False)
+                    gamma_per_i = sb.shearStrain()/10.0
+                    i_min = int(xlim[0]/gamma_per_i)
+                    i_max = int(xlim[1]/gamma_per_i)
+                    pres = pres[:,i_min:i_max]
+                else:
+                    i_min = 0
+                    i_max = sb.status()
                 # use largest difference in p from 0 as +/- limit on colormap
+                print i_min, i_max
                 p_ext = numpy.max(numpy.abs(pres))
 
                 if sb.wmode[0] == 3:
                     x = t
                 else:
                     x = shear_strain
+                if xlim:
+                    x = x[i_min:i_max]
                 im1 = ax.pcolormesh(
                         x, zpos_c, pres,
                         cmap=matplotlib.cm.get_cmap('bwr'),
@@ -6167,13 +6180,12 @@ class sim:
                 #ax.set_title(sb.id())
 
                 if xlim:
-                    ax.set_xlim(xlim)
+                    ax.set_xlim([x[0], x[-1]])
 
                 cb = plt.colorbar(im1)
                 cb.set_label('$p_\\text{f}$ [kPa]')
                 cb.solids.set_rasterized(True)
                 plt.tight_layout()
-                plt.subplots_adjust(wspace = .05)
 
         elif method == 'porosity':
 
