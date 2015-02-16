@@ -54,7 +54,7 @@ if fluid:
     sim.num[:] /= 2
     #sim.L[2] *= 2.0
     #sim.initFluid(mu = 1.787e-6, p = 600.0e3, cfd_solver = 1)
-    sim.initFluid(mu = mu, p = 0.0, cfd_solver = 1)
+    sim.initFluid(mu = mu*timefac, p = 0.0, cfd_solver = 1)
     sim.setFluidBottomNoFlow()
     sim.setFluidTopFixedPressure()
     #sim.setDEMstepsPerCFDstep(10)
