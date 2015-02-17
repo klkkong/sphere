@@ -4221,12 +4221,23 @@ class sim:
         '''
         Calculates the shear strain rate (dot(gamma)) value of the experiment.
 
-        :returns: The value of $I$
+        :returns: The value of dot(gamma)
         :return type: float
 
         See also: :func:`shearStrain()` and :func:`shearVel()`
         '''
-        return self.shearStrain()/self.time_current[1]
+        #return self.shearStrain()/self.time_current[1]
+
+        # Current height
+        w_x0 = self.w_x[0]
+
+        # Displacement of the upper, fixed particles in the shear direction
+        #xdisp = self.time_current[0] * self.shearVel()
+        fixvel = numpy.nonzero(self.fixvel > 0.0)
+        xvel = numpy.max(self.vel[fixvel,0])
+
+        # Return shear strain rate
+        return xvel/w_x0
 
     def inertiaParameterPlanarShear(self):
         '''
@@ -6089,7 +6100,8 @@ class sim:
 
             tau = numpy.empty(sb.status())
             N = numpy.empty(sb.status())
-            v = numpy.empty(sb.status())
+            #v = numpy.empty(sb.status())
+            shearstrainrate = numpy.empty(sb.status())
             shearstrain = numpy.empty(sb.status())
             for i in numpy.arange(sb.status()):
                 sb.readstep(i+1, verbose=False)
@@ -6097,12 +6109,14 @@ class sim:
                 tau[i] = sb.w_tau_x # defined shear stress
                 #tau[i] = sb.shearStress()[0] # measured shear stress along x
                 N[i] = sb.currentNormalStress() # defined normal stress
-                v[i] = sb.shearVel()
+                #v[i] = sb.shearVel()
+                shearstrainrate[i] = sb.shearStrainRate()
                 shearstrain[i] = sb.shearStrain()
 
             # remove nonzero sliding velocities and their associated values
             idx = numpy.nonzero(v)
-            v_nonzero = v[idx]
+            #v_nonzero = v[idx]
+            shearstrainrate_nonzero = shearstrainrate[idx]
             tau_nonzero = tau[idx]
             N_nonzero = N[idx]
             shearstrain_nonzero = shearstrain[idx]
@@ -6112,21 +6126,27 @@ class sim:
             #ax1.semilogy(tau_nonzero/N_nonzero, v_nonzero, '+k')
             #ax1.plot(tau/N, v, '.')
             friction = tau_nonzero/N_nonzero
-            CS = ax1.scatter(friction, v_nonzero, c=shearstrain_nonzero,
-                    linewidth=0)
+            #CS = ax1.scatter(friction, v_nonzero, c=shearstrain_nonzero,
+                    #linewidth=0)
+            CS = ax1.scatter(friction, shearstrainrate_nonzero,
+                    c=shearstrain_nonzero, linewidth=0)
             ax1.set_yscale('log')
             x_min = numpy.floor(numpy.min(friction))
             x_max = numpy.ceil(numpy.max(friction))
             ax1.set_xlim([x_min, x_max])
-            y_min = numpy.min(v_nonzero)*0.5
-            y_max = numpy.max(v_nonzero)*2.0
+            #y_min = numpy.min(v_nonzero)*0.5
+            #y_max = numpy.max(v_nonzero)*2.0
+            y_min = numpy.min(shearstrainrate_nonzero)*0.5
+            y_max = numpy.max(shearstrainrate_nonzero)*2.0
             ax1.set_ylim([y_min, y_max])
 
-            plt.colorbar(CS)
+            cb = plt.colorbar(CS)
+            cb.set_ylabel('Shear strain $\\gamma$ [-]')
 
             #ax1.set_xlabel('Effective normal stress [kPa]')
             ax1.set_xlabel('Friction $\\tau/N$ [-]')
-            ax1.set_ylabel('Shear velocity [m/s]')
+            #ax1.set_ylabel('Shear velocity [m/s]')
+            ax1.set_ylabel('Shear strain rate [s$^{-1}$]')
 
 
 
