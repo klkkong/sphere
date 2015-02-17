@@ -4210,7 +4210,9 @@ class sim:
         w_x0 = self.w_x[0]
 
         # Displacement of the upper, fixed particles in the shear direction
-        xdisp = self.time_current[0] * self.shearVel()
+        #xdisp = self.time_current[0] * self.shearVel()
+        fixvel = numpy.nonzero(self.fixvel > 0.0)
+        xdisp = numpy.max(self.xyzsum[fixvel,0])
 
         # Return shear strain
         return xdisp/w_x0
@@ -6088,6 +6090,7 @@ class sim:
             tau = numpy.empty(sb.status())
             N = numpy.empty(sb.status())
             v = numpy.empty(sb.status())
+            shearstrain = numpy.empty(sb.status())
             for i in numpy.arange(sb.status()):
                 sb.readstep(i+1, verbose=False)
                 #tau = sb.shearStress()
@@ -6095,23 +6098,37 @@ class sim:
                 #tau[i] = sb.shearStress()[0] # measured shear stress along x
                 N[i] = sb.currentNormalStress() # defined normal stress
                 v[i] = sb.shearVel()
+                shearstrain[i] = sb.shearStrain()
 
             # remove nonzero sliding velocities and their associated values
             idx = numpy.nonzero(v)
             v_nonzero = v[idx]
             tau_nonzero = tau[idx]
             N_nonzero = N[idx]
+            shearstrain_nonzero = shearstrain[idx]
 
             ax1 = plt.subplot(111)
             #ax1.semilogy(N/1000., v)
             #ax1.semilogy(tau_nonzero/N_nonzero, v_nonzero, '+k')
             #ax1.plot(tau/N, v, '.')
-            ax1.scatter(tau_nonzero/N_nonzero, v_nonzero, c=idx)
+            friction = tau_nonzero/N_nonzero
+            CS = ax1.scatter(friction, v_nonzero, c=shearstrain_nonzero,
+                    linewidth=0)
             ax1.set_yscale('log')
+            x_min = numpy.floor(numpy.min(friction))
+            x_max = numpy.ceil(numpy.max(friction))
+            ax1.set_xlim([x_min, x_max])
+            y_min = numpy.min(v_nonzero)*0.5
+            y_max = numpy.max(v_nonzero)*2.0
+            ax1.set_ylim([y_min, y_max])
+
+            plt.colorbar(CS)
 
             #ax1.set_xlabel('Effective normal stress [kPa]')
             ax1.set_xlabel('Friction $\\tau/N$ [-]')
             ax1.set_ylabel('Shear velocity [m/s]')
+
+
 
             '''
             ax2 = plt.subplot(212)
