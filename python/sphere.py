@@ -5469,7 +5469,7 @@ class sim:
             if (self.vel[i,0] > 0.0):
                 force += -self.force[i,:]
 
-        return force/(sim.L[0]*sim.L[1])
+        return force/(self.L[0]*self.L[1])
 
 
     def visualize(self, method = 'energy', savefig = True, outformat = 'png',
