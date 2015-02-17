@@ -5466,8 +5466,8 @@ class sim:
 
         # Summation of shear stress contributions
         for i in fixvel[0]:
-            if (sb.vel[i,0] > 0.0):
-                force += -sb.force[i,:]
+            if (self.vel[i,0] > 0.0):
+                force += -self.force[i,:]
 
         return force/(sim.L[0]*sim.L[1])
 
