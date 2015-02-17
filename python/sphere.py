@@ -6104,8 +6104,11 @@ class sim:
 
             ax1 = plt.subplot(111)
             #ax1.semilogy(N/1000., v)
-            ax1.semilogy(tau_nonzero/N_nonzero, v_nonzero, '.')
+            #ax1.semilogy(tau_nonzero/N_nonzero, v_nonzero, '+k')
             #ax1.plot(tau/N, v, '.')
+            ax1.scatter(tau_nonzero/N_nonzero, v_nonzero, c=idx)
+            ax1.set_yscale('log')
+
             #ax1.set_xlabel('Effective normal stress [kPa]')
             ax1.set_xlabel('Friction $\\tau/N$ [-]')
             ax1.set_ylabel('Shear velocity [m/s]')
