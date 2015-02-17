@@ -5472,7 +5472,7 @@ class sim:
         return force/(self.L[0]*self.L[1])
 
 
-    def visualize(self, method = 'energy', savefig = True, outformat = 'png',
+    def visualize(self, method='energy', savefig=True, outformat='png',
             pickle=False, xlim=False):
         '''
         Visualize output from the simulation, where the temporal progress is
@@ -5482,7 +5482,7 @@ class sim:
 
         :param method: The type of plot to render. Possible values are 'energy',
             'walls', 'triaxial', 'mean-fluid-pressure', 'fluid-pressure', 
-            'shear', 'shear-displacement', 'porosity'
+            'shear', 'shear-displacement', 'porosity', 'rate-dependence'
         :type method: str
         :param savefig: Save the image instead of showing it on screen
         :type savefig: bool
@@ -6082,6 +6082,40 @@ class sim:
                 plt.setp(ax5.get_xticklabels(), visible=False)
                 fig.tight_layout()
                 plt.subplots_adjust(hspace=0.05)
+
+        elif method == 'rate-dependence':
+
+            tau = numpy.empty(sb.status())
+            N = numpy.empty(sb.status())
+            v = numpy.empty(sb.status())
+            for i in numpy.arange(sb.status()):
+                sb.readstep(i+1, verbose=False)
+                #tau = sb.shearStress()
+                tau[i] = sb.w_tau_x # defined shear stress
+                #tau[i] = sb.shearStress()[0] # measured shear stress along x
+                N[i] = sb.currentNormalStress() # defined normal stress
+                v[i] = sb.shearVel()
+
+            # remove nonzero sliding velocities and their associated values
+            idx = numpy.nonzero(v)
+            v_nonzero = v[idx]
+            tau_nonzero = tau[idx]
+            N_nonzero = N[idx]
+
+            ax1 = plt.subplot(111)
+            #ax1.semilogy(N/1000., v)
+            ax1.semilogy(tau_nonzero/N_nonzero, v_nonzero, '.')
+            #ax1.plot(tau/N, v, '.')
+            #ax1.set_xlabel('Effective normal stress [kPa]')
+            ax1.set_xlabel('Friction $\\tau/N$ [-]')
+            ax1.set_ylabel('Shear velocity [m/s]')
+
+            '''
+            ax2 = plt.subplot(212)
+            ax2.plot(tau/N, v, '.')
+            ax1.set_xlabel('Friction $\\tau/N$ [-]')
+            ax1.set_ylabel('Shear velocity [m/s]')
+            '''
 
         elif method == 'mean-fluid-pressure':
 
