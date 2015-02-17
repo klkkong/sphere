@@ -6098,6 +6098,8 @@ class sim:
 
         elif method == 'rate-dependence':
 
+            fig = plt.figure(figsize=(8,6))
+
             tau = numpy.empty(sb.status())
             N = numpy.empty(sb.status())
             #v = numpy.empty(sb.status())
@@ -6114,7 +6116,8 @@ class sim:
                 shearstrain[i] = sb.shearStrain()
 
             # remove nonzero sliding velocities and their associated values
-            idx = numpy.nonzero(v)
+            #idx = numpy.nonzero(v)
+            idx = numpy.nonzero(shearstrainrate)
             #v_nonzero = v[idx]
             shearstrainrate_nonzero = shearstrainrate[idx]
             tau_nonzero = tau[idx]
@@ -6129,7 +6132,8 @@ class sim:
             #CS = ax1.scatter(friction, v_nonzero, c=shearstrain_nonzero,
                     #linewidth=0)
             CS = ax1.scatter(friction, shearstrainrate_nonzero,
-                    c=shearstrain_nonzero, linewidth=0)
+                    c=shearstrain_nonzero, linewidth=0,
+                    cmap=matplotlib.cm.get_cmap('afmhot'))
             ax1.set_yscale('log')
             x_min = numpy.floor(numpy.min(friction))
             x_max = numpy.ceil(numpy.max(friction))
@@ -6141,7 +6145,7 @@ class sim:
             ax1.set_ylim([y_min, y_max])
 
             cb = plt.colorbar(CS)
-            cb.set_ylabel('Shear strain $\\gamma$ [-]')
+            cb.set_label('Shear strain $\\gamma$ [-]')
 
             #ax1.set_xlabel('Effective normal stress [kPa]')
             ax1.set_xlabel('Friction $\\tau/N$ [-]')
