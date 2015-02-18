@@ -3107,6 +3107,23 @@ class sim:
             raise Exception('Value of cfd_solver not understood (' + \
                     str(self.cfd_solver[0]) + ')')
 
+    def currentTime(self, value=-1):
+        '''
+        Get or set the current time. If called without arguments the current
+        time is returned. If a new time is passed in the 'value' argument, the
+        time is written to the object.
+
+        :param value: The new current time
+        :type value: float
+
+        :returns: The current time
+        :return type: float
+        '''
+        if value != -1:
+            self.time_current[0] = value
+        else:
+            return self.time_current[0]
+
     def setFluidBottomNoFlow(self):
         '''
         Set the lower boundary of the fluid domain to follow the no-flow
