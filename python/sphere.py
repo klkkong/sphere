@@ -416,268 +416,268 @@ class sim:
         are identical.
         TODO: Replace print(#) with print("field name")
         '''
-        if (self.version != other.version):
+        if self.version != other.version:
             print(1)
             return 1
-        elif (self.nd != other.nd):
+        elif self.nd != other.nd:
             print(2)
             return 2
-        elif (self.np != other.np):
+        elif self.np != other.np:
             print(4)
             return 4
-        elif (self.time_dt != other.time_dt):
+        elif self.time_dt != other.time_dt:
             print(5)
             return 5
-        elif (self.time_current != other.time_current):
+        elif self.time_current != other.time_current:
             print(6)
             return 6
-        elif (self.time_total != other.time_total):
+        elif self.time_total != other.time_total:
             print(7)
             return 7
-        elif (self.time_file_dt != other.time_file_dt):
+        elif self.time_file_dt != other.time_file_dt:
             print(8)
             return 8
-        elif (self.time_step_count != other.time_step_count):
+        elif self.time_step_count != other.time_step_count:
             print(9)
             return 9
-        elif ((self.origo != other.origo).any()):
+        elif (self.origo != other.origo).any():
             print(10)
             return 10
-        elif ((self.L != other.L).any()):
+        elif (self.L != other.L).any():
             print(11)
             return 11
-        elif ((self.num != other.num).any()):
+        elif (self.num != other.num).any():
             print(12)
             return 12
-        elif (self.periodic != other.periodic):
+        elif self.periodic != other.periodic:
             print(13)
             return 13
-        elif ((self.x != other.x).any()):
+        elif (self.x != other.x).any():
             print(14)
             return 14
-        elif ((self.radius != other.radius).any()):
+        elif (self.radius != other.radius).any():
             print(15)
             return 15
-        elif ((self.xyzsum != other.xyzsum).any()):
+        elif (self.xyzsum != other.xyzsum).any():
             print(16)
             return 16
-        elif ((self.vel != other.vel).any()):
+        elif (self.vel != other.vel).any():
             print(17)
             return 17
-        elif ((self.fixvel != other.fixvel).any()):
+        elif (self.fixvel != other.fixvel).any():
             print(18)
             return 18
-        elif ((self.force != other.force).any()):
+        elif (self.force != other.force).any():
             print(19)
             return 19
-        elif ((self.angpos != other.angpos).any()):
+        elif (self.angpos != other.angpos).any():
             print(20)
             return 20
-        elif ((self.angvel != other.angvel).any()):
+        elif (self.angvel != other.angvel).any():
             print(21)
             return 21
-        elif ((self.torque != other.torque).any()):
+        elif (self.torque != other.torque).any():
             print(22)
             return 22
-        elif ((self.es_dot != other.es_dot).any()):
+        elif (self.es_dot != other.es_dot).any():
             print(23)
             return 23
-        elif ((self.es != other.es).any()):
+        elif (self.es != other.es).any():
             print(24)
             return 24
-        elif ((self.ev_dot != other.ev_dot).any()):
+        elif (self.ev_dot != other.ev_dot).any():
             print(25)
             return 25
-        elif ((self.ev != other.ev).any()):
+        elif (self.ev != other.ev).any():
             print(26)
             return 26
-        elif ((self.p != other.p).any()):
+        elif (self.p != other.p).any():
             print(27)
             return 27
-        elif ((self.g != other.g).any()):
+        elif (self.g != other.g).any():
             print(28)
             return 28
-        elif (self.k_n != other.k_n):
+        elif self.k_n != other.k_n:
             print(29)
             return 29
-        elif (self.k_t != other.k_t):
+        elif self.k_t != other.k_t:
             print(30)
             return 30
-        elif (self.k_r != other.k_r):
+        elif self.k_r != other.k_r:
             print(31)
             return 31
-        elif (self.gamma_n != other.gamma_n):
+        elif self.gamma_n != other.gamma_n:
             print(32)
             return 32
-        elif (self.gamma_t != other.gamma_t):
+        elif self.gamma_t != other.gamma_t:
             print(33)
             return 33
-        elif (self.gamma_r != other.gamma_r):
+        elif self.gamma_r != other.gamma_r:
             print(34)
             return 34
-        elif (self.mu_s != other.mu_s):
+        elif self.mu_s != other.mu_s:
             print(35)
             return 35
-        elif (self.mu_d != other.mu_d):
+        elif self.mu_d != other.mu_d:
             print(36)
             return 36
-        elif (self.mu_r != other.mu_r):
+        elif self.mu_r != other.mu_r:
             print(37)
             return 37
-        elif (self.rho != other.rho):
+        elif self.rho != other.rho:
             print(38)
             return 38
-        elif (self.contactmodel != other.contactmodel):
+        elif self.contactmodel != other.contactmodel:
             print(39)
             return 39
-        elif (self.kappa != other.kappa):
+        elif self.kappa != other.kappa:
             print(40)
             return 40
-        elif (self.db != other.db):
+        elif self.db != other.db:
             print(41)
             return 41
-        elif (self.V_b != other.V_b):
+        elif self.V_b != other.V_b:
             print(42)
             return 42
-        elif (self.nw != other.nw):
+        elif self.nw != other.nw:
             print(43)
             return 43
-        elif ((self.wmode != other.wmode).any()):
+        elif (self.wmode != other.wmode).any():
             print(44)
             return 44
-        elif ((self.w_n != other.w_n).any()):
+        elif (self.w_n != other.w_n).any():
             print(45)
             return 45
-        elif ((self.w_x != other.w_x).any()):
+        elif (self.w_x != other.w_x).any():
             print(46)
             return 46
-        elif ((self.w_m != other.w_m).any()):
+        elif (self.w_m != other.w_m).any():
             print(47)
             return 47
-        elif ((self.w_vel != other.w_vel).any()):
+        elif (self.w_vel != other.w_vel).any():
             print(48)
             return 48
-        elif ((self.w_force != other.w_force).any()):
+        elif (self.w_force != other.w_force).any():
             print(49)
             return 49
-        elif ((self.w_sigma0 != other.w_sigma0).any()):
+        elif (self.w_sigma0 != other.w_sigma0).any():
             print(50)
             return 50
-        elif (self.w_sigma0_A != other.w_sigma0_A):
+        elif self.w_sigma0_A != other.w_sigma0_A:
             print(51)
             return 51
-        elif (self.w_sigma0_f != other.w_sigma0_f):
+        elif self.w_sigma0_f != other.w_sigma0_f:
             print(52)
             return 52
-        elif (self.w_tau_x != other.w_tau_x):
+        elif self.w_tau_x != other.w_tau_x:
             print(52.5)
             return 52.5
-        elif (self.gamma_wn != other.gamma_wn):
+        elif self.gamma_wn != other.gamma_wn:
             print(53)
             return 53
-        elif (self.gamma_wt != other.gamma_wt):
+        elif self.gamma_wt != other.gamma_wt:
             print(54)
             return 54
-        elif (self.lambda_bar != other.lambda_bar):
+        elif self.lambda_bar != other.lambda_bar:
             print(55)
             return 55
-        elif (self.nb0 != other.nb0):
+        elif self.nb0 != other.nb0:
             print(56)
             return 56
-        elif (self.sigma_b != other.sigma_b):
+        elif self.sigma_b != other.sigma_b:
             print(57)
             return 57
-        elif (self.tau_b != other.tau_b):
+        elif self.tau_b != other.tau_b:
             print(58)
             return 58
-        elif (self.bonds != other.bonds):
+        elif self.bonds != other.bonds:
             print(59)
             return 59
-        elif (self.bonds_delta_n != other.bonds_delta_n):
+        elif self.bonds_delta_n != other.bonds_delta_n:
             print(60)
             return 60
-        elif (self.bonds_delta_t != other.bonds_delta_t):
+        elif self.bonds_delta_t != other.bonds_delta_t:
             print(61)
             return 61
-        elif (self.bonds_omega_n != other.bonds_omega_n):
+        elif self.bonds_omega_n != other.bonds_omega_n:
             print(62)
             return 62
-        elif (self.bonds_omega_t != other.bonds_omega_t):
+        elif self.bonds_omega_t != other.bonds_omega_t:
             print(63)
             return 63
-        elif (self.fluid != other.fluid):
+        elif self.fluid != other.fluid:
             print(64)
             return 64
 
         if self.fluid:
-            if (self.cfd_solver != other.cfd_solver):
+            if self.cfd_solver != other.cfd_solver:
                 print(91)
                 return 91
-            elif (self.mu != other.mu):
+            elif self.mu != other.mu:
                 print(65)
                 return 65
-            elif ((self.v_f != other.v_f).any()):
+            elif (self.v_f != other.v_f).any():
                 print(66)
                 return 66
-            elif ((self.p_f != other.p_f).any()):
+            elif (self.p_f != other.p_f).any():
                 print(67)
                 return 67
-            #elif ((self.phi != other.phi).any()):
+            #elif self.phi != other.phi).any():
                 #print(68)
                 #return 68
-            elif ((self.dphi != other.dphi).any()):
+            elif (self.dphi != other.dphi).any():
                 print(69)
                 return 69
-            elif (self.rho_f != other.rho_f):
+            elif self.rho_f != other.rho_f:
                 print(70)
                 return 70
-            elif (self.p_mod_A != other.p_mod_A):
+            elif self.p_mod_A != other.p_mod_A:
                 print(71)
                 return 71
-            elif (self.p_mod_f != other.p_mod_f):
+            elif self.p_mod_f != other.p_mod_f:
                 print(72)
                 return 72
-            elif (self.p_mod_phi != other.p_mod_phi):
+            elif self.p_mod_phi != other.p_mod_phi:
                 print(73)
                 return 73
-            elif (self.bc_bot != other.bc_bot):
+            elif self.bc_bot != other.bc_bot:
                 print(74)
                 return 74
-            elif (self.bc_top != other.bc_top):
+            elif self.bc_top != other.bc_top:
                 print(75)
                 return 75
-            elif (self.free_slip_bot != other.free_slip_bot):
+            elif self.free_slip_bot != other.free_slip_bot:
                 print(76)
                 return 76
-            elif (self.free_slip_top != other.free_slip_top):
+            elif self.free_slip_top != other.free_slip_top:
                 print(77)
                 return 77
 
-            if (self.cfd_solver == 0):
-                if (self.gamma != other.gamma):
+            if self.cfd_solver == 0:
+                if self.gamma != other.gamma:
                     print(78)
                     return 78
-                elif (self.theta != other.theta):
+                elif self.theta != other.theta:
                     print(79)
                     return 79
-                elif (self.beta != other.beta):
+                elif self.beta != other.beta:
                     print(80)
                     return 80
-                elif (self.tolerance != other.tolerance):
+                elif self.tolerance != other.tolerance:
                     print(81)
                     return 81
-                elif (self.maxiter != other.maxiter):
+                elif self.maxiter != other.maxiter:
                     print(82)
                     return 82
-                elif (self.ndem != other.ndem):
+                elif self.ndem != other.ndem:
                     print(83)
                     return 83
-                elif (self.c_phi != other.c_phi):
+                elif self.c_phi != other.c_phi:
                     print(84)
                     return(84)
-                elif (self.c_v != other.c_v):
+                elif self.c_v != other.c_v:
                     print(85)
-                elif (self.dt_dem_fac != other.dt_dem_fac):
+                elif self.dt_dem_fac != other.dt_dem_fac:
                     print(85)
                     return(85)
                 elif (self.f_d != other.f_d).any():
@@ -693,30 +693,30 @@ class sim:
                     print(89)
                     return(89)
 
-            if (self.cfd_solver == 1):
-                if (self.tolerance != other.tolerance):
+            if self.cfd_solver == 1:
+                if self.tolerance != other.tolerance:
                     print(81)
                     return 81
-                elif (self.maxiter != other.maxiter):
+                elif self.maxiter != other.maxiter:
                     print(82)
                     return 82
-                elif (self.ndem != other.ndem):
+                elif self.ndem != other.ndem:
                     print(83)
                     return 83
-                elif (self.c_phi != other.c_phi):
+                elif self.c_phi != other.c_phi:
                     print(84)
                     return(84)
                 elif (self.f_p != other.f_p).any():
                     print(86)
                     return(86)
-                elif (self.beta_f != other.beta_f):
+                elif self.beta_f != other.beta_f:
                     print(87)
                     return(87)
-                elif (self.k_c != other.k_c):
+                elif self.k_c != other.k_c:
                     print(88)
                     return(88)
 
-        if ((self.color != other.color)).any():
+        if (self.color != other.color).any():
             print(90)
             return 90
         
@@ -966,7 +966,7 @@ class sim:
                 self.radius[i] =\
                         numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
-            if (self.version >= 1.03):
+            if self.version >= 1.03:
                 self.xyzsum = numpy.fromfile(fh, dtype=numpy.float64,\
                         count=self.np*3).reshape(self.np,3)
             else:
@@ -1226,7 +1226,7 @@ class sim:
                     self.k_c = \
                             numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
-            if (self.version >= 1.02):
+            if self.version >= 1.02:
                 self.color =\
                   numpy.fromfile(fh, dtype=numpy.int32, count=self.np)
             else:
@@ -1282,14 +1282,14 @@ class sim:
                 fh.write(self.x[i,:].astype(numpy.float64))
                 fh.write(self.radius[i].astype(numpy.float64))
 
-            if (self.np[0] > 0):
+            if self.np[0] > 0:
                 fh.write(self.xyzsum.astype(numpy.float64))
 
             for i in numpy.arange(self.np):
                 fh.write(self.vel[i,:].astype(numpy.float64))
                 fh.write(self.fixvel[i].astype(numpy.float64))
 
-            if (self.np[0] > 0):
+            if self.np[0] > 0:
                 fh.write(self.force.astype(numpy.float64))
 
                 fh.write(self.angpos.astype(numpy.float64))
@@ -1477,17 +1477,17 @@ class sim:
             fn = "../output/{0}.output{1:0=5}.bin".format(self.sid, i)
             sb.sid = self.sid + ".{:0=5}".format(i)
             sb.readbin(fn, verbose = False)
-            if (sb.np[0] > 0):
-                if (i == 0):
+            if sb.np[0] > 0:
+                if i == 0:
                     sb.writeVTK(verbose=verbose)
-                elif (i == lastfile):
+                elif i == lastfile:
                     if verbose:
                         print("\tto")
                     sb.writeVTK(verbose=verbose)
                 else:
                     sb.writeVTK(verbose=False)
             if self.fluid:
-                if (i == 0):
+                if i == 0:
                     sb.writeFluidVTK(verbose=verbose,
                             cell_centered=cell_centered)
                 elif (i == lastfile):
@@ -2088,7 +2088,7 @@ class sim:
 
         See also: :func:`generateRadii()`.
         '''
-        if (r_small >= r_large):
+        if r_small >= r_large:
             raise Exception("r_large should be larger than r_small")
 
         V_small = V_sphere(r_small)
@@ -2102,7 +2102,7 @@ class sim:
         # Test volumetric ratio
         V_small_total = V_small * (self.np - nlarge)
         V_large_total = V_large * nlarge
-        if (abs(V_large_total/V_small_total - ratio) > 1.0e5):
+        if abs(V_large_total/V_small_total - ratio) > 1.0e5:
             raise Exception("Volumetric ratio seems wrong")
 
         if verbose:
@@ -2194,7 +2194,7 @@ class sim:
         self.num = gridnum
 
         # Cell configuration
-        if (dx > 0.0):
+        if dx > 0.0:
             cellsize = dx
         else:
             cellsize = 2.1 * numpy.amax(self.radius)
@@ -2220,7 +2220,7 @@ class sim:
                     delta = self.x[i] - self.x[j]
                     delta_len = math.sqrt(numpy.dot(delta,delta)) \
                             - (self.radius[i] + self.radius[j])
-                    if (delta_len < 0.0):
+                    if delta_len < 0.0:
                         overlaps = True
             print("\rFinding non-overlapping particle positions, "
                     + "{0} % complete".format(numpy.ceil(i/self.np[0]*100)))
@@ -2247,10 +2247,10 @@ class sim:
         '''
 
         # Cell configuration
-        if (dx > 0.0):
+        if dx > 0.0:
             cellsize_min = dx
         else:
-            if (self.np[0] < 1):
+            if self.np[0] < 1:
                 raise Exception('Error: You need to define dx in '
                         'defineWorldBoundaries if there are no particles in '
                         'the simulation.')
@@ -2270,7 +2270,7 @@ class sim:
 
         #if (self.num.any() < 4):
         #if (self.num[0] < 4 or self.num[1] < 4 or self.num[2] < 4):
-        if (self.num[0] < 3 or self.num[1] < 3 or self.num[2] < 3):
+        if self.num[0] < 3 or self.num[1] < 3 or self.num[2] < 3:
             raise Exception("Error: The grid must be at least 3 cells in each "
             + "direction\nGrid: x={}, y={}, z={}\n".format(\
                     self.num[0], self.num[1], self.num[2])
@@ -2291,7 +2291,7 @@ class sim:
         '''
 
         # Cell configuration
-        if (dx > 0.0):
+        if dx > 0.0:
             cellsize_min = dx
         else:
             cellsize_min = 2.1 * numpy.amax(self.radius)
@@ -2299,13 +2299,13 @@ class sim:
         self.num[1] = numpy.ceil((self.L[1]-self.origo[1])/cellsize_min)
         self.num[2] = numpy.ceil((self.L[2]-self.origo[2])/cellsize_min)
 
-        if (self.num[0] < 4 or self.num[1] < 4 or self.num[2] < 4):
+        if self.num[0] < 4 or self.num[1] < 4 or self.num[2] < 4:
             raise Exception("Error: The grid must be at least 3 cells in each "
             + "direction\nGrid: x={}, y={}, z={}".format(\
                     self.num[0], self.num[1], self.num[2]))
 
         # Put upper wall at top boundary
-        if (self.nw > 0):
+        if self.nw > 0:
             self.w_x[0] = self.L[0]
 
 
@@ -2338,12 +2338,12 @@ class sim:
         self.num[1] = numpy.ceil((self.L[1]-self.origo[1])/cellsize_min)
         self.num[2] = numpy.ceil((self.L[2]-self.origo[2])/cellsize_min)
 
-        if (self.num[0] < 4 or self.num[1] < 4 or self.num[2] < 4):
+        if self.num[0] < 4 or self.num[1] < 4 or self.num[2] < 4:
             raise Exception("Error: The grid must be at least 3 cells in each "
             + "direction, num = " + str(self.num))
 
         # Put upper wall at top boundary
-        if (self.nw > 0):
+        if self.nw > 0:
             self.w_x[0] = self.L[0]
 
 
@@ -2367,19 +2367,19 @@ class sim:
         self.L = self.num * cellsize
 
         # Check whether there are enough grid cells
-        if ((self.num[0]*self.num[1]*self.num[2]-(2**3)) < self.np):
+        if (self.num[0]*self.num[1]*self.num[2]-(2**3)) < self.np:
             print("Error! The grid is not sufficiently large.")
             raise NameError('Error! The grid is not sufficiently large.')
 
         gridpos = numpy.zeros(self.nd, dtype=numpy.uint32)
 
         # Make sure grid is sufficiently large if every second level is moved
-        if (self.periodic[0] == 1):
+        if self.periodic[0] == 1:
             self.num[0] -= 1
             self.num[1] -= 1
 
         # Check whether there are enough grid cells
-        if ((self.num[0]*self.num[1]*self.num[2]-(2*3*3)) < self.np):
+        if (self.num[0]*self.num[1]*self.num[2]-(2*3*3)) < self.np:
             print("Error! The grid is not sufficiently large.")
             raise NameError('Error! The grid is not sufficiently large.')
 
@@ -2397,14 +2397,14 @@ class sim:
                 self.x[i,d] = gridpos[d] * cellsize + 0.5*cellsize
 
             # Allow pushing every 2.nd level out of lateral boundaries
-            if (self.periodic[0] == 1):
+            if self.periodic[0] == 1:
                 # Offset every second level
-                if (gridpos[2] % 2):
+                if gridpos[2] % 2:
                     self.x[i,0] += 0.5*cellsize
                     self.x[i,1] += 0.5*cellsize
 
         # Readjust grid to correct size
-        if (self.periodic[0] == 1):
+        if self.periodic[0] == 1:
             self.num[0] += 1
             self.num[1] += 1
 
@@ -2432,7 +2432,7 @@ class sim:
         cellsize = 2.1 * r_max * 2
 
         # Check whether there are enough grid cells
-        if (((coarsegrid[0]-1)*(coarsegrid[1]-1)*(coarsegrid[2]-1)) < self.np):
+        if ((coarsegrid[0]-1)*(coarsegrid[1]-1)*(coarsegrid[2]-1)) < self.np:
             print("Error! The grid is not sufficiently large.")
             raise NameError('Error! The grid is not sufficiently large.')
 
@@ -2495,18 +2495,18 @@ class sim:
         x_j[2] = x_j[2] + dist_ij * numpy.sin(ang) * numpy.cos(azi)
         self.x[j] = x_j
 
-        if (self.x[j,0] < self.origo[0]):
+        if self.x[j,0] < self.origo[0]:
             self.x[j,0] += x_i[0] - x_j[0]
-        if (self.x[j,1] < self.origo[1]):
+        if self.x[j,1] < self.origo[1]:
             self.x[j,1] += x_i[1] - x_j[1]
-        if (self.x[j,2] < self.origo[2]):
+        if self.x[j,2] < self.origo[2]:
             self.x[j,2] += x_i[2] - x_j[2]
 
-        if (self.x[j,0] > self.L[0]):
+        if self.x[j,0] > self.L[0]:
             self.x[j,0] -= abs(x_j[0] - x_i[0])
-        if (self.x[j,1] > self.L[1]):
+        if self.x[j,1] > self.L[1]:
             self.x[j,1] -= abs(x_j[1] - x_i[1])
-        if (self.x[j,2] > self.L[2]):
+        if self.x[j,2] > self.L[2]:
             self.x[j,2] -= abs(x_j[2] - x_i[2])
 
         self.bond(i,j)     # register bond
@@ -2514,7 +2514,7 @@ class sim:
         # Check that the spacing is correct
         x_ij = self.x[i] - self.x[j]
         x_ij_length = numpy.sqrt(x_ij.dot(x_ij))
-        if ((x_ij_length - dist_ij) > dist_ij*0.01):
+        if (x_ij_length - dist_ij) > dist_ij*0.01:
             print(x_i); print(r_i)
             print(x_j); print(r_j)
             print(x_ij_length); print(dist_ij)
@@ -2538,7 +2538,7 @@ class sim:
         bondparticles = numpy.unique(\
                 numpy.random.random_integers(0, high=self.np-1,\
                 size=int(self.np*ratio)))
-        if (bondparticles.size % 2 > 0):
+        if bondparticles.size % 2 > 0:
             bondparticles = bondparticles[:-1].copy()
         bondparticles =\
                 bondparticles.reshape(int(bondparticles.size/2), 2).copy()
@@ -2605,11 +2605,11 @@ class sim:
         :param 
         '''
 
-        if (idx == 0):
+        if idx == 0:
             dim = 2
-        elif (idx == 1 or idx == 2):
+        elif idx == 1 or idx == 2:
             dim = 0
-        elif (idx == 3 or idx == 4):
+        elif idx == 3 or idx == 4:
             dim = 1
         else:
             print("adjustWall: idx value not understood")
@@ -2624,7 +2624,7 @@ class sim:
         self.L[dim] = (xmax-xmin)*adjust + xmin
 
         # Initialize upper wall
-        if (idx == 0 or idx == 1 or idx == 3):
+        if idx == 0 or idx == 1 or idx == 3:
             self.w_x[idx] = numpy.array([xmax])
         else:
             self.w_x[idx] = numpy.array([xmin])
@@ -2643,7 +2643,7 @@ class sim:
 
         self.nw[0] = 1
 
-        if (normal_stress <= 0.0):
+        if normal_stress <= 0.0:
             raise Exception('consolidate() error: The normal stress should be '
             'a positive value, but is ' + str(normal_stress) + ' Pa')
 
@@ -2950,7 +2950,7 @@ class sim:
 
         if dt > 0.0:
             self.time_dt[0] = dt
-            if (self.np[0] > 0):
+            if self.np[0] > 0:
                 print("Warning: Manually specifying the time step length when "
                 + "simulating particles may produce instabilities.")
 
@@ -3038,7 +3038,7 @@ class sim:
             dz = self.L[2]/self.num[2]
             # Zero pressure gradient from grid top to top wall, linear pressure
             # distribution from top wall to grid bottom
-            if (self.nw == 1):
+            if self.nw == 1:
                 wall0_iz = int(self.w_x[0]/(self.L[2]/self.num[2]))
                 self.p_f[:,:,wall0_iz:] = p
 
@@ -3347,7 +3347,7 @@ class sim:
 
         # Wettability, 0=perfect
         theta = 0.0;
-        if (capillaryCohesion == 1):
+        if capillaryCohesion == 1:
             # Prefactor
             self.kappa[0] = 2.0 * math.pi * gamma_t * numpy.cos(theta)
             self.V_b[0] = 1e-12  # Liquid volume at bond
@@ -3394,12 +3394,12 @@ class sim:
         self.gamma_n[0] = gamma
         critical_gamma = 2.0*numpy.sqrt(self.smallestMass()*self.k_n[0])
         damping_ratio = gamma/critical_gamma
-        if (damping_ratio < 1.0):
+        if damping_ratio < 1.0:
             print('Info: The system is under-dampened (ratio = '
                   + str(damping_ratio)
                   + ') in the normal component. \nCritical damping = '
                   + str(critical_gamma) + '. This is ok.')
-        elif (damping_ratio > 1.0):
+        elif damping_ratio > 1.0:
             if over_damping:
                 print('Warning: The system is over-dampened (ratio = '
                   + str(damping_ratio) + ') in the normal component. '
@@ -3430,11 +3430,11 @@ class sim:
         '''
         self.gamma_t[0] = gamma
         damping_ratio = gamma/(2.0*numpy.sqrt(self.smallestMass()*self.k_t[0]))
-        if (damping_ratio < 1.0):
+        if damping_ratio < 1.0:
             print('Info: The system is under-dampened (ratio = '
                   + str(damping_ratio)
                   + ') in the tangential component. This is ok.')
-        elif (damping_ratio > 1.0):
+        elif damping_ratio > 1.0:
             if over_damping:
                 print('Warning: The system is over-dampened (ratio = '
                   + str(damping_ratio) + ') in the tangential component.')
@@ -3535,31 +3535,31 @@ class sim:
 
         self.lambda_bar[0] = 1.0 # Radius multiplier to parallel-bond radii
 
-        if (hasattr(self, 'bonds') == False):
+        if hasattr(self, 'bonds') == False:
             self.bonds = numpy.array([[i,j]], dtype=numpy.uint32)
         else :
             self.bonds = numpy.vstack((self.bonds, [i,j]))
 
-        if (hasattr(self, 'bonds_delta_n') == False):
+        if hasattr(self, 'bonds_delta_n') == False:
             self.bonds_delta_n = numpy.array([0.0], dtype=numpy.uint32)
         else :
             #self.bonds_delta_n = numpy.vstack((self.bonds_delta_n, [0.0]))
             self.bonds_delta_n = numpy.append(self.bonds_delta_n, [0.0])
 
-        if (hasattr(self, 'bonds_delta_t') == False):
+        if hasattr(self, 'bonds_delta_t') == False:
             self.bonds_delta_t = numpy.array([[0.0, 0.0, 0.0]],\
                     dtype=numpy.uint32)
         else :
             self.bonds_delta_t = numpy.vstack((self.bonds_delta_t,\
                     [0.0, 0.0, 0.0]))
 
-        if (hasattr(self, 'bonds_omega_n') == False):
+        if hasattr(self, 'bonds_omega_n') == False:
             self.bonds_omega_n = numpy.array([0.0], dtype=numpy.uint32)
         else :
             #self.bonds_omega_n = numpy.vstack((self.bonds_omega_n, [0.0]))
             self.bonds_omega_n = numpy.append(self.bonds_omega_n, [0.0])
 
-        if (hasattr(self, 'bonds_omega_t') == False):
+        if hasattr(self, 'bonds_omega_t') == False:
             self.bonds_omega_t = numpy.array([[0.0, 0.0, 0.0]],\
                     dtype=numpy.uint32)
         else :
@@ -3777,7 +3777,7 @@ class sim:
             return numpy.sum(self.ev_dot)
 
         elif method == 'bondpot':
-            if (self.nb0 > 0):
+            if self.nb0 > 0:
                 R_bar = self.lambda_bar*numpy.minimum(\
                         self.radius[self.bonds[:,0]],\
                         self.radius[self.bonds[:,1]])
@@ -3841,11 +3841,11 @@ class sim:
             V_total = (max_x - min_x)*(max_y - min_y)*(max_z - min_z)
 
         else:
-            if (self.nw == 0):
+            if self.nw == 0:
                 V_total = self.L[0] * self.L[1] * self.L[2]
-            elif (self.nw == 1):
+            elif self.nw == 1:
                 V_total = self.L[0] * self.L[1] * self.w_x[0]
-                if (V_total <= 0.0):
+                if V_total <= 0.0:
                     raise Exception("Could not determine total volume")
 
 
@@ -3881,7 +3881,7 @@ class sim:
                 stdout=subprocess.PIPE)
         output, err = pipe.communicate()
 
-        if (err):
+        if err:
             print(err)
             raise Exception("Could not run external 'porosity' program")
 
@@ -3890,9 +3890,9 @@ class sim:
         depth = []
         porosity = []
         for row in s2:
-            if (row != '\n' or row != '' or row != ' '): # skip blank lines
+            if row != '\n' or row != '' or row != ' ': # skip blank lines
                 s3 = row.split('\t')
-                if (s3 != '' and len(s3) == 2): # make sure line has two vals
+                if s3 != '' and len(s3) == 2: # make sure line has two vals
                     depth.append(float(s3[0]))
                     porosity.append(float(s3[1]))
 
@@ -3955,7 +3955,7 @@ class sim:
         #print(cmd)
         status = subprocess.call(cmd, shell=True)
 
-        if (status != 0):
+        if status != 0:
             print("Warning: the sphere run returned with status " + str(status))
 
     def cleanup(self):
@@ -4141,11 +4141,11 @@ class sim:
         print("Rendering {} images with the raytracer".format(self.sid))
 
         quiet = ""
-        if (verbose == False):
+        if verbose == False:
             quiet = "-q"
 
         # Render images using sphere raytracer
-        if (method == "normal"):
+        if method == "normal":
             subprocess.call("cd ..; for F in `ls output/" + self.sid
                     + "*.bin`; do ./sphere " + quiet
                     + " --render $F; done", shell=True)
@@ -4322,7 +4322,7 @@ class sim:
         self.writebin(verbose=False)
 
         nd = ''
-        if (disp == '2d'):
+        if disp == '2d':
             nd = '-2d '
 
         subprocess.call("cd .. && ./forcechains " + nd + "-f " + outformat \
@@ -4373,7 +4373,7 @@ class sim:
             y2 = data[i,4]
             z2 = data[i,5]
 
-            if (z1 < z2):
+            if z1 < z2:
                 xlower = x1; ylower = y1; zlower = z1
                 xupper = x2; yupper = y2; zupper = z2
             else :
@@ -4390,7 +4390,7 @@ class sim:
             diplist.append(math.degrees(math.atan((zupper - zlower)/dhoriz)))
 
             # Find strike angle
-            if (ylower >= yupper): # in first two quadrants
+            if ylower >= yupper: # in first two quadrants
                 strikelist.append(math.acos(dx/dhoriz))
             else :
                 strikelist.append(2.0*numpy.pi - math.acos(dx/dhoriz))
@@ -4431,7 +4431,7 @@ class sim:
             y2 = self.x[j,1]
             z2 = self.x[j,2]
 
-            if (z1 < z2):
+            if z1 < z2:
                 xlower = x1; ylower = y1; zlower = z1
                 xupper = x2; yupper = y2; zupper = z2
             else :
@@ -4448,7 +4448,7 @@ class sim:
             diplist.append(math.degrees(math.atan((zupper - zlower)/dhoriz)))
 
             # Find strike angle
-            if (ylower >= yupper): # in first two quadrants
+            if ylower >= yupper: # in first two quadrants
                 strikelist.append(math.acos(dx/dhoriz))
             else :
                 strikelist.append(2.0*numpy.pi - math.acos(dx/dhoriz))
@@ -4602,7 +4602,7 @@ class sim:
         :type verbose: bool
         '''
 
-        if (x2 == 'center') :
+        if x2 == 'center' :
             x2 = (self.L[1] - self.origo[1]) / 2.0
 
         # Initialize plot circle positionsr, radii and pressures
@@ -4629,7 +4629,7 @@ class sim:
 
             delta = abs(self.x[i,1] - x2)   # distance between centre and plane
 
-            if (delta < self.radius[i]): # if the sphere intersects the plane
+            if delta < self.radius[i]: # if the sphere intersects the plane
 
                 # Store particle index
                 ilist.append(i)
@@ -4640,20 +4640,20 @@ class sim:
 
                 # Store radius of intersection
                 r_circ = math.sqrt(self.radius[i]**2 - delta**2)
-                if (r_circ > rmax):
+                if r_circ > rmax:
                     rmax = r_circ
                 rlist.append(r_circ)
 
                 # Store pos. and radius if it is spinning around pos. y
-                if (self.angvel[i,1] > 0.0):
+                if self.angvel[i,1] > 0.0:
                     cxlist.append(self.x[i,0])
                     cylist.append(self.x[i,2])
                     crlist.append(r_circ)
 
                 # Store pressure
                 pval = self.p[i]
-                if (cbmax != None):
-                    if (pval > cbmax):
+                if cbmax != None:
+                    if pval > cbmax:
                         pval = cbmax
                 plist.append(pval)
 
@@ -4684,15 +4684,15 @@ class sim:
                 # delta y for arrow end point
                 dvylist.append(self.vel[i,2]*velarrowscale)
 
-                if (r_circ > self.radius[i]):
+                if r_circ > self.radius[i]:
                     raise Exception("Error, circle radius is larger than the "
                     + "particle radius")
-                if (self.p[i] > pmax):
+                if self.p[i] > pmax:
                     pmax = self.p[i]
 
         if verbose:
             print("Max. pressure of intersecting spheres: " + str(pmax) + " Pa")
-            if (cbmax != None):
+            if cbmax != None:
                 print("Value limited to: " + str(cbmax) + " Pa")
 
         # Save circle data
@@ -4765,8 +4765,8 @@ class sim:
             # Loop through other particles, and check whether they are in
             # contact
             for j in ilist:
-                #if (i < j):
-                if (i != j):
+                #if i < j:
+                if i != j:
 
                     # positions
                     x_i = self.x[i,:]
@@ -4781,7 +4781,7 @@ class sim:
                     x_ij_length = numpy.sqrt(x_ij.dot(x_ij))
 
                     # Check for overlap
-                    if (x_ij_length - (r_i + r_j) < 0.0):
+                    if x_ij_length - (r_i + r_j) < 0.0:
 
                         # contact plane normal vector
                         n_ij = x_ij / x_ij_length
@@ -4802,7 +4802,7 @@ class sim:
                         dot_delta_t = dot_delta - dot_delta_n
 
                         # Save slip velocity data for gnuplot
-                        if (dot_delta_t[0] != 0.0 or dot_delta_t[2] != 0.0):
+                        if dot_delta_t[0] != 0.0 or dot_delta_t[2] != 0.0:
 
                             # Center position of the contact
                             cpos = x_i - x_ij * 0.5
@@ -4879,7 +4879,7 @@ class sim:
         See also: :func:`writeFluidVTK()` and :func:`plotFluidPressuresZ()`
         '''
 
-        if (y == -1):
+        if y == -1:
             y = self.num[1]/2
 
         plt.figure(figsize=[8,8])
@@ -4909,7 +4909,7 @@ class sim:
         See also: :func:`writeFluidVTK()` and :func:`plotFluidPressuresY()`
         '''
 
-        if (z == -1):
+        if z == -1:
             z = self.num[2]/2
 
         plt.figure(figsize=[8,8])
@@ -4939,7 +4939,7 @@ class sim:
         See also: :func:`writeFluidVTK()` and :func:`plotFluidVelocitiesZ()`
         '''
 
-        if (y == -1):
+        if y == -1:
             y = self.num[1]/2
 
         plt.title('Fluid velocities')
@@ -4993,7 +4993,7 @@ class sim:
         See also: :func:`writeFluidVTK()` and :func:`plotFluidVelocitiesY()`
         '''
 
-        if (z == -1):
+        if z == -1:
             z = self.num[2]/2
 
         plt.title("Fluid velocities")
@@ -5157,7 +5157,7 @@ class sim:
         i_upper = self.status()-1
         while (i_upper - i_lower > 1):
             i_midpoint = int((i_upper + i_lower)/2)
-            if (self.H50 < H[i_midpoint]):
+            if self.H50 < H[i_midpoint]:
                 i_lower = i_midpoint
             else:
                 i_upper = i_midpoint
@@ -5496,7 +5496,7 @@ class sim:
 
         # Summation of shear stress contributions
         for i in fixvel[0]:
-            if (self.vel[i,0] > 0.0):
+            if self.vel[i,0] > 0.0:
                 force += -self.force[i,:]
 
         return force/(self.L[0]*self.L[1])
@@ -5530,7 +5530,7 @@ class sim:
         sb = sim(sid = self.sid, np = self.np, nw = self.nw, fluid = self.fluid)
 
         ### Plotting
-        if (outformat != 'txt'):
+        if outformat != 'txt':
             fig = plt.figure(figsize=(8,8))
 
         if method == 'energy':
@@ -5564,7 +5564,7 @@ class sim:
 
                 t = numpy.linspace(0.0, sb.time_current, lastfile+1)
 
-            if (outformat != 'txt'):
+            if outformat != 'txt':
                 # Potential energy
                 ax1 = plt.subplot2grid((2,5),(0,0))
                 ax1.set_xlabel('Time [s]')
@@ -5660,7 +5660,7 @@ class sim:
                 sb.readstep(i, verbose=False)
 
                 # Allocate arrays on first run
-                if (i == 0):
+                if i == 0:
                     wforce = numpy.zeros((lastfile+1)*sb.nw[0],\
                             dtype=numpy.float64).reshape((lastfile+1), sb.nw[0])
                     wvel   = numpy.zeros((lastfile+1)*sb.nw[0],\
@@ -5685,7 +5685,7 @@ class sim:
             t = numpy.linspace(0.0, sb.time_current, lastfile+1)
 
             # Plotting
-            if (outformat != 'txt'):
+            if outformat != 'txt':
                 # linear plot of time vs. wall position
                 ax1 = plt.subplot2grid((2,2),(0,0))
                 ax1.set_xlabel('Time [s]')
@@ -5739,7 +5739,7 @@ class sim:
                         * (sb.w_x[3] - sb.w_x[4])
 
                 # Allocate arrays on first run
-                if (i == 0):
+                if i == 0:
                     axial_strain = numpy.zeros(lastfile+1, dtype=numpy.float64)
                     deviatoric_stress =\
                             numpy.zeros(lastfile+1, dtype=numpy.float64)
@@ -5762,7 +5762,7 @@ class sim:
             #print(volumetric_strain)
 
             # Plotting
-            if (outformat != 'txt'):
+            if outformat != 'txt':
 
                 # linear plot of deviatoric stress
                 ax1 = plt.subplot2grid((2,1),(0,0))
@@ -5795,7 +5795,7 @@ class sim:
                 sb.readstep(i, verbose = False)
 
                 # First iteration: Allocate arrays and find constant values
-                if (i == 0):
+                if i == 0:
                     # Shear displacement
                     self.xdisp    = numpy.zeros(lastfile+1, dtype=numpy.float64)
 
@@ -5822,15 +5822,15 @@ class sim:
                     w_x0 = sb.w_x[0]        # Original height
                     A = sb.L[0] * sb.L[1]   # Upper surface area
 
-                if (i == 1):
+                if i == 1:
                     w_x0 = sb.w_x[0]        # Original height
 
                 # Summation of shear stress contributions
                 for j in fixvel[0]:
-                    if (sb.vel[j,0] > 0.0):
+                    if sb.vel[j,0] > 0.0:
                         self.tau[i] += -sb.force[j,0]/A
 
-                if (i > 0):
+                if i > 0:
                     self.xdisp[i] = self.xdisp[i-1] +sb.time_file_dt[0]*shearvel
                 self.sigma_eff[i] = sb.w_force[0] / A
                 self.sigma_def[i] = sb.w_sigma0[0]
@@ -5853,14 +5853,14 @@ class sim:
                 self.dilation[i] = (sb.w_x[0] - w_x0)/d_bar
 
                 # Test if this was the max. shear stress
-                if (self.tau[i] > self.tau_p):
+                if self.tau[i] > self.tau_p:
                     self.tau_p = self.tau[i]
                     self.tau_p_shearstrain = self.xdisp[i]/w_x0
 
             self.shear_strain = self.xdisp/w_x0
 
             # Plot stresses
-            if (outformat != 'txt'):
+            if outformat != 'txt':
                 shearinfo = "$\\tau_p$ = {:.3} Pa at $\gamma$ = {:.3}".format(\
                         self.tau_p, self.tau_p_shearstrain)
                 fig.text(0.01, 0.01, shearinfo, horizontalalignment='left',
@@ -5923,7 +5923,7 @@ class sim:
                 sb.readstep(i, verbose = False)
 
                 # First iteration: Allocate arrays and find constant values
-                if (i == 0):
+                if i == 0:
                     # Shear displacement
                     time = numpy.zeros(lastfile+1, dtype=numpy.float64)
 
@@ -5966,15 +5966,15 @@ class sim:
 
                 time[i] = sb.time_current[0]
 
-                if (i == 1):
+                if i == 1:
                     w_x0 = sb.w_x[0] # Original height
 
                 # Summation of shear stress contributions
                 for j in fixvel[0]:
-                    if (sb.vel[j,0] > 0.0):
+                    if sb.vel[j,0] > 0.0:
                         self.tau_eff[i] += -sb.force[j,0]/A
 
-                if (i > 0):
+                if i > 0:
                     self.xdisp[i] = sb.xyzsum[fixvel,0].max()
                     self.v[i]     = sb.vel[fixvel,0].max()
 
@@ -5995,14 +5995,14 @@ class sim:
                     self.p_f_top[i] = sb.p_f[0,0,-1]
 
                 # Test if this was the max. shear stress
-                if (self.tau_eff[i] > self.tau_p):
+                if self.tau_eff[i] > self.tau_p:
                     self.tau_p = self.tau_eff[i]
                     self.tau_p_shearstrain = self.xdisp[i]/w_x0
 
             self.shear_strain = self.xdisp/w_x0
 
             # Plot stresses
-            if (outformat != 'txt'):
+            if outformat != 'txt':
                 fig = plt.figure(figsize=(8,12))
 
                 #shearinfo = "$\\tau_p$ = {:.3} Pa at $\gamma$ = {:.3}".format(\
@@ -6183,7 +6183,7 @@ class sim:
                 sb.readstep(i, verbose = False)
 
                 # Allocate arrays on first run
-                if (i == 0):
+                if i == 0:
                     p_mean = numpy.zeros(lastfile+1, dtype=numpy.float64)
 
                 p_mean[i] = numpy.mean(sb.p_f)
@@ -6191,7 +6191,7 @@ class sim:
             t = numpy.linspace(0.0, sb.time_current, lastfile+1)
 
             # Plotting
-            if (outformat != 'txt'):
+            if outformat != 'txt':
 
                 if xlim:
                     ax1.set_xlim(xlim)
@@ -6227,7 +6227,7 @@ class sim:
             t = numpy.linspace(0.0, sb.time_current, lastfile+1)
 
             # Plotting
-            if (outformat != 'txt'):
+            if outformat != 'txt':
 
                 ax = plt.subplot(1,1,1)
 
@@ -6306,7 +6306,7 @@ class sim:
             t = numpy.linspace(0.0, sb.time_current, lastfile+1)
 
             # Plotting
-            if (outformat != 'txt'):
+            if outformat != 'txt':
 
                 ax = plt.subplot(1,1,1)
 
@@ -6362,7 +6362,7 @@ class sim:
             pl.dump(fig, file(filename + '.pickle', 'w'))
 
         # Optional save of figure
-        if (outformat != 'txt'):
+        if outformat != 'txt':
             if savefig:
                 fig.savefig(filename)
                 print(filename)
@@ -6422,11 +6422,11 @@ def render(binary,
     :type verbose: bool
     '''
     quiet = ''
-    if (verbose == False):
+    if verbose == False:
         quiet = '-q'
 
     # Render images using sphere raytracer
-    if (method == 'normal'):
+    if method == 'normal':
         subprocess.call('cd .. ; ./sphere ' + quiet + \
                 ' --render ' + binary, shell=True)
     else :
@@ -6473,7 +6473,7 @@ def video(project,
     # Possible loglevels:
     # quiet, panic, fatal, error, warning, info, verbose, debug
     loglevel = 'info' # verbose = True
-    if (verbose == False):
+    if verbose == False:
         loglevel = 'error'
 
     subprocess.call(\
@@ -6527,7 +6527,7 @@ def thinsectionVideo(project,
     # Possible loglevels:
     # quiet, panic, fatal, error, warning, info, verbose, debug
     loglevel = "info" # verbose = True
-    if (verbose == False):
+    if verbose == False:
         loglevel = "error"
 
     subprocess.call(\
@@ -6553,7 +6553,7 @@ def run(binary, verbose=True, hideinputfile=False):
 
     quiet = ''
     stdout = ''
-    if (verbose == False):
+    if verbose == False:
         quiet = '-q'
     if hideinputfile:
         stdout = ' > /dev/null'
