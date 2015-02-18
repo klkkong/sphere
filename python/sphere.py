@@ -6150,9 +6150,7 @@ class sim:
             #ax1.set_xlabel('Effective normal stress [kPa]')
             ax1.set_xlabel('Friction $\\tau/N$ [-]')
             #ax1.set_ylabel('Shear velocity [m/s]')
-            ax1.set_ylabel('Shear strain rate [s$^{-1}$]')
-
-
+            ax1.set_ylabel('Shear strain rate $\\dot{\\gamma}$ [s$^{-1}$]')
 
             '''
             ax2 = plt.subplot(212)
