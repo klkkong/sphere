@@ -4315,10 +4315,11 @@ class sim:
         r_i = self.radius[i]
         r_j = self.radius[j]
         d = r_i + r_j - overlap
-        return 1./(2.*d)*(
+        contact_radius = 1./(2.*d)*(
                 (-d + r_i - r_j)*(-d - r_i + r_j)*
                 (-d + r_i + r_j)*( d + r_i + r_j)
                 )**0.5
+        return numpy.pi*contact_radius**2.
 
     def findAllContactSurfaceAreas(self):
         '''
