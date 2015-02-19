@@ -4294,11 +4294,58 @@ class sim:
 
         The result is saved in ``self.f_n_magn``.
 
-        See also: :func:`findOverlaps()`
+        See also: :func:`findOverlaps()` and :func:`findContactStresses()`
         '''
         self.findOverlaps()
         self.f_n_magn = self.k_n * numpy.abs(self.overlaps)
 
+    def contactSurfaceArea(self, i, j, overlap):
+        '''
+        Finds the contact surface area of an inter-particle contact.
+
+        :param i: Index of first particle
+        :type i: int or array of ints
+        :param j: Index of second particle
+        :type j: int or array of ints
+        :param d: Overlap distance
+        :type d: float or array of floats
+        :returns: Contact area [m*m]
+        :return type: float or array of floats
+        '''
+        r_i = self.radius[i]
+        r_j = self.radius[j]
+        d = r_i + r_j - overlap
+        return 1./(2.*d)*(
+                (-d + r_i - r_j)*(-d - r_i + r_j)*
+                (-d + r_i + r_j)*( d + r_i + r_j)
+                )**0.5
+
+    def findAllContactSurfaceAreas(self):
+        '''
+        Finds the contact surface area of an inter-particle contact. This
+        function requires a prior call to :func:`findOverlaps()` as it reads
+        from the ``self.pairs`` and ``self.overlaps`` arrays.
+
+        The results are saved in ``self.contact_area``.
+        '''
+
+        self.contact_area = \
+                self.contactSurfaceArea(self.pairs[0,:], self.pairs[1,:],
+                        self.overlaps)
+
+    def findContactStresses(self):
+        '''
+        Finds all particle-particle uniaxial normal stresses (by first calling
+        :func:`findNormalForces()`) and calculating the stress magnitudes by
+        dividing the normal force magnitude with the contact surface area.
+
+        The result is saved in ``self.sigma_contacts``.
+
+        See also: :func:`findNormalForces()` and :func:`findOverlaps()`
+        '''
+        self.findNormalForces()
+        self.findAllContactSurfaceAreas()
+        self.sigma_contacts = self.f_n_magn/self.contact_area
 
     def forcechains(self, lc=200.0, uc=650.0, outformat='png', disp='2d'):
         '''
