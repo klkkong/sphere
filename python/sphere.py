@@ -4314,7 +4314,7 @@ class sim:
         '''
         r_i = self.radius[i]
         r_j = self.radius[j]
-        d = r_i + r_j - overlap
+        d = r_i + r_j + overlap
         contact_radius = 1./(2.*d)*(
                 (-d + r_i - r_j)*(-d - r_i + r_j)*
                 (-d + r_i + r_j)*( d + r_i + r_j)
