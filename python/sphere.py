@@ -4328,7 +4328,6 @@ class sim:
 
         The results are saved in ``self.contact_area``.
         '''
-
         self.contact_area = \
                 self.contactSurfaceArea(self.pairs[0,:], self.pairs[1,:],
                         self.overlaps)
