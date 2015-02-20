@@ -4347,6 +4347,20 @@ class sim:
         self.findAllContactSurfaceAreas()
         self.sigma_contacts = self.f_n_magn/self.contact_area
 
+    def findLoadedContacts(self, threshold):
+        '''
+        Finds the indices of contact pairs where the contact stress magnitude
+        exceeds or is equal to a specified threshold value. This function calls
+        :func:`findContactStresses()`.
+
+        :param threshold: Threshold contact stress [Pa]
+        :type threshold: float
+        :returns: Array of contact indices
+        :return type: array of ints
+        '''
+        self.findContactStresses()
+        return numpy.nonzero(self.sigma_contacts >= threshold)
+
     def forcechains(self, lc=200.0, uc=650.0, outformat='png', disp='2d'):
         '''
         Visualizes the force chains in the system from the magnitude of the
