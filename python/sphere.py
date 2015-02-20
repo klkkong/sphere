@@ -1470,6 +1470,11 @@ class sim:
 
         :param verbose: Show diagnostic information (default = True)
         :type verbose: bool
+        :param cell_centered: Write fluid values to cell centered positions
+            (default = true)
+        :type cell_centered: bool
+        :param forces: Write contact force files (slow) (default = False)
+        :type forces: bool
         '''
         lastfile = status(self.sid)
         sb = sim(fluid = self.fluid)
