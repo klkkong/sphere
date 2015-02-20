@@ -1840,10 +1840,12 @@ class sim:
         polydata.SetPoints(points)
         polydata.SetLines(lines)
         #polydata.GetCellData().SetScalars(colors)
+        #polydata.GetCellData().SetScalars(forces)  # default scalar
         polydata.GetCellData().SetScalars(forces)  # default scalar
         #polydata.GetCellData().AddArray(forces)
-        polydata.GetCellData().AddArray(stresses)
-        polydata.GetPointData().AddArray(stresses)
+        #polydata.GetCellData().AddArray(stresses)
+        #polydata.GetPointData().AddArray(stresses)
+        polydata.GetPointData().SetScalars(stresses)  # default scalar
 
         # write VTK XML image data file
         writer = vtk.vtkXMLPolyDataWriter()
@@ -2038,6 +2040,82 @@ class sim:
         if verbose:
             print('Output file: ' + filename)
 
+    def show(self, coloring=numpy.array([]), resolution=6):
+        '''
+        Show a rendering of all particles in a window.
+
+        :param coloring: Color the particles from red to white to blue according
+            to the values in this array.
+        :type coloring: numpy.array
+        :param resolution: The resolution of the rendered spheres. Larger values
+            increase the performance requirements.
+        :type resolution: int
+        '''
+
+        if py_vtk == False:
+            print('Error: vtk module not found, cannot show scene.')
+            return
+
+        # create a rendering window and renderer
+        ren = vtk.vtkRenderer()
+        renWin = vtk.vtkRenderWindow()
+        renWin.AddRenderer(ren)
+
+        # create a renderwindowinteractor
+        iren = vtk.vtkRenderWindowInteractor()
+        iren.SetRenderWindow(renWin)
+
+        if coloring.any():
+            #min_value = numpy.min(coloring)
+            max_value = numpy.max(coloring)
+            #min_rgb = numpy.array([50, 50, 50])
+            #max_rgb = numpy.array([255, 255, 255])
+            #def color(value):
+                #return (max_rgb - min_rgb) * (value - min_value)
+
+            def red(ratio):
+                return numpy.fmin(1.0, 0.209*ratio**3. - 2.49*ratio**2.
+                        + 3.0*ratio + 0.0109)
+            def green(ratio):
+                return numpy.fmin(1.0, -2.44*ratio**2. + 2.15*ratio + 0.369)
+            def blue(ratio):
+                return numpy.fmin(1.0, -2.21*ratio**2. + 1.61*ratio + 0.573)
+
+        for i in numpy.arange(self.np):
+
+            # create source
+            source = vtk.vtkSphereSource()
+            source.SetCenter(self.x[i,:])
+            source.SetRadius(self.radius[i])
+            source.SetThetaResolution(resolution)
+            source.SetPhiResolution(resolution)
+
+            # mapper
+            mapper = vtk.vtkPolyDataMapper()
+            if vtk.VTK_MAJOR_VERSION <= 5:
+                mapper.SetInput(source.GetOutput())
+            else:
+                mapper.SetInputConnection(source.GetOutputPort())
+
+            # actor
+            actor = vtk.vtkActor()
+            actor.SetMapper(mapper)
+
+            # color
+            if coloring.any():
+                ratio = coloring[i]/max_value
+                r,g,b = red(ratio), green(ratio), blue(ratio)
+                actor.GetProperty().SetColor(r,g,b)
+
+            # assign actor to the renderer
+            ren.AddActor(actor)
+
+        ren.SetBackground(0.3, 0.3, 0.3)
+
+        # enable user interface interactor
+        iren.Initialize()
+        renWin.Render()
+        iren.Start()
 
     def readfirst(self, verbose=True):
         '''
