@@ -1769,6 +1769,81 @@ class sim:
             if fh is not None:
                 fh.close()
 
+    def writeVTKforces(self, folder = '../output/', verbose = True):
+        '''
+
+        :param folder: The folder where to place the output file (default
+            (default = '../output/')
+        :type folder: str
+        :param verbose: Show diagnostic information (default = True)
+        :type verbose: bool
+        '''
+
+        if py_vtk == False:
+            print('Error: vtk module not found, cannot writeVTKforces.')
+            return
+
+        filename = folder + '/forces-' + self.sid + '.vtp' # Polygon data
+
+        # points mark the particle centers
+        points = vtk.vtkPoints()
+
+        # lines mark the particle connectivity
+        lines = vtk.vtkCellArray()
+
+        # colors
+        #colors = vtk.vtkUnsignedCharArray()
+        #colors.SetNumberOfComponents(3)
+        #colors.SetName('Colors')
+        #colors.SetNumberOfTuples(self.overlaps.size)
+
+        # scalars
+        forces = vtk.vtkDoubleArray()
+        forces.SetName("Force [N]")
+        forces.SetNumberOfComponents(1)
+        #forces.SetNumberOfTuples(self.overlaps.size)
+        forces.SetNumberOfValues(self.overlaps.size)
+
+        stresses = vtk.vtkDoubleArray()
+        stresses.SetName("Stress [Pa]")
+        stresses.SetNumberOfComponents(1)
+        stresses.SetNumberOfValues(self.overlaps.size)
+
+        for i in numpy.arange(self.overlaps.size):
+            points.InsertNextPoint(self.x[self.pairs[0,i],:])
+            points.InsertNextPoint(self.x[self.pairs[1,i],:])
+            line = vtk.vtkLine()
+            line.GetPointIds().SetId(0, 2*i)      # index of particle 1
+            line.GetPointIds().SetId(1, 2*i + 1)  # index of particle 2
+            lines.InsertNextCell(line)
+            #colors.SetTupleValue(i, [100,100,100])
+            forces.SetValue(i, self.f_n_magn[i])
+            stresses.SetValue(i, self.sigma_contacts[i])
+
+        # initalize VTK data structure
+        polydata = vtk.vtkPolyData()
+
+        polydata.SetPoints(points)
+        polydata.SetLines(lines)
+        #polydata.GetCellData().SetScalars(colors)
+        polydata.GetCellData().SetScalars(forces)  # default scalar
+        #polydata.GetCellData().AddArray(forces)
+        polydata.GetCellData().AddArray(stresses)
+        polydata.GetPointData().AddArray(stresses)
+
+        # write VTK XML image data file
+        writer = vtk.vtkXMLPolyDataWriter()
+        writer.SetFileName(filename)
+        if vtk.VTK_MAJOR_VERSION <= 5:
+            writer.SetInput(polydata)
+        else:
+            writer.SetInputData(polydata)
+        writer.Write()
+        #writer.Update()
+        if verbose:
+            print('Output file: ' + filename)
+
+
     def writeFluidVTK(self, folder = '../output/', cell_centered = True,
             verbose = True):
         '''
@@ -4321,31 +4396,68 @@ class sim:
                 )**0.5
         return numpy.pi*contact_radius**2.
 
+    def contactParticleArea(self, i, j):
+        '''
+        Finds the average area of an two particles in an inter-particle contact.
+
+        :param i: Index of first particle
+        :type i: int or array of ints
+        :param j: Index of second particle
+        :type j: int or array of ints
+        :param d: Overlap distance
+        :type d: float or array of floats
+        :returns: Contact area [m*m]
+        :return type: float or array of floats
+        '''
+        r_bar = (self.radius[i] + self.radius[j])*0.5
+        return numpy.pi*r_bar**2.
+
     def findAllContactSurfaceAreas(self):
         '''
         Finds the contact surface area of an inter-particle contact. This
         function requires a prior call to :func:`findOverlaps()` as it reads
         from the ``self.pairs`` and ``self.overlaps`` arrays.
 
-        The results are saved in ``self.contact_area``.
+        :returns: Array of contact surface areas
+        :return type: array of floats
         '''
-        self.contact_area = \
-                self.contactSurfaceArea(self.pairs[0,:], self.pairs[1,:],
+        return self.contactSurfaceArea(self.pairs[0,:], self.pairs[1,:],
                         self.overlaps)
 
-    def findContactStresses(self):
+    def findAllAverageParticlePairAreas(self):
+        '''
+        Finds the average area of an inter-particle contact. This
+        function requires a prior call to :func:`findOverlaps()` as it reads
+        from the ``self.pairs`` and ``self.overlaps`` arrays.
+
+        :returns: Array of contact surface areas
+        :return type: array of floats
+        '''
+        return self.contactParticleArea(self.pairs[0,:], self.pairs[1,:])
+
+    def findContactStresses(self, area='average'):
         '''
         Finds all particle-particle uniaxial normal stresses (by first calling
         :func:`findNormalForces()`) and calculating the stress magnitudes by
-        dividing the normal force magnitude with the contact surface area.
+        dividing the normal force magnitude with the average particle area
+        ('average') or by the contact surface area ('contact').
 
         The result is saved in ``self.sigma_contacts``.
+
+        :param area: Area to use: 'average' (default) or 'contact'
+        :type area: str
 
         See also: :func:`findNormalForces()` and :func:`findOverlaps()`
         '''
         self.findNormalForces()
-        self.findAllContactSurfaceAreas()
-        self.sigma_contacts = self.f_n_magn/self.contact_area
+        if area == 'average':
+            areas = self.findAllAverageParticlePairAreas()
+        elif area == 'contact':
+            areas = self.findAllContactSurfaceAreas()
+        else:
+            raise Exception('Contact area type "' + area + '" not understood')
+
+        self.sigma_contacts = self.f_n_magn/areas
 
     def findLoadedContacts(self, threshold):
         '''
