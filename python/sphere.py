@@ -4453,6 +4453,27 @@ class sim:
                 dtype=numpy.int32)
         self.overlaps = numpy.array(contactdata[:,2])
 
+    def findCoordinationNumber(self):
+        '''
+        Finds the coordination number (the average number of contacts per
+        particle). Requires a previous call to :func:`findOverlaps()`. Values
+        are stored in ``self.coordinationnumber``.
+        '''
+        self.coordinationnumber = numpy.zeros(self.np, dtype=numpy.int)
+        for i in numpy.arange(self.overlaps.size):
+            self.coordinationnumber[self.pairs[0,i]] += 1
+            self.coordinationnumber[self.pairs[1,i]] += 1
+
+    def findMeanCoordinationNumber(self):
+        '''
+        Returns the coordination number (the average number of contacts per
+        particle). Requires a previous call to :func:`findOverlaps()`
+
+        :returns: The mean particle coordination number
+        :return type: float
+        '''
+        return numpy.mean(self.coordinationnumber)
+
     def findNormalForces(self):
         '''
         Finds all particle-particle overlaps (by first calling
