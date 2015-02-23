@@ -6435,7 +6435,7 @@ class sim:
             #CS = ax1.scatter(friction, v_nonzero, c=shearstrain_nonzero,
                     #linewidth=0)
             CS = ax1.scatter(friction, shearstrainrate_nonzero,
-                    c=shearstrain_nonzero, linewidth=0,
+                    c=shearstrain_nonzero, linewidth=0.1,
                     cmap=matplotlib.cm.get_cmap('afmhot'))
             ax1.set_yscale('log')
             x_min = numpy.floor(numpy.min(friction))
