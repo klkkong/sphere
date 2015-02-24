@@ -3736,16 +3736,24 @@ class sim:
         # Increment the number of bonds with one
         self.nb0 += 1
 
-    def currentNormalStress(self):
+    def currentNormalStress(self, type='defined'):
         '''
-        Calculates the current magnitude of the top wall normal stress.
+        Calculates the current magnitude of the defined or effective top wall
+        normal stress.
+
+        :param type: Find the 'defined' (default) or 'effective' normal stress 
+        :type type: str
 
         :returns: The current top wall normal stress in Pascal
         :return type: float
         '''
-        return self.w_sigma0[0] \
-                + self.w_sigma0_A[0] \
-                *numpy.sin(2.0*numpy.pi*self.w_sigma0_f[0]*self.time_current[0])
+        if type == 'defined':
+            return self.w_sigma0[0] \
+                    + self.w_sigma0_A[0] \
+                    *numpy.sin(2.0*numpy.pi*self.w_sigma0_f[0]\
+                    *self.time_current[0])
+        elif type == 'effective':
+            return self.w_force[0]/(self.L[0]*self.L[1])
 
     def volume(self, idx):
         '''
@@ -4378,6 +4386,23 @@ class sim:
         # The shear velocity is the x-axis velocity value of the upper particles
         return self.vel[fixvel,0].max()
 
+    def shearDisplacement(self):
+        '''
+        Calculates and returns the current shear displacement. The displacement
+        is found by determining the total x-axis displacement of the upper,
+        fixed particles.
+
+        :returns: The total shear displacement [m]
+        :return type: float
+
+        See also: :func:`shearStrain()`
+        '''
+
+        # Displacement of the upper, fixed particles in the shear direction
+        #xdisp = self.time_current[0] * self.shearVel()
+        fixvel = numpy.nonzero(self.fixvel > 0.0)
+        return numpy.max(self.xyzsum[fixvel,0])
+
     def shearStrain(self):
         '''
         Calculates and returns the current shear strain (gamma) value of the
@@ -4394,9 +4419,7 @@ class sim:
         w_x0 = self.w_x[0]
 
         # Displacement of the upper, fixed particles in the shear direction
-        #xdisp = self.time_current[0] * self.shearVel()
-        fixvel = numpy.nonzero(self.fixvel > 0.0)
-        xdisp = numpy.max(self.xyzsum[fixvel,0])
+        xdisp = self.shearDisplacement()
 
         # Return shear strain
         return xdisp/w_x0

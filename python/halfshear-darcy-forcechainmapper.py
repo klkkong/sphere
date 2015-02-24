@@ -82,7 +82,7 @@ for sid in sids:
     ax2.semilogy(t, n - nkept, 'k')
     ax2.set_xlabel('Time $t$ [s]')
     ax2.set_ylabel(\
-            'New heavily loaded contacts $\sigma_c \\geq \\sigma_0\\times 4$ Pa')
+            'New heavily loaded contacts')
             #'Heavily loaded contacts $||\\boldsymbol{{\sigma}}_c|| \\geq \\sigma_0\\times 4$ Pa')
 
     ax3 = plt.subplot(3,1,3)
