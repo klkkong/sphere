@@ -4409,13 +4409,29 @@ class sim:
         :returns: The total shear displacement [m]
         :return type: float
 
-        See also: :func:`shearStrain()`
+        See also: :func:`shearStrain()` and :func:`shearVelocity()`
         '''
 
         # Displacement of the upper, fixed particles in the shear direction
         #xdisp = self.time_current[0] * self.shearVel()
         fixvel = numpy.nonzero(self.fixvel > 0.0)
         return numpy.max(self.xyzsum[fixvel,0])
+
+    def shearVelocity(self):
+        '''
+        Calculates and returns the current shear velocity. The displacement
+        is found by determining the total x-axis velocity of the upper,
+        fixed particles.
+
+        :returns: The shear velocity [m/s]
+        :return type: float
+
+        See also: :func:`shearStrainRate()` and :func:`shearDisplacement()`
+        '''
+        # Displacement of the upper, fixed particles in the shear direction
+        #xdisp = self.time_current[0] * self.shearVel()
+        fixvel = numpy.nonzero(self.fixvel > 0.0)
+        return numpy.max(self.vel[fixvel,0])
 
     def shearStrain(self):
         '''
@@ -4452,13 +4468,8 @@ class sim:
         # Current height
         w_x0 = self.w_x[0]
 
-        # Displacement of the upper, fixed particles in the shear direction
-        #xdisp = self.time_current[0] * self.shearVel()
-        fixvel = numpy.nonzero(self.fixvel > 0.0)
-        xvel = numpy.max(self.vel[fixvel,0])
-
         # Return shear strain rate
-        return xvel/w_x0
+        return self.shearVelocity()/w_x0
 
     def inertiaParameterPlanarShear(self):
         '''
