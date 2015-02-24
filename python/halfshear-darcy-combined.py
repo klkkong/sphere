@@ -147,6 +147,7 @@ lns5 = ax2.plot(t, p_f_bar/1000.0 + 80.0, '--',
         color=ax2color,
         label='$\\bar{p}_\\text{f}$')
 ax2.set_ylabel('Mean fluid pressure [kPa]')
+ax2.yaxis.label.set_color(ax2color)
 for tl in ax2.get_yticklabels():
     tl.set_color(ax2color)
     #ax2.legend(loc='upper right')
@@ -195,6 +196,7 @@ ax6color='blue'
 ax6 = ax5.twinx()
 ax6.plot(t, phi_bar, color=ax6color)
 ax6.set_ylabel('Mean porosity [-]')
+ax6.yaxis.label.set_color(ax6color)
 for tl in ax6.get_yticklabels():
     tl.set_color(ax6color)
 
@@ -208,15 +210,18 @@ ax6.text(bbox_x, bbox_y, 'c',
 ## ax7: n_heavy, dn_heavy, ax8: z
 ax7 = plt.subplot(5, 1, 4, sharex=ax1)
 ax7.semilogy(t, n, 'k', label='$n_\\text{heavy}$')
-ax7.set_ylabel('Number of contacts [-]')
-ax7.semilogy(t, n - nkept, 'b', label='$\Delta n_\\text{heavy}$')
+ax7.set_ylabel('Number of heavily loaded contacts [-]')
+#ax7.semilogy(t, n - nkept, 'b', label='$\Delta n_\\text{heavy}$')
+ax7.set_ylim([1.0e1, 2.0e4])
 
 ax8 = ax7.twinx()
 ax8color='green'
 ax8.plot(t, coordinationnumber, color=ax8color)
 ax8.set_ylabel('Coordination number [-]')
+ax8.yaxis.label.set_color(ax8color)
 for tl in ax8.get_yticklabels():
     tl.set_color(ax8color)
+ax8.set_ylim([-0.2,9.8])
 
 ax7.text(bbox_x, bbox_y, 'd',
         horizontalalignment=horizontalalignment,
