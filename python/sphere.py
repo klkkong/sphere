@@ -3754,6 +3754,8 @@ class sim:
                     *self.time_current[0])
         elif type == 'effective':
             return self.w_force[0]/(self.L[0]*self.L[1])
+        else:
+            raise Exception('Normal stress type ' + type + ' not understood')
 
     def volume(self, idx):
         '''
