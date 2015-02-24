@@ -2313,6 +2313,18 @@ class sim:
         '''
         self.contactmodel[0] = contactmodel
 
+    def wall0iz(self):
+        '''
+        Returns the cell index of wall 0 along z.
+        
+        :returns: z cell index
+        :return type: int
+        '''
+        if self.nw[0] > 0:
+            return int(sim.w_x[0]/(sim.L[2]/sim.num[2]))
+        else:
+            raise Exception('No dynamic top wall present!')
+
     def normalBoundariesXY(self):
         '''
         Set the x and y boundary conditions to be static walls.
