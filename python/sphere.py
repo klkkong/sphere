@@ -5793,24 +5793,35 @@ class sim:
         '''
         self.ndem = numpy.asarray(ndem)
 
-    def shearStress(self):
+    def shearStress(self, type='effective'):
         '''
         Calculates the sum of shear stress values measured on any moving
         particles with a finite and fixed velocity.
+
+        :param type: Find the 'defined' or 'effective' (default) shear stress 
+        :type type: str
 
         :returns: The shear stress in Pa
         :return type: numpy.array
         '''
 
-        fixvel = numpy.nonzero(self.fixvel > 0.0)
-        force = numpy.zeros(3)
+        if type == 'defined':
+            return self.w_tau_x[0]
 
-        # Summation of shear stress contributions
-        for i in fixvel[0]:
-            if self.vel[i,0] > 0.0:
-                force += -self.force[i,:]
+        elif type == 'effective':
 
-        return force/(self.L[0]*self.L[1])
+            fixvel = numpy.nonzero(self.fixvel > 0.0)
+            force = numpy.zeros(3)
+
+            # Summation of shear stress contributions
+            for i in fixvel[0]:
+                if self.vel[i,0] > 0.0:
+                    force += -self.force[i,:]
+
+            return force/(self.L[0]*self.L[1])
+
+        else:
+            raise Exception('Shear stress type ' + type + ' not understood')
 
 
     def visualize(self, method='energy', savefig=True, outformat='png',
