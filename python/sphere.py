@@ -2321,7 +2321,7 @@ class sim:
         :return type: int
         '''
         if self.nw[0] > 0:
-            return int(sim.w_x[0]/(sim.L[2]/sim.num[2]))
+            return int(self.w_x[0]/(self.L[2]/self.num[2]))
         else:
             raise Exception('No dynamic top wall present!')
 
