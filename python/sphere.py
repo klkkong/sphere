@@ -5841,7 +5841,7 @@ class sim:
                 if self.vel[i,0] > 0.0:
                     force += -self.force[i,:]
 
-            return force/(self.L[0]*self.L[1])
+            return force[0]/(self.L[0]*self.L[1])
 
         else:
             raise Exception('Shear stress type ' + type + ' not understood')
