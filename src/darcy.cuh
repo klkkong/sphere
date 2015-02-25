@@ -625,7 +625,7 @@ __global__ void findDarcyPressureForce(
             - rho_f*V*MAKE_FLOAT3(
                     devC_params.g[0],
                     devC_params.g[1],
-                    devC_params.g[2]);
+                    devC_params.g[2]) * 0.9;
 
         // Add Neumann BC at top wall
         //if (i_z >= wall0_iz - 1)

@@ -19,6 +19,7 @@ fluid = True
 #threshold = 100.0 # [N]
 calculateforcechains = False
 legend_alpha=0.5
+linewidth=0.5
 
 
 ###################
@@ -131,11 +132,12 @@ fig = plt.figure(figsize=[3.5,8])
 
 ## ax1: N, tau, ax2: p_f
 ax1 = plt.subplot(5, 1, 1)
-lns0 = ax1.plot(t, sigma_def/1000., '-k', label="$\\sigma_0$")
+lns0 = ax1.plot(t, sigma_def/1000., '-k', label="$\\sigma_0$",
+        linewidth=linewidth)
 #lns1 = ax1.plot(t, sigma_eff/1000., '-k', label="$\\sigma'$")
 #lns2 = ax1.plot(t, tau_def/1000., '-r', label="$\\tau$")
 #ns2 = ax1.plot(t, tau_def/1000., '-r')
-lns3 = ax1.plot(t, tau_eff/1000., '-r', label="$\\tau'$")
+lns3 = ax1.plot(t, tau_eff/1000., '-r', label="$\\tau'$", linewidth=linewidth)
 
 ax1.set_ylabel('Stress [kPa]')
 ax2 = ax1.twinx()
@@ -145,7 +147,7 @@ ax2color = 'blue'
         #label='$p_\\text{f}^\\text{forcing}$')
 lns5 = ax2.plot(t, p_f_bar/1000.0 + 80.0, '--',
         color=ax2color,
-        label='$\\bar{p}_\\text{f}$')
+        label='$\\bar{p}_\\text{f}$', linewidth=linewidth)
 ax2.set_ylabel('Mean fluid pressure [kPa]')
 ax2.yaxis.label.set_color(ax2color)
 for tl in ax2.get_yticklabels():
@@ -170,7 +172,7 @@ ax1.text(bbox_x, bbox_y, 'a',
 
 ## ax3: v, ax4: unused
 ax3 = plt.subplot(5, 1, 2, sharex=ax1)
-ax3.semilogy(t, v, 'k')
+ax3.semilogy(t, v, 'k', linewidth=linewidth)
 ax3.set_ylabel('Shear velocity [ms$^{-1}$]')
 # shade stick periods
 collection = matplotlib.collections.BrokenBarHCollection.span_where(
@@ -189,12 +191,12 @@ ax3.text(bbox_x, bbox_y, 'b',
 
 ## ax5: xdisp, ax6: mean(phi)
 ax5 = plt.subplot(5, 1, 3, sharex=ax1)
-ax5.plot(t, xdisp, 'k')
+ax5.plot(t, xdisp, 'k', linewidth=linewidth)
 ax5.set_ylabel('Shear displacement [m]')
 
 ax6color='blue'
 ax6 = ax5.twinx()
-ax6.plot(t, phi_bar, color=ax6color)
+ax6.plot(t, phi_bar, color=ax6color, linewidth=linewidth)
 ax6.set_ylabel('Mean porosity [-]')
 ax6.yaxis.label.set_color(ax6color)
 for tl in ax6.get_yticklabels():
@@ -209,14 +211,14 @@ ax6.text(bbox_x, bbox_y, 'c',
 
 ## ax7: n_heavy, dn_heavy, ax8: z
 ax7 = plt.subplot(5, 1, 4, sharex=ax1)
-ax7.semilogy(t, n, 'k', label='$n_\\text{heavy}$')
+ax7.semilogy(t, n, 'k', label='$n_\\text{heavy}$', linewidth=linewidth)
 ax7.set_ylabel('Number of heavily loaded contacts [-]')
 #ax7.semilogy(t, n - nkept, 'b', label='$\Delta n_\\text{heavy}$')
 ax7.set_ylim([1.0e1, 2.0e4])
 
 ax8 = ax7.twinx()
 ax8color='green'
-ax8.plot(t, coordinationnumber, color=ax8color)
+ax8.plot(t, coordinationnumber, color=ax8color, linewidth=linewidth)
 ax8.set_ylabel('Coordination number [-]')
 ax8.yaxis.label.set_color(ax8color)
 for tl in ax8.get_yticklabels():
