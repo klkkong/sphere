@@ -302,5 +302,8 @@ ax9.set_xlabel('Time [s]')
 fig.tight_layout()
 plt.subplots_adjust(hspace=0.05)
 
-plt.savefig(sid + '-combined.' + outformat)
+filename = sid + '-combined.' + outformat
+plt.savefig(filename)
 plt.close()
+shutil.copyfile(filename, '/home/adc/articles/own/3/graphics/' + filename)
+print(filename)
