@@ -63,6 +63,7 @@ for sid in sids:
     shearstrain_nonzero = shearstrain[idx]
     t_nonzero = t[idx]
 
+    ### "Critical" state fit
     # The algorithm uses the Levenberg-Marquardt algorithm through leastsq
     idxfit = numpy.nonzero((tau_nonzero/N_nonzero < 0.38) &
             (shearstrainrate_nonzero < 0.1) &
@@ -74,6 +75,7 @@ for sid in sids:
     popt, pvoc = scipy.optimize.curve_fit(
             creep_rheology, tau_nonzero[idxfit]/N_nonzero[idxfit],
             shearstrainrate_nonzero[idxfit])
+    print '# Critical state'
     print popt
     print pvoc
     n = popt[0] # stress exponent
@@ -87,6 +89,28 @@ for sid in sids:
                     100)
     strainrate_fit = friction_fit**n
 
+    ### Consolidated state fit
+    idxfit2 = numpy.nonzero((tau_nonzero/N_nonzero < 0.38) &
+            (shearstrainrate_nonzero < 0.1) &
+            ((t_nonzero > 0.0) & (t_nonzero < 3.0)))
+    #popt, pvoc = scipy.optimize.curve_fit(
+            #creep_rheology, tau/N, shearstrainrate)
+    popt2, pvoc2 = scipy.optimize.curve_fit(
+            creep_rheology, tau_nonzero[idxfit2]/N_nonzero[idxfit2],
+            shearstrainrate_nonzero[idxfit2])
+    print '# Consolidatet state'
+    print popt2
+    print pvoc2
+    n2 = popt2[0] # stress exponent
+
+    friction_fit2 =\
+            numpy.linspace(numpy.min(tau_nonzero[idxfit2]/N_nonzero[idxfit2]),
+                    numpy.max(tau_nonzero[idxfit2]/N_nonzero[idxfit2]),
+                    100)
+    strainrate_fit2 = friction_fit2**n2
+
+
+    ### Plotting
     fig = plt.figure(figsize=(3.5,2.5))
     ax1 = plt.subplot(111)
     #ax1.semilogy(N/1000., v)
@@ -103,6 +127,7 @@ for sid in sids:
             #cmap=matplotlib.cm.get_cmap('afmhot'))
 
     ax1.plot(friction_fit, strainrate_fit)
+    ax1.plot(friction_fit2, strainrate_fit2)
 
     ax1.annotate('$\\dot{\\gamma} = (\\tau/N)^{6.40}$',
             xy = (friction_fit[40], strainrate_fit[40]),
