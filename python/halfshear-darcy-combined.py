@@ -21,6 +21,9 @@ calculateforcechains = False
 legend_alpha=0.5
 linewidth=0.5
 
+t_DEM_to_t_real = 5.787e-5
+
+
 
 ###################
 #### DATA READ ####
@@ -128,11 +131,13 @@ horizontalalignment='left'
 fontweight='bold'
 bbox={'facecolor':'white', 'alpha':1.0, 'pad':3}
 
+t = t/t_DEM_to_t_real / (60.*60.*24.)
+
 fig = plt.figure(figsize=[3.5,8])
 
 ## ax1: N, tau, ax2: p_f
 ax1 = plt.subplot(5, 1, 1)
-lns0 = ax1.plot(t, sigma_def/1000., '-k', label="$\\sigma_0$",
+lns0 = ax1.plot(t, sigma_def/1000., '-k', label="$N$",
         linewidth=linewidth)
 #lns1 = ax1.plot(t, sigma_eff/1000., '-k', label="$\\sigma'$")
 #lns2 = ax1.plot(t, tau_def/1000., '-r', label="$\\tau$")
@@ -145,10 +150,10 @@ ax2color = 'blue'
 #lns4 = ax2.plot(t, p_f_top/1000.0 + 80.0, '-',
         #color=ax2color,
         #label='$p_\\text{f}^\\text{forcing}$')
-lns5 = ax2.plot(t, p_f_bar/1000.0 + 80.0, '--',
+lns5 = ax2.plot(t, p_f_bar/1000.0, '--',
         color=ax2color,
-        label='$\\bar{p}_\\text{f}$', linewidth=linewidth)
-ax2.set_ylabel('Mean fluid pressure [kPa]')
+        label='$\\Delta\\bar{p}_\\text{f}$', linewidth=linewidth)
+ax2.set_ylabel('Mean change in fluid pressure [kPa]')
 ax2.yaxis.label.set_color(ax2color)
 for tl in ax2.get_yticklabels():
     tl.set_color(ax2color)
@@ -161,7 +166,7 @@ labs = [l.get_label() for l in lns]
 ax2.legend(lns, labs, loc='upper right', ncol=3,
         fancybox=True, framealpha=legend_alpha)
 ax1.set_ylim([-30, 200])
-ax2.set_ylim(ax1.get_ylim())
+#ax2.set_ylim(ax1.get_ylim())
 
 ax1.text(bbox_x, bbox_y, 'a',
         horizontalalignment=horizontalalignment,
@@ -219,7 +224,7 @@ ax7.set_ylim([1.0e1, 2.0e4])
 ax8 = ax7.twinx()
 ax8color='green'
 ax8.plot(t, coordinationnumber, color=ax8color, linewidth=linewidth)
-ax8.set_ylabel('Coordination number [-]')
+ax8.set_ylabel('Contacts per particle [-]')
 ax8.yaxis.label.set_color(ax8color)
 for tl in ax8.get_yticklabels():
     tl.set_color(ax8color)
@@ -249,19 +254,19 @@ im9 = ax9.pcolormesh(t, zpos_c, poros,
         rasterized=True)
 ax9.set_ylim([zpos_c[0], sim.w_x[0]])
 ax9.set_ylabel('Vertical position [m]')
-#cb9 = plt.colorbar(im9, orientation='horizontal')#, pad=0.20)
+
 cbaxes = fig.add_axes([0.32, 0.1, 0.4, 0.01]) # x,y,w,h
-#cb9 = plt.colorbar(im9, orientation='horizontal', shrink=0.7)
+
 #ax9.add_patch(matplotlib.patches.Rectangle(
-    #(3.0, 0.06), # x,y
+    #(3.0, 0.04), # x,y
     #15., # dx
     #.15, # dy
     #fill=True,
     #linewidth=1,
     #facecolor='white'))
 ax9.add_patch(matplotlib.patches.Rectangle(
-    (3.0, 0.04), # x,y
-    15., # dx
+    (0.6, 0.04), # x,y
+    3., # dx
     .15, # dy
     fill=True,
     linewidth=1,
@@ -298,7 +303,7 @@ plt.setp(ax5.get_xticklabels(), visible=False)
 plt.setp(ax7.get_xticklabels(), visible=False)
 #plt.setp(ax8.get_xticklabels(), visible=False)
 
-ax9.set_xlabel('Time [s]')
+ax9.set_xlabel('Time [d]')
 fig.tight_layout()
 plt.subplots_adjust(hspace=0.05)
 

@@ -2177,6 +2177,35 @@ class sim:
         fn = "../output/{0}.output{1:0=5}.bin".format(self.sid, lastfile)
         self.readbin(fn, verbose)
 
+    def readTime(self, time, verbose=True):
+        '''
+        Read the output file most closely corresponding to the time given as an
+        argument.
+
+        :param time: The desired current time [s]
+        :type time: float
+
+        See also :func:`readbin()`, :func:`readfirst()`, :func:`readsecond`, and
+        :func:`readstep`.
+        '''
+
+        self.readfirst(verbose=False)
+        t_first = self.currentTime()
+        n_first = self.time_step_count[0]
+
+        self.readlast(verbose=False)
+        t_last = self.currentTime()
+        n_last = self.time_step_count[0]
+
+        if time < t_first | time > t_last:
+            raise Exception('Error: The specified time {} s is outside the ' +
+                    'range of output files [{}; {}] s.'.format(time, \
+                            t_first, t_last))
+
+        dt_dn = (t_last - t_first)/(n_last - n_first)
+        step = int((time - t_first)/dt_dn) + n_first
+        sim.readstep(step, verbose=verbose)
+
     def generateRadii(self, psd = 'logn',
             mean = 440e-6,
             variance = 8.8e-9,
