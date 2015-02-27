@@ -2197,14 +2197,14 @@ class sim:
         t_last = self.currentTime()
         n_last = self.time_step_count[0]
 
-        if time < t_first | time > t_last:
+        if time < t_first or time > t_last:
             raise Exception('Error: The specified time {} s is outside the ' +
                     'range of output files [{}; {}] s.'.format(time, \
                             t_first, t_last))
 
         dt_dn = (t_last - t_first)/(n_last - n_first)
-        step = int((time - t_first)/dt_dn) + n_first
-        sim.readstep(step, verbose=verbose)
+        step = int((time - t_first)/dt_dn) + n_first + 1
+        self.readstep(step, verbose=verbose)
 
     def generateRadii(self, psd = 'logn',
             mean = 440e-6,
