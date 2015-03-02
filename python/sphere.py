@@ -4500,7 +4500,7 @@ class sim:
         See also: :func:`shearStrainRate()` and :func:`shearVel()`
         '''
         return self.shearStrainRate() * numpy.mean(self.radius) \
-                * numpy.sqrt(self.rho[0]/self.w_sigma0[0])
+                * numpy.sqrt(self.rho[0]/self.currentNormalStress())
 
     def findOverlaps(self):
         '''
@@ -6545,10 +6545,10 @@ class sim:
             t = numpy.zeros(sb.status())
             I = numpy.zeros(sb.status())
 
-            for i in numpy.arange(sb.status):
+            for i in numpy.arange(sb.status()):
                 sb.readstep(i, verbose = False)
-                t = sb.currentTime()
-                I = sb.inertiaParameterPlanarShear()
+                t[i] = sb.currentTime()
+                I[i] = sb.inertiaParameterPlan[i]arShear()
 
             # Plotting
             if outformat != 'txt':
