@@ -4484,9 +4484,10 @@ class sim:
 
         # Current height
         w_x0 = self.w_x[0]
+        v = self.shearVelocity()
 
         # Return shear strain rate
-        return self.shearVelocity()/w_x0
+        return v/w_x0
 
     def inertiaParameterPlanarShear(self):
         '''
@@ -5873,8 +5874,9 @@ class sim:
         method.
 
         :param method: The type of plot to render. Possible values are 'energy',
-            'walls', 'triaxial', 'mean-fluid-pressure', 'fluid-pressure', 
-            'shear', 'shear-displacement', 'porosity', 'rate-dependence'
+            'walls', 'triaxial', 'inertia', 'mean-fluid-pressure',
+            'fluid-pressure', 'shear', 'shear-displacement', 'porosity',
+            'rate-dependence'
         :type method: str
         :param savefig: Save the image instead of showing it on screen
         :type savefig: bool
@@ -6537,6 +6539,30 @@ class sim:
             ax1.set_xlabel('Friction $\\tau/N$ [-]')
             ax1.set_ylabel('Shear velocity [m/s]')
             '''
+
+        elif method == 'inertia':
+
+            t = numpy.zeros(sb.status())
+            I = numpy.zeros(sb.status())
+
+            for i in numpy.arange(sb.status):
+                sb.readstep(i, verbose = False)
+                t = sb.currentTime()
+                I = sb.inertiaParameterPlanarShear()
+
+            # Plotting
+            if outformat != 'txt':
+
+                if xlim:
+                    ax1.set_xlim(xlim)
+
+                # linear plot of deviatoric stress
+                ax1 = plt.subplot2grid((1,1),(0,0))
+                ax1.set_xlabel('Time $t$ [s]')
+                ax1.set_ylabel('Inertia parameter $I$ [-]')
+                ax1.semilogy(t, I)
+                #ax1.legend()
+                ax1.grid()
 
         elif method == 'mean-fluid-pressure':
 
