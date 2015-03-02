@@ -6548,7 +6548,7 @@ class sim:
             for i in numpy.arange(sb.status()):
                 sb.readstep(i, verbose = False)
                 t[i] = sb.currentTime()
-                I[i] = sb.inertiaParameterPlan[i]arShear()
+                I[i] = sb.inertiaParameterPlanarShear()
 
             # Plotting
             if outformat != 'txt':
