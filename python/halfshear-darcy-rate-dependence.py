@@ -42,6 +42,7 @@ for sid in sids:
     #v = numpy.empty(sim.status())
     shearstrainrate = numpy.empty(sim.status())
     shearstrain = numpy.empty(sim.status())
+    dilation = numpy.empty(sim.status())
     for i in numpy.arange(sim.status()):
         sim.readstep(i+1, verbose=False)
         #tau = sim.shearStress()
@@ -52,6 +53,11 @@ for sid in sids:
         shearstrainrate[i] = sim.shearStrainRate()
         shearstrain[i] = sim.shearStrain()
         t[i] = sim.currentTime()
+
+        if i == 0:
+            initial_height = sim.w_x[0]
+
+        dilation[i] = sim.w_x[0] - initial_height
 
     # remove nonzero sliding velocities and their associated values
     #idx = numpy.nonzero(v)
@@ -167,6 +173,57 @@ for sid in sids:
 
     plt.tight_layout()
     filename = sid + '-rate-dependence.' + outformat
+    plt.savefig(filename)
+    plt.close()
+    shutil.copyfile(filename, '/home/adc/articles/own/3/graphics/' + filename)
+    print(filename)
+
+    ## dilation vs. rate
+    fig = plt.figure(figsize=(3.5,2.5))
+    ax1 = plt.subplot(111)
+    CS = ax1.scatter(friction, dilation,
+            c=shearstrain_nonzero, linewidth=0.05,
+            cmap=matplotlib.cm.get_cmap('afmhot'))
+
+    ## plastic limit
+    x = [0.3, 0.3]
+    y = ax1.get_ylim()
+    limitcolor = '#333333'
+    ax1.plot(x, y, '--', linewidth=2, color=limitcolor)
+    ax1.text(x[0]+0.03, 2.0e-4,
+            'Yield strength', rotation=90, color=limitcolor,
+            bbox={'fc':'#ffffff', 'pad':3, 'alpha':0.7})
+
+
+    ## Fit
+    '''
+    ax1.plot(friction_fit, strainrate_fit)
+    #ax1.plot(friction_fit2, strainrate_fit2)
+    ax1.annotate('$\\dot{\\gamma} = (\\tau/N)^{6.40}$',
+            xy = (friction_fit[40], strainrate_fit[40]),
+            xytext = (0.32+0.05, 2.0e-9),
+            arrowprops=dict(facecolor='blue', edgecolor='blue', shrink=0.1,
+                width=1, headwidth=4, frac=0.2),)
+            #xytext = (friction_fit[50]+0.15, strainrate_fit[50]-1.0e-5))#,
+            #arrowprops=dict(facecolor='black', shrink=0.05),)
+            '''
+
+    ax1.set_yscale('log')
+    ax1.set_xlim([x_min, x_max])
+    y_min = numpy.min(shearstrainrate_nonzero)*0.5
+    y_max = numpy.max(shearstrainrate_nonzero)*2.0
+    ax1.set_ylim([y_min, y_max])
+
+    cb = plt.colorbar(CS)
+    cb.set_label('Shear strain $\\gamma$ [-]')
+
+    #ax1.set_xlabel('Effective normal stress [kPa]')
+    ax1.set_xlabel('Friction $\\tau/N$ [-]')
+    #ax1.set_ylabel('Shear velocity [m/s]')
+    ax1.set_ylabel('Dilation $\\Delta h$ [m]')
+
+    plt.tight_layout()
+    filename = sid + '-rate-dependence-dilation.' + outformat
     plt.savefig(filename)
     plt.close()
     shutil.copyfile(filename, '/home/adc/articles/own/3/graphics/' + filename)
