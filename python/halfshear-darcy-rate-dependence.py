@@ -145,7 +145,7 @@ for sid in sids:
     ## Fit
     ax1.plot(friction_fit, strainrate_fit)
     #ax1.plot(friction_fit2, strainrate_fit2)
-    ax1.annotate('$\\dot{\\gamma} = (\\tau/N)^{6.40}$',
+    ax1.annotate('$\\dot{\\gamma} = (\\tau/N)^{6.4}$',
             xy = (friction_fit[40], strainrate_fit[40]),
             xytext = (0.32+0.05, 2.0e-9),
             arrowprops=dict(facecolor='blue', edgecolor='blue', shrink=0.1,
@@ -181,7 +181,7 @@ for sid in sids:
     ## dilation vs. rate
     fig = plt.figure(figsize=(3.5,2.5))
     ax1 = plt.subplot(111)
-    CS = ax1.scatter(friction, dilation,
+    CS = ax1.scatter(friction, dilation[idx],
             c=shearstrain_nonzero, linewidth=0.05,
             cmap=matplotlib.cm.get_cmap('afmhot'))
 
@@ -199,7 +199,7 @@ for sid in sids:
     '''
     ax1.plot(friction_fit, strainrate_fit)
     #ax1.plot(friction_fit2, strainrate_fit2)
-    ax1.annotate('$\\dot{\\gamma} = (\\tau/N)^{6.40}$',
+    ax1.annotate('$\\dot{\\gamma} = (\\tau/N)^{6.4}$',
             xy = (friction_fit[40], strainrate_fit[40]),
             xytext = (0.32+0.05, 2.0e-9),
             arrowprops=dict(facecolor='blue', edgecolor='blue', shrink=0.1,
