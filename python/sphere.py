@@ -4411,24 +4411,6 @@ class sim:
         video(self.sid, out_folder, video_format, graphics_folder, \
               graphics_format, fps, qscale, bitrate, verbose)
 
-    def shearVel(self):
-        '''
-        Calculates and returns the shear velocity (gamma_dot) of the
-        experiment. The shear velocity is the x-axis velocity value of the
-        upper particles.
-
-        :returns: The shear velocity applied by the upper, fixed particles [m/s]
-        :return type: float
-
-        See also: :func:`shearStrainRate()` and :func:`shearStrain()`
-        '''
-
-        # Find the fixed particles
-        fixvel = numpy.nonzero(self.fixvel > 0.0)
-
-        # The shear velocity is the x-axis velocity value of the upper particles
-        return self.vel[fixvel,0].max()
-
     def shearDisplacement(self):
         '''
         Calculates and returns the current shear displacement. The displacement
@@ -4461,6 +4443,12 @@ class sim:
         #xdisp = self.time_current[0] * self.shearVel()
         fixvel = numpy.nonzero(self.fixvel > 0.0)
         return numpy.max(self.vel[fixvel,0])
+
+    def shearVel(self):
+        '''
+        Alias of :func:`shearVelocity()`
+        '''
+        return self.shearVelocity()
 
     def shearStrain(self):
         '''

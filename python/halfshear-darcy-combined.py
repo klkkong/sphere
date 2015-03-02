@@ -12,6 +12,7 @@ import numpy
 import sphere
 import matplotlib.pyplot as plt
 import matplotlib.patches
+import matplotlib.colors
 
 sid = 'halfshear-darcy-sigma0=80000.0-k_c=3.5e-13-mu=1.04e-07-ss=10000.0-A=70000.0-f=0.2'
 outformat = 'pdf'
@@ -56,6 +57,7 @@ phi_bar   = numpy.empty_like(t)
 
 # mean horizontal porosity plot
 poros     = numpy.empty((sim.num[2], nsteps))
+#xvel      = numpy.zeros((sim.num[2], nsteps))
 zpos_c    = numpy.empty(sim.num[2])
 dz = sim.L[2]/sim.num[2]
 for i in numpy.arange(sim.num[2]):
@@ -86,6 +88,21 @@ for i in numpy.arange(nsteps):
     xdisp[i]     = sim.shearDisplacement()
 
     poros[:,i]   = numpy.average(numpy.average(sim.phi, axis=0),axis=0)
+
+    # calculate mean values of xvel
+    '''
+    dz = sim.L[2]/(sim.num[2])
+    for iz in numpy.arange(sim.num[2]):
+        z_bot = iz*dz
+        z_top = (iz+1)*dz
+        I = numpy.nonzero((sim.x[:,2] >= z_bot) & (sim.x[:,2] < z_top))
+        if I[0].size > 0:
+            #print I
+            #xvel[iz,i] = numpy.mean(sim.vel[I,0])
+            xvel[iz,i] = numpy.mean(numpy.abs(sim.vel[I,0]))
+            #print numpy.mean(sim.vel[I,0])
+            #xvel[iz,i] = numpy.abs(numpy.mean(sim.vel[I,0]))
+            '''
 
     if calculateforcechains:
         if i > 0:
@@ -167,6 +184,7 @@ ax2.legend(lns, labs, loc='upper right', ncol=3,
         fancybox=True, framealpha=legend_alpha)
 ax1.set_ylim([-30, 200])
 #ax2.set_ylim(ax1.get_ylim())
+ax2.set_ylim([-115,115])
 
 ax1.text(bbox_x, bbox_y, 'a',
         horizontalalignment=horizontalalignment,
@@ -239,18 +257,20 @@ ax7.text(bbox_x, bbox_y, 'd',
 
 ## ax9: porosity, ax10: unused
 ax9 = plt.subplot(5, 1, 5, sharex=ax1)
-#poros_max = numpy.max(poros[0:sim.wall0iz(),:])
-#poros_min = numpy.min(poros)
-#poros_max = 0.44
 poros_max = 0.45
 poros_min = 0.37
 cmap = matplotlib.cm.get_cmap('Blues_r')
+#cmap = matplotlib.cm.get_cmap('afmhot')
+#im9 = ax9.pcolormesh(t, zpos_c, poros,
+#zpos_c = zpos_c[:-1]
+#xvel = xvel[:-1]
 im9 = ax9.pcolormesh(t, zpos_c, poros,
         cmap=cmap,
         #cmap=matplotlib.cm.get_cmap('bwr'),
         #cmap=matplotlib.cm.get_cmap('coolwarm'),
         #vmin=-p_ext, vmax=p_ext,
         vmin=poros_min, vmax=poros_max,
+        #norm=matplotlib.colors.LogNorm(vmin=1.0e-10, vmax=xvel.max()),
         rasterized=True)
 ax9.set_ylim([zpos_c[0], sim.w_x[0]])
 ax9.set_ylabel('Vertical position [m]')
@@ -273,9 +293,13 @@ ax9.add_patch(matplotlib.patches.Rectangle(
     facecolor='white'))
 
 cb9 = plt.colorbar(im9, cax=cbaxes,
-        ticks=[poros_min, poros_min + 0.5*(poros_max-poros_min), poros_max],
+        ticks=[poros_min,
+            poros_min + 0.5*(poros_max-poros_min),
+            poros_max],
+        #ticks=[xvel.min(), xvel.min() + 0.5*(xvel.max()-xvel.min()), xvel.max()],
         orientation='horizontal',
-        extend='min', cmap=cmap)
+        extend='min',
+        cmap=cmap)
 cmap.set_under([8./255., 48./255., 107./255.])
 cb9.set_label('Mean horizontal porosity [-]')
 '''

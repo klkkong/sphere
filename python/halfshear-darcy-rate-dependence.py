@@ -126,13 +126,23 @@ for sid in sids:
             #c=shearstrain_nonzero[idxfit], linewidth=0.2,
             #cmap=matplotlib.cm.get_cmap('afmhot'))
 
-    ax1.plot(friction_fit, strainrate_fit)
-    ax1.plot(friction_fit2, strainrate_fit2)
+    ## plastic limit
+    x = [0.3, 0.3]
+    y = ax1.get_ylim()
+    limitcolor = '#333333'
+    ax1.plot(x, y, '--', linewidth=2, color=limitcolor)
+    ax1.text(x[0]+0.03, 2.0e-4,
+            'Yield strength', rotation=90, color=limitcolor,
+            bbox={'fc':'#ffffff', 'pad':3, 'alpha':0.7})
 
+
+    ## Fit
+    ax1.plot(friction_fit, strainrate_fit)
+    #ax1.plot(friction_fit2, strainrate_fit2)
     ax1.annotate('$\\dot{\\gamma} = (\\tau/N)^{6.40}$',
             xy = (friction_fit[40], strainrate_fit[40]),
-            xytext = (0.32, 2.0e-7),
-            arrowprops=dict(facecolor='blue', edgecolor='blue', shrink=0.05,
+            xytext = (0.32+0.05, 2.0e-9),
+            arrowprops=dict(facecolor='blue', edgecolor='blue', shrink=0.1,
                 width=1, headwidth=4, frac=0.2),)
             #xytext = (friction_fit[50]+0.15, strainrate_fit[50]-1.0e-5))#,
             #arrowprops=dict(facecolor='black', shrink=0.05),)
@@ -154,7 +164,6 @@ for sid in sids:
     ax1.set_xlabel('Friction $\\tau/N$ [-]')
     #ax1.set_ylabel('Shear velocity [m/s]')
     ax1.set_ylabel('Shear strain rate $\\dot{\\gamma}$ [s$^{-1}$]')
-
 
     plt.tight_layout()
     filename = sid + '-rate-dependence.' + outformat
