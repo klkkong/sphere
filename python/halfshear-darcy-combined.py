@@ -53,6 +53,7 @@ v         = numpy.empty_like(t)
 
 # displacement and mean porosity plot
 xdisp     = numpy.empty_like(t)
+xdispint  = numpy.zeros_like(t)
 phi_bar   = numpy.empty_like(t)
 
 # mean horizontal porosity plot

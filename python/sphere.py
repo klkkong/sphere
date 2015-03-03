@@ -1843,9 +1843,9 @@ class sim:
         #polydata.GetCellData().SetScalars(forces)  # default scalar
         polydata.GetCellData().SetScalars(forces)  # default scalar
         #polydata.GetCellData().AddArray(forces)
-        #polydata.GetCellData().AddArray(stresses)
+        polydata.GetCellData().AddArray(stresses)
         #polydata.GetPointData().AddArray(stresses)
-        polydata.GetPointData().SetScalars(stresses)  # default scalar
+        #polydata.GetPointData().SetScalars(stresses)  # default scalar
 
         # write VTK XML image data file
         writer = vtk.vtkXMLPolyDataWriter()
@@ -5866,7 +5866,7 @@ class sim:
 
 
     def visualize(self, method='energy', savefig=True, outformat='png',
-            pickle=False, xlim=False):
+            pickle=False, xlim=False, firststep=0):
         '''
         Visualize output from the simulation, where the temporal progress is
         of interest. The output will be saved in the current folder with a name
@@ -5888,6 +5888,8 @@ class sim:
         :param xlim: Set custom limits to the x axis. If not specified, the x
             range will correspond to the entire data interval.
         :type xlim: array
+        :param firststep: The first output file step to read (default: 0)
+        :type firststep: int
         '''
 
         lastfile = self.status()
@@ -5901,18 +5903,19 @@ class sim:
             fig = plt.figure(figsize=(20,8))
 
             # Allocate arrays
-            Epot = numpy.zeros(lastfile+1)
-            Ekin = numpy.zeros(lastfile+1)
-            Erot = numpy.zeros(lastfile+1)
-            Es  = numpy.zeros(lastfile+1)
-            Ev  = numpy.zeros(lastfile+1)
-            Es_dot = numpy.zeros(lastfile+1)
-            Ev_dot = numpy.zeros(lastfile+1)
-            Ebondpot = numpy.zeros(lastfile+1)
-            Esum = numpy.zeros(lastfile+1)
+            t = numpy.zeros(lastfile-firststep)
+            Epot = numpy.zeros_like(t)
+            Ekin = numpy.zeros_like(t)
+            Erot = numpy.zeros_like(t)
+            Es  = numpy.zeros_like(t)
+            Ev  = numpy.zeros_like(t)
+            Es_dot = numpy.zeros_like(t)
+            Ev_dot = numpy.zeros_like(t)
+            Ebondpot = numpy.zeros_like(t)
+            Esum = numpy.zeros_like(t)
 
             # Read energy values from simulation binaries
-            for i in range(lastfile+1):
+            for i in numpy.arange(firststep, lastfile+1):
                 sb.readstep(i, verbose = False)
 
                 Epot[i] = sb.energy("pot")
@@ -5925,8 +5928,8 @@ class sim:
                 Ebondpot[i] = sb.energy("bondpot")
                 Esum[i] = Epot[i] + Ekin[i] + Erot[i] + Es[i] + Ev[i] +\
                         Ebondpot[i]
+                t[i] = sb.currentTime()
 
-                t = numpy.linspace(0.0, sb.time_current, lastfile+1)
 
             if outformat != 'txt':
                 # Potential energy
@@ -6020,11 +6023,11 @@ class sim:
         elif method == 'walls':
 
             # Read energy values from simulation binaries
-            for i in range(lastfile+1):
+            for i in numpy.arange(firststep, lastfile+1):
                 sb.readstep(i, verbose=False)
 
                 # Allocate arrays on first run
-                if i == 0:
+                if i == firststep:
                     wforce = numpy.zeros((lastfile+1)*sb.nw[0],\
                             dtype=numpy.float64).reshape((lastfile+1), sb.nw[0])
                     wvel   = numpy.zeros((lastfile+1)*sb.nw[0],\
@@ -6096,14 +6099,14 @@ class sim:
         elif method == 'triaxial':
 
             # Read energy values from simulation binaries
-            for i in range(lastfile+1):
+            for i in numpy.arange(firststep, lastfile+1):
                 sb.readstep(i, verbose = False)
 
                 vol = (sb.w_x[0]-sb.origo[2]) * (sb.w_x[1]-sb.w_x[2]) \
                         * (sb.w_x[3] - sb.w_x[4])
 
                 # Allocate arrays on first run
-                if i == 0:
+                if i == firststep:
                     axial_strain = numpy.zeros(lastfile+1, dtype=numpy.float64)
                     deviatoric_stress =\
                             numpy.zeros(lastfile+1, dtype=numpy.float64)
@@ -6155,11 +6158,11 @@ class sim:
         elif method == 'shear':
 
             # Read stress values from simulation binaries
-            for i in range(lastfile+1):
+            for i in numpy.arange(firststep, lastfile+1):
                 sb.readstep(i, verbose = False)
 
                 # First iteration: Allocate arrays and find constant values
-                if i == 0:
+                if i == firststep:
                     # Shear displacement
                     self.xdisp    = numpy.zeros(lastfile+1, dtype=numpy.float64)
 
@@ -6186,7 +6189,7 @@ class sim:
                     w_x0 = sb.w_x[0]        # Original height
                     A = sb.L[0] * sb.L[1]   # Upper surface area
 
-                if i == 1:
+                if i == firststep+1:
                     w_x0 = sb.w_x[0]        # Original height
 
                 # Summation of shear stress contributions
@@ -6269,7 +6272,7 @@ class sim:
                 try :
                     fh = open(filename, "w")
                     L = sb.L[2] - sb.origo[2] # Initial height
-                    for i in range(lastfile+1):
+                    for i in numpy.arange(firststep, lastfile+1):
                         # format: shear distance [mm], sigma [kPa], tau [kPa],
                         # Dilation [%]
                         fh.write("{0}\t{1}\t{2}\t{3}\n".format(xdisp[i],
@@ -6282,14 +6285,14 @@ class sim:
 
         elif method == 'shear-displacement':
 
+            time = numpy.zeros(lastfile+1, dtype=numpy.float64)
             # Read stress values from simulation binaries
-            for i in range(lastfile+1):
+            for i in numpy.arange(firststep, lastfile+1):
                 sb.readstep(i, verbose = False)
 
                 # First iteration: Allocate arrays and find constant values
-                if i == 0:
+                if i == firststep:
                     # Shear displacement
-                    time = numpy.zeros(lastfile+1, dtype=numpy.float64)
 
                     # Shear displacement
                     self.xdisp    = numpy.zeros(lastfile+1, dtype=numpy.float64)
@@ -6330,7 +6333,7 @@ class sim:
 
                 time[i] = sb.time_current[0]
 
-                if i == 1:
+                if i == firststep+1:
                     w_x0 = sb.w_x[0] # Original height
 
                 # Summation of shear stress contributions
@@ -6353,7 +6356,7 @@ class sim:
                 if self.fluid:
                     if i > 0:
                         self.phi_bar[i] = numpy.mean(sb.phi[:,:,0:wall0_iz])
-                    if i == 1:
+                    if i == firststep+1:
                         self.phi_bar[0] = self.phi_bar[1]
                     self.p_f_bar[i] = numpy.mean(sb.p_f[:,:,0:wall0_iz])
                     self.p_f_top[i] = sb.p_f[0,0,-1]
@@ -6486,7 +6489,7 @@ class sim:
             #v = numpy.empty(sb.status())
             shearstrainrate = numpy.empty(sb.status())
             shearstrain = numpy.empty(sb.status())
-            for i in numpy.arange(sb.status()):
+            for i in numpy.arange(firststep, sb.status()):
                 sb.readstep(i+1, verbose=False)
                 #tau = sb.shearStress()
                 tau[i] = sb.w_tau_x # defined shear stress
@@ -6545,7 +6548,7 @@ class sim:
             t = numpy.zeros(sb.status())
             I = numpy.zeros(sb.status())
 
-            for i in numpy.arange(sb.status()):
+            for i in numpy.arange(firststep, sb.status()):
                 sb.readstep(i, verbose = False)
                 t[i] = sb.currentTime()
                 I[i] = sb.inertiaParameterPlanarShear()
@@ -6567,11 +6570,11 @@ class sim:
         elif method == 'mean-fluid-pressure':
 
             # Read pressure values from simulation binaries
-            for i in range(lastfile+1):
+            for i in numpy.arange(firststep, lastfile+1):
                 sb.readstep(i, verbose = False)
 
                 # Allocate arrays on first run
-                if i == 0:
+                if i == firststep:
                     p_mean = numpy.zeros(lastfile+1, dtype=numpy.float64)
 
                 p_mean[i] = numpy.mean(sb.p_f)
@@ -6608,7 +6611,7 @@ class sim:
             pres = numpy.zeros((sb.num[2], sb.status()))
 
             # Read pressure values from simulation binaries
-            for i in numpy.arange(sb.status()):
+            for i in numpy.arange(firststep, sb.status()):
                 sb.readstep(i, verbose = False)
                 pres[:,i] = numpy.average(numpy.average(sb.p_f, axis=0), axis=0)
                 shear_strain[i] = sb.shearStrain()
@@ -6680,14 +6683,14 @@ class sim:
             # cell midpoint cell positions
             zpos_c = numpy.zeros(sb.num[2])
             dz = sb.L[2]/sb.num[2]
-            for i in numpy.arange(sb.num[2]):
+            for i in numpy.arange(firststep, sb.num[2]):
                 zpos_c[i] = i*dz + 0.5*dz
 
             shear_strain = numpy.zeros(sb.status())
             poros = numpy.zeros((sb.num[2], sb.status()))
 
             # Read pressure values from simulation binaries
-            for i in numpy.arange(sb.status()):
+            for i in numpy.arange(firststep, sb.status()):
                 sb.readstep(i, verbose = False)
                 poros[:,i] = numpy.average(numpy.average(sb.phi, axis=0),axis=0)
                 shear_strain[i] = sb.shearStrain()
