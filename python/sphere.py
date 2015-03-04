@@ -6292,7 +6292,6 @@ class sim:
 
                 # First iteration: Allocate arrays and find constant values
                 if i == firststep:
-                    # Shear displacement
 
                     # Shear displacement
                     self.xdisp    = numpy.zeros(lastfile+1, dtype=numpy.float64)
