@@ -22,6 +22,9 @@ calculateforcechains = False
 legend_alpha=0.5
 linewidth=0.5
 
+rasterized=True # rasterize colored areas (pcolormesh and colorbar)
+izfactor = 4 # factor for vertical discretization in xvel/poros
+
 t_DEM_to_t_real = 5.787e-5
 
 
@@ -57,10 +60,10 @@ phi_bar   = numpy.empty_like(t)
 
 # mean horizontal porosity plot
 poros     = numpy.empty((sim.num[2], nsteps))
-#xvel      = numpy.zeros((sim.num[2], nsteps))
-zpos_c    = numpy.empty(sim.num[2])
-dz = sim.L[2]/sim.num[2]
-for i in numpy.arange(sim.num[2]):
+xvel      = numpy.zeros((sim.num[2]*izfactor, nsteps))
+zpos_c    = numpy.empty(sim.num[2]*izfactor)
+dz = sim.L[2]/(sim.num[2]*izfactor)
+for i in numpy.arange(sim.num[2]*izfactor):
     zpos_c[i] = i*dz + 0.5*dz
 
 # Contact statistics plot
@@ -90,19 +93,16 @@ for i in numpy.arange(nsteps):
     poros[:,i]   = numpy.average(numpy.average(sim.phi, axis=0),axis=0)
 
     # calculate mean values of xvel
-    '''
-    dz = sim.L[2]/(sim.num[2])
-    for iz in numpy.arange(sim.num[2]):
+    #'''
+    dz = sim.L[2]/(sim.num[2]*izfactor)
+    for iz in numpy.arange(sim.num[2]*izfactor):
         z_bot = iz*dz
         z_top = (iz+1)*dz
         I = numpy.nonzero((sim.x[:,2] >= z_bot) & (sim.x[:,2] < z_top))
         if I[0].size > 0:
-            #print I
-            #xvel[iz,i] = numpy.mean(sim.vel[I,0])
-            xvel[iz,i] = numpy.mean(numpy.abs(sim.vel[I,0]))
-            #print numpy.mean(sim.vel[I,0])
-            #xvel[iz,i] = numpy.abs(numpy.mean(sim.vel[I,0]))
-            '''
+            #xvel[iz,i] = numpy.mean(numpy.abs(sim.vel[I,0]))
+            xvel[iz,i] = numpy.mean(sim.vel[I,0])
+            #'''
 
     if calculateforcechains:
         if i > 0:
@@ -244,7 +244,7 @@ ax5.plot(t, xdisp/xdisp[-1], 'k', linewidth=linewidth)
 
 #ax5.set_ylabel('Shear displacement [m]')
 ax5.set_ylabel('Normalized displacement [-]')
-ax5.set_ylim([-0.05, 1.05])
+ax5.set_ylim([-0.02, 1.02])
 
 ax6color='blue'
 ax6 = ax5.twinx()
@@ -292,12 +292,15 @@ poros_min = 0.37
 cmap = matplotlib.cm.get_cmap('afmhot')
 #im9 = ax9.pcolormesh(t, zpos_c, poros,
 #zpos_c = zpos_c[:-1]
-#xvel = xvel[:-1]
+xvel = xvel[:-1]
+xvel[xvel < 0.0] = 0.0
 im9 = ax9.pcolormesh(t, zpos_c, poros,
+#im9 = ax9.pcolormesh(t, zpos_c, xvel,
         cmap=cmap,
-        #vmin=poros_min, vmax=poros_max,
-        norm=matplotlib.colors.LogNorm(vmin=1.0e-10, vmax=xvel.max()),
-        rasterized=True)
+        vmin=poros_min, vmax=poros_max,
+        #norm=matplotlib.colors.LogNorm(vmin=1.0e-8, vmax=xvel.max()),
+        shading='goraud',
+        rasterized=rasterized)
 ax9.set_ylim([zpos_c[0], sim.w_x[0]])
 ax9.set_ylabel('Vertical position [m]')
 
@@ -316,15 +319,17 @@ ax9.add_patch(matplotlib.patches.Rectangle(
     .15, # dy
     fill=True,
     linewidth=1,
-    facecolor='white'))
+    facecolor='white',
+    alpha=legend_alpha))
 
 cb9 = plt.colorbar(im9, cax=cbaxes,
-        #ticks=[poros_min, poros_min + 0.5*(poros_max-poros_min), poros_max],
-        ticks=[xvel.min(), xvel.min() + 0.5*(xvel.max()-xvel.min()), xvel.max()],
+        ticks=[poros_min, poros_min + 0.5*(poros_max-poros_min), poros_max],
+        #ticks=[xvel.min(), xvel.min() + 0.5*(xvel.max()-xvel.min()), xvel.max()],
         orientation='horizontal',
         extend='min',
         cmap=cmap)
-cmap.set_under([8./255., 48./255., 107./255.])
+cmap.set_under([8./255., 48./255., 107./255.]) # for poros
+#cmap.set_under([1.0e-3, 1.0e-3, 1.0e-3]) # for xvel
 cb9.set_label('Mean horizontal porosity [-]')
 '''
 ax9.text(0.5, 0.4, 'Mean horizontal porosity [-]\\\\',
@@ -332,7 +337,7 @@ ax9.text(0.5, 0.4, 'Mean horizontal porosity [-]\\\\',
         verticalalignment='center',
         bbox={'facecolor':'white', 'alpha':1.0, 'pad':3})
 '''
-#cb9.solids.set_rasterized(True)
+cb9.solids.set_rasterized(rasterized)
 
 ax9.text(bbox_x, bbox_y, 'e',
         horizontalalignment=horizontalalignment,

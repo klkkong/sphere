@@ -5646,7 +5646,7 @@ class sim:
         '''
         self.setTopWallNormalStressModulation(A = 0.0, f = 0.0)
 
-    def setFluidPressureModulation(self, A, f, phi=0.0, plot=True):
+    def setFluidPressureModulation(self, A, f, phi=0.0, plot=False):
         '''
         Set the parameters for the sine wave modulating the fluid pressures
         at the top boundary. Note that a cos-wave is obtained with phi=pi/2.
