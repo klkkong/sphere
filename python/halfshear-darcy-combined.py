@@ -31,7 +31,7 @@ t_DEM_to_t_real = 5.787e-5
 ###################
 
 sim = sphere.sim(sid, fluid=fluid)
-sim.readfirst()
+sim.readfirst(verbose=False)
 
 #nsteps = 2
 #nsteps = 10
@@ -71,7 +71,7 @@ nkept              = numpy.empty(nsteps)
 
 for i in numpy.arange(nsteps):
 
-    sim.readstep(i+1)
+    sim.readstep(i+1, verbose=False)
 
     t[i]         = sim.currentTime()
 
@@ -231,19 +231,20 @@ ax3.text(bbox_x, bbox_y, 'b',
 ## ax5: xdisp, ax6: mean(phi)
 ax5 = plt.subplot(5, 1, 3, sharex=ax1)
 
-ax5.plot(t, xdisp, 'k', linewidth=linewidth)
+#ax5.plot(t, xdisp, 'k', linewidth=linewidth)
 
 # integrated displacement
 #ax5.plot(t, xdispint, 'k', linewidth=linewidth)
 
 # normalized displacement
-#ax5.plot(t, xdisp/xdisp[-1], 'k', linewidth=linewidth)
+ax5.plot(t, xdisp/xdisp[-1], 'k', linewidth=linewidth)
 
 # detrended displacement
 #ax5.plot(t, xdisp - (xdisp[-1] - xdisp[0])*t/t[-1], 'k', linewidth=linewidth)
 
-ax5.set_ylabel('Shear displacement [m]')
-#ax5.set_ylabel('Normalized shear displacement [-]')
+#ax5.set_ylabel('Shear displacement [m]')
+ax5.set_ylabel('Normalized displacement [-]')
+ax5.set_ylim([-0.05, 1.05])
 
 ax6color='blue'
 ax6 = ax5.twinx()
@@ -287,18 +288,15 @@ ax7.text(bbox_x, bbox_y, 'd',
 ax9 = plt.subplot(5, 1, 5, sharex=ax1)
 poros_max = 0.45
 poros_min = 0.37
-cmap = matplotlib.cm.get_cmap('Blues_r')
-#cmap = matplotlib.cm.get_cmap('afmhot')
+#cmap = matplotlib.cm.get_cmap('Blues_r')
+cmap = matplotlib.cm.get_cmap('afmhot')
 #im9 = ax9.pcolormesh(t, zpos_c, poros,
 #zpos_c = zpos_c[:-1]
 #xvel = xvel[:-1]
 im9 = ax9.pcolormesh(t, zpos_c, poros,
         cmap=cmap,
-        #cmap=matplotlib.cm.get_cmap('bwr'),
-        #cmap=matplotlib.cm.get_cmap('coolwarm'),
-        #vmin=-p_ext, vmax=p_ext,
-        vmin=poros_min, vmax=poros_max,
-        #norm=matplotlib.colors.LogNorm(vmin=1.0e-10, vmax=xvel.max()),
+        #vmin=poros_min, vmax=poros_max,
+        norm=matplotlib.colors.LogNorm(vmin=1.0e-10, vmax=xvel.max()),
         rasterized=True)
 ax9.set_ylim([zpos_c[0], sim.w_x[0]])
 ax9.set_ylabel('Vertical position [m]')
@@ -321,10 +319,8 @@ ax9.add_patch(matplotlib.patches.Rectangle(
     facecolor='white'))
 
 cb9 = plt.colorbar(im9, cax=cbaxes,
-        ticks=[poros_min,
-            poros_min + 0.5*(poros_max-poros_min),
-            poros_max],
-        #ticks=[xvel.min(), xvel.min() + 0.5*(xvel.max()-xvel.min()), xvel.max()],
+        #ticks=[poros_min, poros_min + 0.5*(poros_max-poros_min), poros_max],
+        ticks=[xvel.min(), xvel.min() + 0.5*(xvel.max()-xvel.min()), xvel.max()],
         orientation='horizontal',
         extend='min',
         cmap=cmap)
