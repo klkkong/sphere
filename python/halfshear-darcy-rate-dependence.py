@@ -104,7 +104,7 @@ for sid in sids:
     popt2, pvoc2 = scipy.optimize.curve_fit(
             creep_rheology, tau_nonzero[idxfit2]/N_nonzero[idxfit2],
             shearstrainrate_nonzero[idxfit2])
-    print '# Consolidatet state'
+    print '# Consolidated state'
     print popt2
     print pvoc2
     n2 = popt2[0] # stress exponent
@@ -133,7 +133,7 @@ for sid in sids:
             #cmap=matplotlib.cm.get_cmap('afmhot'))
 
     ## plastic limit
-    x = [0.3, 0.3]
+    x = [0.28, 0.28]
     y = ax1.get_ylim()
     limitcolor = '#333333'
     ax1.plot(x, y, '--', linewidth=2, color=limitcolor)
@@ -145,7 +145,7 @@ for sid in sids:
     ## Fit
     ax1.plot(friction_fit, strainrate_fit)
     #ax1.plot(friction_fit2, strainrate_fit2)
-    ax1.annotate('$\\dot{\\gamma} = (\\tau/N)^{6.4}$',
+    ax1.annotate('$\\dot{{\\gamma}} = (\\tau/N)^{{{:.1f}}}$'.format(n),
             xy = (friction_fit[40], strainrate_fit[40]),
             xytext = (0.32+0.05, 2.0e-9),
             arrowprops=dict(facecolor='blue', edgecolor='blue', shrink=0.1,

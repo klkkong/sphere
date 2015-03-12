@@ -53,7 +53,6 @@ v         = numpy.empty_like(t)
 
 # displacement and mean porosity plot
 xdisp     = numpy.empty_like(t)
-xdispint  = numpy.zeros_like(t)
 phi_bar   = numpy.empty_like(t)
 
 # mean horizontal porosity plot
@@ -136,7 +135,22 @@ if calculateforcechains:
 else:
     n, nkept, coordinationnumber = numpy.loadtxt(sid + '-fc.txt')
 
+# Transform time from model time to real time [s]
+t = t/t_DEM_to_t_real
 
+## integrate velocities to displacement along x (xdispint)
+#  Taylor two term expansion
+xdispint  = numpy.zeros_like(t)
+v_limit = 1.0e-7
+dt  = (t[1] - t[0])
+dt2 = dt*2.
+for i in numpy.arange(t.size):
+    if i > 0 and i < t.size-1:
+        acc = (numpy.min([v[i+1], v_limit]) - numpy.min([v[i-1], v_limit]))/dt2
+        xdispint[i] = xdispint[i-1] +\
+                numpy.min([v[i], v_limit])*dt + 0.5*acc*dt**2
+    elif i == t.size-1:
+        xdispint[i] = xdispint[i-1] + numpy.min([v[i], v_limit])*dt
 
 
 ##################
@@ -149,7 +163,8 @@ horizontalalignment='left'
 fontweight='bold'
 bbox={'facecolor':'white', 'alpha':1.0, 'pad':3}
 
-t = t/t_DEM_to_t_real / (60.*60.*24.)
+# Time in days
+t = t/(60.*60.*24.)
 
 fig = plt.figure(figsize=[3.5,8])
 
@@ -215,7 +230,7 @@ ax3.text(bbox_x, bbox_y, 'b',
 
 ## ax5: xdisp, ax6: mean(phi)
 ax5 = plt.subplot(5, 1, 3, sharex=ax1)
-ax5.plot(t, xdisp, 'k', linewidth=linewidth)
+ax5.plot(t, xdispint, 'k', linewidth=linewidth)
 ax5.set_ylabel('Shear displacement [m]')
 
 ax6color='blue'
@@ -235,14 +250,14 @@ ax6.text(bbox_x, bbox_y, 'c',
 
 ## ax7: n_heavy, dn_heavy, ax8: z
 ax7 = plt.subplot(5, 1, 4, sharex=ax1)
-ax7.semilogy(t, n, 'k', label='$n_\\text{heavy}$', linewidth=linewidth)
+ax7.semilogy(t[:n.size], n, 'k', label='$n_\\text{heavy}$', linewidth=linewidth)
 ax7.set_ylabel('Number of heavily loaded contacts [-]')
 #ax7.semilogy(t, n - nkept, 'b', label='$\Delta n_\\text{heavy}$')
 ax7.set_ylim([1.0e1, 2.0e4])
 
 ax8 = ax7.twinx()
 ax8color='green'
-ax8.plot(t, coordinationnumber, color=ax8color, linewidth=linewidth)
+ax8.plot(t[:n.size], coordinationnumber, color=ax8color, linewidth=linewidth)
 ax8.set_ylabel('Contacts per particle [-]')
 ax8.yaxis.label.set_color(ax8color)
 for tl in ax8.get_yticklabels():
