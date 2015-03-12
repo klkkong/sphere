@@ -141,7 +141,7 @@ t = t/t_DEM_to_t_real
 ## integrate velocities to displacement along x (xdispint)
 #  Taylor two term expansion
 xdispint  = numpy.zeros_like(t)
-v_limit = 1.0e-7
+v_limit = 1.0e-6
 dt  = (t[1] - t[0])
 dt2 = dt*2.
 for i in numpy.arange(t.size):
