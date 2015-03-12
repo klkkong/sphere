@@ -23,7 +23,8 @@ legend_alpha=0.5
 linewidth=0.5
 
 rasterized=True # rasterize colored areas (pcolormesh and colorbar)
-izfactor = 4 # factor for vertical discretization in xvel/poros
+#izfactor = 4 # factor for vertical discretization in xvel
+izfactor = 1 # factor for vertical discretization in poros
 
 t_DEM_to_t_real = 5.787e-5
 

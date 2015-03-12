@@ -5615,7 +5615,7 @@ class sim:
         plt.clf()
         plt.close(fig)
 
-    def setTopWallNormalStressModulation(self, A, f, plot=True):
+    def setTopWallNormalStressModulation(self, A, f, plot=False):
         '''
         Set the parameters for the sine wave modulating the normal stress
         at the top wall. Note that a cos-wave is obtained with phi=pi/2.
