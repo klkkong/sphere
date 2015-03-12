@@ -141,7 +141,7 @@ t = t/t_DEM_to_t_real
 ## integrate velocities to displacement along x (xdispint)
 #  Taylor two term expansion
 xdispint  = numpy.zeros_like(t)
-v_limit = 1.0e-6
+v_limit = 2.78e-3 # 1 m/hour (WIP)
 dt  = (t[1] - t[0])
 dt2 = dt*2.
 for i in numpy.arange(t.size):
@@ -230,8 +230,20 @@ ax3.text(bbox_x, bbox_y, 'b',
 
 ## ax5: xdisp, ax6: mean(phi)
 ax5 = plt.subplot(5, 1, 3, sharex=ax1)
-ax5.plot(t, xdispint, 'k', linewidth=linewidth)
+
+ax5.plot(t, xdisp, 'k', linewidth=linewidth)
+
+# integrated displacement
+#ax5.plot(t, xdispint, 'k', linewidth=linewidth)
+
+# normalized displacement
+#ax5.plot(t, xdisp/xdisp[-1], 'k', linewidth=linewidth)
+
+# detrended displacement
+#ax5.plot(t, xdisp - (xdisp[-1] - xdisp[0])*t/t[-1], 'k', linewidth=linewidth)
+
 ax5.set_ylabel('Shear displacement [m]')
+#ax5.set_ylabel('Normalized shear displacement [-]')
 
 ax6color='blue'
 ax6 = ax5.twinx()
