@@ -289,8 +289,8 @@ ax7.text(bbox_x, bbox_y, 'd',
 ax9 = plt.subplot(5, 1, 5, sharex=ax1)
 poros_max = 0.45
 poros_min = 0.37
-#cmap = matplotlib.cm.get_cmap('Blues_r')
-cmap = matplotlib.cm.get_cmap('afmhot')
+cmap = matplotlib.cm.get_cmap('Blues_r')
+#cmap = matplotlib.cm.get_cmap('afmhot')
 #im9 = ax9.pcolormesh(t, zpos_c, poros,
 #zpos_c = zpos_c[:-1]
 xvel = xvel[:-1]
