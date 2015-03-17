@@ -19,7 +19,7 @@ outformat = 'pdf'
 fluid = True
 #threshold = 100.0 # [N]
 calculateforcechains = False
-legend_alpha=0.5
+legend_alpha=0.7
 linewidth=0.5
 
 rasterized=True # rasterize colored areas (pcolormesh and colorbar)
