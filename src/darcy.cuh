@@ -1208,7 +1208,7 @@ __global__ void firstDarcySolution(
         const Float*  __restrict__ dev_darcy_k,       // in
         const Float*  __restrict__ dev_darcy_phi,     // in
         const Float*  __restrict__ dev_darcy_dphi,    // in
-        //const Float*  __restrict__ dev_darcy_div_v_p, // in
+        const Float*  __restrict__ dev_darcy_div_v_p, // in
         const Float3* __restrict__ dev_darcy_grad_k,  // in
         const Float beta_f,                           // in
         const Float mu,                               // in
@@ -1244,7 +1244,7 @@ __global__ void firstDarcySolution(
         const Float3 grad_k  = dev_darcy_grad_k[cellidx];
         const Float  phi     = dev_darcy_phi[cellidx];
         const Float  dphi    = dev_darcy_dphi[cellidx];
-        //const Float  div_v_p = dev_darcy_div_v_p[cellidx];
+        const Float  div_v_p = dev_darcy_div_v_p[cellidx];
 
         const Float p_xn  = dev_darcy_p[d_idx(x-1,y,z)];
         const Float p     = dev_darcy_p[cellidx];
@@ -1290,8 +1290,8 @@ __global__ void firstDarcySolution(
 
         Float dp_expl =
             + (ndem*devC_dt)/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
-            //- div_v_p/(beta_f*phi);
-            - dphi/(beta_f*phi*(1.0 - phi));
+            - div_v_p/(beta_f*phi);
+            //- dphi/(beta_f*phi*(1.0 - phi));
 
         // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
         // grid if the wall isn't dynamic
@@ -1316,7 +1316,7 @@ __global__ void firstDarcySolution(
                 "grad_k      = %e, %e, %e\n"
                 "dp_diff     = %e\n"
                 "dp_forc     = %e\n"
-                //"div_v_p     = %e\n"
+                "div_v_p     = %e\n"
                 "dphi        = %e\n"
                 //"dphi/dt     = %e\n"
                 ,
@@ -1330,7 +1330,7 @@ __global__ void firstDarcySolution(
                 grad_p.x, grad_p.y, grad_p.z,
                 grad_k.x, grad_k.y, grad_k.z,
                 dp_diff, dp_forc,
-                //div_v_p//,
+                div_v_p,
                 dphi//,
                 //dphi/(ndem*devC_dt)
                 );
@@ -1356,7 +1356,7 @@ __global__ void updateDarcySolution(
         const Float*  __restrict__ dev_darcy_k,       // in
         const Float*  __restrict__ dev_darcy_phi,     // in
         const Float*  __restrict__ dev_darcy_dphi,    // in
-        //const Float*  __restrict__ dev_darcy_div_v_p, // in
+        const Float*  __restrict__ dev_darcy_div_v_p, // in
         const Float3* __restrict__ dev_darcy_grad_k,  // in
         const Float beta_f,                           // in
         const Float mu,                               // in
@@ -1393,7 +1393,7 @@ __global__ void updateDarcySolution(
         const Float3 grad_k  = dev_darcy_grad_k[cellidx];
         const Float  phi     = dev_darcy_phi[cellidx];
         const Float  dphi    = dev_darcy_dphi[cellidx];
-        //const Float  div_v_p = dev_darcy_div_v_p[cellidx];
+        const Float  div_v_p = dev_darcy_div_v_p[cellidx];
 
         const Float p_old   = dev_darcy_p_old[cellidx];
         const Float dp_expl = dev_darcy_dp_expl[cellidx];
@@ -1443,8 +1443,8 @@ __global__ void updateDarcySolution(
         //Float p_new = p_old
         Float dp_impl =
             + (ndem*devC_dt)/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
-            //- div_v_p/(beta_f*phi);
-            - dphi/(beta_f*phi*(1.0 - phi));
+            - div_v_p/(beta_f*phi);
+            //- dphi/(beta_f*phi*(1.0 - phi));
 
         // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
         // grid if the wall isn't dynamic
