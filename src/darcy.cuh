@@ -952,12 +952,12 @@ __global__ void findDarcyPressureForceLinear(
 
         // add fluid pressure force contributions from each cell face
         const Float3 grad_p = MAKE_FLOAT3(
-                weight(x, X + n_xn, dx, dy, dz)*grad_p_xn +
-                weight(x, X + n_xp, dx, dy, dz)*grad_p_xp,
-                weight(x, X + n_yn, dx, dy, dz)*grad_p_yn +
-                weight(x, X + n_yp, dx, dy, dz)*grad_p_yp,
-                weight(x, X + n_zn, dx, dy, dz)*grad_p_zn +
-                weight(x, X + n_zp, dx, dy, dz)*grad_p_zp);
+                weight(x3, X + n_xn, dx, dy, dz)*grad_p_xn +
+                weight(x3, X + n_xp, dx, dy, dz)*grad_p_xp,
+                weight(x3, X + n_yn, dx, dy, dz)*grad_p_yn +
+                weight(x3, X + n_yp, dx, dy, dz)*grad_p_yp,
+                weight(x3, X + n_zn, dx, dy, dz)*grad_p_zn +
+                weight(x3, X + n_zp, dx, dy, dz)*grad_p_zp);
 
         // find particle volume (radius in x.w)
         const Float v = sphereVolume(x.w);
@@ -966,7 +966,7 @@ __global__ void findDarcyPressureForceLinear(
         // buoyancy force = weight of displaced fluid
         // f_b = -rho_f*V*g
         Float3 f_p = -1.0*grad_p*v
-            - rho_f*V*MAKE_FLOAT3(
+            - rho_f*v*MAKE_FLOAT3(
                     devC_params.g[0],
                     devC_params.g[1],
                     devC_params.g[2]);
@@ -1362,7 +1362,7 @@ __global__ void firstDarcySolution(
         const Float  k       = dev_darcy_k[cellidx];
         const Float3 grad_k  = dev_darcy_grad_k[cellidx];
         const Float  phi     = dev_darcy_phi[cellidx];
-        const Float  dphi    = dev_darcy_dphi[cellidx];
+        //const Float  dphi    = dev_darcy_dphi[cellidx];
         const Float  div_v_p = dev_darcy_div_v_p[cellidx];
 
         const Float p_xn  = dev_darcy_p[d_idx(x-1,y,z)];
@@ -1511,7 +1511,7 @@ __global__ void updateDarcySolution(
         const Float k        = dev_darcy_k[cellidx];
         const Float3 grad_k  = dev_darcy_grad_k[cellidx];
         const Float  phi     = dev_darcy_phi[cellidx];
-        const Float  dphi    = dev_darcy_dphi[cellidx];
+        //const Float  dphi    = dev_darcy_dphi[cellidx];
         const Float  div_v_p = dev_darcy_div_v_p[cellidx];
 
         const Float p_old   = dev_darcy_p_old[cellidx];
