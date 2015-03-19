@@ -490,7 +490,7 @@ __global__ void findDarcyPorositiesLinear(
             dev_darcy_phi[cellidx]     = phi*c_phi;
             dev_darcy_div_v_p[cellidx] = div_v_p;
 
-            printf("\n%d,%d,%d: findDarcyPorosities\n"
+            /*printf("\n%d,%d,%d: findDarcyPorosities\n"
                     "\tphi     = %f\n"
                     "\tX       = %e, %e, %e\n"
                     "\txr      = %e, %e, %e\n"
@@ -499,7 +499,7 @@ __global__ void findDarcyPorositiesLinear(
                     phi,
                     X.x, X.y, X.z,
                     xr.x, xr.y, xr.z,
-                    div_v_p);
+                    div_v_p);*/
 
 #ifdef CHECK_FLUID_FINITE
             (void)checkFiniteFloat("phi", x, y, z, phi);
