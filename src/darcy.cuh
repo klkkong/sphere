@@ -265,6 +265,33 @@ __global__ void findDarcyParticleVelocities(
 }
 */
 
+// Return the volume of a sphere with radius r
+__device__ Float sphereVolume(const Float r)
+{
+    if (r > 0.0)
+        return 4.0/3.0*M_PI*pow(r, 3);
+    else {
+        printf("Error: Negative radius\n");
+        return NAN;
+    }
+}
+
+// Returns a weighting factor based on particle position and fluid center
+// position
+__device__ Float weight(
+        const Float3 x_p, // in: Particle center position
+        const Float3 x_f, // in: Fluid pressure node position
+        const Float  dx,  // in: Cell spacing, x
+        const Float  dy,  // in: Cell spacing, y
+        const Float  dz)  // in: Cell spacing, z
+{
+    const Float x_len = length(x_p - x_f);
+    if (x_len.x < dx && x_len.y < dy && x_len.z < dz)
+        return (1.0 - x_len.x/dx)*(1.0 - x_len.y/dy)*(1.0 - x_len.z/dz);
+    else
+        return 0.0;
+}
+
 // Find the porosity in each cell on the base of a sphere, centered at the cell
 // center. 
 __global__ void findDarcyPorosities(
@@ -300,7 +327,7 @@ __global__ void findDarcyPorosities(
     // Cell sphere radius
     const Float R = fmin(dx, fmin(dy,dz)) * 0.5; // diameter = cell width
     //const Float R = fmin(dx, fmin(dy,dz));       // diameter = 2*cell width
-    const Float cell_volume = 4.0/3.0*M_PI*R*R*R;
+    const Float cell_volume = sphereVolume(R);
 
     Float void_volume = cell_volume;     // current void volume
     Float void_volume_new = cell_volume; // projected new void volume
@@ -395,7 +422,7 @@ __global__ void findDarcyPorosities(
 
                                     // Particle fully contained in cell sphere
                                     if (d <= R - r)
-                                        void_volume -= 4.0/3.0*M_PI*r*r*r;
+                                        void_volume -= sphereVolume(r);
 
                                     //// Find projected new void volume
                                     // Eulerian update of positions
@@ -420,7 +447,7 @@ __global__ void findDarcyPorosities(
 
                                     // Particle fully contained in cell sphere
                                     if (d <= R - r)
-                                        void_volume_new -= 4.0/3.0*M_PI*r*r*r;
+                                        void_volume_new -= sphereVolume(r);
                                 }
                             }
                         }
@@ -608,7 +635,7 @@ __global__ void findDarcyPressureForce(
             //p_zp = p_zn;*/
 
         // find particle volume (radius in x.w)
-        const Float V = 4.0/3.0*M_PI*x.w*x.w*x.w;
+        const Float V = sphereVolume(x.w);
 
         // determine pressure gradient from first order central difference
         const Float3 grad_p = MAKE_FLOAT3(
