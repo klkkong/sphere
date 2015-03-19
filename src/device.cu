@@ -1811,7 +1811,14 @@ __host__ void DEM::startTime()
 
                     if (PROFILING == 1)
                         startTimer(&kernel_tic);
-                    findDarcyPressureForce<<<dimGrid, dimBlock>>>(
+                    /*findDarcyPressureForce<<<dimGrid, dimBlock>>>(
+                            dev_x,
+                            dev_darcy_p,
+                            wall0_iz,
+                            darcy.rho_f,
+                            dev_force,
+                            dev_darcy_f_p);*/
+                    findDarcyPressureForceLinear<<<dimGrid, dimBlock>>>(
                             dev_x,
                             dev_darcy_p,
                             wall0_iz,

@@ -381,12 +381,12 @@ __global__ void findDarcyPorositiesLinear(
             Float v_p_zp = 0.0;
 
             // Coordinates of cell-face nodes relative to cell center
-            Float3 n_xn = MAKE_FLOAT3( -0.5*dx,     0.0,      0.0);
-            Float3 n_xp = MAKE_FLOAT3(  0.5*dx,     0.0,      0.0);
-            Float3 n_yn = MAKE_FLOAT3(     0.0, -0.5*dy,      0.0);
-            Float3 n_yp = MAKE_FLOAT3(     0.0,  0.5*dy,      0.0);
-            Float3 n_zn = MAKE_FLOAT3(     0.0,      0.0, -0.5*dz);
-            Float3 n_zp = MAKE_FLOAT3(     0.0,      0.0,  0.5*dz);
+            const Float3 n_xn = MAKE_FLOAT3( -0.5*dx,     0.0,      0.0);
+            const Float3 n_xp = MAKE_FLOAT3(  0.5*dx,     0.0,      0.0);
+            const Float3 n_yn = MAKE_FLOAT3(     0.0, -0.5*dy,      0.0);
+            const Float3 n_yp = MAKE_FLOAT3(     0.0,  0.5*dy,      0.0);
+            const Float3 n_zn = MAKE_FLOAT3(     0.0,      0.0, -0.5*dz);
+            const Float3 n_zp = MAKE_FLOAT3(     0.0,      0.0,  0.5*dz);
 
             // Read old porosity
             __syncthreads();
@@ -874,6 +874,125 @@ __global__ void findDarcyParticleVelocityDivergence(
 #ifdef CHECK_FLUID_FINITE
         checkFiniteFloat("div_v_p", x, y, z, div_v_p);
 #endif
+    }
+}
+
+// Find particle-fluid interaction force as outlined by Goren et al. 2011, and
+// originally by Gidaspow 1992. All terms other than the pressure force are
+// neglected. The buoyancy force is included.
+__global__ void findDarcyPressureForceLinear(
+    const Float4* __restrict__ dev_x,           // in
+    const Float*  __restrict__ dev_darcy_p,     // in
+    //const Float*  __restrict__ dev_darcy_phi,   // in
+    const unsigned int wall0_iz,                // in
+    const Float rho_f,                          // in
+    Float4* __restrict__ dev_force,             // out
+    Float4* __restrict__ dev_darcy_f_p)         // out
+{
+    unsigned int i = threadIdx.x + blockIdx.x*blockDim.x; // Particle index
+
+    if (i < devC_np) {
+
+        // read particle information
+        __syncthreads();
+        const Float4 x = dev_x[i];
+        const Float3 x3 = MAKE_FLOAT3(x.x, x.y, x.z);
+
+        // determine fluid cell containing the particle
+        const unsigned int i_x =
+            floor((x.x - devC_grid.origo[0])/(devC_grid.L[0]/devC_grid.num[0]));
+        const unsigned int i_y =
+            floor((x.y - devC_grid.origo[1])/(devC_grid.L[1]/devC_grid.num[1]));
+        const unsigned int i_z =
+            floor((x.z - devC_grid.origo[2])/(devC_grid.L[2]/devC_grid.num[2]));
+        const unsigned int cellidx = d_idx(i_x, i_y, i_z);
+
+        // determine cell dimensions
+        const Float dx = devC_grid.L[0]/devC_grid.num[0];
+        const Float dy = devC_grid.L[1]/devC_grid.num[1];
+        const Float dz = devC_grid.L[2]/devC_grid.num[2];
+
+        // read fluid information
+        __syncthreads();
+        //const Float phi = dev_darcy_phi[cellidx];
+        const Float p_xn = dev_darcy_p[d_idx(i_x-1,i_y,i_z)];
+        const Float p    = dev_darcy_p[cellidx];
+        const Float p_xp = dev_darcy_p[d_idx(i_x+1,i_y,i_z)];
+        const Float p_yn = dev_darcy_p[d_idx(i_x,i_y-1,i_z)];
+        const Float p_yp = dev_darcy_p[d_idx(i_x,i_y+1,i_z)];
+        const Float p_zn = dev_darcy_p[d_idx(i_x,i_y,i_z-1)];
+        Float p_zp = dev_darcy_p[d_idx(i_x,i_y,i_z+1)];
+
+        // Cell center position
+        const Float3 X = MAKE_FLOAT3(
+                i_x*dx + 0.5*dx,
+                i_y*dy + 0.5*dy,
+                i_z*dz + 0.5*dz);
+
+        // Coordinates of cell-face nodes relative to cell center
+        const Float3 n_xn = MAKE_FLOAT3( -0.5*dx,     0.0,      0.0);
+        const Float3 n_xp = MAKE_FLOAT3(  0.5*dx,     0.0,      0.0);
+        const Float3 n_yn = MAKE_FLOAT3(     0.0, -0.5*dy,      0.0);
+        const Float3 n_yp = MAKE_FLOAT3(     0.0,  0.5*dy,      0.0);
+        const Float3 n_zn = MAKE_FLOAT3(     0.0,      0.0, -0.5*dz);
+        const Float3 n_zp = MAKE_FLOAT3(     0.0,      0.0,  0.5*dz);
+
+        // Add Neumann BC at top wall
+        if (i_z >= wall0_iz - 1)
+            p_zp = p;
+            //p_zp = p_zn;*/
+
+        // find component-wise pressure gradients at cell faces
+        const Float grad_p_xn = (p - p_xn)/dx;
+        const Float grad_p_xp = (p_xp - p)/dx;
+        const Float grad_p_yn = (p - p_yn)/dy;
+        const Float grad_p_yp = (p_yp - p)/dy;
+        const Float grad_p_zn = (p - p_zn)/dz;
+        const Float grad_p_zp = (p_zp - p)/dz;
+
+        // add fluid pressure force contributions from each cell face
+        const Float3 grad_p = MAKE_FLOAT3(
+                weight(x, X + n_xn, dx, dy, dz)*grad_p_xn +
+                weight(x, X + n_xp, dx, dy, dz)*grad_p_xp,
+                weight(x, X + n_yn, dx, dy, dz)*grad_p_yn +
+                weight(x, X + n_yp, dx, dy, dz)*grad_p_yp,
+                weight(x, X + n_zn, dx, dy, dz)*grad_p_zn +
+                weight(x, X + n_zp, dx, dy, dz)*grad_p_zp);
+
+        // find particle volume (radius in x.w)
+        const Float v = sphereVolume(x.w);
+
+        // find pressure gradient force plus buoyancy force.
+        // buoyancy force = weight of displaced fluid
+        // f_b = -rho_f*V*g
+        Float3 f_p = -1.0*grad_p*v
+            - rho_f*V*MAKE_FLOAT3(
+                    devC_params.g[0],
+                    devC_params.g[1],
+                    devC_params.g[2]);
+
+        // Add Neumann BC at top wall
+        //if (i_z >= wall0_iz - 1)
+        if (i_z >= wall0_iz)
+            f_p.z = 0.0;
+
+        /*printf("%d,%d,%d findPF:\n"
+                "\tphi    = %f\n"
+                "\tp      = %f\n"
+                "\tgrad_p = % f, % f, % f\n"
+                "\tf_p    = % f, % f, % f\n",
+                i_x, i_y, i_z,
+                phi, p,
+                grad_p.x, grad_p.y, grad_p.z,
+                f_p.x, f_p.y, f_p.z);*/
+
+#ifdef CHECK_FLUID_FINITE
+        checkFiniteFloat3("f_p", i_x, i_y, i_z, f_p);
+#endif
+        // save force
+        __syncthreads();
+        dev_force[i]    += MAKE_FLOAT4(f_p.x, f_p.y, f_p.z, 0.0);
+        dev_darcy_f_p[i] = MAKE_FLOAT4(f_p.x, f_p.y, f_p.z, 0.0);
     }
 }
 
