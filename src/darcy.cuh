@@ -285,9 +285,9 @@ __device__ Float weight(
         const Float  dy,  // in: Cell spacing, y
         const Float  dz)  // in: Cell spacing, z
 {
-    const Float x_len = length(x_p - x_f);
-    if (x_len.x < dx && x_len.y < dy && x_len.z < dz)
-        return (1.0 - x_len.x/dx)*(1.0 - x_len.y/dy)*(1.0 - x_len.z/dz);
+    const Float3 dist = abs(x_p - x_f);
+    if (dist.x < dx && dist.y < dy && dist.z < dz)
+        return (1.0 - dist.x/dx)*(1.0 - dist.y/dy)*(1.0 - dist.z/dz);
     else
         return 0.0;
 }
