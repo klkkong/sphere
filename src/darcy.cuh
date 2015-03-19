@@ -276,6 +276,12 @@ __device__ Float sphereVolume(const Float r)
     }
 }
 
+__device__ Float3 abs(const Float3 v)
+{
+    return MAKE_FLOAT3(abs(v.x), abs(v.y), abs(v.z));
+}
+            
+
 // Returns a weighting factor based on particle position and fluid center
 // position
 __device__ Float weight(
@@ -291,6 +297,293 @@ __device__ Float weight(
     else
         return 0.0;
 }
+
+// Returns a weighting factor based on particle position and fluid center
+// position
+__device__ Float weightDist(
+        const Float3 x,   // in: Vector between cell and particle center
+        const Float  dx,  // in: Cell spacing, x
+        const Float  dy,  // in: Cell spacing, y
+        const Float  dz)  // in: Cell spacing, z
+{
+    const Float3 dist = abs(x);
+    if (dist.x < dx && dist.y < dy && dist.z < dz)
+        return (1.0 - dist.x/dx)*(1.0 - dist.y/dy)*(1.0 - dist.z/dz);
+    else
+        return 0.0;
+}
+
+// Find the porosity in each cell on the base of a sphere, centered at the cell
+// center. 
+__global__ void findDarcyPorositiesLinear(
+        const unsigned int* __restrict__ dev_cellStart,   // in
+        const unsigned int* __restrict__ dev_cellEnd,     // in
+        const Float4* __restrict__ dev_x_sorted,          // in
+        const Float4* __restrict__ dev_vel_sorted,        // in
+        const unsigned int iteration,                     // in
+        const unsigned int ndem,                          // in
+        const unsigned int np,                            // in
+        const Float c_phi,                                // in
+        Float*  __restrict__ dev_darcy_phi,               // in + out
+        Float*  __restrict__ dev_darcy_dphi,              // in + out
+        //Float*  __restrict__ dev_darcy_dphi,              // in + out
+        //Float*  __restrict__ dev_darcy_dphi)              // out
+        Float*  __restrict__ dev_darcy_div_v_p)           // out
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    // Cell dimensions
+    const Float dx = devC_grid.L[0]/nx;
+    const Float dy = devC_grid.L[1]/ny;
+    const Float dz = devC_grid.L[2]/nz;
+
+    // Cell volume
+    const Float cell_volume = dx*dy*dz;
+
+    Float void_volume = cell_volume;     // current void volume
+    Float void_volume_new = cell_volume; // projected new void volume
+    Float4 xr;  // particle pos. and radius
+
+    // check that we are not outside the fluid grid
+    if (x < nx && y < ny && z < nz) {
+
+        if (np > 0) {
+
+            // Cell sphere center position
+            const Float3 X = MAKE_FLOAT3(
+                    x*dx + 0.5*dx,
+                    y*dy + 0.5*dy,
+                    z*dz + 0.5*dz);
+
+            //Float d, r;
+            Float r, s, vol_p;
+            Float phi = 1.00;
+            Float4 v;
+            Float3 x3, v3;
+            Float div_v_p = 0.0;
+            //unsigned int n = 0;
+
+            // Average particle velocities along principal axes around the
+            // combonent normal cell faces
+            Float v_p_xn = 0.0;
+            Float v_p_xp = 0.0;
+            Float v_p_yn = 0.0;
+            Float v_p_yp = 0.0;
+            Float v_p_zn = 0.0;
+            Float v_p_zp = 0.0;
+
+            // Coordinates of cell-face nodes relative to cell center
+            Float3 n_xn = MAKE_FLOAT3( -0.5*dx,     0.0,      0.0);
+            Float3 n_xp = MAKE_FLOAT3(  0.5*dx,     0.0,      0.0);
+            Float3 n_yn = MAKE_FLOAT3(     0.0, -0.5*dy,      0.0);
+            Float3 n_yp = MAKE_FLOAT3(     0.0,  0.5*dy,      0.0);
+            Float3 n_zn = MAKE_FLOAT3(     0.0,      0.0, -0.5*dz);
+            Float3 n_zp = MAKE_FLOAT3(     0.0,      0.0,  0.5*dz);
+
+            // Read old porosity
+            __syncthreads();
+            Float phi_0 = dev_darcy_phi[d_idx(x,y,z)];
+
+            // The cell 3d index
+            const int3 gridPos = make_int3((int)x,(int)y,(int)z);
+
+            // The neighbor cell 3d index
+            int3 targetCell;
+
+            // The distance modifier for particles across periodic boundaries
+            Float3 dist, distmod;
+
+            unsigned int cellID, startIdx, endIdx, i;
+
+            // Iterate over 27 neighbor cells, R = cell width
+            for (int z_dim=-1; z_dim<2; ++z_dim) { // z-axis
+                for (int y_dim=-1; y_dim<2; ++y_dim) { // y-axis
+                    for (int x_dim=-1; x_dim<2; ++x_dim) { // x-axis
+
+                        // Index of neighbor cell this iteration is looking at
+                        targetCell = gridPos + make_int3(x_dim, y_dim, z_dim);
+
+                        // Get distance modifier for interparticle
+                        // vector, if it crosses a periodic boundary
+                        distmod = MAKE_FLOAT3(0.0, 0.0, 0.0);
+                        if (findDistMod(&targetCell, &distmod) != -1) {
+
+                            // Calculate linear cell ID
+                            cellID = targetCell.x
+                                + targetCell.y * devC_grid.num[0]
+                                + (devC_grid.num[0] * devC_grid.num[1])
+                                * targetCell.z;
+
+                            // Lowest particle index in cell
+                            __syncthreads();
+                            startIdx = dev_cellStart[cellID];
+
+                            // Make sure cell is not empty
+                            if (startIdx != 0xffffffff) {
+
+                                // Highest particle index in cell
+                                __syncthreads();
+                                endIdx = dev_cellEnd[cellID];
+
+                                // Iterate over cell particles
+                                for (i=startIdx; i<endIdx; ++i) {
+
+                                    // Read particle position and radius
+                                    __syncthreads();
+                                    xr = dev_x_sorted[i];
+                                    v  = dev_vel_sorted[i];
+                                    x3 = MAKE_FLOAT3(xr.x, xr.y, xr.z);
+                                    v3 = MAKE_FLOAT3(v.x, v.y, v.z);
+                                    r = xr.w;
+
+                                    // Find center distance
+                                    dist = MAKE_FLOAT3(
+                                            X.x - xr.x, 
+                                            X.y - xr.y,
+                                            X.z - xr.z);
+                                    dist += distmod;
+                                    s = weightDist(dist, dx, dy, dz);
+                                    vol_p = sphereVolume(r);
+
+                                    // Subtract particle volume times weight
+                                    void_volume -= s*vol_p;
+
+                                    //// Find projected new void volume
+                                    // Eulerian update of positions
+                                    xr += v*devC_dt;
+
+                                    // Find center distance
+                                    dist = MAKE_FLOAT3(
+                                            X.x - xr.x, 
+                                            X.y - xr.y,
+                                            X.z - xr.z);
+                                    dist += distmod;
+                                    s = weightDist(dist, dx, dy, dz);
+                                    void_volume_new -= s*vol_p;
+
+                                    // Add particle contribution to cell face
+                                    // nodes of component-wise velocity
+                                    x3 += distmod;
+                                    s = weight(x3, X + n_xn, dx, dy, dz);
+                                    v_p_xn += s*vol_p*v3.x / (s*vol_p);
+
+                                    s = weight(x3, X + n_xp, dx, dy, dz);
+                                    v_p_xp += s*vol_p*v3.x / (s*vol_p);
+
+                                    s = weight(x3, X + n_yn, dx, dy, dz);
+                                    v_p_yn += s*vol_p*v3.y / (s*vol_p);
+
+                                    s = weight(x3, X + n_yp, dx, dy, dz);
+                                    v_p_yp += s*vol_p*v3.y / (s*vol_p);
+
+                                    s = weight(x3, X + n_zn, dx, dy, dz);
+                                    v_p_zn += s*vol_p*v3.z / (s*vol_p);
+
+                                    s = weight(x3, X + n_zp, dx, dy, dz);
+                                    v_p_zp += s*vol_p*v3.z / (s*vol_p);
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Make sure that the porosity is in the interval [0.0;1.0]
+            phi = fmin(0.9, fmax(0.1, void_volume/cell_volume));
+            Float phi_new = fmin(0.9, fmax(0.1, void_volume_new/cell_volume));
+            //phi = fmin(0.99, fmax(0.01, void_volume/cell_volume));
+            //phi = void_volume/cell_volume;
+
+            // Backwards Euler
+            //Float dphi = phi - phi_0;
+
+            // Forwards Euler
+            //Float dphi = phi_new - phi;
+
+            // Central difference after first iteration
+            Float dphi;
+            if (iteration == 0)
+                dphi = phi_new - phi;
+            else
+                dphi = 0.5*(phi_new - phi_0);
+
+            // Determine particle velocity divergence
+            div_v_p =
+                    (v_p_xp - v_p_xn)/dx +
+                    (v_p_yp - v_p_yn)/dy +
+                    (v_p_zp - v_p_zn)/dz;
+
+            // report values to stdout for debugging
+            //printf("%d,%d,%d\tphi = %f dphi = %f\n", x,y,z, phi, dphi);
+            //printf("%d,%d,%d\tphi = %f dphi = %f v_avg = %f,%f,%f d_avg = %f\n",
+            //       x,y,z, phi, dphi, v_avg.x, v_avg.y, v_avg.z, d_avg);
+
+            // Save porosity and porosity change
+            __syncthreads();
+            //phi = 0.5; dphi = 0.0; // disable porosity effects
+            const unsigned int cellidx = d_idx(x,y,z);
+            dev_darcy_phi[cellidx]   = phi*c_phi;
+            //dev_darcy_dphi[cellidx] += dphi*c_phi;
+            dev_darcy_dphi[cellidx] += dphi*c_phi;
+            //dev_darcy_vp_avg[cellidx] = v_avg;
+            //dev_darcy_d_avg[cellidx]  = d_avg;
+            //dev_darcy_div_v_p[cellidx] = dot_epsilon_kk*c_phi;
+            dev_darcy_div_v_p[cellidx] = div_v_p;
+
+            /*printf("\n%d,%d,%d: findDarcyPorosities\n"
+                    "\tphi     = %f\n"
+                    "\tdphi    = %e\n"
+                    "\tdphi_eps= %e\n"
+                    "\tX       = %e, %e, %e\n"
+                    "\txr      = %e, %e, %e\n"
+                    "\tq       = %e\n"
+                    "\tdiv_v_p = %e\n"
+                    , x,y,z,
+                    phi, dphi,
+                    dot_epsilon_kk*(1.0 - phi)*devC_dt,
+                    X.x, X.y, X.z,
+                    xr.x, xr.y, xr.z,
+                    q,
+                    dot_epsilon_kk);*/
+
+#ifdef CHECK_FLUID_FINITE
+            (void)checkFiniteFloat("phi", x, y, z, phi);
+            (void)checkFiniteFloat("dphi", x, y, z, dphi);
+            //(void)checkFiniteFloat("dot_epsilon_kk", x, y, z, dot_epsilon_kk);
+            //(void)checkFiniteFloat3("v_avg", x, y, z, v_avg);
+            //(void)checkFiniteFloat("d_avg", x, y, z, d_avg);
+#endif
+        } else {
+
+            __syncthreads();
+            const unsigned int cellidx = d_idx(x,y,z);
+
+            //Float phi = 0.5;
+            //Float dphi = 0.0;
+            //if (iteration == 20 && x == nx/2 && y == ny/2 && z == nz/2) {
+            //phi = 0.4;
+            //dphi = 0.1;
+            //}
+            //dev_darcy_phi[cellidx]  = phi;
+            //dev_darcy_dphi[cellidx] = dphi;
+            dev_darcy_phi[cellidx]  = 0.999;
+            dev_darcy_dphi[cellidx] = 0.0;
+
+            //dev_darcy_vp_avg[cellidx] = MAKE_FLOAT3(0.0, 0.0, 0.0);
+            //dev_darcy_d_avg[cellidx]  = 0.0;
+        }
+    }
+}
+
 
 // Find the porosity in each cell on the base of a sphere, centered at the cell
 // center. 
