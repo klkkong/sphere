@@ -975,6 +975,7 @@ __global__ void findDarcyPressureForceLinear(
 
                     grad_p += weight(x3, X + n, dx, dy, dz)*grad_p_iter;
 
+                    /*
                     Float s = weight(x3, X + n, dx, dy, dz);
                     printf("[%d+%d, %d+%d, %d+%d]\n"
                             "\tn      = %f, %f, %f\n"
@@ -1011,7 +1012,7 @@ __global__ void findDarcyPressureForceLinear(
         if (i_z >= wall0_iz)
             f_p.z = 0.0;
 
-        if (length(f_p) > 1.0e-12)
+        /*if (length(f_p) > 1.0e-12)
         printf("%d,%d,%d findPF:\n"
                 //"\tphi    = %f\n"
                 "\tx      = %f, %f, %f\n"
