@@ -940,85 +940,6 @@ __global__ void findDarcyPressureForceLinear(
             }
         }
 
-        // z == iz-1
-        /*const Float3 grad_p_xnynzn = dev_darcy_grad_p[d_idx(i_x-1,i_y-1,i_z-1)];
-        const Float3 grad_p_ynzn   = dev_darcy_grad_p[d_idx(i_x  ,i_y-1,i_z-1)];
-        const Float3 grad_p_xpynzn = dev_darcy_grad_p[d_idx(i_x+1,i_y-1,i_z-1)];
-
-        const Float3 grad_p_xnzn   = dev_darcy_grad_p[d_idx(i_x-1,i_y  ,i_z-1)];
-        const Float3 grad_p_zn     = dev_darcy_grad_p[d_idx(i_x  ,i_y  ,i_z-1)];
-        const Float3 grad_p_xpzn   = dev_darcy_grad_p[d_idx(i_x+1,i_y  ,i_z-1)];
-
-        const Float3 grad_p_xnypzn = dev_darcy_grad_p[d_idx(i_x-1,i_y+1,i_z-1)];
-        const Float3 grad_p_ypzn   = dev_darcy_grad_p[d_idx(i_x  ,i_y+1,i_z-1)];
-        const Float3 grad_p_xpypzn = dev_darcy_grad_p[d_idx(i_x+1,i_y+1,i_z-1)];
-
-        // z == iz
-        const Float3 grad_p_xnyn   = dev_darcy_grad_p[d_idx(i_x-1,i_y-1,i_z  )];
-        const Float3 grad_p_yn     = dev_darcy_grad_p[d_idx(i_x  ,i_y-1,i_z  )];
-        const Float3 grad_p_xpyn   = dev_darcy_grad_p[d_idx(i_x+1,i_y-1,i_z  )];
-
-        const Float3 grad_p_xn     = dev_darcy_grad_p[d_idx(i_x-1,i_y  ,i_z  )];
-        const Float3 grad_p        = dev_darcy_grad_p[d_idx(i_x  ,i_y  ,i_z  )];
-        const Float3 grad_p_xp     = dev_darcy_grad_p[d_idx(i_x+1,i_y  ,i_z  )];
-
-        const Float3 grad_p_xnyp   = dev_darcy_grad_p[d_idx(i_x-1,i_y+1,i_z  )];
-        const Float3 grad_p_yp     = dev_darcy_grad_p[d_idx(i_x  ,i_y+1,i_z  )];
-        const Float3 grad_p_xpyp   = dev_darcy_grad_p[d_idx(i_x+1,i_y+1,i_z  )];
-
-        // z == iz+1
-        const Float3 grad_p_xnynzp = dev_darcy_grad_p[d_idx(i_x-1,i_y-1,i_z+1)];
-        const Float3 grad_p_ynzp   = dev_darcy_grad_p[d_idx(i_x  ,i_y-1,i_z+1)];
-        const Float3 grad_p_xpynzp = dev_darcy_grad_p[d_idx(i_x+1,i_y-1,i_z+1)];
-
-        const Float3 grad_p_xnzp   = dev_darcy_grad_p[d_idx(i_x-1,i_y  ,i_z+1)];
-        const Float3 grad_p_zp     = dev_darcy_grad_p[d_idx(i_x  ,i_y  ,i_z+1)];
-        const Float3 grad_p_xpzp   = dev_darcy_grad_p[d_idx(i_x+1,i_y  ,i_z+1)];
-
-        const Float3 grad_p_xnypzp = dev_darcy_grad_p[d_idx(i_x-1,i_y+1,i_z+1)];
-        const Float3 grad_p_ypzp   = dev_darcy_grad_p[d_idx(i_x  ,i_y+1,i_z+1)];
-        const Float3 grad_p_xpypzp = dev_darcy_grad_p[d_idx(i_x+1,i_y+1,i_z+1)];
-        */
-
-        /*const Float3 grad_p_xn     = dev_darcy_grad_p[d_idx(i_x-1,i_y,i_z)];
-        const Float3 grad_p        = dev_darcy_grad_p[cellidx];
-        const Float3 grad_p_xp     = dev_darcy_grad_p[d_idx(i_x+1,i_y,i_z)];
-        const Float3 grad_p_yn     = dev_darcy_grad_p[d_idx(i_x,i_y-1,i_z)];
-        const Float3 grad_p_yp     = dev_darcy_grad_p[d_idx(i_x,i_y+1,i_z)];
-        const Float3 grad_p_zn     = dev_darcy_grad_p[d_idx(i_x,i_y,i_z-1)];
-        Float3       grad_p_zp     = dev_darcy_grad_p[d_idx(i_x,i_y,i_z+1)];*/
-
-        // Coordinates of cell-face nodes relative to cell center
-        /*const Float3 n_xn = MAKE_FLOAT3(-dx,  0.,  0.);
-        const Float3 n_xp = MAKE_FLOAT3( dx,  0.,  0.);
-        const Float3 n_yn = MAKE_FLOAT3(  0.,-dy,  0.);
-        const Float3 n_yp = MAKE_FLOAT3(  0., dy,  0.);
-        const Float3 n_zn = MAKE_FLOAT3(  0.,  0.,-dz);
-        const Float3 n_zp = MAKE_FLOAT3(  0.,  0., dz);*/
-
-        // add fluid pressure force contributions from each neighbor cell
-        /*const Float3 grad_p = MAKE_FLOAT3(
-                weight(x3, X + n_xn, dx, dy, dz)*grad_p_xn.x +
-                weight(x3, X + n_xp, dx, dy, dz)*grad_p_xp.x +
-                weight(x3, X + n_yn, dx, dy, dz)*grad_p_yn.x +
-                weight(x3, X + n_yp, dx, dy, dz)*grad_p_yp.x +
-                weight(x3, X + n_zn, dx, dy, dz)*grad_p_zn.x +
-                weight(x3, X + n_zp, dx, dy, dz)*grad_p_zp.x,
-
-                weight(x3, X + n_xn, dx, dy, dz)*grad_p_xn.y +
-                weight(x3, X + n_xp, dx, dy, dz)*grad_p_xp.y +
-                weight(x3, X + n_yn, dx, dy, dz)*grad_p_yn.y +
-                weight(x3, X + n_yp, dx, dy, dz)*grad_p_yp.y +
-                weight(x3, X + n_zn, dx, dy, dz)*grad_p_zn.y +
-                weight(x3, X + n_zp, dx, dy, dz)*grad_p_zp.y,
-
-                weight(x3, X + n_xn, dx, dy, dz)*grad_p_xn.z +
-                weight(x3, X + n_xp, dx, dy, dz)*grad_p_xp.z +
-                weight(x3, X + n_yn, dx, dy, dz)*grad_p_yn.z +
-                weight(x3, X + n_yp, dx, dy, dz)*grad_p_yp.z +
-                weight(x3, X + n_zn, dx, dy, dz)*grad_p_zn.z +
-                weight(x3, X + n_zp, dx, dy, dz)*grad_p_zp.z);*/
-
         // find particle volume (radius in x.w)
         const Float v = sphereVolume(x.w);
 
@@ -1048,7 +969,6 @@ __global__ void findDarcyPressureForceLinear(
                 X.x + n_xn.x, X.x + n_xp.x,
                 X.y + n_yn.y, X.y + n_yp.y,
                 X.z + n_zn.z, X.z + n_zp.z,
-                //phi,
                 grad_p.x, grad_p.y, grad_p.z,
                 f_p.x, f_p.y, f_p.z);
 
