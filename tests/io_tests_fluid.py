@@ -60,8 +60,8 @@ orig.defaultParams()
 orig.initRandomGridPos()
 
 orig.initFluid(cfd_solver = 1)
-#orig.setMaxIterations(10)
-orig.setMaxIterations(1000)
+orig.setMaxIterations(10)
+#orig.setMaxIterations(1000)
 orig.initTemporal(current=0.0, total=0.0)
 orig.time_total=2.0*orig.time_dt
 orig.time_file_dt = orig.time_dt

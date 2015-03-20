@@ -869,11 +869,10 @@ __global__ void findDarcyPressureGradient(
         __syncthreads();
         dev_darcy_grad_p[d_idx(x,y,z)] = grad_p;
 
-        printf("%d,%d,%d findDarcyPressureGradient:\n"
+        /*printf("%d,%d,%d findDarcyPressureGradient:\n"
                 "\tgrad_p = %.2e, %.2e, %.2e\n",
                 x, y, z,
-                grad_p.x, grad_p.y, grad_p.z); //*/
-
+                grad_p.x, grad_p.y, grad_p.z); // */ 
 #ifdef CHECK_FLUID_FINITE
         checkFiniteFloat3("grad_p", x, y, z, grad_p);
 #endif
