@@ -35,6 +35,8 @@ sim.cleanup()
 # The particle should be sucked towards the low pressure
 print('# Test 2: Test pressure gradient force from buoyancy')
 
+sim = sphere.sim('fluid_particle_interaction', fluid=True)
+sim.defineWorldBoundaries([1.0, 1.0, 1.0], dx = 0.1)
 sim.initFluid(cfd_solver = 1)
 sim.p_f[:,:,-1] = 0.0
 sim.addParticle([0.5, 0.5, 0.5], 0.01)
