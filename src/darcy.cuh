@@ -971,10 +971,7 @@ __global__ void findDarcyPressureForceLinear(
                     if (i_z + d_iz >= wall0_iz - 1)
                         grad_p_iter.z = 0.0;
 
-                    n = MAKE_FLOAT3(
-                            dx*(double)d_ix,
-                            dy*(double)d_iy,
-                            dz*(double)d_iz);
+                    n = MAKE_FLOAT3(dx*d_ix, dy*d_iy, dz*d_iz);
 
                     grad_p += weight(x3, X + n, dx, dy, dz)*grad_p_iter;
 
