@@ -1836,7 +1836,7 @@ __host__ void DEM::startTime()
                             dev_darcy_f_p);*/
                     findDarcyPressureForceLinear<<<dimGrid, dimBlock>>>(
                             dev_x,
-                            dev_darcy_p,
+                            dev_darcy_grad_p,
                             wall0_iz,
                             darcy.rho_f,
                             dev_force,

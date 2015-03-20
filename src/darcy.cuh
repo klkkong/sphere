@@ -866,6 +866,11 @@ __global__ void findDarcyPressureGradient(
         __syncthreads();
         dev_darcy_grad_p[d_idx(x,y,z)] = grad_p;
 
+        /*printf("%d,%d,%d findDarcyPressureGradient:\n"
+                "\tgrad_p = %f, %f, %f\n",
+                x, y, z,
+                grad_p.x, grad_p.y, grad_p.z);*/
+
 #ifdef CHECK_FLUID_FINITE
         checkFiniteFloat3("grad_p", x, y, z, grad_p);
 #endif
@@ -877,7 +882,7 @@ __global__ void findDarcyPressureGradient(
 // neglected. The buoyancy force is included.
 __global__ void findDarcyPressureForceLinear(
     const Float4* __restrict__ dev_x,            // in
-    const Float*  __restrict__ dev_darcy_grad_p, // in
+    const Float3* __restrict__ dev_darcy_grad_p, // in
     //const Float*  __restrict__ dev_darcy_p,     // in
     //const Float*  __restrict__ dev_darcy_phi,   // in
     const unsigned int wall0_iz,                 // in
@@ -959,7 +964,7 @@ __global__ void findDarcyPressureForceLinear(
         if (i_z >= wall0_iz)
             f_p.z = 0.0;
 
-        printf("%d,%d,%d findPF:\n"
+        /*printf("%d,%d,%d findPF:\n"
                 //"\tphi    = %f\n"
                 "\tx      = %f, %f, %f\n"
                 "\tX      = %f, %f, %f\n"
@@ -968,11 +973,8 @@ __global__ void findDarcyPressureForceLinear(
                 i_x, i_y, i_z,
                 x3.x, x3.y, x3.z,
                 X.x, X.y, X.z,
-                X.x + n_xn.x, X.x + n_xp.x,
-                X.y + n_yn.y, X.y + n_yp.y,
-                X.z + n_zn.z, X.z + n_zp.z,
                 grad_p.x, grad_p.y, grad_p.z,
-                f_p.x, f_p.y, f_p.z);
+                f_p.x, f_p.y, f_p.z);*/
 
 #ifdef CHECK_FLUID_FINITE
         checkFiniteFloat3("f_p", i_x, i_y, i_z, f_p);
