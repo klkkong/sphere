@@ -1811,6 +1811,22 @@ __host__ void DEM::startTime()
 
                     if (PROFILING == 1)
                         startTimer(&kernel_tic);
+                    findDarcyPressureGradient<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_darcy_p,
+                            dev_darcy_grad_p);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter("After findDarcyPressureGradient",
+                            iter);
+
+                    setDarcyGhostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_darcy_grad_p, darcy.bc_bot, darcy.bc_top);
+                    cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_setDarcyGhostNodes);
+                    checkForCudaErrorsIter("Post setDarcyGhostNodes("
+                            "dev_darcy_grad_p)", iter);
+
                     /*findDarcyPressureForce<<<dimGrid, dimBlock>>>(
                             dev_x,
                             dev_darcy_p,

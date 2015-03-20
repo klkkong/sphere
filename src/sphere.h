@@ -312,6 +312,7 @@ class DEM {
         Float4* dev_darcy_f_p;       // Pressure gradient force on particles
         Float*  dev_darcy_k;         // Cell hydraulic permeability
         Float3* dev_darcy_grad_k;    // Spatial gradient of permeability
+        Float3* dev_darcy_grad_p;    // Spatial gradient of fluid pressure
 
         // Darcy functions
         void initDarcyMem();
