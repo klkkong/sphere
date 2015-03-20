@@ -378,6 +378,8 @@ __global__ void findDarcyPorositiesLinear(
             // The cell 3d index
             const int3 gridPos = make_int3((int)x,(int)y,(int)z);
 
+            Float3 X_n;
+
             // The neighbor cell 3d index
             int3 targetCell;
 
@@ -412,6 +414,9 @@ __global__ void findDarcyPorositiesLinear(
                             // Make sure cell is not empty
                             if (startIdx != 0xffffffff) {
 
+                                X_n = X
+                                    + MAKE_FLOAT3(x_dim*dx, y_dim*dy, z_dim*dz);
+
                                 // Highest particle index in cell
                                 __syncthreads();
                                 endIdx = dev_cellEnd[cellID];
@@ -442,34 +447,34 @@ __global__ void findDarcyPorositiesLinear(
                                     // nodes of component-wise velocity
                                     x3 += distmod;
                                     s = weight(x3,
-                                            X + MAKE_FLOAT3(-0.5*dx, 0.0, 0.0),
+                                            X_n + MAKE_FLOAT3(-0.5*dx, 0., 0.),
                                             dx, dy, dz);
                                     v_p_xn += s*vol_p*v3.x/(s*vol_p + 1.0e-16);
 
                                     s = weight(x3,
-                                            X + MAKE_FLOAT3( 0.5*dx, 0.0, 0.0),
+                                            X_n + MAKE_FLOAT3( 0.5*dx, 0., 0.),
                                             dx, dy, dz);
-                                    v_p_xp += s*vol_p*v3.x/(s*vol_p - 1.0e-16);
+                                    v_p_xp += s*vol_p*v3.x/(s*vol_p + 1.0e-16);
 
                                     s = weight(x3,
-                                            X + MAKE_FLOAT3( 0.0, -0.5*dy, 0.0),
+                                            X_n + MAKE_FLOAT3( 0., -0.5*dy, 0.),
                                             dx, dy, dz);
                                     v_p_yn += s*vol_p*v3.y/(s*vol_p + 1.0e-16);
 
                                     s = weight(x3,
-                                            X + MAKE_FLOAT3( 0.0, 0.5*dy, 0.0),
+                                            X_n + MAKE_FLOAT3( 0., 0.5*dy, 0.),
                                             dx, dy, dz);
-                                    v_p_yp += s*vol_p*v3.y/(s*vol_p - 1.0e-16);
+                                    v_p_yp += s*vol_p*v3.y/(s*vol_p + 1.0e-16);
 
                                     s = weight(x3,
-                                            X + MAKE_FLOAT3( 0.0, 0.0, -0.5*dz),
+                                            X_n + MAKE_FLOAT3( 0., 0., -0.5*dz),
                                             dx, dy, dz);
                                     v_p_zn += s*vol_p*v3.z/(s*vol_p + 1.0e-16);
 
                                     s = weight(x3,
-                                            X + MAKE_FLOAT3( 0.0, 0.0, 0.5*dz),
+                                            X_n + MAKE_FLOAT3( 0., 0., 0.5*dz),
                                             dx, dy, dz);
-                                    v_p_zp += s*vol_p*v3.z/(s*vol_p - 1.0e-16);
+                                    v_p_zp += s*vol_p*v3.z/(s*vol_p + 1.0e-16);
                                 }
                             }
                         }
