@@ -449,7 +449,7 @@ __global__ void findDarcyPorositiesLinear(
                                     s = weight(x3,
                                             X + MAKE_FLOAT3( 0.5*dx, 0.0, 0.0),
                                             dx, dy, dz);
-                                    v_p_xp += s*vol_p*v3.x/(s*vol_p + 1.0e-16);
+                                    v_p_xp += s*vol_p*v3.x/(s*vol_p - 1.0e-16);
 
                                     s = weight(x3,
                                             X + MAKE_FLOAT3( 0.0, -0.5*dy, 0.0),
@@ -459,7 +459,7 @@ __global__ void findDarcyPorositiesLinear(
                                     s = weight(x3,
                                             X + MAKE_FLOAT3( 0.0, 0.5*dy, 0.0),
                                             dx, dy, dz);
-                                    v_p_yp += s*vol_p*v3.y/(s*vol_p + 1.0e-16);
+                                    v_p_yp += s*vol_p*v3.y/(s*vol_p - 1.0e-16);
 
                                     s = weight(x3,
                                             X + MAKE_FLOAT3( 0.0, 0.0, -0.5*dz),
@@ -469,7 +469,7 @@ __global__ void findDarcyPorositiesLinear(
                                     s = weight(x3,
                                             X + MAKE_FLOAT3( 0.0, 0.0, 0.5*dz),
                                             dx, dy, dz);
-                                    v_p_zp += s*vol_p*v3.z/(s*vol_p + 1.0e-16);
+                                    v_p_zp += s*vol_p*v3.z/(s*vol_p - 1.0e-16);
                                 }
                             }
                         }
