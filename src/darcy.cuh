@@ -912,9 +912,12 @@ __global__ void findDarcyPressureForceLinear(
         const unsigned int cellidx = d_idx(i_x, i_y, i_z);
 
         // determine cell dimensions
-        const Float dx = devC_grid.L[0]/devC_grid.num[0];
-        const Float dy = devC_grid.L[1]/devC_grid.num[1];
-        const Float dz = devC_grid.L[2]/devC_grid.num[2];
+        const unsigned int nx = devC_grid.num[0];
+        const unsigned int ny = devC_grid.num[1];
+        const unsigned int nz = devC_grid.num[2];
+        const Float dx = devC_grid.L[0]/nx;
+        const Float dy = devC_grid.L[1]/ny;
+        const Float dz = devC_grid.L[2]/nz;
 
         // read fluid information
         __syncthreads();
