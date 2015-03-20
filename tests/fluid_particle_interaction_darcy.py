@@ -33,8 +33,10 @@ sim.cleanup()
 
 # Gravity, pressure gradient enforced by Dirichlet boundaries.
 # The particle should be sucked towards the low pressure
-print('# Test 1: Test pressure gradient force from buoyancy')
-sim.p_f[:,:,-1] = 1.0
+print('# Test 2: Test pressure gradient force from buoyancy')
+
+sim.initFluid(cfd_solver = 1)
+sim.p_f[:,:,-1] = 0.0
 sim.addParticle([0.5, 0.5, 0.5], 0.01)
 sim.initTemporal(total=0.001, file_dt=0.0001)
 #sim.time_file_dt[0] = sim.time_dt[0]
