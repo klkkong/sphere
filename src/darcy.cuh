@@ -288,10 +288,10 @@ __device__ Float weight(
         const Float  dy,  // in: Cell spacing, y
         const Float  dz)  // in: Cell spacing, z
 {
-    /*const Float3 dist = abs(x_p - x_f);
+    const Float3 dist = abs(x_p - x_f);
     if (dist.x < dx && dist.y < dy && dist.z < dz)
         return (1.0 - dist.x/dx)*(1.0 - dist.y/dy)*(1.0 - dist.z/dz);
-    else*/
+    else
         return 0.0;
 }
 
@@ -925,6 +925,7 @@ __global__ void findDarcyPressureForceLinear(
 
         Float3 grad_p = MAKE_FLOAT3(0., 0., 0.);
         Float3 grad_p_iter, n;
+        Float s;
 
         // Loop over 27 closest cells to find all pressure gradient
         // contributions
@@ -942,7 +943,24 @@ __global__ void findDarcyPressureForceLinear(
 
                     n = MAKE_FLOAT3(dx*d_ix, dy*d_iy, dz*d_iz);
 
+                    s = weight(x3, X+n, dx, dy, dz);
+
                     grad_p += weight(x3, X + n, dx, dy, dz)*grad_p_iter;
+
+                    /*printf("[%d + %d, %d + %d, %d + %d]\n"
+                            "\tdist   = %f, %f, %f\n"
+                            "\tn      = %f, %f, %f\n"
+                            "\ts      = %f\n"
+                            "\tgrad_p = %f, %f, %f\n",
+                            i_x, d_ix,
+                            i_y, d_iy,
+                            i_z, d_iz,
+
+                            n.x, n.y, n.z,
+                            s,
+                            s*grad_p_iter.x,
+                            s*grad_p_iter.y,
+                            s*grad_p_iter.z);*/
                 }
             }
         }
@@ -964,7 +982,7 @@ __global__ void findDarcyPressureForceLinear(
         if (i_z >= wall0_iz)
             f_p.z = 0.0;
 
-        /*printf("%d,%d,%d findPF:\n"
+        printf("%d,%d,%d findPF:\n"
                 //"\tphi    = %f\n"
                 "\tx      = %f, %f, %f\n"
                 "\tX      = %f, %f, %f\n"
@@ -974,7 +992,7 @@ __global__ void findDarcyPressureForceLinear(
                 x3.x, x3.y, x3.z,
                 X.x, X.y, X.z,
                 grad_p.x, grad_p.y, grad_p.z,
-                f_p.x, f_p.y, f_p.z);*/
+                f_p.x, f_p.y, f_p.z);
 
 #ifdef CHECK_FLUID_FINITE
         checkFiniteFloat3("f_p", i_x, i_y, i_z, f_p);
