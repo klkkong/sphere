@@ -323,8 +323,6 @@ __global__ void findDarcyPorositiesLinear(
         const Float c_phi,                                // in
         Float*  __restrict__ dev_darcy_phi,               // in + out
         Float*  __restrict__ dev_darcy_dphi,              // in + out
-        //Float*  __restrict__ dev_darcy_dphi,              // in + out
-        //Float*  __restrict__ dev_darcy_dphi)              // out
         Float*  __restrict__ dev_darcy_div_v_p)           // out
 {
     // 3D thread index
@@ -365,20 +363,32 @@ __global__ void findDarcyPorositiesLinear(
 
             // Average particle velocities along principal axes around the
             // combonent normal cell faces
-            Float v_p_xn = 0.0;
+            /*Float v_p_xn = 0.0;
             Float v_p_xp = 0.0;
             Float v_p_yn = 0.0;
             Float v_p_yp = 0.0;
             Float v_p_zn = 0.0;
-            Float v_p_zp = 0.0;
+            Float v_p_zp = 0.0;*/
+            Float xn_num   = 0.0;
+            Float xn_denum = 0.0;
+            Float xp_num   = 0.0;
+            Float xp_denum = 0.0;
+
+            Float yn_num   = 0.0;
+            Float yn_denum = 0.0;
+            Float yp_num   = 0.0;
+            Float yp_denum = 0.0;
+
+            Float zn_num   = 0.0;
+            Float zn_denum = 0.0;
+            Float zp_num   = 0.0;
+            Float zp_denum = 0.0;
 
             // Read old porosity
             __syncthreads();
 
             // The cell 3d index
             const int3 gridPos = make_int3((int)x,(int)y,(int)z);
-
-            Float3 X_n;
 
             // The neighbor cell 3d index
             int3 targetCell;
@@ -414,9 +424,6 @@ __global__ void findDarcyPorositiesLinear(
                             // Make sure cell is not empty
                             if (startIdx != 0xffffffff) {
 
-                                X_n = X
-                                    + MAKE_FLOAT3(x_dim*dx, y_dim*dy, z_dim*dz);
-
                                 // Highest particle index in cell
                                 __syncthreads();
                                 endIdx = dev_cellEnd[cellID];
@@ -447,34 +454,52 @@ __global__ void findDarcyPorositiesLinear(
                                     // nodes of component-wise velocity
                                     x3 += distmod;
                                     s = weight(x3,
-                                            X_n + MAKE_FLOAT3(-0.5*dx, 0., 0.),
+                                            X + MAKE_FLOAT3(-0.5*dx, 0., 0.),
                                             dx, dy, dz);
-                                    v_p_xn += s*vol_p*v3.x/(s*vol_p + 1.0e-16);
+                                    if (s > 1.0e-10) {
+                                        xn_num  += s*vol_p*v3.x;
+                                        xn_denum += s*vol_p;
+                                    }
 
                                     s = weight(x3,
-                                            X_n + MAKE_FLOAT3( 0.5*dx, 0., 0.),
+                                            X + MAKE_FLOAT3( 0.5*dx, 0., 0.),
                                             dx, dy, dz);
-                                    v_p_xp += s*vol_p*v3.x/(s*vol_p + 1.0e-16);
+                                    if (s > 1.0e-10) {
+                                        xp_num  += s*vol_p*v3.x;
+                                        xp_denum += s*vol_p;
+                                    }
 
                                     s = weight(x3,
-                                            X_n + MAKE_FLOAT3( 0., -0.5*dy, 0.),
+                                            X + MAKE_FLOAT3( 0., -0.5*dy, 0.),
                                             dx, dy, dz);
-                                    v_p_yn += s*vol_p*v3.y/(s*vol_p + 1.0e-16);
+                                    if (s > 1.0e-10) {
+                                        yn_num  += s*vol_p*v3.y;
+                                        yn_denum += s*vol_p;
+                                    }
 
                                     s = weight(x3,
-                                            X_n + MAKE_FLOAT3( 0., 0.5*dy, 0.),
+                                            X + MAKE_FLOAT3( 0., 0.5*dy, 0.),
                                             dx, dy, dz);
-                                    v_p_yp += s*vol_p*v3.y/(s*vol_p + 1.0e-16);
+                                    if (s > 1.0e-10) {
+                                        yp_num  += s*vol_p*v3.y;
+                                        yp_denum += s*vol_p;
+                                    }
 
                                     s = weight(x3,
-                                            X_n + MAKE_FLOAT3( 0., 0., -0.5*dz),
+                                            X + MAKE_FLOAT3( 0., 0., -0.5*dz),
                                             dx, dy, dz);
-                                    v_p_zn += s*vol_p*v3.z/(s*vol_p + 1.0e-16);
+                                    if (s > 1.0e-10) {
+                                        zn_num  += s*vol_p*v3.z;
+                                        zn_denum += s*vol_p;
+                                    }
 
                                     s = weight(x3,
-                                            X_n + MAKE_FLOAT3( 0., 0., 0.5*dz),
+                                            X + MAKE_FLOAT3( 0., 0., 0.5*dz),
                                             dx, dy, dz);
-                                    v_p_zp += s*vol_p*v3.z/(s*vol_p + 1.0e-16);
+                                    if (s > 1.0e-10) {
+                                        zp_num  += s*vol_p*v3.z;
+                                        zp_denum += s*vol_p;
+                                    }
                                 }
                             }
                         }
@@ -487,10 +512,17 @@ __global__ void findDarcyPorositiesLinear(
             phi = fmin(1.0, fmax(0.01, void_volume/(dx*dy*dz)));
 
             // Determine particle velocity divergence
-            const Float div_v_p =
+            /*const Float div_v_p =
                     (v_p_xp - v_p_xn)/dx +
                     (v_p_yp - v_p_yn)/dy +
-                    (v_p_zp - v_p_zn)/dz;
+                    (v_p_zp - v_p_zn)/dz;*/
+            const Float div_v_p =
+                    (xp_num/fmax(1.e-12, xp_denum)
+                     - xn_num/fmax(1.e-12, xn_denum)) /dx +
+                    (yp_num/fmax(1.e-12, yp_denum)
+                     - yn_num/fmax(1.e-12, yn_denum)) /dy +
+                    (zp_num/fmax(1.e-12, zp_denum)
+                     - zn_num/fmax(1.e-12, zn_denum)) /dz;
 
             // Save porosity and porosity change
             __syncthreads();
@@ -499,17 +531,26 @@ __global__ void findDarcyPorositiesLinear(
             dev_darcy_div_v_p[cellidx] = div_v_p;
 
             //if (phi < 1.0 || div_v_p != 0.0)
-            /*if (div_v_p >= 1.0e-12 || div_v_p <= -1.0e-12)
+            if (div_v_p >= 1.0e-12 || div_v_p <= -1.0e-12)
             printf("\n%d,%d,%d: findDarcyPorosities\n"
                     "\tphi     = %f\n"
-                    "\tX       = %e, %e, %e\n"
-                    "\txr      = %e, %e, %e\n"
-                    "\tdiv_v_p = %e\n"
+                    "\tX       = %.2e, %.2e, %.2e\n"
+                    "\txr      = %.2e, %.2e, %.2e\n"
+                    "\tdiv_v_p = %.2e\n"
+                    "\ts       = %f\n"
+                    //"\tv_p_x   = %.2e, %.2e\n"
+                    //"\tv_p_y   = %.2e, %.2e\n"
+                    //"\tv_p_z   = %.2e, %.2e\n"
                     , x,y,z,
                     phi,
                     X.x, X.y, X.z,
                     xr.x, xr.y, xr.z,
-                    div_v_p);// */
+                    div_v_p,
+                    s//,
+                    //v_p_xn, v_p_xp,
+                    //v_p_yn, v_p_yp,
+                    //v_p_zn, v_p_zp
+                    );// */
 
 #ifdef CHECK_FLUID_FINITE
             (void)checkFiniteFloat("phi", x, y, z, phi);
@@ -891,7 +932,7 @@ __global__ void findDarcyPressureForceLinear(
     const Float4* __restrict__ dev_x,            // in
     const Float3* __restrict__ dev_darcy_grad_p, // in
     //const Float*  __restrict__ dev_darcy_p,     // in
-    //const Float*  __restrict__ dev_darcy_phi,   // in
+    const Float*  __restrict__ dev_darcy_phi,    // in
     const unsigned int wall0_iz,                 // in
     const Float rho_f,                           // in
     Float4* __restrict__ dev_force,              // out
@@ -925,7 +966,7 @@ __global__ void findDarcyPressureForceLinear(
 
         // read fluid information
         __syncthreads();
-        //const Float phi = dev_darcy_phi[cellidx];
+        const Float phi = dev_darcy_phi[cellidx];
 
         // Cell center position
         const Float3 X = MAKE_FLOAT3(
@@ -1005,7 +1046,7 @@ __global__ void findDarcyPressureForceLinear(
         // find pressure gradient force plus buoyancy force.
         // buoyancy force = weight of displaced fluid
         // f_b = -rho_f*V*g
-        Float3 f_p = -1.0*grad_p*v
+        Float3 f_p = -1.0*grad_p*v/(1.0-phi)
             - rho_f*v*MAKE_FLOAT3(
                     devC_params.g[0],
                     devC_params.g[1],
@@ -1636,7 +1677,7 @@ __global__ void updateDarcySolution(
             *(k*laplace_p + dot(grad_k, grad_p));
         //const Float dp_forc = -dphi/(beta_f*phi*(1.0 - phi));
         const Float dp_forc = -div_v_p/(beta_f*phi);
-        printf("\n%d,%d,%d updateDarcySolution\n"
+        /*printf("\n%d,%d,%d updateDarcySolution\n"
                 "p_new       = %e\n"
                 "p           = %e\n"
                 "p_x         = %e, %e\n"
