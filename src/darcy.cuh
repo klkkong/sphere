@@ -340,7 +340,7 @@ __global__ void findDarcyPorositiesLinear(
     const Float dy = devC_grid.L[1]/ny;
     const Float dz = devC_grid.L[2]/nz;
 
-    Float void_volume = dx*dy*dz;     // current void volume
+    Float solid_volume = 0.0;
     Float4 xr;  // particle pos. and radius
 
     // check that we are not outside the fluid grid
@@ -447,8 +447,7 @@ __global__ void findDarcyPorositiesLinear(
                                     s = weightDist(dist, dx, dy, dz);
                                     vol_p = sphereVolume(xr.w);
 
-                                    // Subtract particle volume times weight
-                                    void_volume -= s*vol_p;
+                                    solid_volume += s*vol_p;
 
                                     // Add particle contribution to cell face
                                     // nodes of component-wise velocity
@@ -509,7 +508,7 @@ __global__ void findDarcyPorositiesLinear(
 
             // Make sure that the porosity is in the interval [0.0;1.0]
             //phi = fmin(0.9, fmax(0.1, void_volume/(dx*dy*dz)));
-            phi = fmin(1.0, fmax(0.01, void_volume/(dx*dy*dz)));
+            phi = fmin(1.0, fmax(0.01, 1.0 - solid_volume/(dx*dy*dz)));
 
             // Determine particle velocity divergence
             /*const Float div_v_p =
@@ -518,11 +517,11 @@ __global__ void findDarcyPorositiesLinear(
                     (v_p_zp - v_p_zn)/dz;*/
             const Float div_v_p =
                     (xp_num/fmax(1.e-12, xp_denum)
-                     - xn_num/fmax(1.e-12, xn_denum)) /dx +
+                     - xn_num/fmax(1.e-12, xn_denum))/dx +
                     (yp_num/fmax(1.e-12, yp_denum)
-                     - yn_num/fmax(1.e-12, yn_denum)) /dy +
+                     - yn_num/fmax(1.e-12, yn_denum))/dy +
                     (zp_num/fmax(1.e-12, zp_denum)
-                     - zn_num/fmax(1.e-12, zn_denum)) /dz;
+                     - zn_num/fmax(1.e-12, zn_denum))/dz;
 
             // Save porosity and porosity change
             __syncthreads();
@@ -530,10 +529,12 @@ __global__ void findDarcyPorositiesLinear(
             dev_darcy_phi[cellidx]     = phi*c_phi;
             dev_darcy_div_v_p[cellidx] = div_v_p;
 
-            //if (phi < 1.0 || div_v_p != 0.0)
-            if (div_v_p >= 1.0e-12 || div_v_p <= -1.0e-12)
+            if (phi < 1.0 || div_v_p != 0.0)
+            //if (div_v_p >= 1.0e-12 || div_v_p <= -1.0e-12)
             printf("\n%d,%d,%d: findDarcyPorosities\n"
                     "\tphi     = %f\n"
+                    "\tsol_vol = %f\n"
+                    "\tvol_p   = %f\n"
                     "\tX       = %.2e, %.2e, %.2e\n"
                     "\txr      = %.2e, %.2e, %.2e\n"
                     "\tdiv_v_p = %.2e\n"
@@ -543,6 +544,8 @@ __global__ void findDarcyPorositiesLinear(
                     //"\tv_p_z   = %.2e, %.2e\n"
                     , x,y,z,
                     phi,
+                    solid_volume,
+                    vol_p,
                     X.x, X.y, X.z,
                     xr.x, xr.y, xr.z,
                     div_v_p,
@@ -1046,7 +1049,7 @@ __global__ void findDarcyPressureForceLinear(
         // find pressure gradient force plus buoyancy force.
         // buoyancy force = weight of displaced fluid
         // f_b = -rho_f*V*g
-        Float3 f_p = -1.0*grad_p*v/(1.0-phi)
+        Float3 f_p = -1.0*grad_p*v/(1.0 - phi)
             - rho_f*v*MAKE_FLOAT3(
                     devC_params.g[0],
                     devC_params.g[1],
@@ -1057,14 +1060,15 @@ __global__ void findDarcyPressureForceLinear(
         if (i_z >= wall0_iz)
             f_p.z = 0.0;
 
-        /*if (length(f_p) > 1.0e-12)
+        //if (length(f_p) > 1.0e-12)
         printf("%d,%d,%d findPF:\n"
-                //"\tphi    = %f\n"
+                "\tphi    = %f\n"
                 "\tx      = %f, %f, %f\n"
                 "\tX      = %f, %f, %f\n"
                 "\tgrad_p = %.2e, %.2e, %.2e\n"
                 "\tf_p    = %.2e, %.2e, %.2e\n",
                 i_x, i_y, i_z,
+                phi,
                 x3.x, x3.y, x3.z,
                 X.x, X.y, X.z,
                 grad_p.x, grad_p.y, grad_p.z,

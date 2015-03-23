@@ -1827,6 +1827,26 @@ __host__ void DEM::startTime()
                     checkForCudaErrorsIter("Post setDarcyGhostNodes("
                             "dev_darcy_grad_p)", iter);
 
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
+                    findDarcyPorositiesLinear<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_cellStart,
+                            dev_cellEnd,
+                            dev_x_sorted,
+                            dev_vel_sorted,
+                            iter,
+                            darcy.ndem,
+                            np,
+                            darcy.c_phi,
+                            dev_darcy_phi,
+                            dev_darcy_dphi,
+                            dev_darcy_div_v_p);
+                    cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_findDarcyPorosities);
+                    checkForCudaErrorsIter("Post findDarcyPorosities", iter);
+
                     /*findDarcyPressureForce<<<dimGrid, dimBlock>>>(
                             dev_x,
                             dev_darcy_p,
@@ -1852,8 +1872,6 @@ __host__ void DEM::startTime()
 
                 if ((iter % darcy.ndem) == 0) {
 
-                    if (PROFILING == 1)
-                        startTimer(&kernel_tic);
                     /*findDarcyPorosities<<<dimGridFluid, dimBlockFluid>>>(
                             dev_cellStart,
                             dev_cellEnd,
@@ -1865,24 +1883,6 @@ __host__ void DEM::startTime()
                             darcy.c_phi,
                             dev_darcy_phi,
                             dev_darcy_dphi);*/
-                    findDarcyPorositiesLinear<<<dimGridFluid, dimBlockFluid>>>(
-                            dev_cellStart,
-                            dev_cellEnd,
-                            dev_x_sorted,
-                            dev_vel_sorted,
-                            iter,
-                            darcy.ndem,
-                            np,
-                            darcy.c_phi,
-                            dev_darcy_phi,
-                            dev_darcy_dphi,
-                            dev_darcy_div_v_p);
-                    cudaThreadSynchronize();
-                    if (PROFILING == 1)
-                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
-                                &t_findDarcyPorosities);
-                    checkForCudaErrorsIter("Post findDarcyPorosities", iter);
-
                     // Modulate the pressures at the upper boundary cells
                     if ((darcy.p_mod_A > 1.0e-5 || darcy.p_mod_A < -1.0e-5) &&
                             darcy.p_mod_f > 1.0e-7) {
