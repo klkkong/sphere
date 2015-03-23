@@ -515,13 +515,23 @@ __global__ void findDarcyPorositiesLinear(
                     (v_p_xp - v_p_xn)/dx +
                     (v_p_yp - v_p_yn)/dy +
                     (v_p_zp - v_p_zn)/dz;*/
+            const Float v_p_xn = xn_num/fmax(1.0e-12, xn_denum);
+            const Float v_p_xp = xp_num/fmax(1.0e-12, xp_denum);
+            const Float v_p_yn = yn_num/fmax(1.0e-12, yn_denum);
+            const Float v_p_yp = yp_num/fmax(1.0e-12, yp_denum);
+            const Float v_p_zn = zn_num/fmax(1.0e-12, zn_denum);
+            const Float v_p_zp = zp_num/fmax(1.0e-12, zp_denum);
+
             const Float div_v_p =
-                    (xp_num/fmax(1.e-12, xp_denum)
+                (v_p_xp - v_p_xn)/dx +
+                (v_p_yp - v_p_yn)/dy +
+                (v_p_zp - v_p_zn)/dz;
+                    /*(xp_num/fmax(1.e-12, xp_denum)
                      - xn_num/fmax(1.e-12, xn_denum))/dx +
                     (yp_num/fmax(1.e-12, yp_denum)
                      - yn_num/fmax(1.e-12, yn_denum))/dy +
                     (zp_num/fmax(1.e-12, zp_denum)
-                     - zn_num/fmax(1.e-12, zn_denum))/dz;
+                     - zn_num/fmax(1.e-12, zn_denum))/dz;*/
 
             // Save porosity and porosity change
             __syncthreads();
@@ -529,7 +539,8 @@ __global__ void findDarcyPorositiesLinear(
             dev_darcy_phi[cellidx]     = phi*c_phi;
             dev_darcy_div_v_p[cellidx] = div_v_p;
 
-            if (phi < 1.0 || div_v_p != 0.0)
+            //if (phi < 1.0 || div_v_p != 0.0)
+            if (phi < 1.0)
             //if (div_v_p >= 1.0e-12 || div_v_p <= -1.0e-12)
             printf("\n%d,%d,%d: findDarcyPorosities\n"
                     "\tphi     = %f\n"
@@ -538,10 +549,9 @@ __global__ void findDarcyPorositiesLinear(
                     "\tX       = %.2e, %.2e, %.2e\n"
                     "\txr      = %.2e, %.2e, %.2e\n"
                     "\tdiv_v_p = %.2e\n"
-                    "\ts       = %f\n"
-                    //"\tv_p_x   = %.2e, %.2e\n"
-                    //"\tv_p_y   = %.2e, %.2e\n"
-                    //"\tv_p_z   = %.2e, %.2e\n"
+                    "\tv_p_x   = %.2e, %.2e\n"
+                    "\tv_p_y   = %.2e, %.2e\n"
+                    "\tv_p_z   = %.2e, %.2e\n"
                     , x,y,z,
                     phi,
                     solid_volume,
@@ -549,10 +559,9 @@ __global__ void findDarcyPorositiesLinear(
                     X.x, X.y, X.z,
                     xr.x, xr.y, xr.z,
                     div_v_p,
-                    s//,
-                    //v_p_xn, v_p_xp,
-                    //v_p_yn, v_p_yp,
-                    //v_p_zn, v_p_zp
+                    v_p_xn, v_p_xp,
+                    v_p_yn, v_p_yp,
+                    v_p_zn, v_p_zp
                     );// */
 
 #ifdef CHECK_FLUID_FINITE
@@ -897,11 +906,11 @@ __global__ void findDarcyPressureGradient(
 
         // read values
         __syncthreads();
-        Float p_xn = dev_darcy_p[d_idx(x,y,z)];
+        Float p_xn = dev_darcy_p[d_idx(x-1,y,z)];
         Float p_xp = dev_darcy_p[d_idx(x+1,y,z)];
-        Float p_yn = dev_darcy_p[d_idx(x,y,z)];
+        Float p_yn = dev_darcy_p[d_idx(x,y-1,z)];
         Float p_yp = dev_darcy_p[d_idx(x,y+1,z)];
-        Float p_zn = dev_darcy_p[d_idx(x,y,z)];
+        Float p_zn = dev_darcy_p[d_idx(x,y,z-1)];
         Float p_zp = dev_darcy_p[d_idx(x,y,z+1)];
 
         // cell dimensions
@@ -918,7 +927,8 @@ __global__ void findDarcyPressureGradient(
         __syncthreads();
         dev_darcy_grad_p[d_idx(x,y,z)] = grad_p;
 
-        /*printf("%d,%d,%d findDarcyPressureGradient:\n"
+        if (grad_p.x != 0.0 || grad_p.y != 0.0 || grad_p.z != 0.0)
+        printf("%d,%d,%d findDarcyPressureGradient:\n"
                 "\tgrad_p = %.2e, %.2e, %.2e\n",
                 x, y, z,
                 grad_p.x, grad_p.y, grad_p.z); // */ 
@@ -1023,8 +1033,9 @@ __global__ void findDarcyPressureForceLinear(
 
                     grad_p += weight(x3, X + n, dx, dy, dz)*grad_p_iter;
 
-                    /*
+                    //*
                     Float s = weight(x3, X + n, dx, dy, dz);
+                    if (s > 1.0e-12)
                     printf("[%d+%d, %d+%d, %d+%d]\n"
                             "\tn      = %f, %f, %f\n"
                             "\tgrad_pi= %.2e, %.2e, %.2e\n"
@@ -1066,12 +1077,16 @@ __global__ void findDarcyPressureForceLinear(
                 "\tx      = %f, %f, %f\n"
                 "\tX      = %f, %f, %f\n"
                 "\tgrad_p = %.2e, %.2e, %.2e\n"
+                "\tp_x    = %.2e, %.2e\n"
+                "\tp_y    = %.2e, %.2e\n"
+                "\tp_z    = %.2e, %.2e\n"
                 "\tf_p    = %.2e, %.2e, %.2e\n",
                 i_x, i_y, i_z,
                 phi,
                 x3.x, x3.y, x3.z,
                 X.x, X.y, X.z,
                 grad_p.x, grad_p.y, grad_p.z,
+
                 f_p.x, f_p.y, f_p.z); // */
 
 #ifdef CHECK_FLUID_FINITE
