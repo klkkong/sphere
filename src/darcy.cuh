@@ -341,6 +341,7 @@ __global__ void findDarcyPorositiesLinear(
     const Float dz = devC_grid.L[2]/nz;
 
     Float solid_volume = 0.0;
+    //Float solid_volume_new = 0.0;
     Float4 xr;  // particle pos. and radius
 
     // check that we are not outside the fluid grid
@@ -386,6 +387,7 @@ __global__ void findDarcyPorositiesLinear(
 
             // Read old porosity
             __syncthreads();
+            Float phi_0 = dev_darcy_phi[d_idx(x,y,z)];
 
             // The cell 3d index
             const int3 gridPos = make_int3((int)x,(int)y,(int)z);
@@ -499,6 +501,16 @@ __global__ void findDarcyPorositiesLinear(
                                         zp_num  += s*vol_p*v3.z;
                                         zp_denum += s*vol_p;
                                     }
+
+                                    // Find projected new void volume
+                                    // Eulerian update of positions
+                                    /*xr += v*devC_dt;
+                                    dist = MAKE_FLOAT3(
+                                            X.x - xr.x, 
+                                            X.y - xr.y,
+                                            X.z - xr.z) + distmod;
+                                    solid_volume_new +=
+                                        weightDist(dist, dx, dy, dz)*vol_p;*/
                                 }
                             }
                         }
@@ -509,6 +521,14 @@ __global__ void findDarcyPorositiesLinear(
             // Make sure that the porosity is in the interval [0.0;1.0]
             //phi = fmin(0.9, fmax(0.1, void_volume/(dx*dy*dz)));
             phi = fmin(1.0, fmax(0.01, 1.0 - solid_volume/(dx*dy*dz)));
+            //Float phi_new = fmin(1.0, fmax(0.01,
+                        //1.0 - solid_volume_new/(dx*dy*dz)));
+
+            /*Float dphi;
+            if (iteration == 0)
+                dphi = phi_new - phi;
+            else
+                dphi = 0.5*(phi_new - phi_0);*/
 
             // Determine particle velocity divergence
             /*const Float div_v_p =
@@ -537,12 +557,13 @@ __global__ void findDarcyPorositiesLinear(
             __syncthreads();
             const unsigned int cellidx = d_idx(x,y,z);
             dev_darcy_phi[cellidx]     = phi*c_phi;
+            //dev_darcy_dphi[cellidx]    = dphi*c_phi;
             dev_darcy_div_v_p[cellidx] = div_v_p;
 
             //if (phi < 1.0 || div_v_p != 0.0)
-            if (phi < 1.0)
+            //if (phi < 1.0)
             //if (div_v_p >= 1.0e-12 || div_v_p <= -1.0e-12)
-            printf("\n%d,%d,%d: findDarcyPorosities\n"
+            /*printf("\n%d,%d,%d: findDarcyPorosities\n"
                     "\tphi     = %f\n"
                     "\tsol_vol = %f\n"
                     "\tvol_p   = %f\n"
@@ -786,9 +807,9 @@ __global__ void findDarcyPorosities(
             __syncthreads();
             //phi = 0.5; dphi = 0.0; // disable porosity effects
             const unsigned int cellidx = d_idx(x,y,z);
-            dev_darcy_phi[cellidx]   = phi*c_phi;
+            dev_darcy_phi[cellidx]  = phi*c_phi;
             //dev_darcy_dphi[cellidx] += dphi*c_phi;
-            dev_darcy_dphi[cellidx] += dphi*c_phi;
+            dev_darcy_dphi[cellidx] = dphi*c_phi;
             //dev_darcy_vp_avg[cellidx] = v_avg;
             //dev_darcy_d_avg[cellidx]  = d_avg;
             //dev_darcy_div_v_p[cellidx] = dot_epsilon_kk*c_phi;
@@ -927,10 +948,16 @@ __global__ void findDarcyPressureGradient(
         __syncthreads();
         dev_darcy_grad_p[d_idx(x,y,z)] = grad_p;
 
-        if (grad_p.x != 0.0 || grad_p.y != 0.0 || grad_p.z != 0.0)
-        printf("%d,%d,%d findDarcyPressureGradient:\n"
+        //if (grad_p.x != 0.0 || grad_p.y != 0.0 || grad_p.z != 0.0)
+        /*printf("%d,%d,%d findDarcyPressureGradient:\n"
+                "\tp_x    = %.2e, %.2e\n"
+                "\tp_y    = %.2e, %.2e\n"
+                "\tp_z    = %.2e, %.2e\n"
                 "\tgrad_p = %.2e, %.2e, %.2e\n",
                 x, y, z,
+                p_xn, p_xp,
+                p_yn, p_yp,
+                p_zn, p_zp,
                 grad_p.x, grad_p.y, grad_p.z); // */ 
 #ifdef CHECK_FLUID_FINITE
         checkFiniteFloat3("grad_p", x, y, z, grad_p);
@@ -979,7 +1006,7 @@ __global__ void findDarcyPressureForceLinear(
 
         // read fluid information
         __syncthreads();
-        const Float phi = dev_darcy_phi[cellidx];
+        //const Float phi = dev_darcy_phi[cellidx];
 
         // Cell center position
         const Float3 X = MAKE_FLOAT3(
@@ -1035,8 +1062,8 @@ __global__ void findDarcyPressureForceLinear(
 
                     //*
                     Float s = weight(x3, X + n, dx, dy, dz);
-                    if (s > 1.0e-12)
-                    printf("[%d+%d, %d+%d, %d+%d]\n"
+                    /*if (s > 1.0e-12)
+                    printf("[%d+%d, %d+%d, %d+%d] findPF nb\n"
                             "\tn      = %f, %f, %f\n"
                             "\tgrad_pi= %.2e, %.2e, %.2e\n"
                             "\ts      = %f\n"
@@ -1060,7 +1087,7 @@ __global__ void findDarcyPressureForceLinear(
         // find pressure gradient force plus buoyancy force.
         // buoyancy force = weight of displaced fluid
         // f_b = -rho_f*V*g
-        Float3 f_p = -1.0*grad_p*v/(1.0 - phi)
+        Float3 f_p = -1.0*grad_p*v//(1.0 - phi)
             - rho_f*v*MAKE_FLOAT3(
                     devC_params.g[0],
                     devC_params.g[1],
@@ -1072,21 +1099,20 @@ __global__ void findDarcyPressureForceLinear(
             f_p.z = 0.0;
 
         //if (length(f_p) > 1.0e-12)
-        printf("%d,%d,%d findPF:\n"
+        /*printf("%d,%d,%d findPressureForceLinear:\n"
                 "\tphi    = %f\n"
                 "\tx      = %f, %f, %f\n"
                 "\tX      = %f, %f, %f\n"
                 "\tgrad_p = %.2e, %.2e, %.2e\n"
-                "\tp_x    = %.2e, %.2e\n"
-                "\tp_y    = %.2e, %.2e\n"
-                "\tp_z    = %.2e, %.2e\n"
+                //"\tp_x    = %.2e, %.2e\n"
+                //"\tp_y    = %.2e, %.2e\n"
+                //"\tp_z    = %.2e, %.2e\n"
                 "\tf_p    = %.2e, %.2e, %.2e\n",
                 i_x, i_y, i_z,
                 phi,
                 x3.x, x3.y, x3.z,
                 X.x, X.y, X.z,
                 grad_p.x, grad_p.y, grad_p.z,
-
                 f_p.x, f_p.y, f_p.z); // */
 
 #ifdef CHECK_FLUID_FINITE
@@ -1465,8 +1491,8 @@ __global__ void firstDarcySolution(
         const Float  k       = dev_darcy_k[cellidx];
         const Float3 grad_k  = dev_darcy_grad_k[cellidx];
         const Float  phi     = dev_darcy_phi[cellidx];
-        //const Float  dphi    = dev_darcy_dphi[cellidx];
-        const Float  div_v_p = dev_darcy_div_v_p[cellidx];
+        const Float  dphi    = dev_darcy_dphi[cellidx];
+        //const Float  div_v_p = dev_darcy_div_v_p[cellidx];
 
         const Float p_xn  = dev_darcy_p[d_idx(x-1,y,z)];
         const Float p     = dev_darcy_p[cellidx];
@@ -1512,8 +1538,8 @@ __global__ void firstDarcySolution(
 
         Float dp_expl =
             + (ndem*devC_dt)/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
-            - div_v_p/(beta_f*phi);
-            //- dphi/(beta_f*phi*(1.0 - phi));
+            //- div_v_p/(beta_f*phi);
+            - dphi/(beta_f*phi*(1.0 - phi));
 
         // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
         // grid if the wall isn't dynamic
@@ -1614,8 +1640,8 @@ __global__ void updateDarcySolution(
         const Float k        = dev_darcy_k[cellidx];
         const Float3 grad_k  = dev_darcy_grad_k[cellidx];
         const Float  phi     = dev_darcy_phi[cellidx];
-        //const Float  dphi    = dev_darcy_dphi[cellidx];
-        const Float  div_v_p = dev_darcy_div_v_p[cellidx];
+        const Float  dphi    = dev_darcy_dphi[cellidx];
+        //const Float  div_v_p = dev_darcy_div_v_p[cellidx];
 
         const Float p_old   = dev_darcy_p_old[cellidx];
         const Float dp_expl = dev_darcy_dp_expl[cellidx];
@@ -1665,8 +1691,8 @@ __global__ void updateDarcySolution(
         //Float p_new = p_old
         Float dp_impl =
             + (ndem*devC_dt)/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
-            - div_v_p/(beta_f*phi);
-            //- dphi/(beta_f*phi*(1.0 - phi));
+            //- div_v_p/(beta_f*phi);
+            - dphi/(beta_f*phi*(1.0 - phi));
 
         // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
         // grid if the wall isn't dynamic
