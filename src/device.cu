@@ -1827,7 +1827,7 @@ __host__ void DEM::startTime()
                     checkForCudaErrorsIter("Post setDarcyGhostNodes("
                             "dev_darcy_grad_p)", iter);
 
-                    if (PROFILING == 1)
+                    /*if (PROFILING == 1)
                         startTimer(&kernel_tic);
                     findDarcyPorositiesLinear<<<dimGridFluid, dimBlockFluid>>>(
                             dev_cellStart,
@@ -1845,7 +1845,7 @@ __host__ void DEM::startTime()
                     if (PROFILING == 1)
                         stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                                 &t_findDarcyPorosities);
-                    checkForCudaErrorsIter("Post findDarcyPorosities", iter);
+                    checkForCudaErrorsIter("Post findDarcyPorosities", iter);*/
 
                     /*findDarcyPressureForce<<<dimGrid, dimBlock>>>(
                             dev_x,
@@ -1872,9 +1872,9 @@ __host__ void DEM::startTime()
 
                 if ((iter % darcy.ndem) == 0) {
 
-                    /*if (PROFILING == 1)
+                    if (PROFILING == 1)
                         startTimer(&kernel_tic);
-                    findDarcyPorosities<<<dimGridFluid, dimBlockFluid>>>(
+                    /*findDarcyPorosities<<<dimGridFluid, dimBlockFluid>>>(
                             dev_cellStart,
                             dev_cellEnd,
                             dev_x_sorted,
@@ -1884,7 +1884,19 @@ __host__ void DEM::startTime()
                             np,
                             darcy.c_phi,
                             dev_darcy_phi,
-                            dev_darcy_dphi);
+                            dev_darcy_dphi);*/
+                    findDarcyPorositiesLinear<<<dimGridFluid, dimBlockFluid>>>(
+                            dev_cellStart,
+                            dev_cellEnd,
+                            dev_x_sorted,
+                            dev_vel_sorted,
+                            iter,
+                            darcy.ndem,
+                            np,
+                            darcy.c_phi,
+                            dev_darcy_phi,
+                            dev_darcy_dphi,
+                            dev_darcy_div_v_p);
                     cudaThreadSynchronize();
                     if (PROFILING == 1)
                         stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
