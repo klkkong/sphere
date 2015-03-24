@@ -520,8 +520,10 @@ __global__ void findDarcyPorositiesLinear(
 
             // Make sure that the porosity is in the interval [0.0;1.0]
             //phi = fmin(0.9, fmax(0.1, void_volume/(dx*dy*dz)));
-            phi = fmin(1.0, fmax(0.01, 1.0 - solid_volume/(dx*dy*dz)));
-            Float phi_new = fmin(1.0, fmax(0.01,
+            //phi = fmin(1.0, fmax(0.01, 1.0 - solid_volume/(dx*dy*dz)));
+            phi = fmin(0.9, fmax(0.1, 1.0 - solid_volume/(dx*dy*dz)));
+            //Float phi_new = fmin(1.0, fmax(0.01,
+            Float phi_new = fmin(0.9, fmax(0.1,
                         1.0 - solid_volume_new/(dx*dy*dz)));
 
             Float dphi;
