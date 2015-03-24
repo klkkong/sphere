@@ -341,7 +341,7 @@ __global__ void findDarcyPorositiesLinear(
     const Float dz = devC_grid.L[2]/nz;
 
     Float solid_volume = 0.0;
-    //Float solid_volume_new = 0.0;
+    Float solid_volume_new = 0.0;
     Float4 xr;  // particle pos. and radius
 
     // check that we are not outside the fluid grid
@@ -359,7 +359,7 @@ __global__ void findDarcyPorositiesLinear(
             Float s, vol_p;
             Float phi = 1.00;
             Float4 v;
-            Float3 x3, v3;
+            //Float3 x3, v3;
             //unsigned int n = 0;
 
             // Average particle velocities along principal axes around the
@@ -369,7 +369,7 @@ __global__ void findDarcyPorositiesLinear(
             Float v_p_yn = 0.0;
             Float v_p_yp = 0.0;
             Float v_p_zn = 0.0;
-            Float v_p_zp = 0.0;*/
+            Float v_p_zp = 0.0;
             Float xn_num   = 0.0;
             Float xn_denum = 0.0;
             Float xp_num   = 0.0;
@@ -383,7 +383,7 @@ __global__ void findDarcyPorositiesLinear(
             Float zn_num   = 0.0;
             Float zn_denum = 0.0;
             Float zp_num   = 0.0;
-            Float zp_denum = 0.0;
+            Float zp_denum = 0.0;*/
 
             // Read old porosity
             __syncthreads();
@@ -437,8 +437,8 @@ __global__ void findDarcyPorositiesLinear(
                                     __syncthreads();
                                     xr = dev_x_sorted[i];
                                     v  = dev_vel_sorted[i];
-                                    x3 = MAKE_FLOAT3(xr.x, xr.y, xr.z);
-                                    v3 = MAKE_FLOAT3(v.x, v.y, v.z);
+                                    //x3 = MAKE_FLOAT3(xr.x, xr.y, xr.z);
+                                    //v3 = MAKE_FLOAT3(v.x, v.y, v.z);
 
                                     // Find center distance
                                     dist = MAKE_FLOAT3(
@@ -453,7 +453,7 @@ __global__ void findDarcyPorositiesLinear(
 
                                     // Add particle contribution to cell face
                                     // nodes of component-wise velocity
-                                    x3 += distmod;
+                                    /*x3 += distmod;
                                     s = weight(x3,
                                             X + MAKE_FLOAT3(-0.5*dx, 0., 0.),
                                             dx, dy, dz);
@@ -500,17 +500,17 @@ __global__ void findDarcyPorositiesLinear(
                                     if (s > 1.0e-10) {
                                         zp_num  += s*vol_p*v3.z;
                                         zp_denum += s*vol_p;
-                                    }
+                                    }*/
 
                                     // Find projected new void volume
                                     // Eulerian update of positions
-                                    /*xr += v*devC_dt;
+                                    xr += v*devC_dt;
                                     dist = MAKE_FLOAT3(
                                             X.x - xr.x, 
                                             X.y - xr.y,
                                             X.z - xr.z) + distmod;
                                     solid_volume_new +=
-                                        weightDist(dist, dx, dy, dz)*vol_p;*/
+                                        weightDist(dist, dx, dy, dz)*vol_p;
                                 }
                             }
                         }
@@ -521,31 +521,31 @@ __global__ void findDarcyPorositiesLinear(
             // Make sure that the porosity is in the interval [0.0;1.0]
             //phi = fmin(0.9, fmax(0.1, void_volume/(dx*dy*dz)));
             phi = fmin(1.0, fmax(0.01, 1.0 - solid_volume/(dx*dy*dz)));
-            //Float phi_new = fmin(1.0, fmax(0.01,
-                        //1.0 - solid_volume_new/(dx*dy*dz)));
+            Float phi_new = fmin(1.0, fmax(0.01,
+                        1.0 - solid_volume_new/(dx*dy*dz)));
 
-            /*Float dphi;
+            Float dphi;
             if (iteration == 0)
                 dphi = phi_new - phi;
             else
-                dphi = 0.5*(phi_new - phi_0);*/
+                dphi = 0.5*(phi_new - phi_0);
 
             // Determine particle velocity divergence
             /*const Float div_v_p =
                     (v_p_xp - v_p_xn)/dx +
                     (v_p_yp - v_p_yn)/dy +
                     (v_p_zp - v_p_zn)/dz;*/
-            const Float v_p_xn = xn_num/fmax(1.0e-12, xn_denum);
+            /*const Float v_p_xn = xn_num/fmax(1.0e-12, xn_denum);
             const Float v_p_xp = xp_num/fmax(1.0e-12, xp_denum);
             const Float v_p_yn = yn_num/fmax(1.0e-12, yn_denum);
             const Float v_p_yp = yp_num/fmax(1.0e-12, yp_denum);
             const Float v_p_zn = zn_num/fmax(1.0e-12, zn_denum);
-            const Float v_p_zp = zp_num/fmax(1.0e-12, zp_denum);
+            const Float v_p_zp = zp_num/fmax(1.0e-12, zp_denum);*/
 
-            const Float div_v_p =
+            /*const Float div_v_p =
                 (v_p_xp - v_p_xn)/dx +
                 (v_p_yp - v_p_yn)/dy +
-                (v_p_zp - v_p_zn)/dz;
+                (v_p_zp - v_p_zn)/dz;*/
                     /*(xp_num/fmax(1.e-12, xp_denum)
                      - xn_num/fmax(1.e-12, xn_denum))/dx +
                     (yp_num/fmax(1.e-12, yp_denum)
@@ -557,8 +557,8 @@ __global__ void findDarcyPorositiesLinear(
             __syncthreads();
             const unsigned int cellidx = d_idx(x,y,z);
             dev_darcy_phi[cellidx]     = phi*c_phi;
-            //dev_darcy_dphi[cellidx]    = dphi*c_phi;
-            dev_darcy_div_v_p[cellidx] = div_v_p;
+            dev_darcy_dphi[cellidx]    = dphi*c_phi;
+            //dev_darcy_div_v_p[cellidx] = div_v_p;
 
             //if (phi < 1.0 || div_v_p != 0.0)
             //if (phi < 1.0)
@@ -587,8 +587,8 @@ __global__ void findDarcyPorositiesLinear(
 
 #ifdef CHECK_FLUID_FINITE
             (void)checkFiniteFloat("phi", x, y, z, phi);
-            //(void)checkFiniteFloat("dphi", x, y, z, dphi);
-            (void)checkFiniteFloat("div_v_p", x, y, z, div_v_p);
+            (void)checkFiniteFloat("dphi", x, y, z, dphi);
+            //(void)checkFiniteFloat("div_v_p", x, y, z, div_v_p);
             //(void)checkFiniteFloat("dot_epsilon_kk", x, y, z, dot_epsilon_kk);
             //(void)checkFiniteFloat3("v_avg", x, y, z, v_avg);
             //(void)checkFiniteFloat("d_avg", x, y, z, d_avg);
