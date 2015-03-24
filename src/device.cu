@@ -1901,7 +1901,7 @@ __host__ void DEM::startTime()
                     if (PROFILING == 1)
                         stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                                 &t_findDarcyPorosities);
-                    checkForCudaErrorsIter("Post findDarcyPorosities", iter);*/
+                    checkForCudaErrorsIter("Post findDarcyPorosities", iter);
 
                     // Modulate the pressures at the upper boundary cells
                     if ((darcy.p_mod_A > 1.0e-5 || darcy.p_mod_A < -1.0e-5) &&
