@@ -28,7 +28,7 @@ void DEM::initDarcyMemDev(void)
     cudaMalloc((void**)&dev_darcy_p, memSizeF);     // hydraulic pressure
     cudaMalloc((void**)&dev_darcy_p_new, memSizeF); // updated pressure
     cudaMalloc((void**)&dev_darcy_v, memSizeF*3);   // cell hydraulic velocity
-    //cudaMalloc((void**)&dev_darcy_vp_avg, memSizeF*3); // avg. particle velocity
+    cudaMalloc((void**)&dev_darcy_vp_avg, memSizeF*3); // avg. particle velocity
     //cudaMalloc((void**)&dev_darcy_d_avg, memSizeF); // avg. particle diameter
     cudaMalloc((void**)&dev_darcy_phi, memSizeF);   // cell porosity
     cudaMalloc((void**)&dev_darcy_dphi, memSizeF);  // cell porosity change
@@ -54,7 +54,7 @@ void DEM::freeDarcyMemDev()
     cudaFree(dev_darcy_p);
     cudaFree(dev_darcy_p_new);
     cudaFree(dev_darcy_v);
-    //cudaFree(dev_darcy_vp_avg);
+    cudaFree(dev_darcy_vp_avg);
     //cudaFree(dev_darcy_d_avg);
     cudaFree(dev_darcy_phi);
     cudaFree(dev_darcy_dphi);
@@ -323,7 +323,8 @@ __global__ void findDarcyPorositiesLinear(
         const Float c_phi,                                // in
         Float*  __restrict__ dev_darcy_phi,               // in + out
         Float*  __restrict__ dev_darcy_dphi,              // in + out
-        Float*  __restrict__ dev_darcy_div_v_p)           // out
+        Float*  __restrict__ dev_darcy_div_v_p,           // out
+        Float3* __restrict__ dev_darcy_vp_avg)            // out
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -359,6 +360,8 @@ __global__ void findDarcyPorositiesLinear(
             Float s, vol_p;
             Float phi = 1.00;
             Float4 v;
+            Float3 vp_avg_num   = MAKE_FLOAT3(0.0, 0.0, 0.0);
+            Float  vp_avg_denum = 0.0;
             //Float3 x3, v3;
             //unsigned int n = 0;
 
@@ -450,6 +453,11 @@ __global__ void findDarcyPorositiesLinear(
                                     vol_p = sphereVolume(xr.w);
 
                                     solid_volume += s*vol_p;
+
+                                    // Summation procedure for average velocity
+                                    vp_avg_num +=
+                                        s*vol_p*MAKE_FLOAT3(v.x, v.y, v.z);
+                                    vp_avg_denum += s*vol_p;
 
                                     // Add particle contribution to cell face
                                     // nodes of component-wise velocity
@@ -561,6 +569,7 @@ __global__ void findDarcyPorositiesLinear(
             dev_darcy_phi[cellidx]     = phi*c_phi;
             dev_darcy_dphi[cellidx]    = dphi*c_phi;
             //dev_darcy_div_v_p[cellidx] = div_v_p;
+            dev_darcy_vp_avg[cellidx] = vp_avg_num/fmax(1.0e-16, vp_avg_denum);
 
             //if (phi < 1.0 || div_v_p != 0.0)
             //if (phi < 1.0)
@@ -1459,6 +1468,7 @@ __global__ void firstDarcySolution(
         const Float*  __restrict__ dev_darcy_phi,     // in
         const Float*  __restrict__ dev_darcy_dphi,    // in
         const Float*  __restrict__ dev_darcy_div_v_p, // in
+        const Float3* __restrict__ dev_darcy_vp_avg,  // in
         const Float3* __restrict__ dev_darcy_grad_k,  // in
         const Float beta_f,                           // in
         const Float mu,                               // in
@@ -1490,11 +1500,18 @@ __global__ void firstDarcySolution(
 
         // read values
         __syncthreads();
-        const Float  k       = dev_darcy_k[cellidx];
-        const Float3 grad_k  = dev_darcy_grad_k[cellidx];
-        const Float  phi     = dev_darcy_phi[cellidx];
-        const Float  dphi    = dev_darcy_dphi[cellidx];
+        const Float  k      = dev_darcy_k[cellidx];
+        const Float3 grad_k = dev_darcy_grad_k[cellidx];
+        const Float  phi_xn = dev_darcy_phi[d_idx(x-1,y,z)];
+        const Float  phi    = dev_darcy_phi[cellidx];
+        const Float  phi_xp = dev_darcy_phi[d_idx(x+1,y,z)];
+        const Float  phi_yn = dev_darcy_phi[d_idx(x,y-1,z)];
+        const Float  phi_yp = dev_darcy_phi[d_idx(x,y+1,z)];
+        const Float  phi_zn = dev_darcy_phi[d_idx(x,y,z-1)];
+        const Float  phi_zp = dev_darcy_phi[d_idx(x,y,z+1)];
+        const Float  dphi   = dev_darcy_dphi[cellidx];
         //const Float  div_v_p = dev_darcy_div_v_p[cellidx];
+        const Float3 vp_avg = dev_darcy_vp_avg[cellidx];
 
         const Float p_xn  = dev_darcy_p[d_idx(x-1,y,z)];
         const Float p     = dev_darcy_p[cellidx];
@@ -1532,6 +1549,11 @@ __global__ void firstDarcySolution(
                 (p_yp - p_yn)/(dy + dy),
                 (p_zp - p_zn)/(dz + dz));
 
+        const Float3 grad_phi = MAKE_FLOAT3(
+                (phi_xp - phi_xn)/(dx + dx),
+                (phi_yp - phi_yn)/(dy + dy),
+                (phi_zp - phi_zn)/(dz + dz));
+
         // laplacian approximated by second-order central differences
         const Float laplace_p =
                 (p_xp - (p + p) + p_xn)/(dx*dx) +
@@ -1539,9 +1561,11 @@ __global__ void firstDarcySolution(
                 (p_zp - (p + p) + p_zn)/(dz*dz);
 
         Float dp_expl =
-            + (ndem*devC_dt)/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
+            + ndem*devC_dt/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
             //- div_v_p/(beta_f*phi);
-            - dphi/(beta_f*phi*(1.0 - phi));
+            //- dphi/(beta_f*phi*(1.0 - phi));
+            - ndem*devC_dt/(beta_f*phi*(1.0 - phi))
+            *(dphi/(ndem*devC_dt) + dot(vp_avg, grad_phi));
 
         // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
         // grid if the wall isn't dynamic
@@ -1607,6 +1631,7 @@ __global__ void updateDarcySolution(
         const Float*  __restrict__ dev_darcy_phi,     // in
         const Float*  __restrict__ dev_darcy_dphi,    // in
         const Float*  __restrict__ dev_darcy_div_v_p, // in
+        const Float3* __restrict__ dev_darcy_vp_avg,  // in
         const Float3* __restrict__ dev_darcy_grad_k,  // in
         const Float beta_f,                           // in
         const Float mu,                               // in
@@ -1639,11 +1664,18 @@ __global__ void updateDarcySolution(
 
         // read values
         __syncthreads();
-        const Float k        = dev_darcy_k[cellidx];
-        const Float3 grad_k  = dev_darcy_grad_k[cellidx];
-        const Float  phi     = dev_darcy_phi[cellidx];
-        const Float  dphi    = dev_darcy_dphi[cellidx];
+        const Float k       = dev_darcy_k[cellidx];
+        const Float3 grad_k = dev_darcy_grad_k[cellidx];
+        const Float  phi_xn = dev_darcy_phi[d_idx(x-1,y,z)];
+        const Float  phi    = dev_darcy_phi[cellidx];
+        const Float  phi_xp = dev_darcy_phi[d_idx(x+1,y,z)];
+        const Float  phi_yn = dev_darcy_phi[d_idx(x,y-1,z)];
+        const Float  phi_yp = dev_darcy_phi[d_idx(x,y+1,z)];
+        const Float  phi_zn = dev_darcy_phi[d_idx(x,y,z-1)];
+        const Float  phi_zp = dev_darcy_phi[d_idx(x,y,z+1)];
+        const Float  dphi   = dev_darcy_dphi[cellidx];
         //const Float  div_v_p = dev_darcy_div_v_p[cellidx];
+        const Float3 vp_avg = dev_darcy_vp_avg[cellidx];
 
         const Float p_old   = dev_darcy_p_old[cellidx];
         const Float dp_expl = dev_darcy_dp_expl[cellidx];
@@ -1684,6 +1716,11 @@ __global__ void updateDarcySolution(
                 (p_yp - p_yn)/(dy + dy),
                 (p_zp - p_zn)/(dz + dz));
 
+        const Float3 grad_phi = MAKE_FLOAT3(
+                (phi_xp - phi_xn)/(dx + dx),
+                (phi_yp - phi_yn)/(dy + dy),
+                (phi_zp - phi_zn)/(dz + dz));
+
         // laplacian approximated by second-order central differences
         const Float laplace_p =
                 (p_xp - (p + p) + p_xn)/(dx*dx) +
@@ -1692,9 +1729,11 @@ __global__ void updateDarcySolution(
 
         //Float p_new = p_old
         Float dp_impl =
-            + (ndem*devC_dt)/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
+            + ndem*devC_dt/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
             //- div_v_p/(beta_f*phi);
-            - dphi/(beta_f*phi*(1.0 - phi));
+            //- dphi/(beta_f*phi*(1.0 - phi));
+            - ndem*devC_dt/(beta_f*phi*(1.0 - phi))
+            *(dphi/(ndem*devC_dt) + dot(vp_avg, grad_phi));
 
         // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
         // grid if the wall isn't dynamic

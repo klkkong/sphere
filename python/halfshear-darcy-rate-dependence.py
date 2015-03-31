@@ -22,9 +22,13 @@ fluid = True
 #threshold = 100.0 # [N]
 
 
-def creep_rheology(friction, n):
+def creep_rheology1(friction, n):
     ''' return strain rate from friction (tau/N) value '''
     return friction**n
+
+def creep_rheology2(friction, n, A):
+    ''' return strain rate from friction (tau/N) value '''
+    return A*friction**n
 
 
 for sid in sids:
@@ -79,12 +83,14 @@ for sid in sids:
     #popt, pvoc = scipy.optimize.curve_fit(
             #creep_rheology, tau/N, shearstrainrate)
     popt, pvoc = scipy.optimize.curve_fit(
-            creep_rheology, tau_nonzero[idxfit]/N_nonzero[idxfit],
+            creep_rheology1, tau_nonzero[idxfit]/N_nonzero[idxfit],
             shearstrainrate_nonzero[idxfit])
     print '# Critical state'
     print popt
     print pvoc
     n = popt[0] # stress exponent
+    #A = popt[1] # stress exponent
+    A = 1.
 
     friction = tau_nonzero/N_nonzero
     x_min = numpy.floor(numpy.min(friction))
@@ -93,27 +99,30 @@ for sid in sids:
             numpy.linspace(numpy.min(tau_nonzero[idxfit]/N_nonzero[idxfit]),
                     numpy.max(tau_nonzero[idxfit]/N_nonzero[idxfit]),
                     100)
-    strainrate_fit = friction_fit**n
+    strainrate_fit = A*friction_fit**n
 
     ### Consolidated state fit
-    idxfit2 = numpy.nonzero((tau_nonzero/N_nonzero < 0.38) &
-            (shearstrainrate_nonzero < 0.1) &
-            ((t_nonzero > 0.0) & (t_nonzero < 3.0)))
-    #popt, pvoc = scipy.optimize.curve_fit(
-            #creep_rheology, tau/N, shearstrainrate)
+    #idxfit2 = numpy.nonzero((tau_nonzero/N_nonzero < 0.38) &
+            #(shearstrainrate_nonzero < 0.1) &
+            #((t_nonzero > 0.0) & (t_nonzero < 2.5)))
+    idxfit2 = numpy.nonzero((shearstrain_nonzero < 0.1) &
+            (tau_nonzero/N_nonzero < 0.38))
+    '''
     popt2, pvoc2 = scipy.optimize.curve_fit(
-            creep_rheology, tau_nonzero[idxfit2]/N_nonzero[idxfit2],
+            creep_rheology2, tau_nonzero[idxfit2]/N_nonzero[idxfit2],
             shearstrainrate_nonzero[idxfit2])
     print '# Consolidated state'
     print popt2
     print pvoc2
     n2 = popt2[0] # stress exponent
+    A2 = popt2[1] # prefactor
 
     friction_fit2 =\
             numpy.linspace(numpy.min(tau_nonzero[idxfit2]/N_nonzero[idxfit2]),
                     numpy.max(tau_nonzero[idxfit2]/N_nonzero[idxfit2]),
                     100)
-    strainrate_fit2 = friction_fit2**n2
+    strainrate_fit2 = A2*friction_fit2**n2
+    '''
 
 
     ### Plotting
@@ -182,6 +191,9 @@ for sid in sids:
     fig = plt.figure(figsize=(3.5,2.5))
     ax1 = plt.subplot(111)
     CS = ax1.scatter(friction, dilation[idx],
+            #tau_nonzero[idxfit2]/N_nonzero[idxfit2],
+            shearstrainrate_nonzero[idxfit2],
+            c=shearstrain_nonzero[idxfit2], linewidth=0.05,
             c=shearstrain_nonzero, linewidth=0.05,
             cmap=matplotlib.cm.get_cmap('afmhot'))
 

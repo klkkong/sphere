@@ -18,7 +18,8 @@ sid = 'halfshear-darcy-sigma0=80000.0-k_c=3.5e-13-mu=1.04e-07-ss=10000.0-A=70000
 outformat = 'pdf'
 fluid = True
 #threshold = 100.0 # [N]
-calculateforcechains = False
+calculateforcechains = True
+calculateforcechainhistory = False
 legend_alpha=0.7
 linewidth=0.5
 
@@ -106,7 +107,7 @@ for i in numpy.arange(nsteps):
             #'''
 
     if calculateforcechains:
-        if i > 0:
+        if i > 0 and calculateforcechainhistory:
             loaded_contacts_prev = numpy.copy(loaded_contacts)
             pairs_prev = numpy.copy(sim.pairs)
 
@@ -118,17 +119,18 @@ for i in numpy.arange(nsteps):
         sim.findCoordinationNumber()
         coordinationnumber[i] = sim.findMeanCoordinationNumber()
 
-        nfound = 0
-        if i > 0:
-            for a in loaded_contacts[0]:
-                for b in loaded_contacts_prev[0]:
-                    if (sim.pairs[:,a] == pairs_prev[:,b]).all():
-                        nfound += 1;
+        if calculateforcechainhistory:
+            nfound = 0
+            if i > 0:
+                for a in loaded_contacts[0]:
+                    for b in loaded_contacts_prev[0]:
+                        if (sim.pairs[:,a] == pairs_prev[:,b]).all():
+                            nfound += 1;
 
-        nkept[i] = nfound
+            nkept[i] = nfound
+            print nfound
 
         print coordinationnumber[i]
-        print nfound
 
 
 if calculateforcechains:
