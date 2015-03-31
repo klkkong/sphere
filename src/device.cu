@@ -1950,6 +1950,17 @@ __host__ void DEM::startTime()
                     if (PROFILING == 1)
                         startTimer(&kernel_tic);
                     setDarcyGhostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
+                            dev_darcy_phi, darcy.bc_bot, darcy.bc_top);
+                    cudaThreadSynchronize();
+                    if (PROFILING == 1)
+                        stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                &t_setDarcyGhostNodes);
+                    checkForCudaErrorsIter(
+                            "Post setDarcyGhostNodes(dev_darcy_phi)", iter);
+
+                    if (PROFILING == 1)
+                        startTimer(&kernel_tic);
+                    setDarcyGhostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
                             dev_darcy_k, darcy.bc_bot, darcy.bc_top);
                     cudaThreadSynchronize();
                     if (PROFILING == 1)
