@@ -6859,7 +6859,8 @@ class sim:
                         outfolder = '../img_out/')
 
             subprocess.call('cd ../img_out/ && ' + 
-                    'convert -quality 100 {}.*.png {}-contacts.avi',
+                    'convert -quality 100 {}.*.png {}-contacts.avi'.format(
+                        self.sid, self.sid),
                     shell=True)
 
         else:
