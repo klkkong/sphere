@@ -411,6 +411,10 @@ __global__ void findDarcyPorositiesLinear(
                         // Index of neighbor cell this iteration is looking at
                         targetCell = gridPos + make_int3(x_dim, y_dim, z_dim);
 
+                        // Do not artifically enhance porosity at lower boundary
+                        if (targetCell.z == -1)
+                            targetCell.z = 1;
+
                         // Get distance modifier for interparticle
                         // vector, if it crosses a periodic boundary
                         distmod = MAKE_FLOAT3(0.0, 0.0, 0.0);

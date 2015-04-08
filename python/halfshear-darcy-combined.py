@@ -18,7 +18,7 @@ sid = 'halfshear-darcy-sigma0=80000.0-k_c=3.5e-13-mu=1.04e-07-ss=10000.0-A=70000
 outformat = 'pdf'
 fluid = True
 #threshold = 100.0 # [N]
-calculateforcechains = True
+calculateforcechains = False
 calculateforcechainhistory = False
 legend_alpha=0.7
 linewidth=0.5
@@ -181,6 +181,7 @@ lns0 = ax1.plot(t, sigma_def/1000., '-k', label="$N$",
 lns3 = ax1.plot(t, tau_eff/1000., '-r', label="$\\tau'$", linewidth=linewidth)
 
 ax1.set_ylabel('Stress [kPa]')
+
 ax2 = ax1.twinx()
 ax2color = 'blue'
 #lns4 = ax2.plot(t, p_f_top/1000.0 + 80.0, '-',
@@ -240,7 +241,8 @@ ax5 = plt.subplot(5, 1, 3, sharex=ax1)
 #ax5.plot(t, xdispint, 'k', linewidth=linewidth)
 
 # normalized displacement
-ax5.plot(t, xdisp/xdisp[-1], 'k', linewidth=linewidth)
+#ax5.plot(t, xdisp/xdisp[-1], 'k', linewidth=linewidth)
+ax5.plot(t, xdisp/xdisp[4500], 'k', linewidth=linewidth)
 
 # detrended displacement
 #ax5.plot(t, xdisp - (xdisp[-1] - xdisp[0])*t/t[-1], 'k', linewidth=linewidth)
@@ -317,8 +319,8 @@ cbaxes = fig.add_axes([0.32, 0.1, 0.4, 0.01]) # x,y,w,h
     #linewidth=1,
     #facecolor='white'))
 ax9.add_patch(matplotlib.patches.Rectangle(
-    (0.6, 0.04), # x,y
-    3., # dx
+    (1.5, 0.04), # x,y
+    7., # dx
     .15, # dy
     fill=True,
     linewidth=1,
@@ -358,6 +360,17 @@ plt.setp(ax5.get_xticklabels(), visible=False)
 #plt.setp(ax6.get_xticklabels(), visible=False)
 plt.setp(ax7.get_xticklabels(), visible=False)
 #plt.setp(ax8.get_xticklabels(), visible=False)
+
+ax1.set_xlim([0,9])
+ax2.set_xlim([0,9])
+ax3.set_xlim([0,9])
+#ax4.set_xlim([0,9])
+ax5.set_xlim([0,9])
+ax6.set_xlim([0,9])
+ax7.set_xlim([0,9])
+ax8.set_xlim([0,9])
+ax9.set_xlim([0,9])
+
 
 ax9.set_xlabel('Time [d]')
 fig.tight_layout()
