@@ -5216,6 +5216,117 @@ class sim:
                 graphics_format)
         fig.clf()
 
+    def plotContacts(self, graphics_format = 'png', figsize=[6,6], title=None,
+            lower_limit = 0.0, upper_limit = 1.0, alpha=1.0, return_data=False,
+            outfolder='.'):
+        '''
+        Plot current contact orientations on polar plot
+
+        :param lower_limit: Do not visualize force chains below this relative
+            contact force magnitude, in ]0;1[
+        :type lower_limit: float
+        :param upper_limit: Visualize force chains above this relative
+            contact force magnitude but cap color bar range, in ]0;1[
+        :type upper_limit: float
+        :param graphics_format: Save the plot in this format
+        :type graphics_format: str
+        '''
+        self.writebin(verbose=False)
+
+
+        subprocess.call("cd .. && ./forcechains -f txt input/" + self.sid \
+                + ".bin > python/contacts-tmp.txt", shell=True)
+
+        # data will have the shape (numcontacts, 7)
+        data = numpy.loadtxt('contacts-tmp.txt', skiprows=1)
+
+        # find the max. value of the normal force
+        f_n_max = numpy.amax(data[:,6])
+
+        # specify the lower limit of force chains to do statistics on
+        f_n_lim = lower_limit * f_n_max
+
+        # find the indexes of these contacts
+        I = numpy.nonzero(data[:,6] >= f_n_lim)
+
+        # loop through these contacts and find the strike and dip of the
+        # contacts
+        strikelist = [] # strike direction of the normal vector, [0:360[
+        diplist = [] # dip of the normal vector, [0:90]
+        forcemagnitude = data[I,6]
+        for i in I[0]:
+
+            x1 = data[i,0]
+            y1 = data[i,1]
+            z1 = data[i,2]
+            x2 = data[i,3]
+            y2 = data[i,4]
+            z2 = data[i,5]
+
+            if z1 < z2:
+                xlower = x1; ylower = y1; zlower = z1
+                xupper = x2; yupper = y2; zupper = z2
+            else :
+                xlower = x2; ylower = y2; zlower = z2
+                xupper = x1; yupper = y1; zupper = z1
+
+            # Vector pointing downwards
+            dx = xlower - xupper
+            dy = ylower - yupper
+            dz = zlower - zupper
+            dhoriz = numpy.sqrt(dx**2 + dy**2)
+
+            # Find dip angle
+            diplist.append(numpy.degrees(numpy.arctan((zupper - zlower)/dhoriz)))
+
+            # Find strike angle
+            if ylower >= yupper: # in first two quadrants
+                strikelist.append(numpy.arccos(dx/dhoriz))
+            else :
+                strikelist.append(2.0*numpy.pi - numpy.arccos(dx/dhoriz))
+
+        plt.figure(figsize=figsize)
+        ax = plt.subplot(111, polar=True, axisbg='white')
+        cs = ax.scatter(strikelist, diplist, marker='o', 
+                c=forcemagnitude,
+                s=forcemagnitude/f_n_max*40.,
+                alpha=alpha,
+                edgecolors='none',
+                vmin=f_n_max*lower_limit,
+                vmax=f_n_max*upper_limit,
+                cmap=matplotlib.cm.get_cmap('afmhot_r'))
+        plt.colorbar(cs, extend='max')
+
+        # plot defined max compressive stress from tau/N ratio
+        ax.scatter(0., # prescribed stress
+                numpy.degrees(numpy.arctan(
+                    self.shearStress('defined')/
+                    self.currentNormalStress('defined'))),
+                marker='o', c='none', s=300)
+        ax.scatter(0., # actual stress
+                numpy.degrees(numpy.arctan(
+                    self.shearStress('effective')/
+                    self.currentNormalStress('effective'))),
+                marker='+', color='k', s=300)
+
+        ax.set_rmax(90)
+        ax.set_rticks([])
+
+        if title:
+            plt.title(title)
+        else:
+            plt.title('t = {:.2f} s'.format(self.currentTime()))
+
+        #plt.tight_layout()
+        plt.savefig(outfolder + '/' + self.sid + '-contacts.' + \
+                graphics_format,\
+                transparent=False)
+
+        subprocess.call('rm contacts-tmp.txt', shell=True)
+
+        if return_data:
+            return data
+
     def plotFluidPressuresY(self, y = -1, graphics_format = 'png'):
         '''
         Plot fluid pressures in a plane normal to the second axis.
@@ -5876,7 +5987,7 @@ class sim:
         :param method: The type of plot to render. Possible values are 'energy',
             'walls', 'triaxial', 'inertia', 'mean-fluid-pressure',
             'fluid-pressure', 'shear', 'shear-displacement', 'porosity',
-            'rate-dependence'
+            'rate-dependence', 'contacts'
         :type method: str
         :param savefig: Save the image instead of showing it on screen
         :type savefig: bool
@@ -6737,6 +6848,19 @@ class sim:
                 cb.solids.set_rasterized(True)
                 plt.tight_layout()
                 plt.subplots_adjust(wspace = .05)
+
+        elif method == 'contacts':
+
+            for i in numpy.arange(sb.status()+1):
+                fn = "../output/{0}.output{1:0=5}.bin".format(self.sid, i)
+                sb.sid = self.sid + ".{:0=5}".format(i)
+                sb.readbin(fn, verbose=True)
+                sb.plotContacts(lower_limit=0.25, upper_limit=0.75,
+                        outfolder = '../img_out/')
+
+            subprocess.call('cd ../img_out/ && ' + 
+                    'convert -quality 100 {}.*.png {}-contacts.avi',
+                    shell=True)
 
         else:
             print("Visualization type '" + method + "' not understood")
