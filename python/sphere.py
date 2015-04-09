@@ -5218,7 +5218,8 @@ class sim:
 
     def plotContacts(self, graphics_format = 'png', figsize=[6,6], title=None,
             lower_limit = 0.0, upper_limit = 1.0, alpha=1.0, return_data=False,
-            outfolder='.'):
+            outfolder='.',
+            f_min = None, f_max = None):
         '''
         Plot current contact orientations on polar plot
 
@@ -5245,6 +5246,11 @@ class sim:
 
         # specify the lower limit of force chains to do statistics on
         f_n_lim = lower_limit * f_n_max
+
+        if f_min:
+            f_n_lim = f_min
+        if f_max:
+            f_n_max = f_max
 
         # find the indexes of these contacts
         I = numpy.nonzero(data[:,6] >= f_n_lim)
@@ -5285,7 +5291,7 @@ class sim:
             else :
                 strikelist.append(2.0*numpy.pi - numpy.arccos(dx/dhoriz))
 
-        plt.figure(figsize=figsize)
+        fig = plt.figure(figsize=figsize)
         ax = plt.subplot(111, polar=True, axisbg='white')
         cs = ax.scatter(strikelist, diplist, marker='o', 
                 c=forcemagnitude,
@@ -5323,6 +5329,9 @@ class sim:
                 transparent=False)
 
         subprocess.call('rm contacts-tmp.txt', shell=True)
+
+        fig.clf()
+        plt.close()
 
         if return_data:
             return data
@@ -5977,7 +5986,7 @@ class sim:
 
 
     def visualize(self, method='energy', savefig=True, outformat='png',
-            pickle=False, xlim=False, firststep=0):
+            pickle=False, xlim=False, firststep=0, f_min=None, f_max=None):
         '''
         Visualize output from the simulation, where the temporal progress is
         of interest. The output will be saved in the current folder with a name
@@ -6855,8 +6864,13 @@ class sim:
                 fn = "../output/{0}.output{1:0=5}.bin".format(self.sid, i)
                 sb.sid = self.sid + ".{:0=5}".format(i)
                 sb.readbin(fn, verbose=True)
-                sb.plotContacts(lower_limit=0.25, upper_limit=0.75,
-                        outfolder = '../img_out/')
+                if f_min and f_max:
+                    sb.plotContacts(lower_limit=0.25, upper_limit=0.75,
+                            outfolder = '../img_out/',
+                            f_min = f_min, f_max = f_max)
+                else:
+                    sb.plotContacts(lower_limit=0.25, upper_limit=0.75,
+                            outfolder = '../img_out/')
 
             subprocess.call('cd ../img_out/ && ' + 
                     'convert -quality 100 {}.*.png {}-contacts.avi'.format(
