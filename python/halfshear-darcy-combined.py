@@ -276,7 +276,7 @@ ax7.set_ylim([1.0e1, 2.0e4])
 ax8 = ax7.twinx()
 ax8color='green'
 ax8.plot(t[:n.size], coordinationnumber, color=ax8color, linewidth=linewidth)
-ax8.set_ylabel('Contacts per particle [-]')
+ax8.set_ylabel('Contacts per grain [-]')
 ax8.yaxis.label.set_color(ax8color)
 for tl in ax8.get_yticklabels():
     tl.set_color(ax8color)

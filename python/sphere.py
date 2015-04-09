@@ -5308,12 +5308,12 @@ class sim:
                 numpy.degrees(numpy.arctan(
                     self.shearStress('defined')/
                     self.currentNormalStress('defined'))),
-                marker='o', c='none', s=300)
+                marker='o', c='none', edgecolor='blue', s=300)
         ax.scatter(0., # actual stress
                 numpy.degrees(numpy.arctan(
                     self.shearStress('effective')/
                     self.currentNormalStress('effective'))),
-                marker='+', color='k', s=300)
+                marker='+', color='blue', s=300)
 
         ax.set_rmax(90)
         ax.set_rticks([])
@@ -6867,14 +6867,22 @@ class sim:
                 if f_min and f_max:
                     sb.plotContacts(lower_limit=0.25, upper_limit=0.75,
                             outfolder = '../img_out/',
-                            f_min = f_min, f_max = f_max)
+                            f_min = f_min, f_max = f_max,
+                            title = "t = {:.2f} s, $N$ = {:.0f} kPa".format(
+                                sb.currentTime(),
+                                sb.currentNormalStress('defined')/1000.)
+                            )
                 else:
                     sb.plotContacts(lower_limit=0.25, upper_limit=0.75,
+                            title = "t = {:.2f} s, $N$ = {:.0f} kPa".format(
+                                sb.currentTime(),
+                                sb.currentNormalStress('defined')/1000.),
                             outfolder = '../img_out/')
 
             subprocess.call('cd ../img_out/ && ' + 
-                    'convert -quality 100 {}.*.png {}-contacts.avi'.format(
-                        self.sid, self.sid),
+                    'ffmpeg -sameq -i {}.%05d-contacts.png'.format(self.sid),
+                    #'convert -quality 100 {}.*.png {}-contacts.avi'.format(
+                        #self.sid, self.sid),
                     shell=True)
 
         else:
