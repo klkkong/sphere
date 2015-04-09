@@ -5239,8 +5239,7 @@ class sim:
                 + ".bin > python/contacts-tmp.txt", shell=True)
 
         # data will have the shape (numcontacts, 7)
-        #data = numpy.loadtxt('contacts-tmp.txt', skiprows=1)
-        data = numpy.loadtxt('contacttest.txt', skiprows=1)
+        data = numpy.loadtxt('contacts-tmp.txt', skiprows=1)
 
         # find the max. value of the normal force
         f_n_max = numpy.amax(data[:,6])
