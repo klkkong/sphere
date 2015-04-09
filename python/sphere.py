@@ -5239,7 +5239,8 @@ class sim:
                 + ".bin > python/contacts-tmp.txt", shell=True)
 
         # data will have the shape (numcontacts, 7)
-        data = numpy.loadtxt('contacts-tmp.txt', skiprows=1)
+        #data = numpy.loadtxt('contacts-tmp.txt', skiprows=1)
+        data = numpy.loadtxt('contacttest.txt', skiprows=1)
 
         # find the max. value of the normal force
         f_n_max = numpy.amax(data[:,6])
@@ -5257,9 +5258,12 @@ class sim:
 
         # loop through these contacts and find the strike and dip of the
         # contacts
-        strikelist = [] # strike direction of the normal vector, [0:360[
-        diplist = [] # dip of the normal vector, [0:90]
+
+        # strike direction of the normal vector, [0:360[
+        strikelist = numpy.empty(len(I[0]))
+        diplist = numpy.empty(len(I[0])) # dip of the normal vector, [0:90]
         forcemagnitude = data[I,6]
+        j = 0
         for i in I[0]:
 
             x1 = data[i,0]
@@ -5283,17 +5287,19 @@ class sim:
             dhoriz = numpy.sqrt(dx**2 + dy**2)
 
             # Find dip angle
-            diplist.append(numpy.degrees(numpy.arctan((zupper - zlower)/dhoriz)))
+            diplist[j] = numpy.degrees(numpy.arctan((zupper - zlower)/dhoriz))
 
             # Find strike angle
             if ylower >= yupper: # in first two quadrants
-                strikelist.append(numpy.arccos(dx/dhoriz))
+                strikelist[j] = numpy.arccos(dx/dhoriz)
             else :
-                strikelist.append(2.0*numpy.pi - numpy.arccos(dx/dhoriz))
+                strikelist[j] = 2.0*numpy.pi - numpy.arccos(dx/dhoriz)
+
+            j += 1
 
         fig = plt.figure(figsize=figsize)
         ax = plt.subplot(111, polar=True, axisbg='white')
-        cs = ax.scatter(strikelist, diplist, marker='o', 
+        cs = ax.scatter(strikelist, 90. - diplist, marker='o', 
                 c=forcemagnitude,
                 s=forcemagnitude/f_n_max*40.,
                 alpha=alpha,
