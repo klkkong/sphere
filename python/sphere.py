@@ -6884,8 +6884,10 @@ class sim:
                                 sb.currentNormalStress('defined')/1000.),
                             outfolder = '../img_out/')
 
+            # render images to movie
             subprocess.call('cd ../img_out/ && ' + 
-                    'ffmpeg -sameq -i {}.%05d-contacts.png'.format(self.sid),
+                    'ffmpeg -sameq -i {}.%05d-contacts.png '.format(self.sid) +
+                    '{}-contacts.mp4'.format(self.sid),
                     #'convert -quality 100 {}.*.png {}-contacts.avi'.format(
                         #self.sid, self.sid),
                     shell=True)
