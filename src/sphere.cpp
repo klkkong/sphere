@@ -698,7 +698,8 @@ void DEM::findOverlaps(
                 delta_n = x_ij_length - (x_i.w + x_j.w);
 
                 // Is there overlap?
-                if (delta_n < 0.0) {
+                // Do not include if both particles are fixed
+                if (delta_n < 0.0 && (k.vel[i].w == 0 && k.vel[j].w == 0)) {
 
                     // Store particle indexes and delta_n
                     std::vector<unsigned int> ij_pair(2);
