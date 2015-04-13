@@ -25,8 +25,8 @@ k_c = 3.5e-15
 
 # 5.0e-8 results present
 #mu_f_vals = [1.797e-06, 1.204e-06, 5.0e-8, 1.797e-08]
-#mu_f_vals = [1.797e-06, 1.204e-06, 3.594e-07, 1.797e-08]
-mu_f_vals = [1.797e-06, 1.204e-06, 1.797e-08]
+mu_f_vals = [1.797e-06, 1.204e-06, 3.594e-07, 1.797e-08]
+#mu_f_vals = [1.797e-06, 1.204e-06, 1.797e-08]
 velfac = 1.0
 
 
@@ -209,8 +209,8 @@ ax1.legend(loc='upper right', prop={'size':18}, fancybox=True,
 #ax4.legend(loc='best', prop={'size':18}, fancybox=True,
         #framealpha=legend_alpha)
 
-ax1.set_xlim([0.0, 0.09])
-ax2.set_xlim([0.0, 0.09])
+#ax1.set_xlim([0.0, 0.09])
+#ax2.set_xlim([0.0, 0.09])
 #ax2.set_xlim([0.0, 0.2])
 
 ax1.set_ylim([-7, 45])
