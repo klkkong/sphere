@@ -228,7 +228,8 @@ for c in numpy.arange(0,len(k_c_vals)):
     # unsmoothed
     ax1.plot(shear_strain[c][1:], friction[c][1:], \
             label=label, linewidth=1,
-            alpha=0.2, color='gray', clip_on=False)
+            alpha=0.3, color=color[c], clip_on=False)
+            #alpha=0.2, color='gray', clip_on=False)
             #alpha=alpha, color=color[c])
 
     # smoothed
@@ -256,7 +257,7 @@ for c in numpy.arange(0,len(k_c_vals)):
 
         ax3.fill_between(shear_strain[c], p_min[c], p_max[c], 
                 where=p_min[c]<=p_max[c], facecolor=color[c], edgecolor='None',
-                interpolate=True, alpha=0.5)
+                interpolate=True, alpha=0.3)
 
         #ax4.plot(shear_strain[c][1:], f_n_mean[c][1:], '-' + color[c],
                 #label='$c$ = %.2f' % (cvals[c-1]), linewidth=2)
