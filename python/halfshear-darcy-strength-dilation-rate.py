@@ -36,9 +36,9 @@ k_c = 3.5e-15
 #mu_f_vals = [1.797e-06, 1.204e-06, 5.0e-8, 1.797e-08]
 #mu_f_vals = [1.797e-06, 1.204e-06, 3.594e-07, 1.797e-08]
 #mu_f_vals = [1.797e-06, 1.797-07, 1.797e-08]
-#mu_f_vals = [1.797e-06, 1.797-07, 1.797e-08]
+mu_f_vals = [1.797e-06, 1.797-07, 1.797e-08]
 #mu_f_vals = [1.797e-06, 1.204e-06, 1.797e-08]
-mu_f_vals = [1.797e-06, 3.594e-07, 1.797e-08]
+#mu_f_vals = [1.797e-06, 3.594e-07, 1.797e-08]
 velfac = 1.0
 
 # return a smoothed version of in. The returned array is smaller than the
@@ -262,7 +262,7 @@ for c in numpy.arange(0,len(mu_f_vals)):
 
 
         ax3.fill_between(shear_strain[c], p_min[c], p_max[c], 
-                where=p_min[c]<=p_max[c], facecolor=color[c],
+                where=p_min[c]<=p_max[c], facecolor=color[c], edgecolor='None',
                 interpolate=True, alpha=0.5)
 
         #ax4.plot(shear_strain[c][1:], f_n_mean[c][1:], '-' + color[c],
