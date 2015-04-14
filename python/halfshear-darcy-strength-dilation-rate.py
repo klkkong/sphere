@@ -154,14 +154,14 @@ for c, mu_f in enumerate(mu_f_vals):
             label=label, linewidth=1)
 
     if pressures:
-        #ax3.plot(shear_strain[c][1:], p_max[c][1:], '-' + color[c], alpha=0.5)
-        ax3.plot(shear_strain[c][1:], p_mean[c][1:], '-' + color[c], \
-                label=label, linewidth=1)
-        #ax3.plot(shear_strain[c][1:], p_min[c][1:], '-' + color[c], alpha=0.5)
+        ax3.plot(shear_strain[c][1:], p_max[c][1:], '-' + color[c], alpha=0.5)
+        #ax3.plot(shear_strain[c][1:], p_mean[c][1:], '-' + color[c], \
+                #label=label, linewidth=1)
+        ax3.plot(shear_strain[c][1:], p_min[c][1:], '-' + color[c], alpha=0.5)
 
-        #ax3.fill_between(shear_strain[c][1:], p_min[c][1:], p_max[c][1:], 
-                #where=p_min[c][1:]<=p_max[c][1:], facecolor=color[c],
-                #interpolate=True, alpha=0.5)
+        ax3.fill_between(shear_strain[c][1:], p_min[c][1:], p_max[c][1:], 
+                where=p_min[c][1:]<=p_max[c][1:], facecolor=color[c],
+                interpolate=True, alpha=0.5)
 
         #ax4.plot(shear_strain[c][1:], f_n_mean[c][1:], '-' + color[c],
                 #label='$c$ = %.2f' % (cvals[c-1]), linewidth=2)
@@ -218,8 +218,8 @@ ax2.set_ylim([0.0, 0.8])
 #ax1.set_ylim([0.0, 1.0])
 if pressures:
     #ax3.set_ylim([-1400, 900])
-    ax3.set_ylim([-490, 490])
-    ax3.set_xlim([0.0, 0.09])
+    ax3.set_ylim([-200, 200])
+    #ax3.set_xlim([0.0, 0.09])
 
 plt.tight_layout()
 plt.subplots_adjust(hspace=0.05)

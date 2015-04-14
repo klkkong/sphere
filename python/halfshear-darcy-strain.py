@@ -15,7 +15,8 @@ from matplotlib.ticker import MaxNLocator
 
 sigma0 = 20000.0
 #cvals = ['dry', 1.0, 0.1, 0.01]
-cvals = ['dry', 3.5e-13, 3.5e-15]
+#cvals = ['dry', 3.5e-13, 3.5e-15]
+cvals = ['dry', 3.5e-13, 3.5e-14, 3.5e-15]
 #cvals = ['dry', 1.0]
 #step = 1999
 
@@ -24,14 +25,14 @@ sim.readfirst(verbose=False)
 
 
 # particle z positions
-zpos_p = [[], [], []]
+zpos_p = [[], [], [], []]
 
 # cell midpoint cell positions
-zpos_c = [[], [], []]
+zpos_c = [[], [], [], []]
 
 # particle x displacements
-xdisp = [[], [], []]
-xdisp_mean = [[], [], []]
+xdisp = [[], [], [], []]
+xdisp_mean = [[], [], [], []]
 
 s = 0
 for c in cvals:
@@ -103,6 +104,8 @@ for s in numpy.arange(len(cvals)):
         legend = 'dry'
     elif cvals[s] == 3.5e-13:
         legend = 'wet, relatively permeable'
+    elif cvals[s] == 3.5e-14:
+        legend = 'wet, intermediate permeability'
     elif cvals[s] == 3.5e-15:
         legend = 'wet, relatively impermeable'
     else:
@@ -148,14 +151,17 @@ for s in numpy.arange(len(cvals)):
 legend_alpha=0.5
 ax[0].legend(loc='lower right', prop={'size':18}, fancybox=True, framealpha=legend_alpha)
 ax[0].grid()
-ax[0].set_xlim([-0.1,1.1])
+ax[0].set_xlim([-0.05, 1.01])
+#ax[0].set_ylim([0.0, 0.47])
+ax[0].set_ylim([0.20, 0.47])
 plt.tight_layout()
 plt.subplots_adjust(wspace = .05)
 plt.MaxNLocator(nbins=4)
 
 filename = 'halfshear-darcy-strain.pdf'
 plt.savefig(filename)
-shutil.copyfile(filename, '/Users/adc/articles/own/2/graphics/' + filename)
+#shutil.copyfile(filename, '/Users/adc/articles/own/2/graphics/' + filename)
+shutil.copyfile(filename, '/home/adc/articles/own/2/graphics/' + filename)
 print(filename)
 
 
