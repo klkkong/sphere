@@ -170,6 +170,8 @@ ax[0].get_xaxis().tick_bottom()
 ax[0].get_yaxis().tick_left()
 ax[0].get_xaxis().grid(False) # horizontal grid lines
 #ax[0].get_yaxis().grid(True, linestyle='--', linewidth=0.5) # vertical grid lines
+ax[0].get_xaxis().grid(True, linestyle=':', linewidth=0.5) # vertical grid lines
+ax[0].get_yaxis().grid(True, linestyle=':', linewidth=0.5) # vertical grid lines
 
 # reverse legend order
 handles, labels = ax[0].get_legend_handles_labels()
