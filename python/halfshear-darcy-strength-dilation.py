@@ -24,7 +24,8 @@ pressures = True
 zflow = False
 contact_forces = False
 smooth_friction = True
-smooth_window = 30
+smooth_window = 100
+#smooth_window = 200
 
 #sigma0_list = numpy.array([1.0e3, 2.0e3, 4.0e3, 10.0e3, 20.0e3, 40.0e3])
 sigma0 = 20000.0
@@ -40,6 +41,7 @@ velfac = 1.0
 # return a smoothed version of in. The returned array is smaller than the
 # original input array
 def smooth(x, window_len=10, window='hanning'):
+#def smooth(x, window_len=10, window='flat'):
     """smooth the data using a window with requested size.
     
     This method is based on the convolution of a scaled window with the signal.
@@ -92,9 +94,6 @@ def smooth(x, window_len=10, window='hanning'):
         w = getattr(numpy, window)(window_len)
     y = numpy.convolve(w/w.sum(), s, mode='same')
     return y[window_len-1:-window_len+1]
-
-
-smooth_window = 10
 
 
 shear_strain = [[], [], [], []]
@@ -401,7 +400,7 @@ for c in numpy.arange(0,len(k_c_vals)):
         #ax3.get_yaxis().tick_left()
         plt.setp(ax3.get_yticklabels(), visible=False)
         if c == 1:
-            ax3.get_yaxis().tick_left()
+            #ax3.get_yaxis().tick_left()
             ax3.spines['left'].set_visible(True)
 
 

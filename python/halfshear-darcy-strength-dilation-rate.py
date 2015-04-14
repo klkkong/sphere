@@ -24,7 +24,7 @@ pressures = True
 zflow = False
 contact_forces = False
 smooth_friction = True
-smooth_window = 30
+smooth_window = 10
 
 #sigma0_list = numpy.array([1.0e3, 2.0e3, 4.0e3, 10.0e3, 20.0e3, 40.0e3])
 sigma0 = 20000.0
@@ -95,9 +95,6 @@ def smooth(x, window_len=10, window='hanning'):
         w = getattr(numpy, window)(window_len)
     y = numpy.convolve(w/w.sum(), s, mode='same')
     return y[window_len-1:-window_len+1]
-
-
-smooth_window = 10
 
 
 shear_strain = [[], [], [], []]
