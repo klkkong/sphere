@@ -452,7 +452,7 @@ for c in numpy.arange(0,len(k_c_vals)):
 #plt.subplots_adjust(hspace=0.05)
 plt.subplots_adjust(hspace=0.15)
 #filename = 'shear-' + str(int(sigma0/1000.0)) + 'kPa-stress-dilation.pdf'
-filename = 'halfshear-darcy-rate.pdf'
+filename = 'halfshear-darcy.pdf'
 #print(os.getcwd() + '/' + filename)
 plt.savefig(filename)
 shutil.copyfile(filename, '/home/adc/articles/own/2/graphics/' + filename)
