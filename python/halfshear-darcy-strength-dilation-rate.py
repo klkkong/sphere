@@ -35,8 +35,7 @@ k_c = 3.5e-15
 # 5.0e-8 results present
 #mu_f_vals = [1.797e-06, 1.204e-06, 5.0e-8, 1.797e-08]
 #mu_f_vals = [1.797e-06, 1.204e-06, 3.594e-07, 1.797e-08]
-#mu_f_vals = [1.797e-06, 1.797-07, 1.797e-08]
-mu_f_vals = [1.797e-06, 1.797-07, 1.797e-08]
+mu_f_vals = [1.797e-06, 1.797e-07, 1.797e-08]
 #mu_f_vals = [1.797e-06, 1.204e-06, 1.797e-08]
 #mu_f_vals = [1.797e-06, 3.594e-07, 1.797e-08]
 velfac = 1.0
@@ -283,7 +282,7 @@ for c in numpy.arange(0,len(mu_f_vals)):
         if zflow:
             ax3.set_ylabel('$\\boldsymbol{v}_\\text{f}^z h$ [ms$^{-1}$]')
         if pressures:
-            ax3.set_ylabel('Mean fluid pressure $\\bar{p}_\\text{f}$ [kPa]')
+            ax3.set_ylabel('Fluid pressure $\\bar{p}_\\text{f}$ [kPa]')
         #ax4.set_ylabel('Particle contact force $||\\boldsymbol{f}_\\text{p}||$ [N]')
 
     #ax1.set_xlim([200,300])
