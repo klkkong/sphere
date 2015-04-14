@@ -13,6 +13,10 @@ from permeabilitycalculator import *
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
+import seaborn as sns
+sns.set(style='ticks', palette='Set2')
+sns.despine() # remove chartjunk
+
 sigma0 = 20000.0
 #cvals = ['dry', 1.0, 0.1, 0.01]
 #cvals = ['dry', 3.5e-13, 3.5e-15]
@@ -85,14 +89,20 @@ for c in cvals:
 
 #fig = plt.figure(figsize=(8,4*(len(steps))+1))
 #fig = plt.figure(figsize=(8,5*(len(steps))+1))
-fig = plt.figure(figsize=(8,6))
+#fig = plt.figure(figsize=(8/2,6/2))
+fig = plt.figure(figsize=(3.74,3.47)) # 3.14 inch = 80 mm, 3.74 = 95 mm
+#fig = plt.figure(figsize=(8,6))
 
 ax = []
 #linetype = ['-', '--', '-.']
-linetype = ['-', '-', '-', '-']
+#linetype = ['-', '-', '-', '-']
+linetype = ['-', '--', '-.', ':']
 #color = ['b','g','c','y']
-color = ['b','g','r','y']
+#color = ['k','g','c','y']
+color = ['y','g','c','k']
+#color = ['c','m','y','k']
 for s in numpy.arange(len(cvals)):
+#for s in numpy.arange(len(cvals)-1, -1, -1):
 
     ax.append(plt.subplot(111))
     #ax.append(plt.subplot(len(steps)*100 + 31 + s*3))
@@ -114,11 +124,13 @@ for s in numpy.arange(len(cvals)):
     #ax[0].plot(xdisp[s], zpos_p[s], ',', color = '#888888')
     #ax[0].plot(xdisp[s], zpos_p[s], ',', color=color[s], alpha=0.5)
     ax[0].plot(xdisp_mean[s], zpos_c[s], linetype[s],
-            color=color[s], label=legend, linewidth=1)
+            label=legend)#,
+            #color=color[s],
+            #linewidth=2.0)
 
     ax[0].set_ylabel('Vertical position $z$ [m]')
     #ax[0].set_xlabel('$\\boldsymbol{x}^x_\\text{p}$ [m]')
-    ax[0].set_xlabel('Normalized horizontal distance')
+    ax[0].set_xlabel('Normalized horizontal movement')
 
     #ax[s*4+0].get_xaxis().set_major_locator(MaxNLocator(nbins=5))
     #ax[s*4+1].get_xaxis().set_major_locator(MaxNLocator(nbins=5))
@@ -148,10 +160,26 @@ for s in numpy.arange(len(cvals)):
     #ax1.legend(loc='lower right', prop={'size':18})
     #ax2.legend(loc='lower right', prop={'size':18})
 
-legend_alpha=0.5
-ax[0].legend(loc='lower right', prop={'size':18}, fancybox=True, framealpha=legend_alpha)
-ax[0].grid()
-ax[0].set_xlim([-0.05, 1.01])
+# remove box at top and right
+ax[0].spines['top'].set_visible(False)
+ax[0].spines['right'].set_visible(False)
+# remove ticks at top and right
+ax[0].get_xaxis().tick_bottom()
+ax[0].get_yaxis().tick_left()
+ax[0].get_xaxis().grid(False) # horizontal grid lines
+ax[0].get_yaxis().grid(True, linestyle='--', linewidth=0.5) # vertical grid lines
+
+# reverse legend order
+handles, labels = ax[0].get_legend_handles_labels()
+ax[0].legend(handles[::-1], labels[::-1], loc='best')
+
+#legend_alpha=0.5
+#ax[0].legend(loc='lower right', prop={'size':18}, fancybox=True, framealpha=legend_alpha)
+#ax[0].legend(loc='best', prop={'size':18}, fancybox=True, framealpha=legend_alpha)
+#ax[0].legend(loc='best')
+#ax[0].grid()
+#ax[0].set_xlim([-0.05, 1.01])
+ax[0].set_xlim([-0.05, 1.04])
 #ax[0].set_ylim([0.0, 0.47])
 ax[0].set_ylim([0.20, 0.47])
 plt.tight_layout()

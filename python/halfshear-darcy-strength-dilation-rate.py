@@ -13,6 +13,10 @@ import sphere
 from permeabilitycalculator import *
 import matplotlib.pyplot as plt
 
+import seaborn as sns
+sns.set(style='ticks', palette='Set2')
+sns.despine() # remove chartjunk
+
 pressures = True
 zflow = False
 contact_forces = False
@@ -127,7 +131,7 @@ alpha = 1.0
 #ax4.plot(shear_strain[0], f_n_mean[0], '-', label='dry', color='blue')
 #ax4.plot(shear_strain[0], f_n_max[0], '--', color='blue')
 
-color = ['b','g','r','c']
+#color = ['b','g','r','c']
 #color = ['g','r','c']
 for c, mu_f in enumerate(mu_f_vals):
 
@@ -192,11 +196,13 @@ if zflow or pressures:
 #plt.setp(ax2.get_xticklabels(), visible=False)
 #plt.setp(ax3.get_xticklabels(), visible=False)
 
+'''
 ax1.grid()
 ax2.grid()
 if zflow or pressures:
     ax3.grid()
 #ax4.grid()
+'''
 
 legend_alpha=0.5
 ax1.legend(loc='upper right', prop={'size':18}, fancybox=True,
