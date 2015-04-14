@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
 import seaborn as sns
+#sns.set(style='ticks', palette='Set2')
+#sns.set(style='ticks', palette='colorblind')
 sns.set(style='ticks', palette='Set2')
 sns.despine() # remove chartjunk
 
@@ -113,11 +115,11 @@ for s in numpy.arange(len(cvals)):
     if cvals[s] == 'dry':
         legend = 'dry'
     elif cvals[s] == 3.5e-13:
-        legend = 'wet, relatively permeable'
+        legend = 'wet, high permeability'
     elif cvals[s] == 3.5e-14:
         legend = 'wet, intermediate permeability'
     elif cvals[s] == 3.5e-15:
-        legend = 'wet, relatively impermeable'
+        legend = 'wet, low permeability'
     else:
         legend = 'wet, $k_c$ = ' + str(cvals[s]) + ' m$^2$'
 
@@ -179,7 +181,7 @@ ax[0].legend(handles[::-1], labels[::-1], loc='best')
 #ax[0].legend(loc='best')
 #ax[0].grid()
 #ax[0].set_xlim([-0.05, 1.01])
-ax[0].set_xlim([-0.05, 1.04])
+ax[0].set_xlim([-0.05, 1.05])
 #ax[0].set_ylim([0.0, 0.47])
 ax[0].set_ylim([0.20, 0.47])
 plt.tight_layout()

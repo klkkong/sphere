@@ -14,8 +14,11 @@ from permeabilitycalculator import *
 import matplotlib.pyplot as plt
 
 import seaborn as sns
-sns.set(style='ticks', palette='Set2')
-sns.despine() # remove chartjunk
+#sns.set(style='ticks', palette='Set2')
+sns.set(style='ticks', palette='colorblind')
+#sns.set(style='ticks', palette='muted')
+#sns.set(style='ticks', palette='pastel')
+sns.despine() # remove right and top spines
 
 pressures = True
 zflow = False
@@ -48,6 +51,7 @@ fluid=True
 
 # wet shear
 for c in numpy.arange(0,len(mu_f_vals)):
+#for c in numpy.arange(len(mu_f_vals)-1, -1, -1):
     mu_f = mu_f_vals[c]
 
     # halfshear-darcy-sigma0=20000.0-k_c=3.5e-13-mu=1.797e-06-velfac=1.0-shear
@@ -58,42 +62,55 @@ for c in numpy.arange(0,len(mu_f_vals)):
     if os.path.isfile('../output/' + sid + '.status.dat'):
 
         sim = sphere.sim(sid, fluid=fluid)
-        shear_strain[c] = numpy.zeros(sim.status())
+        n = sim.status()
+        #n = 20
+        shear_strain[c] = numpy.zeros(n)
         friction[c] = numpy.zeros_like(shear_strain[c])
         dilation[c] = numpy.zeros_like(shear_strain[c])
 
+        '''
         sim.readlast(verbose=False)
-        sim.visualize('shear')
+        #sim.visualize('shear')
         shear_strain[c] = sim.shear_strain
         #shear_strain[c] = numpy.arange(sim.status()+1)
-        #friction[c] = sim.tau/sim.sigma_eff
-        friction[c] = sim.tau/1000.0#/sim.sigma_eff
+        #friction[c] = sim.tau/1000.0#/sim.sigma_eff
+        friction[c] = sim.shearStress('effective')/sim.currentNormalStress('defined')
         dilation[c] = sim.dilation
+        '''
 
         # fluid pressures and particle forces
-        if pressures or contact_forces:
-            p_mean[c]   = numpy.zeros_like(shear_strain[c])
-            p_min[c]    = numpy.zeros_like(shear_strain[c])
-            p_max[c]    = numpy.zeros_like(shear_strain[c])
-            f_n_mean[c] = numpy.zeros_like(shear_strain[c])
-            f_n_max[c]  = numpy.zeros_like(shear_strain[c])
-            for i in numpy.arange(sim.status()):
-                if pressures:
-                    sim.readstep(i, verbose=False)
-                    iz_top = int(sim.w_x[0]/(sim.L[2]/sim.num[2]))-1
-                    p_mean[c][i] = numpy.mean(sim.p_f[:,:,0:iz_top])/1000
-                    p_min[c][i]  = numpy.min(sim.p_f[:,:,0:iz_top])/1000
-                    p_max[c][i]  = numpy.max(sim.p_f[:,:,0:iz_top])/1000
+        p_mean[c]   = numpy.zeros_like(shear_strain[c])
+        p_min[c]    = numpy.zeros_like(shear_strain[c])
+        p_max[c]    = numpy.zeros_like(shear_strain[c])
+        f_n_mean[c] = numpy.zeros_like(shear_strain[c])
+        f_n_max[c]  = numpy.zeros_like(shear_strain[c])
 
-                if contact_forces:
-                    sim.findNormalForces()
-                    f_n_mean[c][i] = numpy.mean(sim.f_n_magn)
-                    f_n_max[c][i]  = numpy.max(sim.f_n_magn)
+        for i in numpy.arange(n):
+
+            sim.readstep(i, verbose=False)
+
+            shear_strain[c][i] = sim.shearStrain()
+            friction[c][i] = sim.shearStress('effective')/sim.currentNormalStress('defined')
+            dilation[c][i] = sim.w_x[0]
+
+            if pressures:
+                iz_top = int(sim.w_x[0]/(sim.L[2]/sim.num[2]))-1
+                p_mean[c][i] = numpy.mean(sim.p_f[:,:,0:iz_top])/1000
+                p_min[c][i]  = numpy.min(sim.p_f[:,:,0:iz_top])/1000
+                p_max[c][i]  = numpy.max(sim.p_f[:,:,0:iz_top])/1000
+
+            if contact_forces:
+                sim.findNormalForces()
+                f_n_mean[c][i] = numpy.mean(sim.f_n_magn)
+                f_n_max[c][i]  = numpy.max(sim.f_n_magn)
 
         if zflow:
             v_f_z_mean[c] = numpy.zeros_like(shear_strain[c])
-            for i in numpy.arange(sim.status()):
+            for i in numpy.arange(n):
                     v_f_z_mean[c][i] = numpy.mean(sim.v_f[:,:,:,2])
+
+        dilation[c] =\
+                (dilation[c] - dilation[c][0])/(numpy.mean(sim.radius)*2.0)
 
     else:
         print(sid + ' not found')
@@ -105,7 +122,8 @@ for c in numpy.arange(0,len(mu_f_vals)):
 
 
 if zflow or pressures:
-    fig = plt.figure(figsize=(8,10))
+    #fig = plt.figure(figsize=(8,10))
+    fig = plt.figure(figsize=(3.74, 2*3.74))
 else:
     fig = plt.figure(figsize=(8,8)) # (w,h)
 #fig = plt.figure(figsize=(8,12))
@@ -133,7 +151,10 @@ alpha = 1.0
 
 #color = ['b','g','r','c']
 #color = ['g','r','c']
-for c, mu_f in enumerate(mu_f_vals):
+color = sns.color_palette()
+#for c, mu_f in enumerate(mu_f_vals):
+for c in numpy.arange(len(mu_f_vals)-1, -1, -1):
+    mu_f = mu_f_vals[c]
 
     if numpy.isclose(mu_f, 1.797e-6):
         label = 'ref. shear velocity'
@@ -145,27 +166,29 @@ for c, mu_f in enumerate(mu_f_vals):
         #label = '$\\mu_\\text{{f}}$ = {:.3e} Pa s'.format(mu_f)
         label = 'ref. shear velocity$\\times${:.2}'.format(mu_f/mu_f_vals[0])
 
-    ax1.plot(shear_strain[c][1:], friction[c][1:], \
+    ax1.plot(shear_strain[c], friction[c], \
             label=label, linewidth=1,
             alpha=alpha, color=color[c])
 
-    ax2.plot(shear_strain[c][1:], dilation[c][1:], \
+    ax2.plot(shear_strain[c], dilation[c], \
             label=label, linewidth=1,
             color=color[c])
 
     if zflow:
-        ax3.plot(shear_strain[c][1:], v_f_z_mean[c][1:],
+        ax3.plot(shear_strain[c], v_f_z_mean[c],
             label=label, linewidth=1)
 
     if pressures:
-        ax3.plot(shear_strain[c][1:], p_max[c][1:], '-' + color[c], alpha=0.5)
-        #ax3.plot(shear_strain[c][1:], p_mean[c][1:], '-' + color[c], \
-                #label=label, linewidth=1)
-        ax3.plot(shear_strain[c][1:], p_min[c][1:], '-' + color[c], alpha=0.5)
+        #ax3.plot(shear_strain[c][1:], p_max[c][1:], '-', color=color[c],
+                #alpha=0.5)
+        ax3.plot(shear_strain[c], p_mean[c], '-', color=color[c], \
+                label=label, linewidth=1)
+        #ax3.plot(shear_strain[c][1:], p_min[c][1:], '-', color=color[c],
+                #alpha=0.5)
 
-        ax3.fill_between(shear_strain[c][1:], p_min[c][1:], p_max[c][1:], 
-                where=p_min[c][1:]<=p_max[c][1:], facecolor=color[c],
-                interpolate=True, alpha=0.5)
+        #ax3.fill_between(shear_strain[c][1:], p_min[c][1:], p_max[c][1:], 
+                #where=p_min[c][1:]<=p_max[c][1:], facecolor=color[c],
+                #interpolate=True, alpha=0.5)
 
         #ax4.plot(shear_strain[c][1:], f_n_mean[c][1:], '-' + color[c],
                 #label='$c$ = %.2f' % (cvals[c-1]), linewidth=2)
@@ -178,8 +201,8 @@ if zflow or pressures:
 else:
     ax2.set_xlabel('Shear strain $\\gamma$ [-]')
 
-#ax1.set_ylabel('Shear friction $\\tau/\\sigma\'$ [-]')
-ax1.set_ylabel('Shear stress $\\tau$ [kPa]')
+ax1.set_ylabel('Shear friction $\\tau/\\sigma_0$ [-]')
+#ax1.set_ylabel('Shear stress $\\tau$ [kPa]')
 ax2.set_ylabel('Dilation $\\Delta h/(2r)$ [-]')
 if zflow:
     ax3.set_ylabel('$\\boldsymbol{v}_\\text{f}^z h$ [ms$^{-1}$]')
@@ -204,9 +227,42 @@ if zflow or pressures:
 #ax4.grid()
 '''
 
-legend_alpha=0.5
-ax1.legend(loc='upper right', prop={'size':18}, fancybox=True,
-        framealpha=legend_alpha)
+
+# remove box at top and right
+ax1.spines['top'].set_visible(False)
+ax1.spines['bottom'].set_visible(False)
+ax1.spines['right'].set_visible(False)
+#ax1.spines['left'].set_visible(True)
+# remove ticks at top and right
+ax1.get_xaxis().set_ticks_position('none')
+ax1.get_yaxis().set_ticks_position('none')
+ax1.get_yaxis().tick_left()
+ax1.get_xaxis().grid(True, linestyle='--', linewidth=0.5)
+
+# remove box at top and right
+ax2.spines['top'].set_visible(False)
+ax2.spines['right'].set_visible(False)
+ax2.spines['bottom'].set_visible(False)
+# remove ticks at top and right
+ax2.get_xaxis().set_ticks_position('none')
+ax2.get_yaxis().set_ticks_position('none')
+ax2.get_yaxis().tick_left()
+ax2.get_xaxis().grid(True, linestyle='--', linewidth=0.5)
+
+# remove box at top and right
+ax3.spines['top'].set_visible(False)
+ax3.spines['right'].set_visible(False)
+# remove ticks at top and right
+ax3.get_xaxis().set_ticks_position('none')
+ax3.get_yaxis().set_ticks_position('none')
+ax3.get_xaxis().tick_bottom()
+ax3.get_yaxis().tick_left()
+ax3.get_xaxis().grid(True, linestyle='--', linewidth=0.5)
+
+ax1.legend(loc='best')
+#legend_alpha=0.5
+#ax1.legend(loc='upper right', prop={'size':18}, fancybox=True,
+        #framealpha=legend_alpha)
 #ax2.legend(loc='lower right', prop={'size':18}, fancybox=True,
         #framealpha=legend_alpha)
 #if zflow or pressures:
@@ -219,19 +275,21 @@ ax1.legend(loc='upper right', prop={'size':18}, fancybox=True,
 #ax2.set_xlim([0.0, 0.09])
 #ax2.set_xlim([0.0, 0.2])
 
-ax1.set_ylim([-7, 45])
+#ax1.set_ylim([-7, 45])
 ax2.set_ylim([0.0, 0.8])
 #ax1.set_ylim([0.0, 1.0])
-if pressures:
+#if pressures:
     #ax3.set_ylim([-1400, 900])
-    ax3.set_ylim([-200, 200])
+    #ax3.set_ylim([-200, 200])
     #ax3.set_xlim([0.0, 0.09])
 
 plt.tight_layout()
-plt.subplots_adjust(hspace=0.05)
+#plt.subplots_adjust(hspace=0.05)
+plt.subplots_adjust(hspace=0.15)
 #filename = 'shear-' + str(int(sigma0/1000.0)) + 'kPa-stress-dilation.pdf'
 filename = 'halfshear-darcy-rate.pdf'
 #print(os.getcwd() + '/' + filename)
 plt.savefig(filename)
 shutil.copyfile(filename, '/home/adc/articles/own/2/graphics/' + filename)
+plt.close()
 print(filename)
