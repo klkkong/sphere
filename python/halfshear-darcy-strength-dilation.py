@@ -228,7 +228,7 @@ for c in numpy.arange(0,len(k_c_vals)):
     # unsmoothed
     ax1.plot(shear_strain[c][1:], friction[c][1:], \
             label=label, linewidth=1,
-            alpha=0.2, color='gray')
+            alpha=0.2, color='gray', clip_on=False)
             #alpha=alpha, color=color[c])
 
     # smoothed
