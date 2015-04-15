@@ -429,7 +429,7 @@ for c in numpy.arange(0,len(mu_f_vals)):
     ax1.set_xlim([0.0, 1.0])
     ax1.set_ylim([0.0, 1.0])
     ax2.set_ylim([0.0, 1.0])
-    ax3.set_ylim([-200., 200.])
+    ax3.set_ylim([-150., 150.])
 
     #ax1.set_ylim([0.0, 1.0])
     #if pressures:

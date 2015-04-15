@@ -233,7 +233,7 @@ for c in numpy.arange(0,len(k_c_vals)):
             #alpha=alpha, color=color[c])
 
     # smoothed
-    ax1.plot(shear_strain[c][1:], smooth(friction[c], smooth_window)[1:], \
+    ax1.plot(shear_strain[c][1:-10], smooth(friction[c], smooth_window)[1:-10],\
             label=label, linewidth=1,
             alpha=alpha, color=color[c])
 
@@ -440,7 +440,7 @@ for c in numpy.arange(0,len(k_c_vals)):
     ax1.set_ylim([0.0, 1.0])
     ax2.set_ylim([0.0, 1.0])
     if fluid:
-        ax3.set_ylim([-200., 200.])
+        ax3.set_ylim([-150., 150.])
 
     #ax1.set_ylim([0.0, 1.0])
     #if pressures:
