@@ -5992,7 +5992,7 @@ class sim:
 
     def visualize(self, method='energy', savefig=True, outformat='png',
             figsize=False, pickle=False, xlim=False, firststep=0, f_min=None,
-            f_max=None):
+            f_max=None, cmap=None):
         '''
         Visualize output from the simulation, where the temporal progress is
         of interest. The output will be saved in the current folder with a name
@@ -6018,6 +6018,9 @@ class sim:
         :type xlim: array
         :param firststep: The first output file step to read (default: 0)
         :type firststep: int
+        :param cmap: Choose custom color map, e.g.
+            `cmap=matplotlib.cm.get_cmap('afmhot')`
+        :type cmap: matplotlib.colors.LinearSegmentedColormap
         '''
 
         lastfile = self.status()
@@ -6654,9 +6657,14 @@ class sim:
             friction = tau_nonzero/N_nonzero
             #CS = ax1.scatter(friction, v_nonzero, c=shearstrain_nonzero,
                     #linewidth=0)
-            CS = ax1.scatter(friction, shearstrainrate_nonzero,
-                    c=shearstrain_nonzero, linewidth=0.1,
-                    cmap=matplotlib.cm.get_cmap('afmhot'))
+            if cmap:
+                CS = ax1.scatter(friction, shearstrainrate_nonzero,
+                        c=shearstrain_nonzero, linewidth=0.1,
+                        cmap=cmap)
+            else:
+                CS = ax1.scatter(friction, shearstrainrate_nonzero,
+                        c=shearstrain_nonzero, linewidth=0.1,
+                        cmap=matplotlib.cm.get_cmap('afmhot'))
             ax1.set_yscale('log')
             x_min = numpy.floor(numpy.min(friction))
             x_max = numpy.ceil(numpy.max(friction))
@@ -6785,12 +6793,20 @@ class sim:
                     x = shear_strain
                 if xlim:
                     x = x[i_min:i_max]
-                im1 = ax.pcolormesh(
-                        x, zpos_c, pres,
-                        cmap=matplotlib.cm.get_cmap('bwr'),
-                        #cmap=matplotlib.cm.get_cmap('coolwarm'),
-                        vmin=-p_ext, vmax=p_ext,
-                        rasterized=True)
+                if cmap:
+                    im1 = ax.pcolormesh(
+                            x, zpos_c, pres,
+                            #cmap=matplotlib.cm.get_cmap('bwr'),
+                            cmap=cmap,
+                            vmin=-p_ext, vmax=p_ext,
+                            rasterized=True)
+                else:
+                    im1 = ax.pcolormesh(
+                            x, zpos_c, pres,
+                            cmap=matplotlib.cm.get_cmap('bwr'),
+                            #cmap=matplotlib.cm.get_cmap('coolwarm'),
+                            vmin=-p_ext, vmax=p_ext,
+                            rasterized=True)
                 ax.set_xlim([0, numpy.max(x)])
                 if sb.w_x[0] < sb.L[2]:
                     ax.set_ylim([zpos_c[0], sb.w_x[0]])
@@ -6850,14 +6866,21 @@ class sim:
                     x = t
                 else:
                     x = shear_strain
-                im1 = ax.pcolormesh(
-                        x, zpos_c, poros,
-                        cmap=matplotlib.cm.get_cmap('Blues_r'),
-                        #cmap=matplotlib.cm.get_cmap('bwr'),
-                        #cmap=matplotlib.cm.get_cmap('coolwarm'),
-                        #vmin=-p_ext, vmax=p_ext,
-                        vmin=poros_min, vmax=poros_max,
-                        rasterized=True)
+                if cmap:
+                    im1 = ax.pcolormesh(
+                            x, zpos_c, poros,
+                            cmap=cmap,
+                            vmin=poros_min, vmax=poros_max,
+                            rasterized=True)
+                else:
+                    im1 = ax.pcolormesh(
+                            x, zpos_c, poros,
+                            cmap=matplotlib.cm.get_cmap('Blues_r'),
+                            #cmap=matplotlib.cm.get_cmap('bwr'),
+                            #cmap=matplotlib.cm.get_cmap('coolwarm'),
+                            #vmin=-p_ext, vmax=p_ext,
+                            vmin=poros_min, vmax=poros_max,
+                            rasterized=True)
                 ax.set_xlim([0, numpy.max(x)])
                 if sb.w_x[0] < sb.L[2]:
                     ax.set_ylim([zpos_c[0], sb.w_x[0]])

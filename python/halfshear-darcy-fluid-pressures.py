@@ -5,7 +5,7 @@ import shutil
 import seaborn as sns
 #sns.set(style='ticks', palette='Set2')
 #sns.set(style='ticks', palette='colorblind')
-sns.set(style='ticks', palette='Set2')
+sns.set(style='white', palette='Set2')
 sns.despine() # remove chartjunk
 
 
