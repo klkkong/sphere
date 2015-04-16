@@ -5991,7 +5991,8 @@ class sim:
 
 
     def visualize(self, method='energy', savefig=True, outformat='png',
-            pickle=False, xlim=False, firststep=0, f_min=None, f_max=None):
+            figsize=False, pickle=False, xlim=False, firststep=0, f_min=None,
+            f_max=None):
         '''
         Visualize output from the simulation, where the temporal progress is
         of interest. The output will be saved in the current folder with a name
@@ -6007,6 +6008,8 @@ class sim:
         :type savefig: bool
         :param outformat: The output format of the plot data. This can be an
             image format, or in text ('txt').
+        :param figsize: Specify output figure size in inches
+        :type figsize: array
         :param pickle: Save all figure content as a Python pickle file. It can
             be opened later using `fig = pickle.load(open('file.pickle','rb'))`.
         :type pickle: bool
@@ -6022,10 +6025,16 @@ class sim:
 
         ### Plotting
         if outformat != 'txt':
-            fig = plt.figure(figsize=(8,8))
+            if figsize:
+                fig = plt.figure(figsize=figsize)
+            else:
+                fig = plt.figure(figsize=(8,8))
 
         if method == 'energy':
-            fig = plt.figure(figsize=(20,8))
+            if figsize:
+                fig = plt.figure(figsize=figsize)
+            else:
+                fig = plt.figure(figsize=(20,8))
 
             # Allocate arrays
             t = numpy.zeros(lastfile-firststep)
@@ -6494,7 +6503,10 @@ class sim:
 
             # Plot stresses
             if outformat != 'txt':
-                fig = plt.figure(figsize=(8,12))
+                if figsize:
+                    fig = plt.figure(figsize=figsize)
+                else:
+                    fig = plt.figure(figsize=(8,12))
 
                 #shearinfo = "$\\tau_p$ = {:.3} Pa at $\gamma$ = {:.3}".format(\
                         #self.tau_p, self.tau_p_shearstrain)
@@ -6606,7 +6618,10 @@ class sim:
 
         elif method == 'rate-dependence':
 
-            fig = plt.figure(figsize=(8,6))
+            if figsize:
+                fig = plt.figure(figsize=figsize)
+            else:
+                fig = plt.figure(figsize=(8,6))
 
             tau = numpy.empty(sb.status())
             N = numpy.empty(sb.status())
@@ -6721,7 +6736,10 @@ class sim:
 
         elif method == 'fluid-pressure':
 
-            fig = plt.figure(figsize=(8,6))
+            if figsize:
+                fig = plt.figure(figsize=figsize)
+            else:
+                fig = plt.figure(figsize=(8,6))
 
             sb.readfirst(verbose=False)
 
