@@ -6785,7 +6785,8 @@ class sim:
                     i_max = sb.status()
                 # use largest difference in p from 0 as +/- limit on colormap
                 #print i_min, i_max
-                p_ext = numpy.max(numpy.abs(pres))
+                #p_ext = numpy.max(numpy.abs(pres))
+                p_ext = numpy.max(numpy.abs(pres[0:9,:])) # for article2
 
                 if sb.wmode[0] == 3:
                     x = t
@@ -6803,7 +6804,8 @@ class sim:
                 else:
                     im1 = ax.pcolormesh(
                             x, zpos_c, pres,
-                            cmap=matplotlib.cm.get_cmap('bwr'),
+                            #cmap=matplotlib.cm.get_cmap('bwr'),
+                            cmap=matplotlib.cm.get_cmap('RdBu_r'),
                             #cmap=matplotlib.cm.get_cmap('coolwarm'),
                             vmin=-p_ext, vmax=p_ext,
                             rasterized=True)
@@ -6823,6 +6825,9 @@ class sim:
 
                 if xlim:
                     ax.set_xlim([x[0], x[-1]])
+
+                # for article2
+                ax.set_ylim([zpos_c[0], zpos_c[9]])
 
                 cb = plt.colorbar(im1)
                 cb.set_label('$p_\\text{f}$ [kPa]')
