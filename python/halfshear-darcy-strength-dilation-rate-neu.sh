@@ -40,9 +40,9 @@ rm CMakeCache.txt
 cmake . && make
 cd python
 # $ python shear-starter.py <DEVICE> <FLUID> <C_PHI> <C_GRAD_P> <SIGMA_0>
-python halfshear-darcy-starter-neu.py 0 1 1.0 3.5e-15 20000.0 1.797e-6 1.0 &
-python halfshear-darcy-starter-neu.py 1 1 1.0 3.5e-15 20000.0 1.797e-7 1.0 &
-python halfshear-darcy-starter-neu.py 2 1 1.0 3.5e-15 20000.0 1.797e-8 1.0 &
+python halfshear-darcy-starter-neumann.py 0 1 1.0 3.5e-15 20000.0 1.797e-6 1.0 &
+python halfshear-darcy-starter-neumann.py 1 1 1.0 3.5e-15 20000.0 1.797e-7 1.0 &
+python halfshear-darcy-starter-neumann.py 2 1 1.0 3.5e-15 20000.0 1.797e-8 1.0 &
 wait
 
 #cp $WORKDIR/output/* $ORIGDIR/output/
