@@ -6776,7 +6776,7 @@ class sim:
                     i_min = 0
                     i_max = sb.status()
                 # use largest difference in p from 0 as +/- limit on colormap
-                print i_min, i_max
+                #print i_min, i_max
                 p_ext = numpy.max(numpy.abs(pres))
 
                 if sb.wmode[0] == 3:
