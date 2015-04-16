@@ -12,6 +12,7 @@ import sphere
 from permeabilitycalculator import *
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
+import subprocess
 
 import seaborn as sns
 #sns.set(style='ticks', palette='Set2')
@@ -34,7 +35,7 @@ k_c_list = [3.5e-13, 3.5e-14, 3.5e-15]
 nsteps_avg = 1 # no. of steps to average over
 #nsteps_avg = 100 # no. of steps to average over
 
-steps = [1, 50, 100, 150, 200]
+steps = [1, 51, 101, 152, 204]
 
 for k_c in k_c_list:
 
@@ -90,7 +91,7 @@ for k_c in k_c_list:
 
     #fig = plt.figure(figsize=(8,4*(len(steps))+1))
     #fig = plt.figure(figsize=(8,4.5))
-    fig = plt.figure(figsize=(3.74*2,4.5))
+    fig = plt.figure(figsize=(3.74*2,3.00))
     ax = []
     n = 4
     ax.append(plt.subplot(1, n, 1)) # 0: xdisp
@@ -157,13 +158,13 @@ for k_c in k_c_list:
 
 
             #ax[0].plot(xdisp[s], zpos_p[s], ',', color = '#888888')
-            ax[0].plot(xdisp_mean[s], zpos_c[s], label='$\gamma$ = %.2f' %
+            ax[0].plot(xdisp_mean[s], zpos_c[s], label='$\gamma$ = %.3f' %
                     (shear_strain_start[s]))
 
-            ax[1].semilogx(k_bar[s], zpos_c[s], label='$\gamma$ = %.2f' %
+            ax[1].semilogx(k_bar[s], zpos_c[s], label='$\gamma$ = %.3f' %
                     (shear_strain_start[s]))
 
-            ax[2].plot(p[s]/1000.0, zpos_c[s], label='$\gamma$ = %.2f' %
+            ax[2].plot(p[s]/1000.0, zpos_c[s], label='$\gamma$ = %.3f' %
                     (shear_strain_start[s]))
 
             # remove particles with 0.0 pressure force
@@ -173,10 +174,12 @@ for k_c in k_c_list:
             I = numpy.nonzero(numpy.abs(f_pf_mean[s]) > .01)
             f_pf_mean_nonzero = f_pf_mean[s][I]
             zpos_c_nonzero = zpos_c[s][I]
+            #f_pf_mean_nonzero = numpy.append(f_pf_mean_nonzero, 0.0)
+            #zpos_c_nonzero = numpy.append(zpos_c_nonzero, zpos_c[s][zpos_c_nonzero.size])
 
             #ax[3].plot(f_pf_nonzero,  zpos_p_nonzero, ',', alpha=0.5,
                     #color='#888888')
-            ax[3].plot(f_pf_mean_nonzero, zpos_c_nonzero, label='$\gamma$ = %.2f' %
+            ax[3].plot(f_pf_mean_nonzero, zpos_c_nonzero, label='$\gamma$ = %.3f' %
                     (shear_strain_start[s]))
 
         else:
@@ -184,7 +187,9 @@ for k_c in k_c_list:
         s += 1
 
 
-    max_z = numpy.max(zpos_p)
+    #max_z = numpy.max(zpos_p)
+    max_z = 0.5
+    #max_z = numpy.max(zpos_c[-2])
     ax[0].set_ylim([0, max_z])
     #ax[0].set_xlim([0, 0.5])
     ax[0].set_xlim([0, 0.05])
@@ -205,11 +210,11 @@ for k_c in k_c_list:
     ax[3].set_xlabel('$\\boldsymbol{f}^z_\\text{i}$ [N]')
 
     # align x labels
-    labely = -0.3
-    ax[0].xaxis.set_label_coords(0.5, labely)
-    ax[1].xaxis.set_label_coords(0.5, labely)
-    ax[2].xaxis.set_label_coords(0.5, labely)
-    ax[3].xaxis.set_label_coords(0.5, labely)
+    #labely = -0.3
+    #ax[0].xaxis.set_label_coords(0.5, labely)
+    #ax[1].xaxis.set_label_coords(0.5, labely)
+    #ax[2].xaxis.set_label_coords(0.5, labely)
+    #ax[3].xaxis.set_label_coords(0.5, labely)
 
     plt.setp(ax[1].get_yticklabels(), visible=False)
     plt.setp(ax[2].get_yticklabels(), visible=False)
@@ -227,26 +232,33 @@ for k_c in k_c_list:
     ax[3].grid()
     '''
 
+    sns.despine() # remove chartjunk
+
     for i in range(4):
         # vertical grid lines
         ax[i].get_xaxis().grid(True, linestyle=':', linewidth=0.5)
         # horizontal grid lines
         ax[i].get_yaxis().grid(True, linestyle=':', linewidth=0.5)
 
+        if i>0:
+            ax[i].spines['left'].set_visible(False)
+            ax[i].get_yaxis().set_ticks_position('none')
+
     legend_alpha=0.5
-    ax[0].legend(loc='lower center', prop={'size':12}, fancybox=True,
-            framealpha=legend_alpha)
+    #ax[0].legend(loc='lower center', prop={'size':12}, fancybox=True,
+            #framealpha=legend_alpha)
+    ax[0].legend(loc='lower right')
 
     #plt.subplots_adjust(wspace = .05)  # doesn't work with tight_layout()
-    plt.tight_layout()
     #plt.MaxNLocator(nbins=1)  # doesn't work?
-    ax[0].locator_params(nbins=5)
+    ax[0].locator_params(nbins=4)
     ax[2].locator_params(nbins=5)
     ax[3].locator_params(nbins=5)
 
-    sns.despine() # remove chartjunk
+    plt.tight_layout()
 
     filename = 'halfshear-darcy-internals-k_c=%.0e.pdf' % (k_c)
     plt.savefig(filename)
+    #subprocess.call('pdfcrop ' + filename, shell=True)
     shutil.copyfile(filename, '/home/adc/articles/own/2/graphics/' + filename)
     print(filename)
