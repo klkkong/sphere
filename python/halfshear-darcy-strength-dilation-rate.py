@@ -236,7 +236,7 @@ for c in numpy.arange(0,len(mu_f_vals)):
             #alpha=alpha, color=color[c])
 
     # smoothed
-    ax1.plot(shear_strain[c][1:], smooth(friction[c], smooth_window)[1:], \
+    ax1.plot(shear_strain[c][1:-100], smooth(friction[c], smooth_window)[1:-100], \
             label=label, linewidth=1,
             alpha=alpha, color=color[c])
 
