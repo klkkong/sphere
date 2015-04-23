@@ -260,7 +260,7 @@ for sigma0 in sigma0_list:
 
         filename = 'halfshear-darcy-internals-k_c=%.0e.pdf' % (k_c)
         if sigma0 == 80000.0:
-        filename = 'halfshear-darcy-internals-k_c=%.0e-N80.pdf' % (k_c)
+            filename = 'halfshear-darcy-internals-k_c=%.0e-N80.pdf' % (k_c)
 
         plt.savefig(filename)
         #subprocess.call('pdfcrop ' + filename, shell=True)
