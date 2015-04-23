@@ -39,10 +39,9 @@ nvidia-smi
 rm CMakeCache.txt
 cmake . && make
 cd python
-# $ ipython halfshear-darcy-stress-starter.py <device> <fluid> <c_phi> <k_c> <sigma_0> <mu> <shear_stress>
-python halfshear-darcy-stress-mod-starter.py 0 1 1.0 2.0e-16 10000.0 2.08e-7 2000.0 4125.0 0.2 1.0 &
-python halfshear-darcy-stress-mod-starter.py 1 1 1.0 2.0e-16 10000.0 2.08e-7 2000.0 4250.0 0.2 1.0 &
-python halfshear-darcy-stress-mod-starter.py 2 1 1.0 2.0e-16 10000.0 2.08e-7 2000.0 4375.0 0.2 1.0 &
+python continue_sim.py halfshear-darcy-sigma0=10000.0-k_c=2.0e-16-mu=2.08e-07-ss=2000.0-A=4125.0-f=0.2 1 0 &
+python continue_sim.py halfshear-darcy-sigma0=10000.0-k_c=2.0e-16-mu=2.08e-07-ss=2000.0-A=4250.0-f=0.2 1 1 &
+python continue_sim.py halfshear-darcy-sigma0=10000.0-k_c=2.0e-16-mu=2.08e-07-ss=2000.0-A=4375.0-f=0.2 1 2 &
 wait
 
 #cp $WORKDIR/output/* $ORIGDIR/output/
