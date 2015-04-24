@@ -3798,6 +3798,17 @@ class sim:
         else:
             raise Exception('Normal stress type ' + type + ' not understood')
 
+    def surfaceArea(self, idx):
+        '''
+        Returns the surface area of a particle.
+
+        :param idx: Particle index
+        :type idx: int
+        :returns: The surface area of the particle [m^2]
+        :return type: float
+        '''
+        return 4.0*numpy.pi*self.radius[idx]**2
+
     def volume(self, idx):
         '''
         Returns the volume of a particle.
@@ -3808,7 +3819,7 @@ class sim:
         :return type: float
         '''
         return V_sphere(self.radius[idx])
-        
+
     def mass(self, idx):
         '''
         Returns the mass of a particle.
@@ -7271,7 +7282,6 @@ def cleanup(sim):
     subprocess.call("rm -f ../output/fluid-" + sim.sid + ".*.vti", shell=True)
     subprocess.call("rm -f ../output/" + sim.sid + "-conv.png", shell=True)
     subprocess.call("rm -f ../output/" + sim.sid + "-conv.log", shell=True)
-
 
 def V_sphere(r):
     '''
