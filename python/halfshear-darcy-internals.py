@@ -180,7 +180,10 @@ for sigma0 in sigma0_list:
 
                 #ax[3].plot(f_pf_nonzero,  zpos_p_nonzero, ',', alpha=0.5,
                         #color='#888888')
-                ax[3].plot(f_pf_mean_nonzero, zpos_c_nonzero, label='$\gamma$ = %.3f' %
+                #ax[3].plot(f_pf_mean_nonzero, zpos_c_nonzero, label='$\gamma$ = %.3f' %
+                        #(shear_strain_start[s]))
+                ax[3].plot(f_pf_mean_nonzero/(4.0*numpy.pi*sim.radius[0]**2)/1e3,
+                    zpos_c_nonzero, label='$\gamma$ = %.3f' %
                         (shear_strain_start[s]))
 
             else:
@@ -208,7 +211,8 @@ for sigma0 in sigma0_list:
         ax[0].set_xlabel('$\\bar{\\boldsymbol{x}}^x_\\text{p}$ [m]')
         ax[1].set_xlabel('$\\bar{k}$ [m$^{2}$]')
         ax[2].set_xlabel('$\\bar{p_\\text{f}}$ [kPa]')
-        ax[3].set_xlabel('$\\boldsymbol{f}^z_\\text{i}$ [N]')
+        #ax[3].set_xlabel('$\\boldsymbol{f}^z_\\text{i}$ [N]')
+        ax[3].set_xlabel('$\\bar{\sigma}^z_\\text{i}$ [kPa]')
 
         # align x labels
         #labely = -0.3
