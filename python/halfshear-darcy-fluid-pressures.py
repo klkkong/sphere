@@ -24,7 +24,7 @@ sids = [
 'halfshear-darcy-sigma0=20000.0-k_c=3.5e-13-mu=1.797e-06-velfac=1.0-shear',
 
 'halfshear-darcy-sigma0=20000.0-k_c=3.5e-15-mu=1.797e-07-velfac=1.0-shear',
-'halfshear-darcy-sigma0=20000.0-k_c=3.5e-15-mu=1.797e-08-velfac=1.0-shear'#,
+'halfshear-darcy-sigma0=20000.0-k_c=3.5e-15-mu=1.797e-08-velfac=1.0-shear',
 
 
 'halfshear-darcy-sigma0=80000.0-k_c=3.5e-15-mu=1.797e-06-velfac=1.0-shear',

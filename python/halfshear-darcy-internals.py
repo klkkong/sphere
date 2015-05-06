@@ -212,7 +212,7 @@ for sigma0 in sigma0_list:
         ax[1].set_xlabel('$\\bar{k}$ [m$^{2}$]')
         ax[2].set_xlabel('$\\bar{p_\\text{f}}$ [kPa]')
         #ax[3].set_xlabel('$\\boldsymbol{f}^z_\\text{i}$ [N]')
-        ax[3].set_xlabel('$\\bar{\sigma}^z_\\text{i}$ [kPa]')
+        ax[3].set_xlabel('$\\bar{\boldsymbol{\sigma}}^z_\\text{i}$ [kPa]')
 
         # align x labels
         #labely = -0.3
