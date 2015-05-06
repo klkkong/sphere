@@ -26,7 +26,7 @@ sigma0_list = [20000.0, 80000.0]
 #cvals = ['dry', 3.5e-13, 3.5e-14, 3.5e-15]
 #cvals = ['dry', 1.0]
 c = 3.5e-15
-muvals = ['dry', 1.797e-06, 1.797e-07, 1.797e-08]
+muvals = ['dry', 1.797e-08, 1.797e-07, 1.797e-06]
 #step = 1999
 
 for sigma0 in sigma0_list:
