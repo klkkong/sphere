@@ -120,11 +120,11 @@ for sigma0 in sigma0_list:
         if muvals[s] == 'dry':
             legend = 'dry'
         elif muvals[s] == 1.797e-06:
-            legend = 'wet, ref. shear vel.'
+            legend = 'wet, ref.\\ shear vel.'
         elif muvals[s] == 1.797e-07:
-            legend = 'wet, shear vel. $\\times$ 0.1'
+            legend = 'wet, shear vel.\\ $\\times$ 0.1'
         elif muvals[s] == 1.797e-08:
-            legend = 'wet, shear vel. $\\times$ 0.01'
+            legend = 'wet, shear vel.\\ $\\times$ 0.01'
         else:
             legend = 'wet, $k_c$ = ' + str(muvals[s]) + ' m$^2$'
 

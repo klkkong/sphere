@@ -119,7 +119,7 @@ for sigma0 in sigma0_list:
         elif cvals[s] == 3.5e-13:
             legend = 'wet, high permeability'
         elif cvals[s] == 3.5e-14:
-            legend = 'wet, interm.\ permeability'
+            legend = 'wet, interm.\\ permeability'
         elif cvals[s] == 3.5e-15:
             legend = 'wet, low permeability'
         else:
