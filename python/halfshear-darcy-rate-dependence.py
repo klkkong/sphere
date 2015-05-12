@@ -2,9 +2,6 @@
 import matplotlib
 matplotlib.use('Agg')
 #matplotlib.rcParams.update({'font.size': 18, 'font.family': 'serif'})
-matplotlib.rcParams.update({'font.size': 7, 'font.family': 'sans-serif'})
-matplotlib.rc('text', usetex=True)
-matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 import shutil
 
 import os
@@ -13,6 +10,10 @@ import numpy
 import sphere
 import matplotlib.pyplot as plt
 import scipy.optimize
+
+matplotlib.rcParams.update({'font.size': 7, 'font.family': 'sans-serif'})
+matplotlib.rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 
 sids =\
         ['halfshear-darcy-sigma0=80000.0-k_c=3.5e-13-mu=1.04e-07-ss=10000.0-A=70000.0-f=0.2',
