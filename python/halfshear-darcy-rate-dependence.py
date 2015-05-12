@@ -15,7 +15,16 @@ import matplotlib.pyplot as plt
 import scipy.optimize
 
 sids =\
-        ['halfshear-darcy-sigma0=80000.0-k_c=3.5e-13-mu=1.04e-07-ss=10000.0-A=70000.0-f=0.2']
+        ['halfshear-darcy-sigma0=80000.0-k_c=3.5e-13-mu=1.04e-07-ss=10000.0-A=70000.0-f=0.2',
+         'halfshear-darcy-sigma0=80000.0-k_c=3.5e-15-mu=1.04e-07-ss=10000.0-A=70000.0-f=0.2',
+         'halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4000.0-f=0.2',
+         'halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4125.0-f=0.2',
+         'halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4250.0-f=0.2',
+         'halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4375.0-f=0.2',
+         'halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4500.0-f=0.2',
+         'halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4625.0-f=0.2',
+         'halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4750.0-f=0.2',
+         'halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4875.0-f=0.2']
         #['halfshear-darcy-sigma0=80000.0-k_c=3.5e-13-mu=1.797e-06-ss=10000.0-A=70000.0-f=0.2']
 outformat = 'pdf'
 fluid = True
@@ -33,6 +42,7 @@ def creep_rheology2(friction, n, A):
 
 for sid in sids:
 
+    print sid
     sim = sphere.sim(sid, fluid=fluid)
 
     #nsteps = 2
@@ -188,13 +198,14 @@ for sid in sids:
     print(filename)
 
     ## dilation vs. rate
+    '''
     fig = plt.figure(figsize=(3.5,2.5))
     ax1 = plt.subplot(111)
     CS = ax1.scatter(friction, dilation[idx],
             #tau_nonzero[idxfit2]/N_nonzero[idxfit2],
             shearstrainrate_nonzero[idxfit2],
             c=shearstrain_nonzero[idxfit2], linewidth=0.05,
-            c=shearstrain_nonzero, linewidth=0.05,
+            #c=shearstrain_nonzero, linewidth=0.05,
             cmap=matplotlib.cm.get_cmap('afmhot'))
 
     ## plastic limit
@@ -209,6 +220,7 @@ for sid in sids:
 
     ## Fit
     '''
+    '''
     ax1.plot(friction_fit, strainrate_fit)
     #ax1.plot(friction_fit2, strainrate_fit2)
     ax1.annotate('$\\dot{\\gamma} = (\\tau/N)^{6.4}$',
@@ -218,7 +230,8 @@ for sid in sids:
                 width=1, headwidth=4, frac=0.2),)
             #xytext = (friction_fit[50]+0.15, strainrate_fit[50]-1.0e-5))#,
             #arrowprops=dict(facecolor='black', shrink=0.05),)
-            '''
+    '''
+    '''
 
     ax1.set_yscale('log')
     ax1.set_xlim([x_min, x_max])
@@ -240,3 +253,4 @@ for sid in sids:
     plt.close()
     shutil.copyfile(filename, '/home/adc/articles/own/3/graphics/' + filename)
     print(filename)
+    '''
