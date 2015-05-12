@@ -17,11 +17,14 @@ import matplotlib.colors
 if len(sys.argv) > 1:
     sid = sys.argv[1]
 else:
-    sid = 'halfshear-darcy-sigma0=80000.0-k_c=3.5e-13-mu=1.04e-07-ss=10000.0-A=70000.0-f=0.2'
+    raise Exception('Missing sid')
 outformat = 'pdf'
 fluid = True
 #threshold = 100.0 # [N]
-calculateforcechains = True
+if len(sys.argv) > 3:
+    calculateforcechains = bool(int(sys.argv[3]))
+else:
+    calculateforcechains = True
 calculateforcechainhistory = False
 legend_alpha=0.7
 linewidth=0.5
@@ -34,7 +37,7 @@ izfactor = 1 # factor for vertical discretization in poros
 if len(sys.argv) > 2:
     t_DEM_to_t_real = float(sys.argv[2])
 else:
-    t_DEM_to_t_real = 5.787e-5
+    raise Exception('Missing t_DEM_to_t_real')
 
 
 ###################
@@ -208,9 +211,8 @@ lns = lns0+lns3+lns5
 labs = [l.get_label() for l in lns]
 ax2.legend(lns, labs, loc='upper right', ncol=3,
         fancybox=True, framealpha=legend_alpha)
-ax1.set_ylim([-30, 200])
-#ax2.set_ylim(ax1.get_ylim())
-ax2.set_ylim([-115,115])
+#ax1.set_ylim([-30, 200])
+#ax2.set_ylim([-115,115])
 
 ax1.text(bbox_x, bbox_y, 'a',
         horizontalalignment=horizontalalignment,
@@ -248,10 +250,7 @@ ax5 = plt.subplot(5, 1, 3, sharex=ax1)
 
 # normalized displacement
 #ax5.plot(t, xdisp/xdisp[-1], 'k', linewidth=linewidth)
-if len(xdisp) > 4500:
-    ax5.plot(t, xdisp/xdisp[4500], 'k', linewidth=linewidth)
-else:
-    ax5.plot(t, xdisp/xdisp[-1], 'k', linewidth=linewidth)
+ax5.plot(t, xdisp/xdisp[-1], 'k', linewidth=linewidth)
 
 #ax5.set_ylabel('Shear displacement [m]')
 ax5.set_ylabel('Normalized displacement [-]')
@@ -367,15 +366,15 @@ plt.setp(ax5.get_xticklabels(), visible=False)
 plt.setp(ax7.get_xticklabels(), visible=False)
 #plt.setp(ax8.get_xticklabels(), visible=False)
 
-ax1.set_xlim([0,9])
-ax2.set_xlim([0,9])
-ax3.set_xlim([0,9])
-#ax4.set_xlim([0,9])
-ax5.set_xlim([0,9])
-ax6.set_xlim([0,9])
-ax7.set_xlim([0,9])
-ax8.set_xlim([0,9])
-ax9.set_xlim([0,9])
+#ax1.set_xlim([0,9])
+#ax2.set_xlim([0,9])
+#ax3.set_xlim([0,9])
+##ax4.set_xlim([0,9])
+#ax5.set_xlim([0,9])
+#ax6.set_xlim([0,9])
+#ax7.set_xlim([0,9])
+#ax8.set_xlim([0,9])
+#ax9.set_xlim([0,9])
 
 
 ax9.set_xlabel('Time [d]')

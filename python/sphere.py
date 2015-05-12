@@ -5,7 +5,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.collections
-matplotlib.rcParams.update({'font.size': 18, 'font.family': 'serif'})
+matplotlib.rcParams.update({'font.size': 7, 'font.family': 'serif'})
 matplotlib.rc('text', usetex=True)
 matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 from matplotlib.font_manager import FontProperties

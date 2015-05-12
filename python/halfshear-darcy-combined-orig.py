@@ -21,7 +21,7 @@ else:
 outformat = 'pdf'
 fluid = True
 #threshold = 100.0 # [N]
-calculateforcechains = True
+calculateforcechains = False
 calculateforcechainhistory = False
 legend_alpha=0.7
 linewidth=0.5
