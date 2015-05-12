@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 import matplotlib
 matplotlib.use('Agg')
-matplotlib.rcParams.update({'font.size': 7, 'font.family': 'sans-serif'})
-matplotlib.rc('text', usetex=True)
-matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 import shutil
 
 import os
@@ -13,6 +10,10 @@ import sphere
 import matplotlib.pyplot as plt
 import matplotlib.patches
 import matplotlib.colors
+
+matplotlib.rcParams.update({'font.size': 7, 'font.family': 'sans-serif'})
+matplotlib.rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 
 if len(sys.argv) > 1:
     sid = sys.argv[1]
