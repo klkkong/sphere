@@ -233,7 +233,7 @@ class sim:
             self.w_n[3,1] = -1.0
         if self.nw >= 5:
             self.w_n[4,1] =  1.0
-            
+
         # Wall positions on the axes that are parallel to the wall normal [m]
         self.w_x     = numpy.ones(self.nw, dtype=numpy.float64)
 
@@ -719,7 +719,7 @@ class sim:
         if (self.color != other.color).any():
             print(90)
             return 90
-        
+
         # All equal
         return 0
 
@@ -812,7 +812,7 @@ class sim:
         self.es     = numpy.append(self.es, es)
         self.ev_dot = numpy.append(self.ev_dot, ev_dot)
         self.ev     = numpy.append(self.ev, ev)
-        self.p      = numpy.append(self.p, p) 
+        self.p      = numpy.append(self.p, p)
         self.color  = numpy.append(self.color, color)
         if self.fluid:
             self.f_d    = numpy.append(self.f_d, [numpy.zeros(3)], axis=0)
