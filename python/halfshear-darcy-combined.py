@@ -299,6 +299,7 @@ ax7.text(bbox_x, bbox_y, 'd',
 ax9 = plt.subplot(5, 1, 5, sharex=ax1)
 poros_max = 0.45
 poros_min = 0.37
+poros[:,0] = poros[:,2] # remove erroneous porosity increase
 cmap = matplotlib.cm.get_cmap('Blues_r')
 #cmap = matplotlib.cm.get_cmap('afmhot')
 #im9 = ax9.pcolormesh(t, zpos_c, poros,
@@ -308,7 +309,7 @@ xvel[xvel < 0.0] = 0.0
 im9 = ax9.pcolormesh(t, zpos_c, poros,
 #im9 = ax9.pcolormesh(t, zpos_c, xvel,
         cmap=cmap,
-        vmin=poros_min, vmax=poros_max,
+        #vmin=poros_min, vmax=poros_max,
         #norm=matplotlib.colors.LogNorm(vmin=1.0e-8, vmax=xvel.max()),
         shading='goraud',
         rasterized=rasterized)

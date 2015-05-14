@@ -3731,6 +3731,26 @@ class sim:
         '''
         self.rho_f[0] = rho_f
 
+    def scaleSize(self, factor):
+        '''
+        Scale the positions, linear velocities, forces, torques and radii of all
+        particles and mobile walls.
+
+        :param factor: Spatial scaling factor ]0;inf[
+        :type factor: float
+        '''
+        self.L *= factor
+        self.x *= factor
+        self.radius *= factor
+        self.xysum *= factor
+        self.vel *= factor
+        self.force *= factor
+        self.torque *= factor
+        self.w_x *= factor
+        self.w_m *= factor
+        self.w_vel *= factor
+        self.w_force *= factor
+
     def bond(self, i, j):
         '''
         Create a bond between particles with index i and j
