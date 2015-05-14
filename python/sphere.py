@@ -3742,7 +3742,7 @@ class sim:
         self.L *= factor
         self.x *= factor
         self.radius *= factor
-        self.xysum *= factor
+        self.xyzsum *= factor
         self.vel *= factor
         self.force *= factor
         self.torque *= factor
