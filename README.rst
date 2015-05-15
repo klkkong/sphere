@@ -1,5 +1,7 @@
-=============
-sphere readme
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :alt: Join the chat at https://gitter.im/anders-dc/sphere
+   :target: https://gitter.im/anders-dc/sphere?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+
 =============
 ``sphere`` is a 3D discrete element method algorithm utilizing CUDA. ``sphere``
 allows for optional simulation of two-way coupled fluid flow using the
@@ -114,7 +116,3 @@ Anders Damsgaard, `anders.damsgaard@geo.au.dk <mailto:anders.damsgaard@geo.au.dk
 `blog <http://anders-dc.github.io>`_,
 `more contact information <https://cs.au.dk/~adc>`_.
 
-
-.. image:: https://badges.gitter.im/Join%20Chat.svg
-   :alt: Join the chat at https://gitter.im/anders-dc/sphere
-   :target: https://gitter.im/anders-dc/sphere?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
