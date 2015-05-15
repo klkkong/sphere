@@ -3,6 +3,8 @@
    :target: https://gitter.im/anders-dc/sphere?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 =============
+sphere readme
+=============
 ``sphere`` is a 3D discrete element method algorithm utilizing CUDA. ``sphere``
 allows for optional simulation of two-way coupled fluid flow using the
 Navier-Stokes or Darcy formulations.
