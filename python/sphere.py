@@ -5248,9 +5248,9 @@ class sim:
         fig.clf()
 
     def plotContacts(self, graphics_format = 'png', figsize=[6,6], title=None,
-            lower_limit = 0.0, upper_limit = 1.0, alpha=1.0, return_data=False,
-            outfolder='.',
-            f_min = None, f_max = None):
+                     lower_limit = 0.0, upper_limit = 1.0, alpha=1.0,
+                     return_data=False, outfolder='.',
+                     f_min = None, f_max = None):
         '''
         Plot current contact orientations on polar plot
 
@@ -5329,7 +5329,7 @@ class sim:
 
         fig = plt.figure(figsize=figsize)
         ax = plt.subplot(111, polar=True, axisbg='white')
-        cs = ax.scatter(strikelist, 90. - diplist, marker='o', 
+        cs = ax.scatter(strikelist, 90. - diplist, marker='o',
                 c=forcemagnitude,
                 s=forcemagnitude/f_n_max*40.,
                 alpha=alpha,
@@ -5360,7 +5360,8 @@ class sim:
             plt.title('t = {:.2f} s'.format(self.currentTime()))
 
         #plt.tight_layout()
-        plt.savefig(outfolder + '/' + self.sid + '-contacts.' + \
+        plt.savefig(outfolder + '/' + self.sid + '-' + \
+                    str(self.time_step_count[0]) + '-contacts.' + \
                 graphics_format,\
                 transparent=False)
 
@@ -5370,7 +5371,7 @@ class sim:
         plt.close()
 
         if return_data:
-            return data
+            return data, strikelist, diplist, forcemagnitude, alpha, f_n_max
 
     def plotFluidPressuresY(self, y = -1, graphics_format = 'png'):
         '''
