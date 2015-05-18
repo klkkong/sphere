@@ -5250,7 +5250,7 @@ class sim:
     def plotContacts(self, graphics_format = 'png', figsize=[6,6], title=None,
                      lower_limit = 0.0, upper_limit = 1.0, alpha=1.0,
                      return_data=False, outfolder='.',
-                     f_min = None, f_max = None):
+                     f_min = None, f_max = None, histogram=True):
         '''
         Plot current contact orientations on polar plot
 
@@ -5368,6 +5368,18 @@ class sim:
         subprocess.call('rm contacts-tmp.txt', shell=True)
 
         fig.clf()
+        if histogram:
+            #hist, bins = numpy.histogram(datadata[:,6], bins=10)
+            n, bins, patches = plt.hist(data[:,6], alpha=0.75, facecolor='gray')
+            #plt.xlabel('$\\boldsymbol{f}_\text{n}$ [N]')
+            plt.xlabel('Contact load [N]')
+            plt.ylabel('Count $N$')
+            plt.grid(True)
+            plt.savefig(outfolder + '/' + self.sid + '-' + \
+                        str(self.time_step_count[0]) + '-contacts-hist.' + \
+                    graphics_format,\
+                    transparent=False)
+
         plt.close()
 
         if return_data:
@@ -5541,6 +5553,7 @@ class sim:
         plt.savefig('v_f-' + self.sid + \
                 '-z' + str(z) + '.' + graphics_format, transparent=False)
 
+
     def plotFluidDiffAdvPresZ(self, graphics_format = 'png'):
         '''
         Compare contributions to the velocity from diffusion and advection,
@@ -5549,7 +5562,7 @@ class sim:
         conservation of mass. The plot is saved in the output folder with the
         name format '<simulation id>-diff_adv-t=<current time>s-mu=<dynamic
         viscosity>Pa-s.<graphics_format>'.
-        
+
         :param graphics_format: Save the plot in this format
         :type graphics_format: str
         '''

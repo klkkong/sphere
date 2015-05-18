@@ -16,6 +16,7 @@ import matplotlib.cm
 matplotlib.rcParams.update({'font.size': 7, 'font.family': 'sans-serif'})
 matplotlib.rc('text', usetex=True)
 matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
+matplotlib.rc('grid', linestyle=':', linewidth=0.2)
 
 #import seaborn as sns
 #sns.set(style='ticks', palette='Set2')
@@ -29,7 +30,8 @@ matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 outformat='pdf'
 
 
-sids = ['halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4000.0-f=0.2']
+#sids = ['halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4000.0-f=0.2']
+sids = ['halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4375.0-f=0.2']
 timescalings=[1.157e-4]
 
 steps = numpy.arange(1625, 1875)
@@ -74,13 +76,23 @@ for sid in sids:
 
         N[i] = sim.currentNormalStress('defined')
         t[i] = sim.currentTime()
-        #sim.plotContacts(outfolder='../img_out/')
+
+        '''
+        outfolder='../img_out/' + sim.id() + '/'
+        if not os.path.exists(outfolder):
+            os.makedirs(outfolder)
+        sim.plotContacts(outfolder=outfolder,
+                        alpha=0.9,
+                        lower_limit=lower_limit,
+                        upper_limit=upper_limit)
+        '''
 
         if (step == plotsteps).any():
             #contactdata.append(sim.plotContacts(return_data=True))
             datalists[i_scatter], strikelists[i_scatter], diplists[i_scatter],\
                 forcemagnitudes[i_scatter], alphas[i_scatter], \
                 f_n_maxs[i_scatter] = sim.plotContacts(return_data=True,
+                                                       alpha=0.9,
                                                        lower_limit=lower_limit,
                                                        upper_limit=upper_limit)
                                                                   #f_min=f_min,
@@ -122,7 +134,8 @@ for sid in sids:
     ax1 = plt.subplot(1, 1, 1)
 
     ax1.plot(t_scaled, N/1000., '-k', label='$N$', clip_on=False)
-    ax1.plot([0,10],[taus[0]/.3/1000., taus[0]/.3/1000.], '--', color='gray')
+    ax1.plot([t_scaled[int(len(t_scaled)*0.60)],10],
+             [taus[0]/.3/1000., taus[0]/.3/1000.], '--', color='gray')
     ax1.set_xlabel('Time [d]')
     ax1.set_ylabel('Effective normal stress $N$ [kPa]')
 
@@ -169,7 +182,7 @@ for sid in sids:
     axsc1.set_xticklabels([])
     axsc1.set_yticklabels([])
 
-    axsc1.set_title('\\textbf{Slow creep}', fontsize=7)
+    axsc1.set_title('\\textbf{1. Slow creep}', fontsize=7)
     if upper_limit < 1.0:
         cbar = plt.colorbar(cs, extend='max', fraction=0.035, pad=0.04)
     else:
@@ -250,7 +263,8 @@ for sid in sids:
     sc=1
     Lx=.37; Ly=.7;
     #xytext=(Lx+.5*dx, Ly+.5*dy)
-    xytext=(Lx+.5*dx, Ly+.05)
+    #xytext=(Lx+.5*dx, Ly+.05)
+    xytext=(Lx+.6*dx, Ly+.15)
     xy=(ts[sc]*scalingfactor, Ns[sc]/1000.)
     #print xytext
     #print xy
@@ -277,7 +291,7 @@ for sid in sids:
     axsc2.set_xticklabels([])
     axsc2.set_yticklabels([])
 
-    axsc2.set_title('\\textbf{Fast creep}', fontsize=7)
+    axsc2.set_title('\\textbf{2. Fast creep}', fontsize=7)
     if upper_limit < 1.0:
         cbar = plt.colorbar(cs, extend='max', fraction=0.035, pad=0.04)
     else:
@@ -307,7 +321,7 @@ for sid in sids:
     # force chain plot
 
     #axfc2 = fig.add_axes([Lx+dx+0.05, Ly+0.03, dx, dy*0.7])
-    axfc2 = fig.add_axes([Lx+dx+0.10, Ly+0.03, dx, dy*0.7])
+    axfc2 = fig.add_axes([Lx+dx+0.08, Ly+0.035, dx, dy*0.7])
 
     data = datalists[sc]
 
@@ -389,7 +403,7 @@ for sid in sids:
     axsc2.set_xticklabels([])
     axsc2.set_yticklabels([])
 
-    axsc2.set_title('\\textbf{Slip}', fontsize=7)
+    axsc2.set_title('\\textbf{3. Slip}', fontsize=7)
     if upper_limit < 1.0:
         cbar = plt.colorbar(cs, extend='max', fraction=0.035, pad=0.04)
     else:
