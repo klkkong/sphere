@@ -5372,6 +5372,7 @@ class sim:
             #hist, bins = numpy.histogram(datadata[:,6], bins=10)
             n, bins, patches = plt.hist(data[:,6], alpha=0.75, facecolor='gray')
             #plt.xlabel('$\\boldsymbol{f}_\text{n}$ [N]')
+            plt.yscale('log', nonposy='clip')
             plt.xlabel('Contact load [N]')
             plt.ylabel('Count $N$')
             plt.grid(True)
