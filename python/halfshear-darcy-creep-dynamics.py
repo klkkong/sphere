@@ -29,7 +29,9 @@ matplotlib.rc('grid', linestyle=':', linewidth=0.2)
 
 outformat='pdf'
 
-plotContacts=False
+#plotContacts=False
+plotContacts=True
+plotForceChains=False
 
 #sids = ['halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4000.0-f=0.2']
 sids = ['halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4375.0-f=0.2']
@@ -53,8 +55,10 @@ Ns = [[], [], []]
 
 #f_min = 1.0
 #f_max = 1.0e16
-lower_limit = 0.3
-upper_limit = 0.5
+#lower_limit = 0.3
+lower_limit = 0.5
+#upper_limit = 0.5
+upper_limit = 1.0
 f_n_max = 50 # for force chain plots
 
 N = numpy.zeros_like(steps, dtype=numpy.float64)
@@ -229,60 +233,68 @@ for sid in sids:
             #axsc1.grid(False)
 
         else:
-            axhistload1 = fig.add_axes([Lx[sc], Ly[sc], dx, dy])
+            axhistload1 = fig.add_axes([Lx[sc], Ly[sc], dx, dy*.5])
             axhistload1.hist(datalists[sc][:,6], alpha=0.75, facecolor='gray', log=True)
             #plt.yscale('log', nonposy='clip')
             axhistload1.set_xlim([0,50.])
             axhistload1.set_xlabel('Contact load [N]')
-            axhistload1.set_ylabel('Count')
+            #axhistload1.set_ylabel('Count')
+
+            axdipload1 = fig.add_axes([Lx[sc], Ly[sc]-.8*dy, dx, dy*.5])
+            axdipload1.hist(diplists[sc], alpha=0.75, facecolor='gray', log=False)
+            #plt.yscale('log', nonposy='clip')
+            #axdipload1.set_xlim([0,50.])
+            axdipload1.set_xlabel('Contact angle')
+            #axdipload1.set_ylabel('Count')
 
         # force chain plot
 
-        axfc1 = fig.add_axes([fc_x[sc], fc_y[sc], fc_dx[sc], fc_dy[sc]])
+        if plotForceChains:
+            axfc1 = fig.add_axes([fc_x[sc], fc_y[sc], fc_dx[sc], fc_dy[sc]])
 
-        data = datalists[sc]
+            data = datalists[sc]
 
-        # find the max. value of the normal force
-        #f_n_max = numpy.amax(data[:,6])
+            # find the max. value of the normal force
+            #f_n_max = numpy.amax(data[:,6])
 
-        # specify the lower limit of force chains to do statistics on
-        f_n_lim = lower_limit * f_n_max
+            # specify the lower limit of force chains to do statistics on
+            f_n_lim = lower_limit * f_n_max
 
-        # find the indexes of these contacts
-        I = numpy.nonzero(data[:,6] >= f_n_lim)
+            # find the indexes of these contacts
+            I = numpy.nonzero(data[:,6] >= f_n_lim)
 
-        #color = matplotlib.cm.spectral(data[:,6]/f_n_max)
-        for i in I[0]:
+            #color = matplotlib.cm.spectral(data[:,6]/f_n_max)
+            for i in I[0]:
 
-            x1 = data[i,0]
-            #y1 = data[i,1]
-            z1 = data[i,2]
-            x2 = data[i,3]
-            #y2 = data[i,4]
-            z2 = data[i,5]
-            f_n = data[i,6]
+                x1 = data[i,0]
+                #y1 = data[i,1]
+                z1 = data[i,2]
+                x2 = data[i,3]
+                #y2 = data[i,4]
+                z2 = data[i,5]
+                f_n = data[i,6]
 
-            lw_max = 1.0
-            if f_n >= f_n_max:
-                lw = lw_max
-            else:
-                lw = (f_n - f_n_lim)/(f_n_max - f_n_lim)*lw_max
+                lw_max = 1.0
+                if f_n >= f_n_max:
+                    lw = lw_max
+                else:
+                    lw = (f_n - f_n_lim)/(f_n_max - f_n_lim)*lw_max
 
-            #print lw
-            axfc1.plot([x1,x2], [z1,z2], '-k', linewidth=lw)
-            #axfc1.plot([x1,x2], [z1,z2], '-', linewidth=lw, color=forcemagnitudes[sc])
-            #axfc1.plot([x1,x2], [z1,z2], '-', linewidth=lw, color=color)
+                #print lw
+                axfc1.plot([x1,x2], [z1,z2], '-k', linewidth=lw)
+                #axfc1.plot([x1,x2], [z1,z2], '-', linewidth=lw, color=forcemagnitudes[sc])
+                #axfc1.plot([x1,x2], [z1,z2], '-', linewidth=lw, color=color)
 
-        axfc1.spines['right'].set_visible(False)
-        axfc1.spines['left'].set_visible(False)
-        # Only show ticks on the left and bottom spines
-        axfc1.xaxis.set_ticks_position('none')
-        axfc1.yaxis.set_ticks_position('none')
-        axfc1.set_xticklabels([])
-        axfc1.set_yticklabels([])
-        axfc1.set_xlim([numpy.min(data[I[0],0]), numpy.max(data[I[0],0])])
-        axfc1.set_ylim([numpy.min(data[I[0],2]), numpy.max(data[I[0],2])])
-        axfc1.set_aspect('equal')
+            axfc1.spines['right'].set_visible(False)
+            axfc1.spines['left'].set_visible(False)
+            # Only show ticks on the left and bottom spines
+            axfc1.xaxis.set_ticks_position('none')
+            axfc1.yaxis.set_ticks_position('none')
+            axfc1.set_xticklabels([])
+            axfc1.set_yticklabels([])
+            axfc1.set_xlim([numpy.min(data[I[0],0]), numpy.max(data[I[0],0])])
+            axfc1.set_ylim([numpy.min(data[I[0],2]), numpy.max(data[I[0],2])])
+            axfc1.set_aspect('equal')
 
 
 

@@ -5380,6 +5380,26 @@ class sim:
                         str(self.time_step_count[0]) + '-contacts-hist.' + \
                     graphics_format,\
                     transparent=False)
+            plt.clf()
+
+            #hist, bins = numpy.histogram(datadata[:,6], bins=10)
+            n, bins, patches = plt.hist(diplist, bins=range(0, 100, 10),
+                                        alpha=0.75, facecolor='gray')
+            theta_sigma1 = numpy.degrees(numpy.arctan(
+                self.currentNormalStress('defined')/\
+                self.shearStress('defined')))
+            plt.axvline(theta_sigma1, color='k', linestyle='dashed',
+                        linewidth=1)
+            plt.xlim([0, 90.])
+            plt.ylim([0, self.np[0]/100])
+            #plt.xlabel('$\\boldsymbol{f}_\text{n}$ [N]')
+            plt.xlabel('Contact angle [deg]')
+            plt.ylabel('Count $N$')
+            plt.grid(True)
+            plt.savefig(outfolder + '/dip-' + self.sid + '-' + \
+                        str(self.time_step_count[0]) + '-contacts-hist.' + \
+                    graphics_format,\
+                    transparent=False)
 
         plt.close()
 
