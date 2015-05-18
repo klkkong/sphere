@@ -5424,8 +5424,9 @@ class sim:
                     lw = (f_n - f_n_lim)/(f_n_max - f_n_lim)*lw_max
 
                 #print lw
-                axfc1 = plt.plot([x1,x2], [z1,z2], '-k', linewidth=lw)
+                plt.plot([x1,x2], [z1,z2], '-k', linewidth=lw)
 
+            axfc1 = plt.gca()
             axfc1.spines['right'].set_visible(False)
             axfc1.spines['left'].set_visible(False)
             # Only show ticks on the left and bottom spines
