@@ -5434,13 +5434,13 @@ class sim:
             axfc1.yaxis.set_ticks_position('none')
             #axfc1.set_xticklabels([])
             #axfc1.set_yticklabels([])
-            axfc1.set_xlim([numpy.min(data[I[0],0]), numpy.max(data[I[0],0])])
-            axfc1.set_ylim([numpy.min(data[I[0],2]), numpy.max(data[I[0],2])])
+            axfc1.set_xlim([self.origo[0], self.L[0]])
+            axfc1.set_ylim([self.origo[2], self.L[2]])
             axfc1.set_aspect('equal')
 
             plt.xlabel('$x$ [m]')
             plt.ylabel('$z$ [m]')
-            plt.grid(True)
+            plt.grid(False)
             plt.savefig(outfolder + '/fc-' + self.sid + '-' + \
                         str(self.time_step_count[0]) + '.' + \
                     graphics_format,\
