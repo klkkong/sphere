@@ -5247,10 +5247,11 @@ class sim:
                 graphics_format)
         fig.clf()
 
-    def plotContacts(self, graphics_format = 'png', figsize=[6,6], title=None,
+    def plotContacts(self, graphics_format = 'png', figsize=[4,4], title=None,
                      lower_limit = 0.0, upper_limit = 1.0, alpha=1.0,
                      return_data=False, outfolder='.',
-                     f_min = None, f_max = None, histogram=True):
+                     f_min = None, f_max = None, histogram=True,
+                     forcechains=True):
         '''
         Plot current contact orientations on polar plot
 
@@ -5360,8 +5361,8 @@ class sim:
             plt.title('t = {:.2f} s'.format(self.currentTime()))
 
         #plt.tight_layout()
-        plt.savefig(outfolder + '/' + self.sid + '-' + \
-                    str(self.time_step_count[0]) + '-contacts.' + \
+        plt.savefig(outfolder + '/contacts-' + self.sid + '-' + \
+                    str(self.time_step_count[0]) + '.' + \
                 graphics_format,\
                 transparent=False)
 
@@ -5376,19 +5377,20 @@ class sim:
             plt.xlabel('Contact load [N]')
             plt.ylabel('Count $N$')
             plt.grid(True)
-            plt.savefig(outfolder + '/' + self.sid + '-' + \
-                        str(self.time_step_count[0]) + '-contacts-hist.' + \
+            plt.savefig(outfolder + '/contacts-hist-' + self.sid + '-' + \
+                        str(self.time_step_count[0]) + '.' + \
                     graphics_format,\
                     transparent=False)
             plt.clf()
 
+            # angle: 0 when vertical, 90 when horizontal
             #hist, bins = numpy.histogram(datadata[:,6], bins=10)
-            n, bins, patches = plt.hist(diplist, bins=range(0, 100, 10),
+            n, bins, patches = plt.hist(90. - diplist, bins=range(0, 100, 10),
                                         alpha=0.75, facecolor='gray')
             theta_sigma1 = numpy.degrees(numpy.arctan(
                 self.currentNormalStress('defined')/\
                 self.shearStress('defined')))
-            plt.axvline(theta_sigma1, color='k', linestyle='dashed',
+            plt.axvline(90. - theta_sigma1, color='k', linestyle='dashed',
                         linewidth=1)
             plt.xlim([0, 90.])
             plt.ylim([0, self.np[0]/100])
@@ -5397,9 +5399,53 @@ class sim:
             plt.ylabel('Count $N$')
             plt.grid(True)
             plt.savefig(outfolder + '/dip-' + self.sid + '-' + \
-                        str(self.time_step_count[0]) + '-contacts-hist.' + \
+                        str(self.time_step_count[0]) + '.' + \
                     graphics_format,\
                     transparent=False)
+            plt.clf()
+
+        if forcechains:
+
+            #color = matplotlib.cm.spectral(data[:,6]/f_n_max)
+            for i in I[0]:
+
+                x1 = data[i,0]
+                #y1 = data[i,1]
+                z1 = data[i,2]
+                x2 = data[i,3]
+                #y2 = data[i,4]
+                z2 = data[i,5]
+                f_n = data[i,6]
+
+                lw_max = 1.0
+                if f_n >= f_n_max:
+                    lw = lw_max
+                else:
+                    lw = (f_n - f_n_lim)/(f_n_max - f_n_lim)*lw_max
+
+                #print lw
+                axfc1 = plt.plot([x1,x2], [z1,z2], '-k', linewidth=lw)
+
+            axfc1.spines['right'].set_visible(False)
+            axfc1.spines['left'].set_visible(False)
+            # Only show ticks on the left and bottom spines
+            axfc1.xaxis.set_ticks_position('none')
+            axfc1.yaxis.set_ticks_position('none')
+            #axfc1.set_xticklabels([])
+            #axfc1.set_yticklabels([])
+            axfc1.set_xlim([numpy.min(data[I[0],0]), numpy.max(data[I[0],0])])
+            axfc1.set_ylim([numpy.min(data[I[0],2]), numpy.max(data[I[0],2])])
+            axfc1.set_aspect('equal')
+
+            plt.xlabel('$x$ [m]')
+            plt.ylabel('$z$ [m]')
+            plt.grid(True)
+            plt.savefig(outfolder + '/fc-' + self.sid + '-' + \
+                        str(self.time_step_count[0]) + '.' + \
+                    graphics_format,\
+                    transparent=False)
+
+            
 
         plt.close()
 
