@@ -29,9 +29,11 @@ matplotlib.rc('grid', linestyle=':', linewidth=0.2)
 
 outformat='pdf'
 
-#plotContacts=False
+scatter=False
 plotContacts=True
-plotForceChains=False
+#plotContacts=False
+plotForceChains=True
+#plotForceChains=False
 
 #sids = ['halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4000.0-f=0.2']
 sids = ['halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4375.0-f=0.2']
@@ -56,15 +58,13 @@ Ns = [[], [], []]
 #f_min = 1.0
 #f_max = 1.0e16
 #lower_limit = 0.3
-lower_limit = 0.5
+lower_limit = 0.2
 #upper_limit = 0.5
 upper_limit = 1.0
 f_n_max = 50 # for force chain plots
 
 N = numpy.zeros_like(steps, dtype=numpy.float64)
 t = numpy.zeros_like(steps, dtype=numpy.float64)
-
-scatter=False
 
 # insert plot positions
 Lx=[.17, .37, .65]

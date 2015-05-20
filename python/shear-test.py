@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Import sphere functionality
-from sphere import *
+import sphere
 
 ### EXPERIMENT SETUP ###
 initialization = True
@@ -23,7 +23,7 @@ devslist = [80e3, 10e3, 20e3, 40e3, 60e3, 120e3]
 ### INITIALIZATION ###
 
 # New class
-init = Spherebin(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
+init = sphere.sim(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
 
 # Save radii
 init.generateRadii(mean = 0.02)
@@ -68,7 +68,7 @@ for devs in devslist:
     ### CONSOLIDATION ###
 
     # New class
-    cons = Spherebin(np = init.np, nw = 1, sid = sim_id + "-cons-devs{}".format(devs))
+    cons = sphere.sim(np = init.np, nw = 1, sid = sim_id + "-cons-devs{}".format(devs))
 
     # Read last output file of initialization step
     lastf = status(sim_id + "-init")
@@ -117,7 +117,7 @@ for devs in devslist:
     ### SHEARING ###
 
     # New class
-    shear = Spherebin(np = cons.np, nw = cons.nw, sid = sim_id + "-shear-devs{}".format(devs))
+    shear = sphere.sim(np = cons.np, nw = cons.nw, sid = sim_id + "-shear-devs{}".format(devs))
 
     # Read last output file of initialization step
     lastf = status(sim_id + "-cons-devs{}".format(devs))
