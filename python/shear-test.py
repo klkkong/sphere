@@ -52,7 +52,7 @@ if (initialization == True):
 
     if (plots == True):
         # Make a graph of energies
-        visualize(init.sid, "energy", savefig=True, outformat='png')
+        init.visualize('energy')
 
     init.writeVTKall()
 
@@ -83,9 +83,6 @@ for devs in devslist:
 
     # Set duration of simulation
     cons.initTemporal(total = 1.5)
-    #cons.initTemporal(total = 0.0019, file_dt = 0.00009)
-    #cons.initTemporal(total = 0.0019, file_dt = 1e-6)
-    #cons.initTemporal(total = 0.19, file_dt = 0.019)
 
     """
     cons.w_m[0] *= 0.001
@@ -104,8 +101,8 @@ for devs in devslist:
 
         if (plots == True):
             # Make a graph of energies
-            visualize(cons.sid, "energy", savefig=True, outformat='png')
-            visualize(cons.sid, "walls", savefig=True, outformat='png')
+            cons.visualize('energy')
+            cons.visualize('walls')
 
         cons.writeVTKall()
 
@@ -140,8 +137,8 @@ for devs in devslist:
 
         if (plots == True):
             # Make a graph of energies
-            visualize(shear.sid, "energy", savefig=True, outformat='png')
-            visualize(shear.sid, "shear", savefig=True, outformat='png')
+            shear.visualize('energy')
+            shear.visualize('shear')
 
         shear.writeVTKall()
 
