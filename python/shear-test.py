@@ -39,7 +39,7 @@ init.periodicBoundariesXY()
 
 # Initialize positions in random grid (also sets world size)
 hcells = np**(1.0/3.0)
-init.initRandomGridPos(gridnum = numpy.array([hcells, hcells, 1e9]), periodic = 1, contactmodel = 2)
+init.initRandomGridPos(gridnum = [hcells, hcells, 1e9])
 
 # Set duration of simulation
 init.initTemporal(total = 5.0)
