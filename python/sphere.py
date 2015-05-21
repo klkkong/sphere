@@ -5393,7 +5393,7 @@ class sim:
             plt.axvline(90. - theta_sigma1, color='k', linestyle='dashed',
                         linewidth=1)
             plt.xlim([0, 90.])
-            plt.ylim([0, self.np[0]/100])
+            plt.ylim([0, self.np[0]/10])
             #plt.xlabel('$\\boldsymbol{f}_\text{n}$ [N]')
             plt.xlabel('Contact angle [deg]')
             plt.ylabel('Count $N$')

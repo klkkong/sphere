@@ -30,10 +30,12 @@ matplotlib.rc('grid', linestyle=':', linewidth=0.2)
 outformat='pdf'
 
 scatter=False
-plotContacts=True
+plotContacts=False
 #plotContacts=False
 plotForceChains=True
 #plotForceChains=False
+plotHistograms=False
+plotCombinedHistogram=True
 
 #sids = ['halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4000.0-f=0.2']
 sids = ['halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4375.0-f=0.2']
@@ -232,7 +234,7 @@ for sid in sids:
             axsc1.set_rticks([])
             #axsc1.grid(False)
 
-        else:
+        if plotHistograms:
             axhistload1 = fig.add_axes([Lx[sc], Ly[sc], dx, dy*.5])
             axhistload1.hist(datalists[sc][:,6], alpha=0.75, facecolor='gray', log=True)
             #plt.yscale('log', nonposy='clip')
@@ -303,6 +305,40 @@ for sid in sids:
     plt.subplots_adjust(right=0.82)
 
     filename = sid + '-creep-dynamics.' + outformat
+    plt.savefig(filename)
+    plt.close()
+    shutil.copyfile(filename, '/home/adc/articles/own/3/graphics/' + filename)
+    print(filename)
+
+if plotCombinedHistogram:
+    fig = plt.figure(figsize=[3.5, 3.5])
+
+    ax1 = plt.subplot(1, 1, 1)
+
+    f_min = 0.0
+    f_max = 0.0
+    for sc in range(len(Lx)):
+        if f_max < numpy.max(datalists[sc][:,6]):
+            f_max = numpy.max(datalists[sc][:,6])
+    f_max = numpy.ceil(f_max/10.)*10.
+    print(f_max)
+
+    for sc in range(len(Lx)):
+        #axhistload1.hist(datalists[sc][:,6], alpha=0.75, facecolor='gray', log=True)
+        hist, bin_edges = numpy.histogram(datalists[sc][:,6],
+                #numpy.arange(8),
+                range=(f_min, f_max))
+
+        ax1.semilogy((bin_edges[1:] - bin_edges[:-1])/2 + bin_edges[:-1],
+                hist, 'o-',
+                label='$N$ = {:3.1f} kPa'.format(Ns[sc]/1000.))
+
+    #plt.yscale('log', nonposy='clip')
+    ax1.set_xlabel('Contact load [N]')
+    ax1.set_ylabel('Number of contacts')
+    ax1.legend(loc='upper right', fancybox=True, framealpha=1.0)
+
+    filename = sid + '-creep-dynamics-hist.' + outformat
     plt.savefig(filename)
     plt.close()
     shutil.copyfile(filename, '/home/adc/articles/own/3/graphics/' + filename)

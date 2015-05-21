@@ -13,7 +13,7 @@
 
 // Constructor: Reads an input binary, and optionally checks
 // and reports the values
-DEM::DEM(const std::string inputbin, 
+DEM::DEM(const std::string inputbin,
          const int verbosity,
          const int checkVals,
          const int dry,
@@ -26,7 +26,7 @@ DEM::DEM(const std::string inputbin,
     using std::cout;
     using std::cerr;
 
-    // Extract sid from input binary filename 
+    // Extract sid from input binary filename
     size_t dotpos = inputbin.rfind('.');
     size_t slashpos = inputbin.rfind('/');
     if (slashpos - dotpos < 1) {
@@ -359,21 +359,21 @@ void DEM::reportValues()
         if (verbose == 1)
             cout << "double";
     } else {
-        cerr << "Error! Chosen precision not available. Check datatypes.h" 
+        cerr << "Error! Chosen precision not available. Check datatypes.h"
             << endl;
         exit(1);
     }
     cout << " precision\n";
 
-    cout << "  - Timestep length:      time.dt         = " 
+    cout << "  - Timestep length:      time.dt         = "
         << time.dt << " s\n"
-        << "  - Start at time:        time.current    = " 
+        << "  - Start at time:        time.current    = "
         << time.current << " s\n"
-        << "  - Total sim. time:      time.total      = " 
+        << "  - Total sim. time:      time.total      = "
         << time.total << " s\n"
-        << "  - File output interval: time.file_dt    = " 
+        << "  - File output interval: time.file_dt    = "
         << time.file_dt << " s\n"
-        << "  - Start at step count:  time.step_count = " 
+        << "  - Start at step count:  time.step_count = "
         << time.step_count << endl;
 
     if (params.contactmodel == 1)
@@ -420,8 +420,8 @@ void DEM::reportValues()
         cout << grid.num[0];
     else if (nd == 2)
         cout << grid.num[0] << " * " << grid.num[1];
-    else 
-        cout << grid.num[0] << " * " 
+    else
+        cout << grid.num[0] << " * "
             << grid.num[1] << " * "
             << grid.num[2];
     cout << " cells\n";
@@ -473,9 +473,9 @@ Float DEM::r_max()
 // Calculate the porosity with depth, and write to file in output directory
 void DEM::porosity(const int z_slices)
 {
-    // The porosity value is higher at the boundaries due 
+    // The porosity value is higher at the boundaries due
     // to the no-flux BCs.
-    
+
     Float top;
     if (walls.nw > 0)
         top = walls.nx->w;
@@ -521,7 +521,7 @@ void DEM::porosity(const int z_slices)
             // Read particle values
             Float z_sphere_centre = k.x[i].z;
             Float radius = k.x[i].w;
-            
+
             // Save vertical positions of particle boundaries
             Float z_sphere_low = z_sphere_centre - radius;
             Float z_sphere_high = z_sphere_centre + radius;
@@ -548,7 +548,7 @@ void DEM::porosity(const int z_slices)
                 // and the centre is above the boundary
                 else if (z_slice_low < z_sphere_centre && z_slice_low > z_sphere_low) {
 
-                    // Subtract the volume of the sphere, 
+                    // Subtract the volume of the sphere,
                     // then add the volume of the spherical cap below
                     V_void -= V_sphere + sphericalCap(z_slice_low - z_sphere_low, radius);
                 }
@@ -564,15 +564,12 @@ void DEM::porosity(const int z_slices)
                 // and the centre is below the boundary
                 else if (z_slice_high > z_sphere_centre && z_slice_high < z_sphere_high) {
 
-                    // Subtract the volume of the sphere, 
+                    // Subtract the volume of the sphere,
                     // then add the volume of the spherical cap above
                     V_void -= V_sphere + sphericalCap(z_sphere_high - z_slice_high, radius);
                 }
-                
-                
 
             }
-            
         }
 
         // Save the mid z-point
@@ -589,7 +586,7 @@ void DEM::porosity(const int z_slices)
     // Report values to stdout
     //std::cout << "z-pos" << '\t' << "porosity" << '\n';
     for (int i = 0; i<z_slices; ++i) {
-        std::cout << z_pos[i] << '\t' << porosity[i] << '\n'; 
+        std::cout << z_pos[i] << '\t' << porosity[i] << '\n';
     }
 
 }
@@ -661,7 +658,7 @@ Float3 DEM::maxPos()
 }
 
 
-// Finds all overlaps between particles, 
+// Finds all overlaps between particles,
 // returns the indexes as a 2-row vector and saves
 // the overlap size
 void DEM::findOverlaps(
@@ -715,7 +712,7 @@ void DEM::findOverlaps(
 }
 
 // Calculate force chains and generate visualization script
-void DEM::forcechains(const std::string format, const int threedim, 
+void DEM::forcechains(const std::string format, const int threedim,
         const double lower_cutoff,
         const double upper_cutoff)
 {
@@ -750,7 +747,8 @@ void DEM::forcechains(const std::string format, const int threedim,
         if (threedim == 1)
             cout << "y_2, [m]\t";
         cout << "z_2, [m]\t";
-        cout << "||f_n||, [N]" << endl;
+        cout << "||f_n||, [N]"
+             << "i\tj" << endl;
 
 
     } else {
@@ -760,7 +758,7 @@ void DEM::forcechains(const std::string format, const int threedim,
         std::replace(s.begin(), s.end(), '.', '-');
 
         // Write Gnuplot header
-        cout << "#!/usr/bin/env gnuplot\n" 
+        cout << "#!/usr/bin/env gnuplot\n"
             << "# This Gnuplot script is automatically generated using\n"
             << "# the forcechain utility in sphere. For more information,\n"
             << "# see https://github.com/anders-dc/sphere\n"
@@ -843,7 +841,8 @@ void DEM::forcechains(const std::string format, const int threedim,
             if (threedim == 1)
                 cout << k.x[j].y << '\t';
             cout << k.x[j].z << '\t';
-            cout << f_n << endl;
+            cout << f_n
+                 << i << '\t' << j << endl;
         } else {
 
             // Gnuplot output
@@ -864,7 +863,7 @@ void DEM::forcechains(const std::string format, const int threedim,
                 cout << k.x[j].z;
                 cout << " nohead "
                     << "lw " << ratio * thickness_scaling
-                    << " lc palette cb " << f_n 
+                    << " lc palette cb " << f_n
                     << endl;
             }
         }
