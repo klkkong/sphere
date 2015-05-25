@@ -844,7 +844,7 @@ void DEM::forcechains(const std::string format, const int threedim,
             cout << f_n
                  << i << '\t' << j << endl;
         } else {
-
+-
             // Gnuplot output
             // Save contact pairs if they are above the lower limit
             // and not fixed at their horizontal velocity
