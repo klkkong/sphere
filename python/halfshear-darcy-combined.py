@@ -197,7 +197,7 @@ ax2color = 'blue'
 #lns4 = ax2.plot(t, p_f_top/1000.0 + 80.0, '-',
         #color=ax2color,
         #label='$p_\\text{f}^\\text{forcing}$')
-lns5 = ax2.plot(t, p_f_bar/1000.0, '--',
+lns5 = ax2.plot(t, p_f_bar/1000.0, ':',
         color=ax2color,
         label='$\\Delta\\bar{p}_\\text{f}$', linewidth=linewidth)
 ax2.set_ylabel('Mean change in fluid pressure [kPa]')
@@ -215,7 +215,7 @@ ax2.legend(lns, labs, loc='upper right', ncol=3,
 #ax1.set_ylim([-30, 200])
 #ax2.set_ylim([-115,115])
 
-ax1.text(bbox_x, bbox_y, 'a',
+ax1.text(bbox_x, bbox_y, 'A',
         horizontalalignment=horizontalalignment,
         verticalalignment=verticalalignment,
         fontweight=fontweight, bbox=bbox,
@@ -234,7 +234,7 @@ collection = matplotlib.collections.BrokenBarHCollection.span_where(
                 linewidth=0)
 ax3.add_collection(collection)
 
-ax3.text(bbox_x, bbox_y, 'b',
+ax3.text(bbox_x, bbox_y, 'B',
         horizontalalignment=horizontalalignment,
         verticalalignment=verticalalignment,
         fontweight=fontweight, bbox=bbox,
@@ -265,7 +265,7 @@ ax6.yaxis.label.set_color(ax6color)
 for tl in ax6.get_yticklabels():
     tl.set_color(ax6color)
 
-ax6.text(bbox_x, bbox_y, 'c',
+ax6.text(bbox_x, bbox_y, 'C',
         horizontalalignment=horizontalalignment,
         verticalalignment=verticalalignment,
         fontweight=fontweight, bbox=bbox,
@@ -288,7 +288,7 @@ for tl in ax8.get_yticklabels():
     tl.set_color(ax8color)
 ax8.set_ylim([-0.2,9.8])
 
-ax7.text(bbox_x, bbox_y, 'd',
+ax7.text(bbox_x, bbox_y, 'D',
         horizontalalignment=horizontalalignment,
         verticalalignment=verticalalignment,
         fontweight=fontweight, bbox=bbox,
@@ -351,7 +351,7 @@ ax9.text(0.5, 0.4, 'Mean horizontal porosity [-]\\\\',
 '''
 cb9.solids.set_rasterized(rasterized)
 
-ax9.text(bbox_x, bbox_y, 'e',
+ax9.text(bbox_x, bbox_y, 'E',
         horizontalalignment=horizontalalignment,
         verticalalignment=verticalalignment,
         fontweight=fontweight, bbox=bbox,

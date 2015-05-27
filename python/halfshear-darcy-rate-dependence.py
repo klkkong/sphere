@@ -27,7 +27,11 @@ sids =\
          'halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4750.0-f=0.2',
          'halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4875.0-f=0.2',
          'halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4000.0-f=0.1',
-         'halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4500.0-f=0.1']
+         'halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=2000.0-A=4500.0-f=0.1',
+         'halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=3000.0-A=4000.0-f=0.2',
+         'halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=3000.0-A=4250.0-f=0.2',
+         'halfshear-darcy-sigma0=10000.0-k_c=2e-16-mu=2.08e-07-ss=3000.0-A=4500.0-f=0.2',
+         ]
         #['halfshear-darcy-sigma0=80000.0-k_c=3.5e-13-mu=1.797e-06-ss=10000.0-A=70000.0-f=0.2']
 outformat = 'pdf'
 fluid = True

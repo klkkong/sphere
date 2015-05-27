@@ -48,7 +48,8 @@ sim.readfirst(verbose=False)
 #nsteps = 2
 #nsteps = 10
 #nsteps = 400
-nsteps = sim.status()
+#nsteps = sim.status()
+nsteps = 3500
 
 t = numpy.empty(nsteps)
 
@@ -194,7 +195,7 @@ ax2color = 'blue'
 #lns4 = ax2.plot(t, p_f_top/1000.0 + 80.0, '-',
         #color=ax2color,
         #label='$p_\\text{f}^\\text{forcing}$')
-lns5 = ax2.plot(t, p_f_bar/1000.0, '--',
+lns5 = ax2.plot(t, p_f_bar/1000.0, ':',
         color=ax2color,
         label='$\\Delta\\bar{p}_\\text{f}$', linewidth=linewidth)
 ax2.set_ylabel('Mean change in fluid pressure [kPa]')
@@ -211,9 +212,10 @@ ax2.legend(lns, labs, loc='upper right', ncol=3,
         fancybox=True, framealpha=legend_alpha)
 ax1.set_ylim([-30, 200])
 #ax2.set_ylim(ax1.get_ylim())
-ax2.set_ylim([-115,115])
+#ax2.set_ylim([-115,115])
+ax2.set_ylim([-125,125])
 
-ax1.text(bbox_x, bbox_y, 'a',
+ax1.text(bbox_x, bbox_y, 'A',
         horizontalalignment=horizontalalignment,
         verticalalignment=verticalalignment,
         fontweight=fontweight, bbox=bbox,
@@ -232,7 +234,7 @@ collection = matplotlib.collections.BrokenBarHCollection.span_where(
                 linewidth=0)
 ax3.add_collection(collection)
 
-ax3.text(bbox_x, bbox_y, 'b',
+ax3.text(bbox_x, bbox_y, 'B',
         horizontalalignment=horizontalalignment,
         verticalalignment=verticalalignment,
         fontweight=fontweight, bbox=bbox,
@@ -249,10 +251,10 @@ ax5 = plt.subplot(5, 1, 3, sharex=ax1)
 
 # normalized displacement
 #ax5.plot(t, xdisp/xdisp[-1], 'k', linewidth=linewidth)
-if len(xdisp) > 4500:
-    ax5.plot(t, xdisp/xdisp[4500], 'k', linewidth=linewidth)
-else:
-    ax5.plot(t, xdisp/xdisp[-1], 'k', linewidth=linewidth)
+#if len(xdisp) > 4500:
+    #ax5.plot(t, xdisp/xdisp[4500], 'k', linewidth=linewidth)
+#else:
+ax5.plot(t, xdisp/xdisp[-1], 'k', linewidth=linewidth)
 
 #ax5.set_ylabel('Shear displacement [m]')
 ax5.set_ylabel('Normalized displacement [-]')
@@ -266,7 +268,7 @@ ax6.yaxis.label.set_color(ax6color)
 for tl in ax6.get_yticklabels():
     tl.set_color(ax6color)
 
-ax6.text(bbox_x, bbox_y, 'c',
+ax6.text(bbox_x, bbox_y, 'C',
         horizontalalignment=horizontalalignment,
         verticalalignment=verticalalignment,
         fontweight=fontweight, bbox=bbox,
@@ -275,21 +277,27 @@ ax6.text(bbox_x, bbox_y, 'c',
 
 ## ax7: n_heavy, dn_heavy, ax8: z
 ax7 = plt.subplot(5, 1, 4, sharex=ax1)
-ax7.semilogy(t[:n.size], n, 'k', label='$n_\\text{heavy}$', linewidth=linewidth)
+if nsteps > n.size:
+    ax7.semilogy(t[:t.size], n, 'k', label='$n_\\text{heavy}$', linewidth=linewidth)
+else:
+    ax7.semilogy(t, n[:t.size], 'k', label='$n_\\text{heavy}$', linewidth=linewidth)
 ax7.set_ylabel('Number of heavily loaded contacts [-]')
 #ax7.semilogy(t, n - nkept, 'b', label='$\Delta n_\\text{heavy}$')
 ax7.set_ylim([1.0e1, 2.0e4])
 
 ax8 = ax7.twinx()
 ax8color='green'
-ax8.plot(t[:n.size], coordinationnumber, color=ax8color, linewidth=linewidth)
+if nsteps > n.size:
+    ax8.plot(t[:n.size], coordinationnumber, color=ax8color, linewidth=linewidth)
+else:
+    ax8.plot(t, coordinationnumber[:t.size], color=ax8color, linewidth=linewidth)
 ax8.set_ylabel('Contacts per grain [-]')
 ax8.yaxis.label.set_color(ax8color)
 for tl in ax8.get_yticklabels():
     tl.set_color(ax8color)
 ax8.set_ylim([-0.2,9.8])
 
-ax7.text(bbox_x, bbox_y, 'd',
+ax7.text(bbox_x, bbox_y, 'D',
         horizontalalignment=horizontalalignment,
         verticalalignment=verticalalignment,
         fontweight=fontweight, bbox=bbox,
@@ -326,8 +334,10 @@ cbaxes = fig.add_axes([0.32, 0.1, 0.4, 0.01]) # x,y,w,h
     #linewidth=1,
     #facecolor='white'))
 ax9.add_patch(matplotlib.patches.Rectangle(
-    (1.5, 0.04), # x,y
-    7., # dx
+    #(1.5, 0.04), # x,y
+    (1.0, 0.04), # x,y
+    #7., # dx
+    5.3, # dx
     .15, # dy
     fill=True,
     linewidth=1,
@@ -351,7 +361,7 @@ ax9.text(0.5, 0.4, 'Mean horizontal porosity [-]\\\\',
 '''
 cb9.solids.set_rasterized(rasterized)
 
-ax9.text(bbox_x, bbox_y, 'e',
+ax9.text(bbox_x, bbox_y, 'E',
         horizontalalignment=horizontalalignment,
         verticalalignment=verticalalignment,
         fontweight=fontweight, bbox=bbox,
@@ -368,15 +378,16 @@ plt.setp(ax5.get_xticklabels(), visible=False)
 plt.setp(ax7.get_xticklabels(), visible=False)
 #plt.setp(ax8.get_xticklabels(), visible=False)
 
-ax1.set_xlim([0,9])
-ax2.set_xlim([0,9])
-ax3.set_xlim([0,9])
-#ax4.set_xlim([0,9])
-ax5.set_xlim([0,9])
-ax6.set_xlim([0,9])
-ax7.set_xlim([0,9])
-ax8.set_xlim([0,9])
-ax9.set_xlim([0,9])
+days = 7
+ax1.set_xlim([0,days])
+ax2.set_xlim([0,days])
+ax3.set_xlim([0,days])
+#ax4.set_xlim([0,days])
+ax5.set_xlim([0,days])
+ax6.set_xlim([0,days])
+ax7.set_xlim([0,days])
+ax8.set_xlim([0,days])
+ax9.set_xlim([0,days])
 
 
 ax9.set_xlabel('Time [d]')
