@@ -1438,7 +1438,7 @@ class sim:
         1.0, choose "scalar" as the "Scale Mode". Check the "Edit" checkbox, and
         set the "Set Scale Factor" to 1.0. The field "Maximum Number of Points"
         may be increased if the number of particles exceed the default value.
-        Finally press "Apply", and the particles will appear in the main window. 
+        Finally press "Apply", and the particles will appear in the main window.
 
         The sphere resolution may be adjusted ("Theta resolution", "Phi
         resolution") to increase the quality and the computational requirements
@@ -1527,7 +1527,7 @@ class sim:
         as the "Scale Mode". Check the "Edit" checkbox, and set the "Set Scale
         Factor" to 1.0. The field "Maximum Number of Points" may be increased if
         the number of particles exceed the default value. Finally press "Apply",
-        and the particles will appear in the main window. 
+        and the particles will appear in the main window.
 
         The sphere resolution may be adjusted ("Theta resolution", "Phi
         resolution") to increase the quality and the computational requirements
@@ -1573,7 +1573,7 @@ class sim:
             fh.write('\n')
             fh.write('        </DataArray>\n')
             fh.write('      </Points>\n')
-            
+
             ### Data attributes
             fh.write('      <PointData Scalars="Diameter [m]" Vectors="vector">\n')
 
@@ -1610,7 +1610,7 @@ class sim:
 
                 if self.cfd_solver == 0:  # Navier Stokes
                     # Fluid interaction force
-                    fh.write('        <DataArray type="Float32" ' 
+                    fh.write('        <DataArray type="Float32" '
                             + 'Name="Fluid force total [N]" '
                             + 'NumberOfComponents="3" format="ascii">\n')
                     fh.write('          ')
@@ -2244,7 +2244,7 @@ class sim:
             radius_max = mean + variance
             self.radius = numpy.random.uniform(radius_min, radius_max, self.np)
         else:
-            raise Exception('Particle size distribution type not understood (' 
+            raise Exception('Particle size distribution type not understood ('
                     + str(psd) + '). Valid values are \'uni\' or \'logn\'')
 
         # Show radii as histogram
@@ -2345,7 +2345,7 @@ class sim:
     def wall0iz(self):
         '''
         Returns the cell index of wall 0 along z.
-        
+
         :returns: z cell index
         :return type: int
         '''
@@ -2357,7 +2357,7 @@ class sim:
     def normalBoundariesXY(self):
         '''
         Set the x and y boundary conditions to be static walls.
-        
+
         See also :func:`periodicBoundariesXY()` and
         :func:`periodicBoundariesX()`
         '''
@@ -2366,7 +2366,7 @@ class sim:
     def periodicBoundariesXY(self):
         '''
         Set the x and y boundary conditions to be periodic.
-        
+
         See also :func:`normalBoundariesXY()` and
         :func:`periodicBoundariesX()`
         '''
@@ -2810,7 +2810,7 @@ class sim:
         :param z_adjust: Increase the world and grid size by this amount to
             allow for wall movement.
         :type z_adjust: float
-        :param 
+        :param
         '''
 
         if idx == 0:
@@ -2844,7 +2844,7 @@ class sim:
         '''
         Setup consolidation experiment. Specify the upper wall normal stress in
         Pascal, default value is 10 kPa.
-        
+
         :param normal_stress: The normal stress to apply from the upper wall
         :type normal_stress: float
         '''
@@ -3217,7 +3217,7 @@ class sim:
         Initialize the fluid arrays and the fluid viscosity. The default value
         of ``mu`` equals the dynamic viscosity of water at 25 degrees Celcius.
         The value for water at 0 degrees Celcius is 17.87e-4 kg/(m*s).
-        
+
         :param mu: The fluid dynamic viscosity [kg/(m*s)]
         :type mu: float
         :param rho: The fluid density [kg/(m^3)]
@@ -3487,7 +3487,7 @@ class sim:
         :type gamma_n: float
         :param gamma_t: Particle-particle contact tangential viscosity [Ns/m]
         :type gamma_t: float
-        :param gamma_r: Particle-particle contact rolling viscosity *Parameter 
+        :param gamma_r: Particle-particle contact rolling viscosity *Parameter
             not used*
         :type gamma_r: float
         :param gamma_wn: Wall-particle contact normal viscosity [Ns/m]
@@ -3622,7 +3622,7 @@ class sim:
             print('Warning: The system is critically dampened (ratio = '
                   + str(damping_ratio) + ') in the normal component. '
                   + '\nCritical damping = ' + str(critical_gamma) + '.')
-        
+
     def setDampingTangential(self, gamma, over_damping=False):
         '''
         Set the dampening coefficient (gamma) in the tangential direction of the
@@ -3802,7 +3802,7 @@ class sim:
         Calculates the current magnitude of the defined or effective top wall
         normal stress.
 
-        :param type: Find the 'defined' (default) or 'effective' normal stress 
+        :param type: Find the 'defined' (default) or 'effective' normal stress
         :type type: str
 
         :returns: The current top wall normal stress in Pascal
@@ -3850,7 +3850,7 @@ class sim:
         :return type: float
         '''
         return self.rho[0]*self.volume(idx)
-        
+
     def smallestMass(self):
         '''
         Returns the mass of the leightest particle.
@@ -3861,7 +3861,7 @@ class sim:
         :return type: float
         '''
         return V_sphere(numpy.min(self.radius))
-        
+
     def largestMass(self):
         '''
         Returns the mass of the heaviest particle.
@@ -3872,7 +3872,7 @@ class sim:
         :return type: float
         '''
         return V_sphere(numpy.max(self.radius))
-        
+
     def momentOfInertia(self, idx):
         '''
         Returns the moment of inertia of a particle.
@@ -3940,7 +3940,7 @@ class sim:
         :return type: float
         '''
         return self.ev[idx]
-        
+
     def totalViscousEnergy(self):
         '''
         Returns the total viscous dissipated energy for all particles.
@@ -3963,7 +3963,7 @@ class sim:
         :return type: float
         '''
         return self.es[idx]
-        
+
     def totalFrictionalEnergy(self):
         '''
         Returns the total frictional dissipated energy for all particles.
@@ -4050,7 +4050,7 @@ class sim:
     def voidRatio(self):
         '''
         Calculates the current void ratio
-        
+
         :returns: The void ratio, in [0:1]
         :return type: float
         '''
@@ -4253,7 +4253,7 @@ class sim:
         :param workdir: The working directory during the calculations, if
             `use_workdir=True`
         :type workdir: str
-        
+
         '''
 
         filename = self.sid + ".sh"
@@ -4367,7 +4367,7 @@ class sim:
         '''
         Using the built-in ray tracer, render all output files that belong to
         the simulation, determined by the simulation id (``sid``).
-        
+
         :param method: The color visualization method to use for the particles.
             Possible values are: 'normal': color all particles with the same
             color, 'pres': color by pressure, 'vel': color by translational
@@ -4420,7 +4420,7 @@ class sim:
         '''
         Uses ffmpeg to combine images to animation. All images should be
         rendered beforehand using :func:`render()`.
-        
+
         :param out_folder: The output folder for the video file
         :type out_folder: str
         :param video_format: The format of the output video
@@ -4687,7 +4687,7 @@ class sim:
         '''
         Visualizes the force chains in the system from the magnitude of the
         normal contact forces, and produces an image of them. Warning: Will
-        segfault if no contacts are found. 
+        segfault if no contacts are found.
 
         :param lc: Lower cutoff of contact forces. Contacts below are not
             visualized
@@ -4848,7 +4848,7 @@ class sim:
         '''
         Returns the current simulation status by using the simulation id
         (``sid``) as an identifier.
-        
+
         :returns: The number of the last output file written
         :return type: int
         '''
@@ -4882,7 +4882,7 @@ class sim:
         Plot the particle x-axis displacement against the original vertical
         particle position. The plot is saved in the current directory with the
         file name '<simulation id>-sheardisp.<graphics_format>'.
-        
+
         :param graphics_format: Save the plot in this format
         :type graphics_format: str
         '''
@@ -5446,7 +5446,7 @@ class sim:
                     graphics_format,\
                     transparent=False)
 
-            
+
 
         plt.close()
 
@@ -5739,7 +5739,7 @@ class sim:
         self.H100 = H[-1]
         self.H50 = (self.H0 + self.H100)/2.0
         T50 = 0.197 # case I
-        
+
         # find the time where 50% of the consolidation (H50) has happened by
         # linear interpolation. The values in H are expected to be
         # monotonically decreasing. See Numerical Recipies p. 115
@@ -5775,7 +5775,7 @@ class sim:
         plt.savefig(self.sid + '-loadcurve.' + graphics_format)
         plt.clf()
         plt.close(fig)
-        
+
     def convergence(self):
         '''
         Read the convergence evolution in the CFD solver. The values are stored
@@ -5789,7 +5789,7 @@ class sim:
 
     def plotConvergence(self, graphics_format='png'):
         '''
-        Plot the convergence evolution in the CFD solver. The plot is saved 
+        Plot the convergence evolution in the CFD solver. The plot is saved
         in the output folder with the file name
         '<simulation id>-conv.<graphics_format>'.
 
@@ -6077,7 +6077,7 @@ class sim:
         Calculates the sum of shear stress values measured on any moving
         particles with a finite and fixed velocity.
 
-        :param type: Find the 'defined' or 'effective' (default) shear stress 
+        :param type: Find the 'defined' or 'effective' (default) shear stress
         :type type: str
 
         :returns: The shear stress in Pa
@@ -6653,7 +6653,7 @@ class sim:
                 ax5 = plt.subplot(3, 1, 2, sharex=ax1)
                 ax5.semilogy(time[1:], self.v[1:], label='Shear velocity')
                 ax5.set_ylabel('Shear velocity [ms$^{-1}$]')
-                
+
                 # shade stick periods
                 collection = \
                         matplotlib.collections.BrokenBarHCollection.span_where(
@@ -7044,7 +7044,7 @@ class sim:
                             outfolder = '../img_out/')
 
             # render images to movie
-            subprocess.call('cd ../img_out/ && ' + 
+            subprocess.call('cd ../img_out/ && ' +
                     'ffmpeg -sameq -i {}.%05d-contacts.png '.format(self.sid) +
                     '{}-contacts.mp4'.format(self.sid),
                     #'convert -quality 100 {}.*.png {}-contacts.avi'.format(
@@ -7105,7 +7105,7 @@ def render(binary,
         verbose=True):
     '''
     Render target binary using the ``sphere`` raytracer.
-        
+
     :param method: The color visualization method to use for the particles.
         Possible values are: 'normal': color all particles with the same
         color, 'pres': color by pressure, 'vel': color by translational
@@ -7153,7 +7153,7 @@ def video(project,
     '''
     Uses ffmpeg to combine images to animation. All images should be
     rendered beforehand using :func:`render()`.
-    
+
     :param project: The simulation id of the project to render
     :type project: str
     :param out_folder: The output folder for the video file
@@ -7350,7 +7350,7 @@ def status(project):
     '''
     Check the status.dat file for the target project, and return the last output
     file number.
-    
+
     :param project: The simulation id of the target project
     :type project: str
 
