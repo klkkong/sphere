@@ -48,7 +48,7 @@ SB.run()
 ### ANALYSIS OF SIMULATION RESULTS
 
 # Plot the system energy through time, image saved as collision-energy.png
-sphere.visualize(SB.sid, method = 'energy')
+SB.visualize(method = 'energy')
 
 # Render the particles using the built-in raytracer
 SB.render()
