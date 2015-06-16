@@ -43,34 +43,34 @@ velfac = 1.0
 def smooth(x, window_len=10, window='hanning'):
 #def smooth(x, window_len=10, window='flat'):
     """smooth the data using a window with requested size.
-    
+
     This method is based on the convolution of a scaled window with the signal.
-    The signal is prepared by introducing reflected copies of the signal 
+    The signal is prepared by introducing reflected copies of the signal
     (with the window size) in both ends so that transient parts are minimized
     in the begining and end part of the output signal.
-    
+
     input:
-        x: the input signal 
+        x: the input signal
         window_len: the dimension of the smoothing window
         window: the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'
             flat window will produce a moving average smoothing.
 
     output:
         the smoothed signal
-        
+
     example:
 
-    import numpy as np    
+    import numpy as np
     t = np.linspace(-2,2,0.1)
     x = np.sin(t)+np.random.randn(len(t))*0.1
     y = smooth(x)
-    
-    see also: 
-    
+
+    see also:
+
     numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, numpy.convolve
     scipy.signal.lfilter
- 
-    TODO: the window parameter could be the window itself if an array instead of a string   
+
+    TODO: the window parameter could be the window itself if an array instead of a string
     """
 
     if x.ndim != 1:
@@ -248,17 +248,19 @@ for sigma0 in sigma0_list:
                 label=label, linewidth=1)
 
         if fluid and pressures:
-            #ax3.plot(shear_strain[c], p_max[c], '-', color=color[c], alpha=0.5)
+            ax3.plot(shear_strain[c], p_max[c], ':', color=color[c], alpha=0.5,
+                     linewidth=0.5)
 
             ax3.plot(shear_strain[c], p_mean[c], '-', color=color[c], \
                     label=label, linewidth=1)
 
-            #ax3.plot(shear_strain[c], p_min[c], '-', color=color[c], alpha=0.5)
+            ax3.plot(shear_strain[c], p_min[c], ':', color=color[c], alpha=0.5,
+                     linewidth=0.5)
 
 
-            ax3.fill_between(shear_strain[c], p_min[c], p_max[c], 
-                    where=p_min[c]<=p_max[c], facecolor=color[c], edgecolor='None',
-                    interpolate=True, alpha=0.3)
+            #ax3.fill_between(shear_strain[c], p_min[c], p_max[c],
+            #        where=p_min[c]<=p_max[c], facecolor=color[c], edgecolor='None',
+            #        interpolate=True, alpha=0.3)
 
             #ax4.plot(shear_strain[c][1:], f_n_mean[c][1:], '-' + color[c],
                     #label='$c$ = %.2f' % (cvals[c-1]), linewidth=2)

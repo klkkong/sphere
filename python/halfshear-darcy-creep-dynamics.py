@@ -162,8 +162,10 @@ for step in steps:
 scalingfactor = 1./t_DEM_to_t_real / (24.*3600.)
 t_scaled = t*scalingfactor
 
-# Normal stress plot
 fig = plt.figure(figsize=[3.5, 3.5])
+
+plt.figtext(0.05, 0.95, 'A', horizontalalignment='left', weight='bold')
+plt.figtext(0.05, 0.35, 'B', horizontalalignment='left', weight='bold')
 
 # ax1 = plt.subplot(1, 1, 1)
 ax1 = plt.subplot2grid((2, 3), (0, 0), colspan=3)
@@ -187,10 +189,10 @@ ax1.set_ylabel('Effective normal stress $N$ [kPa]')
 
 ax2 = ax1.twinx()
 lns1 = ax2.semilogy(t_scaled, numpy.abs(vel_avg)*timescaling, '-b',
-                    label='$\\bar{\\boldsymbol{v}}_x$',
+                    label='$|\\bar{\\boldsymbol{v}}_x|$',
                     clip_on=False)
 lns2 = ax2.semilogy(t_scaled, numpy.abs(angvel_avg)*timescaling, '-r',
-                    label='$\\bar{\\boldsymbol{\\omega}}_y$',
+                    label='$|\\bar{\\boldsymbol{\\omega}}_y|$',
                     clip_on=False)
 ax2.set_ylabel('Linear $\\bar{\\boldsymbol{v}}_x$ [m/s] or '
                + 'angular velocity $\\bar{\\boldsymbol{\\omega}}_y$ [rad/s]')
@@ -207,7 +209,8 @@ ax1.xaxis.set_ticks_position('bottom')
 
 lns = lns0+lns1+lns2
 labs = [l.get_label() for l in lns]
-ax2.legend(lns, labs, loc='upper center', ncol=3, bbox_to_anchor=(0.5, 1.12),
+# bbox_to_anchor=(0.5, 1.12) for legend centered above box
+ax2.legend(lns, labs, loc='upper center', ncol=3, bbox_to_anchor=(0.5, 1.25),
            fancybox=True, framealpha=1.0)
 
 ax1.set_xlim([numpy.min(t_scaled), numpy.max(t_scaled)])
