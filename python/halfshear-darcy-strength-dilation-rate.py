@@ -428,7 +428,8 @@ for sigma0 in sigma0_list:
         #ax2.set_xlim([0.0, 0.2])
 
         #ax1.set_ylim([-7, 45])
-        ax1.set_xlim([0.0, 1.0])
+        #ax1.set_xlim([0.0, 1.0])
+        ax1.set_xlim([0.0, 2.0])
         ax1.set_ylim([0.0, 1.0])
         ax2.set_ylim([0.0, 1.0])
         ax3.set_ylim([-150., 150.])
