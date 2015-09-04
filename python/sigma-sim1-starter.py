@@ -26,7 +26,7 @@ else:
 sim = sphere.sim('shear-sigma0=' + str(sigma0), fluid=False)
 sim.readlast()
 #sim.readbin('../input/shear-sigma0=10000.0-new.bin')
-sim.scaleSize(0.01) # from 1 cm to 0.01 cm = 100 micro m (fine sand)
+#sim.scaleSize(0.01) # from 1 cm to 0.01 cm = 100 micro m (fine sand)
 
 sim.fluid = fluid
 if fluid:
