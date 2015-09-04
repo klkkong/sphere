@@ -33,10 +33,10 @@ if fluid:
     #sim.id('halfshear-darcy-sigma0=' + str(sigma0) + '-k_c=' + str(k_c) + \
             #'-mu=' + str(mu) + '-velfac=' + str(velfac) + '-shear')
     sim.id('s1-darcy-sigma0=' + str(sigma0) + '-k_c=' + str(k_c) + \
-            '-mu=' + str(mu) + '-velfac=' + str(velfac) + '-shear')
+            '-mu=' + str(mu) + '-velfac=' + str(velfac) + '-noflux-shear')
 else:
     sim.id('s1-darcy-sigma0=' + str(sigma0) + '-velfac=' + str(velfac) + \
-            '-shear')
+            '-noflux-shear')
 
 #sim.checkerboardColors(nx=6,ny=3,nz=6)
 sim.checkerboardColors(nx=6,ny=6,nz=6)
