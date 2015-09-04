@@ -3303,6 +3303,8 @@ class sim:
         self.bc_top = numpy.zeros(1, dtype=numpy.int32)
         self.free_slip_bot = numpy.ones(1, dtype=numpy.int32)
         self.free_slip_top = numpy.ones(1, dtype=numpy.int32)
+        self.bc_bot_flux = numpy.zeros(1, dtype=numpy.float64)
+        self.bc_top_flux = numpy.zeros(1, dtype=numpy.float64)
 
         # Fluid solver type
         # 0: Navier Stokes (fluid with inertia)

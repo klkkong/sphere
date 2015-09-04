@@ -205,9 +205,7 @@ __global__ void setDarcyZeros(T* __restrict__ dev_scalarfield)
 __global__ void setDarcyGhostNodes(
         T* __restrict__ dev_scalarfield,
         const int bc_bot,
-        const int bc_top,
-        const Float bc_bot_flux,
-        const Float bc_top_flux)
+        const int bc_top)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -250,6 +248,43 @@ __global__ void setDarcyGhostNodes(
             dev_scalarfield[idx(x,y,nz)] = val;     // Neumann
         if (z == nz-1 && bc_top == 2)
             dev_scalarfield[idx(x,y,-1)] = val;     // Periodic +z
+    }
+}
+
+// Update a field in the ghost nodes from their parent cell values. The edge
+// (diagonal) cells are not written since they are not read. Launch this kernel
+// for all cells in the grid using
+// setDarcyGhostNodes<datatype><<<.. , ..>>>( .. );
+    template<typename T>
+__global__ void setDarcyGhostNodesFlux(
+        T* __restrict__ dev_scalarfield,
+        const int bc_bot,
+        const int bc_top,
+        const Float bc_bot_flux,
+        const Float bc_top_flux,
+        const Float* __restrict__ dev_darcy_k)
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    // check that we are not outside the fluid grid
+    if (x < nx && y < ny && z < nz) {
+
+        const T val = dev_scalarfield[d_idx(x,y,z)];
+
+        // z
+        if (z == 0 && bc_bot == 4)
+            dev_scalarfield[idx(x,y,-1)] = val;     // Flux
+
+        if (z == nz-1 && bc_top == 4)
+            dev_scalarfield[idx(x,y,nz)] = val;     // Flux
     }
 }
 
