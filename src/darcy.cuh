@@ -291,10 +291,10 @@ __global__ void setDarcyGhostNodesFlux(
         const Float p_ghost = -mu/k*q_z * dz + p;
 
         // z
-        if (z == 0)
+        if (z == 0 && bc_bot == 4)
             dev_scalarfield[idx(x,y,-1)] = p_ghost;
 
-        if (z == nz-1)
+        if (z == nz-1 && bc_top == 4)
             dev_scalarfield[idx(x,y,nz)] = p_ghost;
     }
 }
