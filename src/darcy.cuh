@@ -262,7 +262,8 @@ __global__ void setDarcyGhostNodesFlux(
         const int bc_top,
         const Float bc_bot_flux,
         const Float bc_top_flux,
-        const Float* __restrict__ dev_darcy_k)
+        const Float* __restrict__ dev_darcy_k,
+        const Float mu)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -275,16 +276,26 @@ __global__ void setDarcyGhostNodesFlux(
     const unsigned int nz = devC_grid.num[2];
 
     // check that we are not outside the fluid grid
-    if (x < nx && y < ny && z < nz) {
+    if (x < nx && y < ny && z < nz && (bc_bot == 4 || bc_top == 4)) {
 
-        const T val = dev_scalarfield[d_idx(x,y,z)];
+        const T p = dev_scalarfield[d_idx(x,y,z)];
+        const Float k = dev_darcy_k[d_idx(x,y,z)];
+        const Float dz = devC_grid.L[2]/nz;
+
+        Float q_z = 0.;
+        if (z == 0)
+            q_z = bc_bot_flux;
+        else if (z == nz-1)
+            q_z = bc_top_flux;
+
+        const Float p_ghost = -mu/k*q_z * dz + p;
 
         // z
-        if (z == 0 && bc_bot == 4)
-            dev_scalarfield[idx(x,y,-1)] = val;     // Flux
+        if (z == 0)
+            dev_scalarfield[idx(x,y,-1)] = p_ghost;
 
-        if (z == nz-1 && bc_top == 4)
-            dev_scalarfield[idx(x,y,nz)] = val;     // Flux
+        if (z == nz-1)
+            dev_scalarfield[idx(x,y,nz)] = p_ghost;
     }
 }
 
