@@ -146,7 +146,7 @@ if fluid:
 
 
 # frictionless side boundaries
-sim.periodicBoundariesX()
+#sim.periodicBoundariesX()
 
 # rearrange particle assemblage to accomodate frictionless side boundaries
 sim.x[:,1] += numpy.abs(numpy.min(sim.x[:,1] - sim.radius[:]))
