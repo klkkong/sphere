@@ -205,7 +205,9 @@ __global__ void setDarcyZeros(T* __restrict__ dev_scalarfield)
 __global__ void setDarcyGhostNodes(
         T* __restrict__ dev_scalarfield,
         const int bc_bot,
-        const int bc_top)
+        const int bc_top,
+        const Float bc_bot_flux,
+        const Float bc_top_flux)
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
