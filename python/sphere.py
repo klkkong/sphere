@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.collections
 matplotlib.rcParams.update({'font.size': 7, 'font.family': 'serif'})
 matplotlib.rc('text', usetex=True)
-matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
+matplotlib.rcParams['text.latex.preamble'] = [r"\usepackage{amsmath}"]
 from matplotlib.font_manager import FontProperties
 import subprocess
 import pickle as pl
@@ -28,6 +28,7 @@ VERSION = 2.1
 
 # Transparency on plot legends
 legend_alpha = 0.5
+#
 
 class sim:
     '''
@@ -54,12 +55,12 @@ class sim:
     '''
 
     def __init__(self,
-            sid = 'unnamed',
-            np = 0,
-            nd = 3,
-            nw = 0,
-            fluid = False,
-            cfd_solver = 0):
+                 sid='unnamed',
+                 np=0,
+                 nd=3,
+                 nw=0,
+                 fluid=False,
+                 cfd_solver=0):
 
         # Sphere version number
         self.version = numpy.ones(1, dtype=numpy.float64)*VERSION
