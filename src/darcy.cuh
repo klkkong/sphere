@@ -257,13 +257,13 @@ __global__ void setDarcyGhostNodes(
 // setDarcyGhostNodes<datatype><<<.. , ..>>>( .. );
     template<typename T>
 __global__ void setDarcyGhostNodesFlux(
-        T* __restrict__ dev_scalarfield,
-        const int bc_bot,
-        const int bc_top,
-        const Float bc_bot_flux,
-        const Float bc_top_flux,
-        const Float* __restrict__ dev_darcy_k,
-        const Float mu)
+        T* __restrict__ dev_scalarfield, // out
+        const int bc_bot, // in
+        const int bc_top, // in
+        const Float bc_bot_flux, // in
+        const Float bc_top_flux, // in
+        const Float* __restrict__ dev_darcy_k, // in
+        const Float mu) // in
 {
     // 3D thread index
     const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
