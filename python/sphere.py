@@ -329,7 +329,11 @@ class sim:
             self.p_mod_phi = numpy.zeros(1, dtype=numpy.float64) # Shift [rad]
 
             # Boundary conditions at the top and bottom of the fluid grid
-            # 0: Dirichlet, 1: Neumann free slip, 2: Neumann no slip, 3: Periodic
+            # 0: Dirichlet
+            # 1: Neumann free slip
+            # 2: Neumann no slip
+            # 3: Periodic
+            # 4: Constant flux
             self.bc_bot = numpy.zeros(1, dtype=numpy.int32)
             self.bc_top = numpy.zeros(1, dtype=numpy.int32)
             # Free slip boundaries? 1: yes
