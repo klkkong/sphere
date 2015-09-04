@@ -128,10 +128,12 @@ struct NavierStokes {
     Float   p_mod_A;        // Pressure modulation amplitude at top
     Float   p_mod_f;        // Pressure modulation frequency at top
     Float   p_mod_phi;      // Pressure modulation phase at top
-    int     bc_bot;         // 0: Dirichlet, 1: Neumann
-    int     bc_top;         // 0: Dirichlet, 1: Neumann
+    int     bc_bot;         // 0: Dirichlet, 1: Neumann, 3: Periodic, 4: Flux
+    int     bc_top;         // 0: Dirichlet, 1: Neumann, 3: Periodic, 4: Flux
     int     free_slip_bot;  // 0: no, 1: yes
     int     free_slip_top;  // 0: no, 1: yes
+    Float   bc_bot_flux;    // Flux normal to boundary
+    Float   bc_top_flux;    // Flux normal to boundary
     Float   gamma;          // Solver parameter: Smoothing
     Float   theta;          // Solver parameter: Under-relaxation
     Float   beta;           // Solver parameter: Solution method
@@ -166,6 +168,8 @@ struct Darcy {
     int     bc_top;         // 0: Dirichlet, 1: Neumann
     int     free_slip_bot;  // 0: no, 1: yes
     int     free_slip_top;  // 0: no, 1: yes
+    Float   bc_bot_flux;    // Flux normal to boundary
+    Float   bc_top_flux;    // Flux normal to boundary
     Float   tolerance;      // Solver parameter: Max residual tolerance
     unsigned int maxiter;   // Solver parameter: Max iterations to perform
     unsigned int ndem;      // Solver parameter: DEM time steps per CFD step

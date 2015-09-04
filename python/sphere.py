@@ -24,11 +24,11 @@ numpy.seterr(all='warn', over='raise')
 
 # Sphere version number. This field should correspond to the value in
 # `../src/constants.h`.
-VERSION = 2.1
+VERSION = 2.11
 
 # Transparency on plot legends
 legend_alpha = 0.5
-#
+
 
 class sim:
     '''
@@ -334,12 +334,16 @@ class sim:
             # 1: Neumann free slip
             # 2: Neumann no slip
             # 3: Periodic
-            # 4: Constant flux
+            # 4: Constant flux (Darcy solver only)
             self.bc_bot = numpy.zeros(1, dtype=numpy.int32)
             self.bc_top = numpy.zeros(1, dtype=numpy.int32)
             # Free slip boundaries? 1: yes
             self.free_slip_bot = numpy.ones(1, dtype=numpy.int32)
             self.free_slip_top = numpy.ones(1, dtype=numpy.int32)
+
+            # Boundary-normal flux (in case of bc_* = 4)
+            self.bc_bot_flux = numpy.zeros(1, dtype=numpy.float64)
+            self.bc_top_flux = numpy.zeros(1, dtype=numpy.float64)
 
 
             ## Solver parameters
@@ -657,6 +661,12 @@ class sim:
             elif self.free_slip_top != other.free_slip_top:
                 print(77)
                 return 77
+            elif self.bc_bot_flux != other.bc_bot_flux:
+                print(91)
+                return 91
+            elif self.bc_top_flux != other.bc_top_flux:
+                print(91)
+                return 91
 
             if self.cfd_solver == 0:
                 if self.gamma != other.gamma:
@@ -1142,6 +1152,14 @@ class sim:
                             numpy.fromfile(fh, dtype=numpy.int32, count=1)
                     self.free_slip_top =\
                             numpy.fromfile(fh, dtype=numpy.int32, count=1)
+                    if self.version >= 2.11:
+                        self.bc_bot_flux =\
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                        self.bc_top_flux =\
+                            numpy.fromfile(fh, dtype=numpy.float64, count=1)
+                    else:
+                        self.bc_bot_flux = numpy.zeros(1, dtype=numpy.float64)
+                        self.bc_top_flux = numpy.zeros(1, dtype=numpy.float64)
 
                 if self.version >= 2.0 and self.cfd_solver == 0:
                     self.gamma = \
@@ -1380,6 +1398,8 @@ class sim:
                 fh.write(self.bc_top.astype(numpy.int32))
                 fh.write(self.free_slip_bot.astype(numpy.int32))
                 fh.write(self.free_slip_top.astype(numpy.int32))
+                fh.write(self.bc_bot_flux.astype(numpy.float64))
+                fh.write(self.bc_top_flux.astype(numpy.float64))
 
                 # Navier Stokes
                 if self.cfd_solver[0] == 0:
@@ -3367,6 +3387,19 @@ class sim:
         '''
         self.bc_bot[0] = 0
 
+    def setFluidBottomFixedFlux(self, specific_flux):
+        '''
+        Define a constant fluid flux normal to the boundary.
+
+        The default behavior for the boundary is fixed value (Dirichlet), see
+        :func:`setFluidBottomFixedPressure()`.
+
+        :param specific_flux: Specific flux values across boundary (positive
+            values upwards), [m/s]
+        '''
+        self.bc_bot[0] = 4
+        self.bc_bot_flux[0] = specific_flux
+
     def setFluidTopNoFlow(self):
         '''
         Set the upper boundary of the fluid domain to follow the no-flow
@@ -3396,6 +3429,19 @@ class sim:
         :func:`setFluidTopNoFlow()`
         '''
         self.bc_top[0] = 0
+
+    def setFluidTopFixedFlux(self, specific_flux):
+        '''
+        Define a constant fluid flux normal to the boundary.
+
+        The default behavior for the boundary is fixed value (Dirichlet), see
+        :func:`setFluidBottomFixedPressure()`.
+
+        :param specific_flux: Specific flux values across boundary (positive
+            values upwards), [m/s]
+        '''
+        self.bc_top[0] = 4
+        self.bc_top_flux[0] = specific_flux
 
     def setPermeabilityPrefactor(self, k_c, verbose=True):
         '''
