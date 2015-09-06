@@ -251,6 +251,54 @@ __global__ void setDarcyGhostNodes(
     }
 }
 
+// Update a field in the ghost nodes from their parent cell values. The edge
+// (diagonal) cells are not written since they are not read. Launch this kernel
+// for all cells in the grid using
+// setDarcyGhostNodes<datatype><<<.. , ..>>>( .. );
+    template<typename T>
+__global__ void setDarcyGhostNodesFlux(
+        T* __restrict__ dev_scalarfield, // out
+        const int bc_bot, // in
+        const int bc_top, // in
+        const Float bc_bot_flux, // in
+        const Float bc_top_flux, // in
+        const Float* __restrict__ dev_darcy_k, // in
+        const Float mu) // in
+{
+    // 3D thread index
+    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // Grid dimensions
+    const unsigned int nx = devC_grid.num[0];
+    const unsigned int ny = devC_grid.num[1];
+    const unsigned int nz = devC_grid.num[2];
+
+    // check that we are not outside the fluid grid
+    if (x < nx && y < ny && z < nz && (bc_bot == 4 || bc_top == 4)) {
+
+        const T p = dev_scalarfield[d_idx(x,y,z)];
+        const Float k = dev_darcy_k[d_idx(x,y,z)];
+        const Float dz = devC_grid.L[2]/nz;
+
+        Float q_z = 0.;
+        if (z == 0)
+            q_z = bc_bot_flux;
+        else if (z == nz-1)
+            q_z = bc_top_flux;
+
+        const Float p_ghost = -mu/k*q_z * dz + p;
+
+        // z
+        if (z == 0 && bc_bot == 4)
+            dev_scalarfield[idx(x,y,-1)] = p_ghost;
+
+        if (z == nz-1 && bc_top == 4)
+            dev_scalarfield[idx(x,y,nz)] = p_ghost;
+    }
+}
+
 /*
 __global__ void findDarcyParticleVelocities(
         const unsigned int* __restrict__ dev_cellStart,   // in

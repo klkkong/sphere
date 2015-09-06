@@ -298,6 +298,8 @@ void DEM::readbin(const char *target)
             ifs.read(as_bytes(ns.bc_top), sizeof(int));
             ifs.read(as_bytes(ns.free_slip_bot), sizeof(int));
             ifs.read(as_bytes(ns.free_slip_top), sizeof(int));
+            ifs.read(as_bytes(ns.bc_bot_flux), sizeof(Float));
+            ifs.read(as_bytes(ns.bc_top_flux), sizeof(Float));
 
             ifs.read(as_bytes(ns.gamma), sizeof(Float));
             ifs.read(as_bytes(ns.theta), sizeof(Float));
@@ -366,6 +368,8 @@ void DEM::readbin(const char *target)
             ifs.read(as_bytes(darcy.bc_top), sizeof(int));
             ifs.read(as_bytes(darcy.free_slip_bot), sizeof(int));
             ifs.read(as_bytes(darcy.free_slip_top), sizeof(int));
+            ifs.read(as_bytes(darcy.bc_bot_flux), sizeof(Float));
+            ifs.read(as_bytes(darcy.bc_top_flux), sizeof(Float));
 
             ifs.read(as_bytes(darcy.tolerance), sizeof(Float));
             ifs.read(as_bytes(darcy.maxiter), sizeof(unsigned int));
@@ -588,6 +592,8 @@ void DEM::writebin(const char *target)
                 ofs.write(as_bytes(ns.bc_top), sizeof(int));
                 ofs.write(as_bytes(ns.free_slip_bot), sizeof(int));
                 ofs.write(as_bytes(ns.free_slip_top), sizeof(int));
+                ofs.write(as_bytes(ns.bc_bot_flux), sizeof(Float));
+                ofs.write(as_bytes(ns.bc_top_flux), sizeof(Float));
 
                 ofs.write(as_bytes(ns.gamma), sizeof(Float));
                 ofs.write(as_bytes(ns.theta), sizeof(Float));
@@ -657,6 +663,8 @@ void DEM::writebin(const char *target)
                 ofs.write(as_bytes(darcy.bc_top), sizeof(int));
                 ofs.write(as_bytes(darcy.free_slip_bot), sizeof(int));
                 ofs.write(as_bytes(darcy.free_slip_top), sizeof(int));
+                ofs.write(as_bytes(darcy.bc_bot_flux), sizeof(Float));
+                ofs.write(as_bytes(darcy.bc_top_flux), sizeof(Float));
 
                 ofs.write(as_bytes(darcy.tolerance), sizeof(Float));
                 ofs.write(as_bytes(darcy.maxiter), sizeof(unsigned int));

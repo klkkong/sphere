@@ -219,11 +219,11 @@ for sigma0 in sigma0_list:
         mu_f = mu_f_vals[c]
 
         if numpy.isclose(mu_f, 1.797e-6):
-            label = 'ref. shear velocity'
+            label = 'ref.\\ shear velocity'
         #elif numpy.isclose(mu_f, 1.204e-6):
-            #label = 'ref. shear velocity$\\times$0.67'
+            #label = 'ref.\\ shear velocity$\\times$0.67'
         #elif numpy.isclose(mu_f, 1.797e-8):
-            #label = 'ref. shear velocity$\\times$0.01'
+            #label = 'ref.\\ shear velocity$\\times$0.01'
         else:
             #label = '$\\mu_\\text{{f}}$ = {:.3e} Pa s'.format(mu_f)
             label = 'shear velocity$\\times${:.2}'.format(mu_f/mu_f_vals[0])
@@ -428,7 +428,8 @@ for sigma0 in sigma0_list:
         #ax2.set_xlim([0.0, 0.2])
 
         #ax1.set_ylim([-7, 45])
-        ax1.set_xlim([0.0, 1.0])
+        #ax1.set_xlim([0.0, 1.0])
+        ax1.set_xlim([0.0, 2.0])
         ax1.set_ylim([0.0, 1.0])
         ax2.set_ylim([0.0, 1.0])
         ax3.set_ylim([-150., 150.])

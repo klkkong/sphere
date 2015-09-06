@@ -2000,6 +2000,26 @@ __host__ void DEM::startTime()
                                 iter);
                     }
 
+                    if (darcy.bc_bot == 4 || darcy.bc_top == 4) {
+                        if (PROFILING == 1)
+                            startTimer(&kernel_tic);
+                        setDarcyGhostNodesFlux<Float>
+                            <<<dimGridFluid, dimBlockFluid>>>(
+                                dev_darcy_p,
+                                darcy.bc_bot,
+                                darcy.bc_top,
+                                darcy.bc_bot_flux,
+                                darcy.bc_top_flux,
+                                dev_darcy_k,
+                                darcy.mu);
+                        cudaThreadSynchronize();
+                        if (PROFILING == 1)
+                            stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
+                                    &t_setDarcyGhostNodes);
+                        checkForCudaErrorsIter(
+                                "Post setDarcyGhostNodesFlux", iter);
+                    }
+
                     // Solve the system of epsilon using a Jacobi iterative
                     // solver.  The average normalized residual is initialized
                     // to a large value.
@@ -2112,6 +2132,27 @@ __host__ void DEM::startTime()
                                         &t_updateDarcySolution);
                             checkForCudaErrorsIter(
                                     "Post setDarcyTopWallFixedFlow", iter);
+                        }
+
+                        if (darcy.bc_bot == 4 || darcy.bc_top == 4) {
+                            if (PROFILING == 1)
+                                startTimer(&kernel_tic);
+                            setDarcyGhostNodesFlux<Float>
+                                <<<dimGridFluid, dimBlockFluid>>>(
+                                        dev_darcy_p,
+                                        darcy.bc_bot,
+                                        darcy.bc_top,
+                                        darcy.bc_bot_flux,
+                                        darcy.bc_top_flux,
+                                        dev_darcy_k,
+                                        darcy.mu);
+                            cudaThreadSynchronize();
+                            if (PROFILING == 1)
+                                stopTimer(&kernel_tic, &kernel_toc,
+                                        &kernel_elapsed,
+                                        &t_setDarcyGhostNodes);
+                            checkForCudaErrorsIter(
+                                    "Post setDarcyGhostNodesFlux", iter);
                         }
 
                         // Copy new values to current values

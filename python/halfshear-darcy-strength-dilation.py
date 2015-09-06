@@ -220,7 +220,7 @@ for sigma0 in sigma0_list:
         elif numpy.isclose(k_c, 3.5e-13, atol=1.0e-16):
             label = 'high permeability'
         elif numpy.isclose(k_c, 3.5e-14, atol=1.0e-16):
-            label = 'interm. permeability'
+            label = 'interm.\\ permeability'
         elif numpy.isclose(k_c, 3.5e-15, atol=1.0e-16):
             label = 'low permeability'
         else:
