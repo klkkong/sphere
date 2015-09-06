@@ -13,6 +13,8 @@ A powerful Nvidia GPU with proper support for double precision floating is
 highly recommended. ``sphere`` has been tested with the Nvidia Tesla K20 and
 Nvidia Tesla M2050 GPUs.
 
+    **Disclaimer:** CUDA 6.5 is the recommended version.
+
 License
 -------
 ``sphere`` is licensed under the GNU General Public License, v.3.
@@ -20,6 +22,9 @@ See `LICENSE.txt <LICENSE.txt>`_ for more information.
 
 Important release notes
 -----------------------
+2015-09-06: A new flux boundary condition has been added to the Darcy fluid
+solver.
+
 2014-11-05: A Darcy solver has been added as an alternative to the Navier-Stokes
 solver of the fluid phase. It can be selected with e.g. ``initFluid(cfd_solver =
 1)`` in the Python module.
@@ -112,6 +117,7 @@ publications and presentations:
   (2011), Numerical modelling of subglacial sediment deformation.
   `Poster at European Geosciences Union General Assembly 2011
   <https://cs.au.dk/~adc/files/EGU2011-Poster.pdf>`_.
+
 Author
 ------
 Anders Damsgaard, `anders.damsgaard@geo.au.dk <mailto:anders.damsgaard@geo.au.dk>`_,
