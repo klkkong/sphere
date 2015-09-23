@@ -2060,7 +2060,8 @@ class sim:
         # write VTK XML image data file
         writer = vtk.vtkXMLImageDataWriter()
         writer.SetFileName(filename)
-        writer.SetInput(grid)
+        #writer.SetInput(grid) # deprecated from VTK 6
+        writer.SetInputData(grid)
         writer.Update()
         if verbose:
             print('Output file: ' + filename)
