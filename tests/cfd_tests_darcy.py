@@ -125,7 +125,7 @@ for it in range(1,py.status()): # gradient should be smooth in all output files
             numpy.linspace(py.p_f[0,0,0], py.p_f[0,0,-1], py.num[2])
     compareNumpyArraysClose(numpy.zeros((1,py.num[2])),\
             ideal_grad_p_z - py.p_f[0,0,:],\
-            'Slow pressure modulation (' + 
+            'Slow pressure modulation (' +
             str(it+1) + '/' + str(py.status()) + '):', tolerance=1.0e-1)
 '''
 
@@ -146,7 +146,7 @@ for it in range(1,py.status()+1): # gradient should be smooth in all output file
             numpy.linspace(py.p_f[0,0,0], py.p_f[0,0,-1], py.num[2])
     compareNumpyArraysClose(numpy.zeros((1,py.num[2])),\
             ideal_grad_p_z - py.p_f[0,0,:],\
-            'Fast pressure modulation (' + 
+            'Fast pressure modulation (' +
             str(it) + '/' + str(py.status()) + '):', tolerance=5.0e-1)
 #'''
 
@@ -187,5 +187,31 @@ py.writeVTKall()
 #    print(numpy.mean(py.v_f))
 #    print(numpy.max(py.v_f))
 #    raise Exception("Failed")
+
+
+
+print('## Flux BC tests')
+print('# Flux top BC test')
+orig = sphere.sim(np = 0, nd = 3, nw = 0, sid = "cfdtest", fluid = True)
+cleanup(orig)
+orig.defaultParams()
+orig.defineWorldBoundaries([1.0,1.0,1.0], dx=0.1)
+#orig.defineWorldBoundaries([0.4,0.3,0.4], dx=0.1)
+orig.initFluid(cfd_solver = 1)
+#orig.initFluid(mu = 8.9e-4)
+orig.initTemporal(total = 0.2, file_dt = 0.01, dt = 1.0e-7)
+#orig.g[2] = -10.0
+orig.time_file_dt = orig.time_dt*0.99
+orig.time_total = orig.time_dt*10
+#orig.run(dry=True)
+orig.setFluidTopFixedFlux(1.0)
+#orig.run(verbose=False)
+orig.run(verbose=True)
+py = sphere.sim(sid = orig.sid, fluid = True)
+py.writeVTKall()
+
+
+
+
 
 #cleanup(orig)
