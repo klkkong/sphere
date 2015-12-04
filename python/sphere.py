@@ -6207,7 +6207,7 @@ class sim:
                 fig = plt.figure(figsize=(20,8))
 
             # Allocate arrays
-            t = numpy.zeros(lastfile-firststep)
+            t = numpy.zeros(lastfile-firststep + 1)
             Epot = numpy.zeros_like(t)
             Ekin = numpy.zeros_like(t)
             Erot = numpy.zeros_like(t)
