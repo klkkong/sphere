@@ -57,7 +57,7 @@ orig.bc_bot[0] = 1      # No-flow BC at bottom (Neumann)
 #orig.run(dry=True)
 orig.run(verbose=False)
 #orig.run(device=2)
-orig.writeVTKall()
+#orig.writeVTKall()
 py.readlast(verbose = False)
 #ideal_grad_p_z = numpy.linspace(
 #        orig.p_f[0,0,0] + orig.L[2]*orig.rho_f*numpy.abs(orig.g[2]),
