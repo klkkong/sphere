@@ -12,14 +12,14 @@ import sys
 
 device = int(sys.argv[1])
 wet = int(sys.argv[2])
+c_phi = float(sys.argv[3])
+k_c = float(sys.argv[4])
+sigma0 = float(sys.argv[5])
+mu = float(sys.argv[6])
+velfac = float(sys.argv[7])
+
 if wet == 1:
     fluid = True
-    c_phi = float(sys.argv[3])
-    k_c = float(sys.argv[4])
-    sigma0 = float(sys.argv[5])
-    mu = float(sys.argv[6])
-    velfac = float(sys.argv[7])
-
 else:
     fluid = False
 
