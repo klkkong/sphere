@@ -3232,7 +3232,7 @@ class sim:
 
     def wet(self):
         '''
-        Set the simulation to be dry (no fluids).
+        Set the simulation to be wet (total fluid saturation).
 
         See also :func:`dry()`
         '''
