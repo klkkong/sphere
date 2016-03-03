@@ -2788,6 +2788,8 @@ class sim:
         when output from one simulation is reused in another simulation.
         '''
 
+        self.force = numpy.zeros((self.np, self.nd))
+        self.torque = numpy.zeros((self.np, self.nd))
         self.vel = numpy.zeros(self.np*self.nd, dtype=numpy.float64)\
                 .reshape(self.np, self.nd)
         self.angvel = numpy.zeros(self.np*self.nd, dtype=numpy.float64)\
