@@ -121,7 +121,7 @@ if relaxation:
 
 # Consolidation under constant normal stress
 sim.readlast()
-sim.id(id_prefix + '-' + str(int(N/100.)) + 'kPa')
+sim.id(id_prefix + '-' + str(int(N/1000.)) + 'kPa')
 sim.cleanup()
 sim.initTemporal(current=0.0, total=10.0, file_dt=0.01, epsilon=0.07)
 
