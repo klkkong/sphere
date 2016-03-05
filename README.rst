@@ -89,8 +89,8 @@ publications and presentations:
 
 - Damsgaard, A., D.L. Egholm, J.A. Piotrowski, S. Tulaczyk, N.K. Larsen, and
   C.F. Brædstrup (2015), A new methodology to simulate subglacial deformation of
-  water saturated granular material, The Cryosphere Discuss., 9(4), 3617-3660,
-  `doi:10.5194/tcd-9-3617-2015 <http://dx.doi.org/10.5194/tcd-9-3617-2015>`_.
+  water-saturated granular material, The Cryosphere, 9, 2183-2200,
+  `doi:10.5194/tc-9-2183-2015 <http://dx.doi.org/10.5194/tc-9-2183-2015>`_.
 - Damsgaard, A., D.L. Egholm, J.A. Piotrowski, S. Tulaczyk, N.K. Larsen, and
   C.F. Brædstrup (2014), Numerical modeling of particle-fluid mixtures in a
   subglacial setting. `Poster at Americal Geophysical Union Fall Meeting
@@ -122,7 +122,6 @@ publications and presentations:
 
 Author
 ------
-Anders Damsgaard, `anders.damsgaard@geo.au.dk <mailto:anders.damsgaard@geo.au.dk>`_,
-`blog <http://anders-dc.github.io>`_,
-`more contact information <https://cs.au.dk/~adc>`_.
+Anders Damsgaard, `adamsgaard@ucsd.edu <mailto:adamsgaard@ucsd.edu>`_,
+`webpage <https://cs.au.dk/~adc>`_.
 

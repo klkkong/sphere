@@ -164,8 +164,10 @@ t_scaled = t*scalingfactor
 
 fig = plt.figure(figsize=[3.5, 3.5])
 
-plt.figtext(0.05, 0.95, 'A', horizontalalignment='left', weight='bold')
-plt.figtext(0.05, 0.35, 'B', horizontalalignment='left', weight='bold')
+#plt.figtext(0.05, 0.95, 'A', horizontalalignment='left', weight='bold')
+#plt.figtext(0.05, 0.35, 'B', horizontalalignment='left', weight='bold')
+plt.figtext(0.05, 0.95, 'a', horizontalalignment='left', weight='bold')
+plt.figtext(0.05, 0.35, 'b', horizontalalignment='left', weight='bold')
 
 # ax1 = plt.subplot(1, 1, 1)
 ax1 = plt.subplot2grid((2, 3), (0, 0), colspan=3)

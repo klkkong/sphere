@@ -60,7 +60,7 @@ orig.g[2] = -10.0
 orig.bc_bot[0] = 1      # No-flow BC at bottom (Neumann)
 #orig.run(dry=True)
 orig.run(verbose=False)
-orig.writeVTKall()
+#orig.writeVTKall()
 py.readlast(verbose = False)
 print(py.v_f)
 #ideal_grad_p_z = numpy.linspace(

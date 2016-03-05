@@ -4,10 +4,11 @@ import numpy
 import sys
 
 # launch with:
-# $ ipython sigma-sim1-starter.py <device> <fluid> <c_phi> <k_c> <sigma_0> <mu> <velfac>
+# $ ipython sigma-sideways-starter.py <device> <fluid> <c_phi> <k_c> <sigma_0>
+# <mu> <velfac>
 
 # start with
-# ipython sigma-sim1-starter.py 0 1 1.0 2.0e-16 10000.0 2.080e-7 1.0
+# ipython sigma-sideways-starter.py 0 1 1.0 2.0e-16 10000.0 2.080e-7 1.0
 
 device = int(sys.argv[1])
 wet = int(sys.argv[2])
@@ -32,10 +33,10 @@ sim.fluid = fluid
 if fluid:
     #sim.id('halfshear-darcy-sigma0=' + str(sigma0) + '-k_c=' + str(k_c) + \
             #'-mu=' + str(mu) + '-velfac=' + str(velfac) + '-shear')
-    sim.id('s1-darcy-sigma0=' + str(sigma0) + '-k_c=' + str(k_c) + \
+    sim.id('sw-darcy-sigma0=' + str(sigma0) + '-k_c=' + str(k_c) + \
             '-mu=' + str(mu) + '-velfac=' + str(velfac) + '-noflux-shear')
 else:
-    sim.id('s1-darcy-sigma0=' + str(sigma0) + '-velfac=' + str(velfac) + \
+    sim.id('sw-darcy-sigma0=' + str(sigma0) + '-velfac=' + str(velfac) + \
             '-noflux-shear')
 
 #sim.checkerboardColors(nx=6,ny=3,nz=6)
@@ -44,8 +45,8 @@ sim.cleanup()
 sim.adjustUpperWall()
 sim.zeroKinematics()
 
-# customized shear function for linear velocity gradient
-def shearVelocityGradient(sim, shear_strain_rate = 1.0, shear_stress = False):
+# customized shear function for sidewards shear
+def shearVelocitySideways(sim, shear_strain_rate = 1.0, shear_stress = False):
     '''
     Setup shear experiment either by a constant shear rate or a constant
     shear stress.  The shear strain rate is the shear velocity divided by
@@ -79,8 +80,8 @@ def shearVelocityGradient(sim, shear_strain_rate = 1.0, shear_stress = False):
     # Adjust grid and placement of upper wall
     sim.wmode = numpy.array([1])
 
-    # Fix horizontal velocity to 0.0 of lowermost particles
-    d_max_below = numpy.max(sim.radius[numpy.nonzero(sim.x[:,2] <
+    # Fix horizontal velocity to 0.0 of -x particles
+    d_max_below = numpy.max(sim.radius[numpy.nonzero(sim.x[:,1] <
         (z_max-z_min)*0.3)])*2.0
     I = numpy.nonzero(sim.x[:,2] < (z_min + d_max_below))
     sim.fixvel[I] = 1
@@ -91,10 +92,10 @@ def shearVelocityGradient(sim, shear_strain_rate = 1.0, shear_stress = False):
     sim.vel[I,1] = 0.0 # y-dim
     sim.color[I] = -1
 
-    # Fix horizontal velocity to specific value of uppermost particles
-    d_max_top = numpy.max(sim.radius[numpy.nonzero(sim.x[:,2] >
+    # Fix horizontal velocity to specific value of +x particles
+    d_max_top = numpy.max(sim.radius[numpy.nonzero(sim.x[:,1] >
         (z_max-z_min)*0.7)])*2.0
-    I = numpy.nonzero(sim.x[:,2] > (z_max - d_max_top))
+    I = numpy.nonzero(sim.x[:,1] > (z_max - d_max_top))
     sim.fixvel[I] = 1
     sim.angvel[I,0] = 0.0
     sim.angvel[I,1] = 0.0
@@ -117,7 +118,7 @@ def shearVelocityGradient(sim, shear_strain_rate = 1.0, shear_stress = False):
     sim.mu_wd[0] = 0.0
     return sim
 
-sim = shearVelocityGradient(sim, 1.0/20.0 * velfac)
+sim = shearVelocitySideways(sim, 1.0/20.0 * velfac)
 K_q_real = 36.4e9
 K_w_real =  2.2e9
 

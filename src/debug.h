@@ -46,8 +46,12 @@ const int conv_log_interval = 10;
 // Enable reporting of velocity correction components to stdout
 //#define REPORT_V_C_COMPONENTS
 
-// Enable reporting of forcing function terms to stdout
+// Enable reporting of initial values of forcing function terms to stdout
 //#define REPORT_FORCING_TERMS
+
+// Enable reporting of forcing finction terms during Jacobian iterations to 
+// stdout
+//#define REPORT_FORCING_TERMS_JACOBIAN
 
 // Choose solver model (see Zhou et al. 2010 "Discrete particle simulation of
 // particle-fluid flow: model formulations and their applicability", table. 1.
