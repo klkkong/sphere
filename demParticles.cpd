@@ -1,0 +1,184 @@
+<CustomFilterDefinitions>
+  <CustomProxyDefinition name="demParticles" group="filters">
+    <CompoundSourceProxy id="4921" servers="1">
+      <Proxy group="filters" type="Glyph" id="4758" servers="1" compound_name="Glyph1">
+        <Property name="GlyphMode" id="4758.GlyphMode" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="enum" id="4758.GlyphMode.enum">
+            <Entry value="0" text="All Points"/>
+            <Entry value="1" text="Every Nth Point"/>
+            <Entry value="2" text="Uniform Spatial Distribution"/>
+          </Domain>
+        </Property>
+        <Property name="GlyphTransform" id="4758.GlyphTransform" number_of_elements="1">
+          <Proxy value="4680"/>
+          <Domain name="proxy_list" id="4758.GlyphTransform.proxy_list">
+            <Proxy value="4680"/>
+          </Domain>
+        </Property>
+        <Property name="Input" id="4758.Input" number_of_elements="1">
+          <Domain name="groups" id="4758.Input.groups"/>
+          <Domain name="input_array1" id="4758.Input.input_array1"/>
+          <Domain name="input_array2" id="4758.Input.input_array2"/>
+          <Domain name="input_type" id="4758.Input.input_type"/>
+        </Property>
+        <Property name="MaximumNumberOfSamplePoints" id="4758.MaximumNumberOfSamplePoints" number_of_elements="1">
+          <Element index="0" value="5000"/>
+          <Domain name="range" id="4758.MaximumNumberOfSamplePoints.range"/>
+        </Property>
+        <Property name="Orient" id="4758.Orient" number_of_elements="1">
+          <Element index="0" value="1"/>
+          <Domain name="bool" id="4758.Orient.bool"/>
+        </Property>
+        <Property name="Scalars" id="4758.Scalars" number_of_elements="5">
+          <Element index="0" value=""/>
+          <Element index="1" value=""/>
+          <Element index="2" value=""/>
+          <Element index="3" value="0"/>
+          <Element index="4" value="Diameter"/>
+          <Domain name="array_list" id="4758.Scalars.array_list">
+            <String text="Diameter"/>
+            <String text="FixedVel"/>
+            <String text="Pressure [Pa]"/>
+            <String text="Shear Energy Rate [J/s]"/>
+            <String text="Shear Energy [J]"/>
+            <String text="Type color"/>
+            <String text="Viscous Energy Rate [J/s]"/>
+            <String text="Viscous Energy [J]"/>
+          </Domain>
+        </Property>
+        <Property name="ScaleFactor" id="4758.ScaleFactor" number_of_elements="1">
+          <Element index="0" value="1"/>
+          <Domain name="bounds" id="4758.ScaleFactor.bounds"/>
+          <Domain name="scalar_range" id="4758.ScaleFactor.scalar_range"/>
+          <Domain name="vector_range" id="4758.ScaleFactor.vector_range"/>
+        </Property>
+        <Property name="ScaleMode" id="4758.ScaleMode" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="enum" id="4758.ScaleMode.enum">
+            <Entry value="0" text="scalar"/>
+            <Entry value="1" text="vector"/>
+            <Entry value="2" text="vector_components"/>
+            <Entry value="3" text="off"/>
+          </Domain>
+        </Property>
+        <Property name="Seed" id="4758.Seed" number_of_elements="1">
+          <Element index="0" value="10339"/>
+          <Domain name="range" id="4758.Seed.range"/>
+        </Property>
+        <Property name="Source" id="4758.Source" number_of_elements="1">
+          <Proxy value="4736" output_port="0"/>
+          <Domain name="groups" id="4758.Source.groups"/>
+          <Domain name="input_type" id="4758.Source.input_type"/>
+          <Domain name="proxy_list" id="4758.Source.proxy_list">
+            <Proxy value="4681"/>
+            <Proxy value="4692"/>
+            <Proxy value="4703"/>
+            <Proxy value="4714"/>
+            <Proxy value="4725"/>
+            <Proxy value="4736"/>
+            <Proxy value="4747"/>
+          </Domain>
+        </Property>
+        <Property name="Stride" id="4758.Stride" number_of_elements="1">
+          <Element index="0" value="1"/>
+          <Domain name="range" id="4758.Stride.range"/>
+        </Property>
+        <Property name="Vectors" id="4758.Vectors" number_of_elements="5">
+          <Element index="0" value="1"/>
+          <Element index="1" value=""/>
+          <Element index="2" value=""/>
+          <Element index="3" value="0"/>
+          <Element index="4" value="Angular position[rad]"/>
+          <Domain name="array_list" id="4758.Vectors.array_list">
+            <String text="Angular position[rad]"/>
+            <String text="Angular velocity [rad/s]"/>
+            <String text="Displacement [m]"/>
+            <String text="Fluid pressure force [N]"/>
+            <String text="Force [N]"/>
+            <String text="Torque [Nm]"/>
+            <String text="Velocity [m/s]"/>
+          </Domain>
+        </Property>
+      </Proxy>
+      <Proxy group="extended_sources" type="Transform2" id="4680" servers="1" compound_name="auto_4680">
+        <Property name="Position" id="4680.Position" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="0"/>
+          <Domain name="range" id="4680.Position.range"/>
+        </Property>
+        <Property name="PositionInfo" id="4680.PositionInfo" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="0"/>
+        </Property>
+        <Property name="Rotation" id="4680.Rotation" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="0"/>
+          <Domain name="range" id="4680.Rotation.range"/>
+        </Property>
+        <Property name="RotationInfo" id="4680.RotationInfo" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="0"/>
+        </Property>
+        <Property name="Scale" id="4680.Scale" number_of_elements="3">
+          <Element index="0" value="1"/>
+          <Element index="1" value="1"/>
+          <Element index="2" value="1"/>
+          <Domain name="range" id="4680.Scale.range"/>
+        </Property>
+        <Property name="ScaleInfo" id="4680.ScaleInfo" number_of_elements="3">
+          <Element index="0" value="1"/>
+          <Element index="1" value="1"/>
+          <Element index="2" value="1"/>
+        </Property>
+      </Proxy>
+      <Proxy group="sources" type="SphereSource" id="4736" servers="1" compound_name="auto_4736">
+        <Property name="Center" id="4736.Center" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="0"/>
+          <Domain name="range" id="4736.Center.range"/>
+        </Property>
+        <Property name="EndPhi" id="4736.EndPhi" number_of_elements="1">
+          <Element index="0" value="180"/>
+          <Domain name="range" id="4736.EndPhi.range"/>
+        </Property>
+        <Property name="EndTheta" id="4736.EndTheta" number_of_elements="1">
+          <Element index="0" value="360"/>
+          <Domain name="range" id="4736.EndTheta.range"/>
+        </Property>
+        <Property name="PhiResolution" id="4736.PhiResolution" number_of_elements="1">
+          <Element index="0" value="8"/>
+          <Domain name="range" id="4736.PhiResolution.range"/>
+        </Property>
+        <Property name="Radius" id="4736.Radius" number_of_elements="1">
+          <Element index="0" value="0.5"/>
+          <Domain name="range" id="4736.Radius.range"/>
+        </Property>
+        <Property name="StartPhi" id="4736.StartPhi" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="range" id="4736.StartPhi.range"/>
+        </Property>
+        <Property name="StartTheta" id="4736.StartTheta" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="range" id="4736.StartTheta.range"/>
+        </Property>
+        <Property name="ThetaResolution" id="4736.ThetaResolution" number_of_elements="1">
+          <Element index="0" value="8"/>
+          <Domain name="range" id="4736.ThetaResolution.range"/>
+        </Property>
+      </Proxy>
+      <ExposedProperties>
+        <Property name="Input" proxy_name="Glyph1" exposed_name="Input"/>
+      </ExposedProperties>
+      <OutputPort name="Output" proxy="Glyph1" port_index="0"/>
+      <Hints>
+        <ShowInMenu/>
+      </Hints>
+    </CompoundSourceProxy>
+  </CustomProxyDefinition>
+</CustomFilterDefinitions>
