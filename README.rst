@@ -13,9 +13,6 @@ A powerful Nvidia GPU with proper support for double precision floating is
 highly recommended. ``sphere`` has been tested with the Nvidia Tesla K20 and
 Nvidia Tesla M2050 GPUs.
 
-    **Note:** CUDA 6.5 is the recommended version. CUDA 7.0 may work but is not
-    thoroughly tested yet.
-
 License
 -------
 ``sphere`` is licensed under the GNU General Public License, v.3.

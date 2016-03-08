@@ -212,10 +212,11 @@ lns = lns0+lns3+lns5
 labs = [l.get_label() for l in lns]
 ax2.legend(lns, labs, loc='upper right', ncol=3,
         fancybox=True, framealpha=legend_alpha)
-#ax1.set_ylim([-30, 200])
-#ax2.set_ylim([-115,115])
+ax1.set_ylim([-30, 200])
+ax2.set_ylim([-115,125])
 
-ax1.text(bbox_x, bbox_y, 'A',
+#ax1.text(bbox_x, bbox_y, 'A',
+ax1.text(bbox_x, bbox_y, 'a',
         horizontalalignment=horizontalalignment,
         verticalalignment=verticalalignment,
         fontweight=fontweight, bbox=bbox,
@@ -234,7 +235,8 @@ collection = matplotlib.collections.BrokenBarHCollection.span_where(
                 linewidth=0)
 ax3.add_collection(collection)
 
-ax3.text(bbox_x, bbox_y, 'B',
+#ax3.text(bbox_x, bbox_y, 'B',
+ax3.text(bbox_x, bbox_y, 'b',
         horizontalalignment=horizontalalignment,
         verticalalignment=verticalalignment,
         fontweight=fontweight, bbox=bbox,
@@ -251,7 +253,7 @@ ax5 = plt.subplot(5, 1, 3, sharex=ax1)
 
 # normalized displacement
 #ax5.plot(t, xdisp/xdisp[-1], 'k', linewidth=linewidth)
-ax5.plot(t, xdisp/xdisp[-1], 'k', linewidth=linewidth)
+ax5.plot(t, xdisp/xdisp[4500], 'k', linewidth=linewidth)
 
 #ax5.set_ylabel('Shear displacement [m]')
 ax5.set_ylabel('Normalized displacement [-]')
@@ -265,11 +267,14 @@ ax6.yaxis.label.set_color(ax6color)
 for tl in ax6.get_yticklabels():
     tl.set_color(ax6color)
 
-ax6.text(bbox_x, bbox_y, 'C',
+#ax6.text(bbox_x, bbox_y, 'C',
+ax6.text(bbox_x, bbox_y, 'c',
         horizontalalignment=horizontalalignment,
         verticalalignment=verticalalignment,
         fontweight=fontweight, bbox=bbox,
         transform=ax6.transAxes)
+#ax6.set_ylim([0.36, 0.39])
+ax6.set_ylim([0.36, 0.40])
 
 
 ## ax7: n_heavy, dn_heavy, ax8: z
@@ -288,7 +293,8 @@ for tl in ax8.get_yticklabels():
     tl.set_color(ax8color)
 ax8.set_ylim([-0.2,9.8])
 
-ax7.text(bbox_x, bbox_y, 'D',
+#ax7.text(bbox_x, bbox_y, 'D',
+ax7.text(bbox_x, bbox_y, 'd',
         horizontalalignment=horizontalalignment,
         verticalalignment=verticalalignment,
         fontweight=fontweight, bbox=bbox,
@@ -297,19 +303,20 @@ ax7.text(bbox_x, bbox_y, 'D',
 
 ## ax9: porosity, ax10: unused
 ax9 = plt.subplot(5, 1, 5, sharex=ax1)
+poros_min = 0.375
 poros_max = 0.45
-poros_min = 0.37
 poros[:,0] = poros[:,2] # remove erroneous porosity increase
 cmap = matplotlib.cm.get_cmap('Blues_r')
 #cmap = matplotlib.cm.get_cmap('afmhot')
 #im9 = ax9.pcolormesh(t, zpos_c, poros,
 #zpos_c = zpos_c[:-1]
+
 xvel = xvel[:-1]
 xvel[xvel < 0.0] = 0.0
 im9 = ax9.pcolormesh(t, zpos_c, poros,
 #im9 = ax9.pcolormesh(t, zpos_c, xvel,
         cmap=cmap,
-        #vmin=poros_min, vmax=poros_max,
+        vmin=poros_min, vmax=poros_max,
         #norm=matplotlib.colors.LogNorm(vmin=1.0e-8, vmax=xvel.max()),
         shading='goraud',
         rasterized=rasterized)
@@ -335,13 +342,18 @@ ax9.add_patch(matplotlib.patches.Rectangle(
     alpha=legend_alpha))
 
 cb9 = plt.colorbar(im9, cax=cbaxes,
-        ticks=[poros_min, poros_min + 0.5*(poros_max-poros_min), poros_max],
+        #ticks=[poros_min, poros_min + 0.5*(poros_max-poros_min), poros_max],
         #ticks=[xvel.min(), xvel.min() + 0.5*(xvel.max()-xvel.min()), xvel.max()],
         orientation='horizontal',
         extend='min',
         cmap=cmap)
-cmap.set_under([8./255., 48./255., 107./255.]) # for poros
+#cmap.set_under([8./255., 48./255., 107./255.]) # for poros
 #cmap.set_under([1.0e-3, 1.0e-3, 1.0e-3]) # for xvel
+from matplotlib import ticker
+tick_locator = ticker.MaxNLocator(nbins=4)
+cb9.locator = tick_locator
+cb9.update_ticks()
+
 cb9.set_label('Mean horizontal porosity [-]')
 '''
 ax9.text(0.5, 0.4, 'Mean horizontal porosity [-]\\\\',
@@ -351,7 +363,8 @@ ax9.text(0.5, 0.4, 'Mean horizontal porosity [-]\\\\',
 '''
 cb9.solids.set_rasterized(rasterized)
 
-ax9.text(bbox_x, bbox_y, 'E',
+#ax9.text(bbox_x, bbox_y, 'E',
+ax9.text(bbox_x, bbox_y, 'e',
         horizontalalignment=horizontalalignment,
         verticalalignment=verticalalignment,
         fontweight=fontweight, bbox=bbox,
@@ -368,15 +381,15 @@ plt.setp(ax5.get_xticklabels(), visible=False)
 plt.setp(ax7.get_xticklabels(), visible=False)
 #plt.setp(ax8.get_xticklabels(), visible=False)
 
-#ax1.set_xlim([0,9])
-#ax2.set_xlim([0,9])
-#ax3.set_xlim([0,9])
-##ax4.set_xlim([0,9])
-#ax5.set_xlim([0,9])
-#ax6.set_xlim([0,9])
-#ax7.set_xlim([0,9])
-#ax8.set_xlim([0,9])
-#ax9.set_xlim([0,9])
+ax1.set_xlim([0,9])
+ax2.set_xlim([0,9])
+ax3.set_xlim([0,9])
+#ax4.set_xlim([0,9])
+ax5.set_xlim([0,9])
+ax6.set_xlim([0,9])
+ax7.set_xlim([0,9])
+ax8.set_xlim([0,9])
+ax9.set_xlim([0,9])
 
 
 ax9.set_xlabel('Time [d]')
