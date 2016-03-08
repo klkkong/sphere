@@ -125,3 +125,4 @@ Author
 Anders Damsgaard, `adamsgaard@ucsd.edu <mailto:adamsgaard@ucsd.edu>`_,
 `webpage <https://cs.au.dk/~adc>`_.
 
+With contributions from Cooper Elsworth.
