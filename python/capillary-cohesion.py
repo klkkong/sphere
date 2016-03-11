@@ -13,28 +13,31 @@
 # top of a flat wall.
 
 import sphere
+#import numpy
 import sys
 
-device = sys.argv[1]
-cohesion = sys.argv[2]
-gravity = sys.argv[3]
+device = int(sys.argv[1])
+cohesion = int(sys.argv[2])
+gravity = int(sys.argv[3])
 
 # Create packing
 sim = sphere.sim('cap-cohesion=' + str(cohesion) + '-init-grav=' \
         + str(gravity), np=2000)
-sim.defaultParams(capillaryCohesion=cohesion)
-sim.mu_s[0] = 0.0
-sim.mu_d[0] = 0.0
-sim.k_n[0] = 1.0e7
-sim.k_t[0] = 1.0e7
+#sim.mu_s[0] = 0.0
+#sim.mu_d[0] = 0.0
+#sim.k_n[0] = 1.0e7
+#sim.k_t[0] = 1.0e7
 sim.generateRadii(psd='uni', mean=1.0e-3, variance=1.0e-4)
 sim.contactModel(1)
 sim.initRandomGridPos(gridnum=[24, 24, 10000], padding=1.4)
+sim.defaultParams(gamma_t = 1.0e3, capillaryCohesion=1)
 sim.initTemporal(5.0, file_dt=0.01, epsilon=0.07)
-#sim.vel[1000, 2] = -0.1  # add a instability seeding perturbation
+#I = numpy.nonzero(sim.x[:,2] < sim.L[2]*0.5)
+#sim.vel[I[0], 2] =  0.01  # add a instability seeding perturbation
+#I = numpy.nonzero(sim.x[:,2] > sim.L[2]*0.5)
+#sim.vel[I[0], 2] = -0.01  # add a instability seeding perturbation
 if gravity == 1:
     sim.g[2] = -10.0
-sim.initTemporal(2.0, file_dt=0.01, epsilon=0.07)
 sim.run(dry=True)
 sim.run(device=device)
 sim.writeVTKall()
