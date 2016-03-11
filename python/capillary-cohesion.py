@@ -13,7 +13,6 @@
 # top of a flat wall.
 
 import sphere
-import numpy
 import sys
 
 device = sys.argv[1]
@@ -29,7 +28,7 @@ sim.k_n[0] = 1.0e7
 sim.k_t[0] = 1.0e7
 sim.generateRadii(psd='uni', mean=1.0e-3, variance=1.0e-4)
 sim.contactModel(1)
-sim.initRandomGridPos([12, 12, 10000])
+sim.initRandomGridPos(gridnum=[24, 24, 10000], padding=1.02)
 sim.initTemporal(5.0, file_dt=0.01, epsilon=0.07)
 if gravity == 1:
     sim.g[2] = -10.0

@@ -2645,7 +2645,9 @@ class sim:
             self.num[1] += 1
 
 
-    def initRandomGridPos(self, gridnum = numpy.array([12, 12, 32])):
+    def initRandomGridPos(self,
+                          gridnum = numpy.array([12, 12, 32]),
+                          padding=2.1):
         '''
         Initialize particle positions in loose, cubic configuration with some
         variance. ``gridnum`` is the number of cells in the x, y and z
@@ -2656,6 +2658,9 @@ class sim:
 
         :param gridnum: The number of particles in x, y and z directions
         :type gridnum: numpy.array
+        :param padding: Increase distance between particles in x, y and z
+            directions with this multiplier
+        :type padding: float
         '''
 
         # Calculate cells in grid
@@ -2665,7 +2670,7 @@ class sim:
         r_max = numpy.amax(self.radius)
 
         # Cells in grid 2*size to make space for random offset
-        cellsize = 2.1 * r_max * 2
+        cellsize = padding * r_max * 2
 
         # Check whether there are enough grid cells
         if ((coarsegrid[0]-1)*(coarsegrid[1]-1)*(coarsegrid[2]-1)) < self.np:
