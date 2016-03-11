@@ -2659,7 +2659,8 @@ class sim:
         :param gridnum: The number of particles in x, y and z directions
         :type gridnum: numpy.array
         :param padding: Increase distance between particles in x, y and z
-            directions with this multiplier
+            directions with this multiplier. Large values create more random
+            packings.
         :type padding: float
         '''
 
