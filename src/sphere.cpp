@@ -387,6 +387,9 @@ void DEM::reportValues()
         exit(1);
     }
 
+    if (params.kappa > 0.0 && params.V_b > 0.0)
+        cout << "  - Capillary cohesion enabled\n";
+
     cout << "  - Number of dynamic walls: " << walls.nw << '\n';
 
     if (grid.periodic == 1)
