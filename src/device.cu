@@ -233,6 +233,39 @@ __global__ void checkConstantValues(int* dev_equal,
         *dev_equal = 29; // Not ok
 }
 
+__global__ void checkParticlePositions(
+    const Float4* __restrict__ dev_x)
+{
+    unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x; // Thread id
+
+    if (idx < devC_np) { // Condition prevents block size error
+        Float4 x = dev_x[idx];
+
+        // make sure grain doesn't have NaN or Inf position
+        if (!isfinite(x.x) || !isfinite(x.y) || !isfinite(x.z)) {
+            __syncthreads();
+            printf("\nParticle %d has non-finite position: x = %f %f %f",
+                    x.x, x.y, x.z);
+        }
+
+        // check that the particle is inside of the simulation domain
+        if (x.x < devC_grid.origo[0] ||
+                x.y < devC_grid.origo[1] ||
+                x.z < devC_grid.origo[2] ||
+                x.x > devC_grid.L[0] ||
+                x.y > devC_grid.L[1] ||
+                x.z > devC_grid.L[2]) {
+            __syncthreads();
+            printf("\nParticle %d is outside the computational domain "
+                    "(%f %f %f to %f %f %f): x = %f %f %f",
+                    devC_grid.origo[0], devC_grid.origo[1], devC_grid.origo[2],
+                    devC_grid.L[0], devC_grid.L[1], devC_grid.L[2],
+                    x.x, x.y, x.z);
+        }
+    }
+}
+
+
 // Copy the constant data components to device memory,
 // and check whether the values correspond to the 
 // values in constant memory.
@@ -933,8 +966,16 @@ __host__ void DEM::startTime()
         cout << "  Current simulation time: " << time.current << " s.";
 
 
+
     // MAIN CALCULATION TIME LOOP
     while (time.current <= time.total) {
+
+    // check if particle positions have finite values
+#ifdef CHECK_PARTICLES_FINITE
+        checkParticlePositions<<<dimGrid, dimBlock>>>(dev_x);
+        cudaThreadSynchronize();
+        checkForCudaErrorsIter("Post checkParticlePositions", iter);
+#endif
 
         // Print current step number to terminal
         //printf("\n\n@@@ DEM time step: %ld\n", iter);
