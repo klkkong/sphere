@@ -111,6 +111,7 @@ sim.normalBoundariesXY()
 # assign automatic colors, overwriting values from grid array
 sim.checkerboardColors(nx=grid.shape[1], ny=2, nz=grid.shape[0]/4)
 
+sim.contactmodel[0] = 2
 sim.mu_s[0] = 0.5
 sim.mu_d[0] = 0.5
 
