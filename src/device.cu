@@ -245,8 +245,12 @@ __global__ void checkParticlePositions(
         if (!isfinite(x.x) || !isfinite(x.y) || !isfinite(x.z)) {
             __syncthreads();
             printf("\nParticle %d has non-finite position: x = %f %f %f",
-                    x.x, x.y, x.z);
+                    idx, x.x, x.y, x.z);
         }
+
+        /*__syncthreads();
+        printf("\nParticle %d: x = %f %f %f",
+                idx, x.x, x.y, x.z);*/
 
         // check that the particle is inside of the simulation domain
         if (x.x < devC_grid.origo[0] ||
@@ -258,6 +262,7 @@ __global__ void checkParticlePositions(
             __syncthreads();
             printf("\nParticle %d is outside the computational domain "
                     "(%f %f %f to %f %f %f): x = %f %f %f",
+                    idx,
                     devC_grid.origo[0], devC_grid.origo[1], devC_grid.origo[2],
                     devC_grid.L[0], devC_grid.L[1], devC_grid.L[2],
                     x.x, x.y, x.z);
