@@ -12,8 +12,8 @@ init.initRandomGridPos(gridnum=(6, 6, 1e12))
 
 # Disable friction to dissipate energy fast
 init.k_n[0] = 1.0e8
-init.mu_s[0] = 0.0
-init.mu_d[0] = 0.0
+init.mu_s[0] = 0.5
+init.mu_d[0] = 0.5
 
 # Choose the tangential contact model
 # 1) Visco-frictional (somewhat incorrect, fast computations)
