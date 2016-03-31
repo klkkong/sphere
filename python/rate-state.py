@@ -52,7 +52,7 @@ sim.cleanup()
 sim.adjustUpperWall()
 sim.zeroKinematics()
 
-sim.shearVelocityGradient(1.0/20.0 * velfac)
+sim.shear(1.0/20.0 * velfac)
 K_q_real = 36.4e9
 K_w_real =  2.2e9
 
