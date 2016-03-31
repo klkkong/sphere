@@ -33,6 +33,8 @@ __global__ void integrate(
     const Float* __restrict__ dev_walls_tau_eff_x_partial,
     const Float* __restrict__ dev_walls_tau_x,
     const Float tau_x,
+    const int change_velocity_state, // 1: v *= vel_fac, -1: v /= vel_fac
+    const Float velocity_factor,
     const unsigned int blocksPerGrid)
 {
     unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x; // Thread id
@@ -278,6 +280,14 @@ __global__ void integrate(
                 x_new.x += L.x;
             if (x_new.x > L.x)
                 x_new.x -= L.x;
+        }
+
+        // step-wise velocity change for rate-and-state experiments
+        if (vel.w > 5.0 && vel.w < 10.0) {
+            if (change_velocity_state == 1)
+                vel_new.x *= velocity_factor;
+            else if (change_velocity_state == -1)
+                vel_new.x /= velocity_factor;
         }
 
         // Hold threads for coalesced write

@@ -942,6 +942,9 @@ __host__ void DEM::startTime()
     double t_start = time.current;
     double t_ratio;     // ration between time flow in model vs. reality
 
+    int change_velocity_state = 0;
+    const Float velocity_factor = 1.1;
+
     // Index of dynamic top wall (if it exists)
     unsigned int wall0_iz = 10000000;
     // weight of fluid between two cells in z direction
@@ -2339,6 +2342,12 @@ __host__ void DEM::startTime()
                 checkForCudaErrorsIter("Post shear stress summation", iter);
             }
 
+            // Determine whether it is time to step the velocity
+            if (time.current >= 5.0 && time.current < 10.0)
+                change_velocity_state = 1.0;
+            else if (time.current >= 10.0)
+                change_velocity_state = -1.0;
+
             // Update particle kinematics
             if (PROFILING == 1)
                 startTimer(&kernel_tic);
@@ -2363,12 +2372,17 @@ __host__ void DEM::startTime()
                     dev_walls_tau_eff_x_partial,
                     dev_walls_tau_x,
                     walls.tau_x[0],
+                    change_velocity_state,
+                    velocity_factor,
                     blocksPerGrid);
             cudaThreadSynchronize();
             checkForCudaErrorsIter("Post integrate", iter);
             if (PROFILING == 1)
                 stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                         &t_integrate);
+
+            if (change_velocity_state != 0)
+                change_velocity_state = 0;
 
             // Summation of forces on wall
             if (PROFILING == 1)
