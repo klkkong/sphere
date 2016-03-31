@@ -233,6 +233,44 @@ __global__ void checkConstantValues(int* dev_equal,
         *dev_equal = 29; // Not ok
 }
 
+__global__ void checkParticlePositions(
+    const Float4* __restrict__ dev_x)
+{
+    unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x; // Thread id
+
+    if (idx < devC_np) { // Condition prevents block size error
+        Float4 x = dev_x[idx];
+
+        // make sure grain doesn't have NaN or Inf position
+        if (!isfinite(x.x) || !isfinite(x.y) || !isfinite(x.z)) {
+            __syncthreads();
+            printf("\nParticle %d has non-finite position: x = %f %f %f",
+                    idx, x.x, x.y, x.z);
+        }
+
+        /*__syncthreads();
+        printf("\nParticle %d: x = %f %f %f",
+                idx, x.x, x.y, x.z);*/
+
+        // check that the particle is inside of the simulation domain
+        if (x.x < devC_grid.origo[0] ||
+                x.y < devC_grid.origo[1] ||
+                x.z < devC_grid.origo[2] ||
+                x.x > devC_grid.L[0] ||
+                x.y > devC_grid.L[1] ||
+                x.z > devC_grid.L[2]) {
+            __syncthreads();
+            printf("\nParticle %d is outside the computational domain "
+                    "(%f %f %f to %f %f %f): x = %f %f %f",
+                    idx,
+                    devC_grid.origo[0], devC_grid.origo[1], devC_grid.origo[2],
+                    devC_grid.L[0], devC_grid.L[1], devC_grid.L[2],
+                    x.x, x.y, x.z);
+        }
+    }
+}
+
+
 // Copy the constant data components to device memory,
 // and check whether the values correspond to the 
 // values in constant memory.
@@ -904,6 +942,12 @@ __host__ void DEM::startTime()
     double t_start = time.current;
     double t_ratio;     // ration between time flow in model vs. reality
 
+    // Hard-coded parameters for stepwise velocity change
+    int change_velocity_state = 0;  // 1: increase velocity, 2: decrease vel.
+    const Float velocity_factor = 1.1;  // v2 = v1*velocity_factor
+    const Float v2_start = 5.0; // seconds
+    const Float v2_end = 10.0;  // seconds
+
     // Index of dynamic top wall (if it exists)
     unsigned int wall0_iz = 10000000;
     // weight of fluid between two cells in z direction
@@ -933,8 +977,16 @@ __host__ void DEM::startTime()
         cout << "  Current simulation time: " << time.current << " s.";
 
 
+
     // MAIN CALCULATION TIME LOOP
     while (time.current <= time.total) {
+
+    // check if particle positions have finite values
+#ifdef CHECK_PARTICLES_FINITE
+        checkParticlePositions<<<dimGrid, dimBlock>>>(dev_x);
+        cudaThreadSynchronize();
+        checkForCudaErrorsIter("Post checkParticlePositions", iter);
+#endif
 
         // Print current step number to terminal
         //printf("\n\n@@@ DEM time step: %ld\n", iter);
@@ -2293,6 +2345,12 @@ __host__ void DEM::startTime()
                 checkForCudaErrorsIter("Post shear stress summation", iter);
             }
 
+            // Determine whether it is time to step the velocity
+            if (time.current >= v2_start && time.current < v2_end)
+                change_velocity_state = 1.0;
+            else if (time.current >= 10.0)
+                change_velocity_state = -1.0;
+
             // Update particle kinematics
             if (PROFILING == 1)
                 startTimer(&kernel_tic);
@@ -2317,12 +2375,17 @@ __host__ void DEM::startTime()
                     dev_walls_tau_eff_x_partial,
                     dev_walls_tau_x,
                     walls.tau_x[0],
+                    change_velocity_state,
+                    velocity_factor,
                     blocksPerGrid);
             cudaThreadSynchronize();
             checkForCudaErrorsIter("Post integrate", iter);
             if (PROFILING == 1)
                 stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
                         &t_integrate);
+
+            if (change_velocity_state != 0)
+                change_velocity_state = 0;
 
             // Summation of forces on wall
             if (PROFILING == 1)
