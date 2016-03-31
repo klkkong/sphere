@@ -942,8 +942,11 @@ __host__ void DEM::startTime()
     double t_start = time.current;
     double t_ratio;     // ration between time flow in model vs. reality
 
-    int change_velocity_state = 0;
-    const Float velocity_factor = 1.1;
+    // Hard-coded parameters for stepwise velocity change
+    int change_velocity_state = 0;  // 1: increase velocity, 2: decrease vel.
+    const Float velocity_factor = 1.1;  // v2 = v1*velocity_factor
+    const Float v2_start = 5.0; // seconds
+    const Float v2_end = 10.0;  // seconds
 
     // Index of dynamic top wall (if it exists)
     unsigned int wall0_iz = 10000000;
@@ -2343,7 +2346,7 @@ __host__ void DEM::startTime()
             }
 
             // Determine whether it is time to step the velocity
-            if (time.current >= 5.0 && time.current < 10.0)
+            if (time.current >= v2_start && time.current < v2_end)
                 change_velocity_state = 1.0;
             else if (time.current >= 10.0)
                 change_velocity_state = -1.0;
