@@ -38,12 +38,10 @@ sim.readlast()
 
 sim.fluid = fluid
 if fluid:
-    #sim.id('halfshear-darcy-sigma0=' + str(sigma0) + '-k_c=' + str(k_c) + \
-            #'-mu=' + str(mu) + '-velfac=' + str(velfac) + '-shear')
     sim.id('ratestate-sigma0=' + str(sigma0) + '-k_c=' + str(k_c) + \
             '-mu=' + str(mu) + '-velfac=' + str(velfac) + '-shear')
 else:
-    sim.id('ratestate-darcy-sigma0=' + str(sigma0) + '-velfac=' + str(velfac) + \
+    sim.id('ratestate-sigma0=' + str(sigma0) + '-velfac=' + str(velfac) + \
             '-shear')
 
 sim.checkerboardColors(nx=6,ny=3,nz=6)
