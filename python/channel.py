@@ -6,7 +6,7 @@ relaxation = False
 consolidation = True
 
 id_prefix = 'channel3'
-N = 40e3
+N = 10e3
 
 cube = sphere.sim('cube-init')
 cube.readlast()
