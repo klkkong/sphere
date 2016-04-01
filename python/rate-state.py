@@ -55,8 +55,8 @@ K_q_real = 36.4e9
 K_w_real =  2.2e9
 
 
-#K_q_sim  = 1.16e9
-K_q_sim = 1.16e6
+K_q_sim  = 1.16e9
+#K_q_sim = 1.16e6
 sim.setStiffnessNormal(K_q_sim)
 sim.setStiffnessTangential(K_q_sim)
 K_w_sim  = K_w_real/K_q_real * K_q_sim
