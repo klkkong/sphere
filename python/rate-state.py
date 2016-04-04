@@ -9,6 +9,8 @@ import numpy
 # start with
 # ipython sigma-sim1-starter.py 0 1 1.0 2.0e-16 10000.0 2.080e-7 1.0
 
+sid_prefix = 'ratestate2'
+
 # device = int(sys.argv[1])
 # wet = int(sys.argv[2])
 # c_phi = float(sys.argv[3])
@@ -30,19 +32,18 @@ else:
     fluid = False
 
 # load consolidated granular assemblage
-sim = sphere.sim('halfshear-sigma0=' + str(sigma0), fluid=False)
-#sim = sphere.sim('shear-sigma0=' + str(sigma0), fluid=False)
+#sim = sphere.sim('halfshear-sigma0=' + str(sigma0), fluid=False)
+sim = sphere.sim('shear-sigma0=' + str(sigma0), fluid=False)
 sim.readlast()
 #sim.readbin('../input/shear-sigma0=10000.0-new.bin')
 #sim.scaleSize(0.01) # from 1 cm to 0.01 cm = 100 micro m (fine sand)
 
 sim.fluid = fluid
 if fluid:
-    sim.id('ratestate-sigma0=' + str(sigma0) + '-k_c=' + str(k_c) + \
-            '-mu=' + str(mu) + '-velfac=' + str(velfac) + '-shear')
+    sim.id(sid_prefix + '-sigma0=' + str(sigma0) + '-k_c=' + str(k_c) + \
+            '-mu=' + str(mu) + '-shear')
 else:
-    sim.id('ratestate-sigma0=' + str(sigma0) + '-velfac=' + str(velfac) + \
-            '-shear')
+    sim.id(sid_prefix + '-sigma0=' + str(sigma0) + '-shear')
 
 sim.checkerboardColors(nx=6,ny=3,nz=6)
 #sim.checkerboardColors(nx=6,ny=6,nz=6)
