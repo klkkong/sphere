@@ -943,6 +943,7 @@ __host__ void DEM::startTime()
     double t_ratio;     // ration between time flow in model vs. reality
 
     // Hard-coded parameters for stepwise velocity change
+    int velocity_state = 1;  // 1: v1, 2: v2
     int change_velocity_state = 0;  // 1: increase velocity, 2: decrease vel.
     const Float velocity_factor = 1.1;  // v2 = v1*velocity_factor
     const Float v2_start = 5.0; // seconds
@@ -2346,10 +2347,14 @@ __host__ void DEM::startTime()
             }
 
             // Determine whether it is time to step the velocity
-            if (time.current >= v2_start && time.current < v2_end)
+            if (time.current >= v2_start && time.current < v2_end &&
+                    velocity_state == 1) {
                 change_velocity_state = 1.0;
-            else if (time.current >= 10.0)
+                velocity_state = 2;
+            } else if (time.current >= 10.0 && velocity_state == 2) {
                 change_velocity_state = -1.0;
+                velocity_state = 1;
+            }
 
             // Update particle kinematics
             if (PROFILING == 1)
