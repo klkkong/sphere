@@ -8,7 +8,7 @@ init.generateRadii(psd='uni', mean=0.01, variance=0.002)
 init.periodicBoundariesXY()
 
 # Initialize positions in random grid (also sets world size)
-init.initRandomGridPos(gridnum=(6, 6, 1e12))
+init.initRandomGridPos(gridnum=(7, 7, 1e12))
 
 # Disable friction to dissipate energy fast
 init.k_n[0] = 1.0e8

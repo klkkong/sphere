@@ -942,10 +942,10 @@ __host__ void DEM::startTime()
     double t_start = time.current;
     double t_ratio;     // ration between time flow in model vs. reality
 
-    // Hard-coded parameters for stepwise velocity change
+    // Hard-coded parameters for stepwise velocity change (rate-state exp)
     int velocity_state = 1;  // 1: v1, 2: v2
     int change_velocity_state = 0;  // 1: increase velocity, 2: decrease vel.
-    const Float velocity_factor = 1.1;  // v2 = v1*velocity_factor
+    const Float velocity_factor = 10.0;  // v2 = v1*velocity_factor
     const Float v2_start = 5.0; // seconds
     const Float v2_end = 10.0;  // seconds
 
