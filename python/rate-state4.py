@@ -9,7 +9,7 @@ import numpy
 # start with
 # ipython sigma-sim1-starter.py 0 1 1.0 2.0e-16 10000.0 2.080e-7 1.0
 
-sid_prefix = 'ratestate3'
+sid_prefix = 'ratestate4'
 
 # device = int(sys.argv[1])
 # wet = int(sys.argv[2])
@@ -73,7 +73,8 @@ if start_from_beginning:
     sim.adjustUpperWall()
     sim.zeroKinematics()
 
-    sim.shear(1.0/20.0 * velfac)
+    #sim.shear(1.0/20.0 * velfac)
+    sim.shear(1.0/20.0 * velfac * 10.)
     K_q_real = 36.4e9
     K_w_real =  2.2e9
 
