@@ -36,7 +36,7 @@ hcells = np**(1.0/3.0)
 init.initRandomGridPos(gridnum=[hcells, hcells, 1e9])
 
 # Set duration of simulation
-init.initTemporal(total=10.0)
+init.initTemporal(total=10.0, epsilon=0.07)
 
 if (initialization):
 

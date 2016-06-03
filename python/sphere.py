@@ -3168,7 +3168,7 @@ class sim:
             file_dt = 0.05,
             step_count = 0,
             dt = -1,
-            epsilon = 0.07):
+            epsilon = 0.01):
         '''
         Set temporal parameters for the simulation. *Important*: Particle radii,
         physical parameters, and the optional fluid grid need to be set prior to
