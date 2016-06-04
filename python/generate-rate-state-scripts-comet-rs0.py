@@ -101,7 +101,8 @@ import numpy
 
 # load consolidated granular assemblage
 sim = sphere.sim(fluid=False)
-sim = sphere.sim('shear-sigma0=' + str({effective_stress}), fluid=False)
+cons_jobname = 'cons-1e4- + '{}Pa'.format({effective_stress})
+sim = sphere.sim(cons_jobname, fluid=False)
 sim.readlast()
 sim.id('{jobname}')
 
