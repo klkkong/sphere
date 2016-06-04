@@ -103,7 +103,7 @@ import numpy
 sim = sphere.sim(fluid=False)
 sim = sphere.sim('shear-sigma0=' + str({effective_stress}), fluid=False)
 sim.readlast()
-sim.id({jobname})
+sim.id('{jobname}')
 
 sim.checkerboardColors(nx=6, ny=6, nz=6)
 sim.cleanup()

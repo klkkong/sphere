@@ -97,7 +97,7 @@ import sphere
 
 cons = sphere.sim('init-1e4')
 cons.readlast()
-cons.id({jobname})
+cons.id('{jobname}')
 
 cons.periodicBoundariesXY()
 
