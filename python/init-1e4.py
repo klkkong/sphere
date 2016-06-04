@@ -15,7 +15,7 @@ np = 1e4
 # Common simulation id
 sim_id = 'init-1e4'
 
-init = sphere.sim(np=np, nd=3, nw=0, sid=sim_id + "-init")
+init = sphere.sim(np=np, nd=3, nw=0, sid=sim_id)
 
 # Save radii
 init.generateRadii(mean=0.01)
