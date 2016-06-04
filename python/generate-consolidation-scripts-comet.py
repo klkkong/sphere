@@ -112,7 +112,7 @@ cons.consolidate(normal_stress={effective_stress})
 cons.initTemporal(total=3.0, epsilon=0.07)
 
 cons.run(dry=True)
-cons.run(device=device)
+cons.run(device=0)
 
 cons.visualize('energy')
 cons.visualize('walls')
