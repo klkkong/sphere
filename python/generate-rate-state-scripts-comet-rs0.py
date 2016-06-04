@@ -22,7 +22,7 @@ mu_d_vals = [0.5]
 
 # Script generating functions
 
-def generate_slurm_script(jobname, effective_stress, velfac):
+def generate_slurm_script(jobname):
 
     script = '''#!/bin/bash
 #SBATCH -A {account}
@@ -57,7 +57,7 @@ echo Job end `whoami`@`hostname`, `date`
         file.write(script)
 
 
-def generate_slurm_continue_script(jobname, effective_stress, velfac):
+def generate_slurm_continue_script(jobname):
 
     script = '''#!/bin/bash
 #SBATCH -A {account}
@@ -156,13 +156,9 @@ for effective_stress in effective_stresses:
                 print(jobname)
 
                 # Generate scripts for slurm, submit with `sbatch <script>`
-                generate_slurm_script(jobname,
-                                      effective_stress,
-                                      velfac)
+                generate_slurm_script(jobname)
 
-                generate_slurm_continue_script(jobname,
-                                               effective_stress,
-                                               velfac)
+                generate_slurm_continue_script(jobname)
 
                 generate_simulation_script(jobname,
                                            effective_stress,
