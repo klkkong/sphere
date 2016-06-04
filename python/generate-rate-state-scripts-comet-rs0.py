@@ -120,7 +120,7 @@ sim.setDampingNormal(0.0)
 sim.setDampingTangential(0.0)
 
 sim.w_sigma0[0] = {effective_stress}
-sim.w_m[0] = numpy.abs(sigma0*sim.L[0]*sim.L[1]/sim.g[2])
+sim.w_m[0] = numpy.abs({effective_stress}*sim.L[0]*sim.L[1]/sim.g[2])
 
 sim.initTemporal(total = 20.0, file_dt = 0.01, epsilon=0.07)
 
