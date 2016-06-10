@@ -3915,6 +3915,17 @@ class sim:
         '''
         return self.rho[0]*self.volume(idx)
 
+    def totalMass(self):
+        '''
+        Returns the total mass of all particles.
+
+        :returns: The total mass  in [kg]
+        '''
+        m = 0.0
+        for i in range(self.np):
+            m += self.mass(i)
+        return m
+
     def smallestMass(self):
         '''
         Returns the mass of the leightest particle.
