@@ -139,7 +139,7 @@ for devs in devslist:
     # Setup shear experiment
     shear.shear(shear_strain_rate=0.05)
 
-    shear.gamma_wn[0] = 1.0e5
+    shear.gamma_wn[0] = 1.0e4
     shear.w_m[0] = shear.totalMass()
 
     # Set duration of simulation
