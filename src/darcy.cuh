@@ -398,7 +398,7 @@ __global__ void findDarcyPorositiesLinear(
 
         if (np > 0) {
 
-            // Cell sphere center position
+            // Cell center position
             const Float3 X = MAKE_FLOAT3(
                     x*dx + 0.5*dx,
                     y*dy + 0.5*dy,
@@ -767,7 +767,7 @@ __global__ void findDarcyPorosities(
                         // Get distance modifier for interparticle
                         // vector, if it crosses a periodic boundary
                         distmod = MAKE_FLOAT3(0.0, 0.0, 0.0);
-                        if (findDistMod(&targetCell, &distmod) != -1) {
+                        if (findDistModPorosity(&targetCell, &distmod) != -1) {
 
                             // Calculate linear cell ID
                             cellID = targetCell.x
