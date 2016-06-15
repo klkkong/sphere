@@ -464,12 +464,14 @@ __global__ void findDarcyPorositiesLinear(
                             targetCell.z = 1;
 
                         // Mirror particle grid at frictionless boundaries
-                        /*if (devC_grid.periodic == 2) {
-                            if (targetCell.y == -1)
+                        if (devC_grid.periodic == 2) {
+                            if (targetCell.y == -1) {
                                 targetCell.y = 1;
-                            else if (targetCell.y == devC_grid.num[1])
+                            }
+                            if (targetCell.y == devC_grid.num[1]) {
                                 targetCell.y = devC_grid.num[1] - 2;
-                        }*/
+                            }
+                        }
 
                         // Get distance modifier for interparticle
                         // vector, if it crosses a periodic boundary

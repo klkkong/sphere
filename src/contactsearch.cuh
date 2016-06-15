@@ -41,8 +41,9 @@ __device__ int findDistMod(int3* targetCell, Float3* distmod)
         }
 
 
-        // Only x-boundaries are periodic
-    } else if (devC_grid.periodic == 2) {
+    }
+    // Only x-boundaries are periodic
+    if (devC_grid.periodic == 2) {
 
         // Periodic x-boundary
         if (targetCell->x < 0) {
@@ -61,8 +62,9 @@ __device__ int findDistMod(int3* targetCell, Float3* distmod)
             return -1;
 
 
-        // No periodic boundaries
-    } else {
+    }
+    // No periodic boundaries
+    if (devC_grid.periodic > 2 || devC_grid.periodic < 1) {
 
         // Don't modify targetCell or distmod.
 
