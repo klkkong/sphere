@@ -463,10 +463,18 @@ __global__ void findDarcyPorositiesLinear(
                         if (targetCell.z == -1)
                             targetCell.z = 1;
 
+                        // Mirror particle grid at frictionless boundaries
+                        /*if (devC_grid.periodic == 2) {
+                            if (targetCell.y == -1)
+                                targetCell.y = 1;
+                            else if (targetCell.y == devC_grid.num[1])
+                                targetCell.y = devC_grid.num[1] - 2;
+                        }*/
+
                         // Get distance modifier for interparticle
                         // vector, if it crosses a periodic boundary
                         distmod = MAKE_FLOAT3(0.0, 0.0, 0.0);
-                        if (findDistModPorosity(&targetCell, &distmod) != -1) {
+                        if (findDistMod(&targetCell, &distmod) != -1) {
 
                             // Calculate linear cell ID
                             cellID = targetCell.x
@@ -767,7 +775,7 @@ __global__ void findDarcyPorosities(
                         // Get distance modifier for interparticle
                         // vector, if it crosses a periodic boundary
                         distmod = MAKE_FLOAT3(0.0, 0.0, 0.0);
-                        if (findDistModPorosity(&targetCell, &distmod) != -1) {
+                        if (findDistMod(&targetCell, &distmod) != -1) {
 
                             // Calculate linear cell ID
                             cellID = targetCell.x
