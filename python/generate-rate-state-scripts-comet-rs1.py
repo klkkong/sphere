@@ -152,7 +152,7 @@ for effective_stress in effective_stresses:
         for mu_s in mu_s_vals:
             for mu_d in mu_s_vals:
 
-                jobname = 'rs0-{}Pa-v={}-mu_s={}-mu_d={}'.format(
+                jobname = jobname_prefix + '{}Pa-v={}-mu_s={}-mu_d={}'.format(
                     effective_stress,
                     velfac,
                     mu_s,
