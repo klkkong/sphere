@@ -12,7 +12,7 @@ plots = True
 device = 0
 
 # Number of particles
-np = 2e3
+np = 1e4
 
 # Common simulation id
 sim_id = "alejandro"
@@ -28,8 +28,9 @@ init = sphere.sim(np=np, nd=3, nw=0, sid=sim_id + "-init")
 # Save radii
 init.generateRadii(mean=0.01)
 
-# Use default params
+# Add viscous damping to quickly dissipate kinetic energy
 init.defaultParams(k_n=1.16e7, k_t=1.16e7, gamma_n=100.0, mu_s=0.5, mu_d=0.5)
+init.gamma_wn[0] = 10000.0
 
 # Add gravity
 init.g[2] = -9.81
@@ -38,8 +39,7 @@ init.g[2] = -9.81
 init.periodicBoundariesX()
 
 # Initialize positions in random grid (also sets world size)
-hcells = np**(1.0/3.0)
-init.initRandomGridPos(gridnum=[hcells, hcells, 1e9])
+init.initRandomGridPos(gridnum=[12, 12, 1e9])
 
 # Set duration of simulation
 init.initTemporal(total=10.0, epsilon=0.07)
