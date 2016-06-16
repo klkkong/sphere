@@ -39,7 +39,7 @@ init.g[2] = -9.81
 init.periodicBoundariesX()
 
 # Initialize positions in random grid (also sets world size)
-init.initRandomGridPos(gridnum=[12, 12, 1e9])
+init.initRandomGridPos(gridnum=[24, 24, 1e9])
 
 # Set duration of simulation
 init.initTemporal(total=10.0, epsilon=0.07)
