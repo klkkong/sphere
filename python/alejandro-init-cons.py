@@ -12,7 +12,7 @@ plots = True
 device = 0
 
 # Number of particles
-np = 1e4
+np = 6634
 
 # Common simulation id
 sim_id = "alejandro"
