@@ -946,8 +946,8 @@ __host__ void DEM::startTime()
     int velocity_state = 1;  // 1: v1, 2: v2
     int change_velocity_state = 0;  // 1: increase velocity, 2: decrease vel.
     const Float velocity_factor = 10.0;  // v2 = v1*velocity_factor
-    const Float v2_start = 5.0; // seconds
-    const Float v2_end = 10.0;  // seconds
+    const Float v2_start = 10.0; // seconds
+    const Float v2_end = 15.0;  // seconds
 
     // Index of dynamic top wall (if it exists)
     unsigned int wall0_iz = 10000000;
