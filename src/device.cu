@@ -2351,7 +2351,7 @@ __host__ void DEM::startTime()
                     velocity_state == 1) {
                 change_velocity_state = 1.0;
                 velocity_state = 2;
-            } else if (time.current >= 10.0 && velocity_state == 2) {
+            } else if (time.current >= v2_end && velocity_state == 2) {
                 change_velocity_state = -1.0;
                 velocity_state = 1;
             }
