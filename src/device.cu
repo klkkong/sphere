@@ -37,11 +37,13 @@ int cudaCoresPerSM(int major, int minor)
         return 32;
     else if (major == 2 && minor == 1)
         return 48;
-    else if (major == 3 && minor == 0)
+    else if (major == 3)
         return 192;
-    else if (major == 3 && minor == 5)
-        return 192;
-    else if (major == 5 && minor == 0)
+    else if (major == 5)
+        return 128;
+    else if (major == 6 && minor == 0)
+        return 64;
+    else if (major == 6 && minor == 1)
         return 128;
     else
         printf("Error in cudaCoresPerSM",
