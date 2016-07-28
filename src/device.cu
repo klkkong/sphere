@@ -1970,6 +1970,17 @@ __host__ void DEM::startTime()
                         cudaThreadSynchronize();
                     }
 
+                    // copy porosities to the frictionless lower Z boundary
+                    if (grid.periodic == 2) {
+                        copyDarcyPorositiesToBottom<<<dimGridFluid, 
+                                dimBlockFluid>>>(
+                                dev_darcy_phi,
+                                dev_darcy_dphi,
+                                dev_darcy_div_v_p,
+                                dev_darcy_vp_avg);
+                        cudaThreadSynchronize();
+                    }
+
                     // Modulate the pressures at the upper boundary cells
                     if ((darcy.p_mod_A > 1.0e-5 || darcy.p_mod_A < -1.0e-5) &&
                             darcy.p_mod_f > 1.0e-7) {
