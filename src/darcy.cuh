@@ -758,7 +758,8 @@ __global__ void copyDarcyPorositiesToBottom(
     const unsigned int nz = devC_grid.num[2];
 
     // check that we are not outside the fluid grid
-    if (x < nx && y < ny && z == 0) {
+    if (devC_grid.periodic == 2 &&
+            x < nx && y < ny && z == 0) {
 
             const unsigned int readidx = d_idx(x, y, 1);
             const unsigned int writeidx = d_idx(x, y, z);
