@@ -204,6 +204,10 @@ __global__ void setDarcyZeros(T* __restrict__ dev_scalarfield)
     template<typename T>
 __global__ void setDarcyGhostNodes(
         T* __restrict__ dev_scalarfield,
+        const int bc_xn,
+        const int bc_xp,
+        const int bc_yn,
+        const int bc_yp,
         const int bc_bot,
         const int bc_top)
 {
@@ -1557,6 +1561,10 @@ __global__ void firstDarcySolution(
         const Float3* __restrict__ dev_darcy_grad_k,  // in
         const Float beta_f,                           // in
         const Float mu,                               // in
+        const int bc_xn,                              // in
+        const int bc_xp,                              // in
+        const int bc_yn,                              // in
+        const int bc_yp,                              // in
         const int bc_bot,                             // in
         const int bc_top,                             // in
         const unsigned int ndem,                      // in
@@ -1731,6 +1739,10 @@ __global__ void updateDarcySolution(
         const Float3* __restrict__ dev_darcy_grad_k,  // in
         const Float beta_f,                           // in
         const Float mu,                               // in
+        const int bc_xn,                              // in
+        const int bc_xp,                              // in
+        const int bc_yn,                              // in
+        const int bc_yp,                              // in
         const int bc_bot,                             // in
         const int bc_top,                             // in
         const unsigned int ndem,                      // in

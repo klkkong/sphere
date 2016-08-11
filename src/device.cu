@@ -1854,7 +1854,10 @@ __host__ void DEM::startTime()
                     if (PROFILING == 1)
                         startTimer(&kernel_tic);
                     setDarcyGhostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
-                            dev_darcy_p, darcy.bc_bot, darcy.bc_top);
+                            dev_darcy_p,
+                            darcy.bc_xn, darcy.bc_xp,
+                            darcy.bc_yn, darcy.bc_yp,
+                            darcy.bc_bot, darcy.bc_top);
                     cudaThreadSynchronize();
                     if (PROFILING == 1)
                         stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
@@ -1872,7 +1875,10 @@ __host__ void DEM::startTime()
                             iter);
 
                     setDarcyGhostNodes<Float3><<<dimGridFluid, dimBlockFluid>>>(
-                            dev_darcy_grad_p, darcy.bc_bot, darcy.bc_top);
+                            dev_darcy_grad_p,
+                            darcy.xn, darcy.xp,
+                            darcy.yn, darcy.yp,
+                            darcy.bc_bot, darcy.bc_top);
                     cudaThreadSynchronize();
                     if (PROFILING == 1)
                         stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
@@ -2003,7 +2009,10 @@ __host__ void DEM::startTime()
                     if (PROFILING == 1)
                         startTimer(&kernel_tic);
                     setDarcyGhostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
-                            dev_darcy_phi, darcy.bc_bot, darcy.bc_top);
+                            dev_darcy_phi,
+                            darcy.xn, darcy.xp,
+                            darcy.yn, darcy.yp,
+                            darcy.bc_bot, darcy.bc_top);
                     cudaThreadSynchronize();
                     if (PROFILING == 1)
                         stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
@@ -2014,7 +2023,10 @@ __host__ void DEM::startTime()
                     if (PROFILING == 1)
                         startTimer(&kernel_tic);
                     setDarcyGhostNodes<Float><<<dimGridFluid, dimBlockFluid>>>(
-                            dev_darcy_k, darcy.bc_bot, darcy.bc_top);
+                            dev_darcy_k,
+                            darcy.xn, darcy.xp,
+                            darcy.yn, darcy.yp,
+                            darcy.bc_bot, darcy.bc_top);
                     cudaThreadSynchronize();
                     if (PROFILING == 1)
                         stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
@@ -2109,7 +2121,10 @@ __host__ void DEM::startTime()
                             startTimer(&kernel_tic);
                         setDarcyGhostNodes<Float>
                             <<<dimGridFluid, dimBlockFluid>>>(
-                                dev_darcy_p, darcy.bc_bot, darcy.bc_top);
+                                dev_darcy_p,
+                                darcy.xn, darcy.xp,
+                                darcy.yn, darcy.yp,
+                                darcy.bc_bot, darcy.bc_top);
                         cudaThreadSynchronize();
                         if (PROFILING == 1)
                             stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
@@ -2130,6 +2145,10 @@ __host__ void DEM::startTime()
                                     dev_darcy_grad_k,
                                     darcy.beta_f,
                                     darcy.mu,
+                                    darcy.xn,
+                                    darcy.xp,
+                                    darcy.yn,
+                                    darcy.yp,
                                     darcy.bc_bot,
                                     darcy.bc_top,
                                     darcy.ndem,
@@ -2159,6 +2178,10 @@ __host__ void DEM::startTime()
                                 dev_darcy_grad_k,
                                 darcy.beta_f,
                                 darcy.mu,
+                                darcy.xn,
+                                darcy.xp,
+                                darcy.yn,
+                                darcy.yp,
                                 darcy.bc_bot,
                                 darcy.bc_top,
                                 darcy.ndem,
@@ -2289,7 +2312,10 @@ __host__ void DEM::startTime()
                     if (PROFILING == 1)
                         startTimer(&kernel_tic);
                     setDarcyGhostNodes<Float> <<<dimGridFluid, dimBlockFluid>>>
-                        (dev_darcy_p, darcy.bc_bot, darcy.bc_top);
+                        (dev_darcy_p,
+                         darcy.bc_xn, darcy.bc_xp,
+                         darcy.bc_yn, darcy.bc_yp,
+                         darcy.bc_bot, darcy.bc_top);
                     cudaThreadSynchronize();
                     if (PROFILING == 1)
                         stopTimer(&kernel_tic, &kernel_toc, &kernel_elapsed,
