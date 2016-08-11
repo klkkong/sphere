@@ -1652,11 +1652,13 @@ __global__ void firstDarcySolution(
             - ndem*devC_dt/(beta_f*phi*(1.0 - phi))
             *(dphi/(ndem*devC_dt) + dot(vp_avg, grad_phi));
 
-        // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
-        // grid if the wall isn't dynamic
+        // Dirichlet BC at fixed-pressure boundaries and at the dynamic top 
+        // wall.  wall0_iz will be larger than the grid if the wall isn't 
+        // dynamic
         if ((bc_bot == 0 && z == 0) || (bc_top == 0 && z == nz-1)
-                //|| (z >= wall0_iz-1 && bc_top == 0))
-                || (z >= wall0_iz && bc_top == 0))
+                || (z >= wall0_iz && bc_top == 0)
+                || (bc_xn == 0 && x == 0) || (bc_xp == 0 && x = nx-1)
+                || (bc_yn == 0 && y == 0) || (bc_yp == 0 && y = nx-1))
             dp_expl = 0.0;
 
 #ifdef REPORT_FORCING_TERMS
@@ -1822,11 +1824,13 @@ __global__ void updateDarcySolution(
             - ndem*devC_dt/(beta_f*phi*(1.0 - phi))
             *(dphi/(ndem*devC_dt) + dot(vp_avg, grad_phi));
 
-        // Dirichlet BC at dynamic top wall. wall0_iz will be larger than the
-        // grid if the wall isn't dynamic
+        // Dirichlet BC at fixed-pressure boundaries and at the dynamic top 
+        // wall.  wall0_iz will be larger than the grid if the wall isn't 
+        // dynamic
         if ((bc_bot == 0 && z == 0) || (bc_top == 0 && z == nz-1)
-                //|| (z >= wall0_iz-1 && bc_top == 0))
-                || (z >= wall0_iz && bc_top == 0))
+                || (z >= wall0_iz && bc_top == 0)
+                || (bc_xn == 0 && x == 0) || (bc_xp == 0 && x = nx-1)
+                || (bc_yn == 0 && y == 0) || (bc_yp == 0 && y = nx-1))
             dp_impl = 0.0;
             //p_new = p;
 
