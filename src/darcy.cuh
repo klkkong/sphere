@@ -1607,9 +1607,16 @@ __global__ void firstDarcySolution(
         Float p_zp = dev_darcy_p[d_idx(x,y,z+1)];
 
         // Neumann BCs
+        if (x == 0 && bc_xn == 1)
+            p_xn = p;
+        if (x == nx-1 && bc_xp == 1)
+            p_xp = p;
+        if (y == 0 && bc_yn == 1)
+            p_yn = p;
+        if (y == ny-1 && bc_yp == 1)
+            p_yp = p;
         if (z == 0 && bc_bot == 1)
             p_zn = p;
-        //if ((z == nz-1 && bc_top == 1) || z >= wall0_iz)
         if (z == nz-1 && bc_top == 1)
             p_zp = p;
 
