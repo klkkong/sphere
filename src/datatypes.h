@@ -164,6 +164,10 @@ struct Darcy {
     Float   p_mod_A;        // Pressure modulation amplitude at top
     Float   p_mod_f;        // Pressure modulation frequency at top
     Float   p_mod_phi;      // Pressure modulation phase at top
+    int     bc_xn;          // 0: Dirichlet, 1: Neumann, 3: Periodic
+    int     bc_xp;          // 0: Dirichlet, 1: Neumann, 3: Periodic
+    int     bc_yn;          // 0: Dirichlet, 1: Neumann, 3: Periodic
+    int     bc_yp;          // 0: Dirichlet, 1: Neumann, 3: Periodic
     int     bc_bot;         // 0: Dirichlet, 1: Neumann
     int     bc_top;         // 0: Dirichlet, 1: Neumann
     int     free_slip_bot;  // 0: no, 1: yes

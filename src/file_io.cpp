@@ -294,6 +294,7 @@ void DEM::readbin(const char *target)
             ifs.read(as_bytes(ns.p_mod_f), sizeof(Float));
             ifs.read(as_bytes(ns.p_mod_phi), sizeof(Float));
 
+            ifs.read(as_bytes(ns.bc_top), sizeof(int));
             ifs.read(as_bytes(ns.bc_bot), sizeof(int));
             ifs.read(as_bytes(ns.bc_top), sizeof(int));
             ifs.read(as_bytes(ns.free_slip_bot), sizeof(int));
@@ -364,6 +365,10 @@ void DEM::readbin(const char *target)
             ifs.read(as_bytes(darcy.p_mod_f), sizeof(Float));
             ifs.read(as_bytes(darcy.p_mod_phi), sizeof(Float));
 
+            ifs.read(as_bytes(darcy.bc_xn), sizeof(int));
+            ifs.read(as_bytes(darcy.bc_xp), sizeof(int));
+            ifs.read(as_bytes(darcy.bc_yn), sizeof(int));
+            ifs.read(as_bytes(darcy.bc_yp), sizeof(int));
             ifs.read(as_bytes(darcy.bc_bot), sizeof(int));
             ifs.read(as_bytes(darcy.bc_top), sizeof(int));
             ifs.read(as_bytes(darcy.free_slip_bot), sizeof(int));
@@ -659,6 +664,11 @@ void DEM::writebin(const char *target)
                 ofs.write(as_bytes(darcy.p_mod_f), sizeof(Float));
                 ofs.write(as_bytes(darcy.p_mod_phi), sizeof(Float));
 
+                ofs.write(as_bytes(darcy.bc_xn), sizeof(int));
+                ofs.write(as_bytes(darcy.bc_xp), sizeof(int));
+                ofs.write(as_bytes(darcy.bc_yn), sizeof(int));
+                ofs.write(as_bytes(darcy.bc_yp), sizeof(int));
+                ofs.write(as_bytes(darcy.bc_top), sizeof(int));
                 ofs.write(as_bytes(darcy.bc_bot), sizeof(int));
                 ofs.write(as_bytes(darcy.bc_top), sizeof(int));
                 ofs.write(as_bytes(darcy.free_slip_bot), sizeof(int));

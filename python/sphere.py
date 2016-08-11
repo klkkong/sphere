@@ -329,11 +329,21 @@ class sim:
             self.p_mod_f = numpy.zeros(1, dtype=numpy.float64)  # Frequency [Hz]
             self.p_mod_phi = numpy.zeros(1, dtype=numpy.float64) # Shift [rad]
 
+            if self.cfd_solver[0] == 1:  # Darcy solver
+                # Boundary conditions at the sides of the fluid grid
+                # 0: Dirichlet
+                # 1: Neumann
+                # 2: Periodic (default)
+                self.bc_xn = numpy.ones(1, dtype=numpy.int32)*3  # Neg. x bc
+                self.bc_xp = numpy.ones(1, dtype=numpy.int32)*3  # Pos. x bc
+                self.bc_yn = numpy.ones(1, dtype=numpy.int32)*3  # Neg. y bc
+                self.bc_yp = numpy.ones(1, dtype=numpy.int32)*3  # Pos. y bc
+
             # Boundary conditions at the top and bottom of the fluid grid
             # 0: Dirichlet (default)
             # 1: Neumann free slip
-            # 2: Neumann no slip
-            # 3: Periodic
+            # 2: Neumann no slip (Navier Stokes), Periodic (Darcy)
+            # 3: Periodic (Navier-Stokes solver only)
             # 4: Constant flux (Darcy solver only)
             self.bc_bot = numpy.zeros(1, dtype=numpy.int32)
             self.bc_top = numpy.zeros(1, dtype=numpy.int32)
@@ -344,16 +354,6 @@ class sim:
             # Boundary-normal flux (in case of bc_* = 4)
             self.bc_bot_flux = numpy.zeros(1, dtype=numpy.float64)
             self.bc_top_flux = numpy.zeros(1, dtype=numpy.float64)
-
-            # Boundary conditions at the top and bottom of the fluid grid
-            # 0: Dirichlet
-            # 1: Neumann
-            # 2: Periodic (default)
-            # 3: Constant flux (Darcy solver only)
-            self.bc_xn = numpy.zeros(1, dtype=numpy.int32)*2  # Neg. x boundary
-            self.bc_xp = numpy.zeros(1, dtype=numpy.int32)*2  # Pos. x boundary
-            self.bc_yn = numpy.zeros(1, dtype=numpy.int32)*2  # Neg. y boundary
-            self.bc_yp = numpy.zeros(1, dtype=numpy.int32)*2  # Pos. y boundary
 
             ## Solver parameters
 
@@ -739,6 +739,18 @@ class sim:
                 elif self.k_c != other.k_c:
                     print(88)
                     return(88)
+                elif (self.bc_xn != other.bc_xn):
+                    print(92)
+                    return 92
+                elif (self.bc_xp != other.bc_xp):
+                    print(93)
+                    return 93
+                elif (self.bc_yn != other.bc_yn):
+                    print(94)
+                    return 94
+                elif (self.bc_yp != other.bc_yp):
+                    print(95)
+                    return 95
 
         if (self.color != other.color).any():
             print(90)
@@ -1155,6 +1167,16 @@ class sim:
                     self.p_mod_phi =\
                             numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
+                    if self.version >= 2.12 and self.cfd_solver == 1:
+                        self.bc_xn =\
+                            numpy.fromfile(fh, dtype=numpy.int32, count=1)
+                        self.bc_xp =\
+                            numpy.fromfile(fh, dtype=numpy.int32, count=1)
+                        self.bc_yn =\
+                            numpy.fromfile(fh, dtype=numpy.int32, count=1)
+                        self.bc_yp =\
+                            numpy.fromfile(fh, dtype=numpy.int32, count=1)
+
                     self.bc_bot =\
                             numpy.fromfile(fh, dtype=numpy.int32, count=1)
                     self.bc_top =\
@@ -1404,6 +1426,12 @@ class sim:
                 fh.write(self.p_mod_A.astype(numpy.float64))
                 fh.write(self.p_mod_f.astype(numpy.float64))
                 fh.write(self.p_mod_phi.astype(numpy.float64))
+
+                if self.cfd_solve[0] == 1:  # Sides only adjustable with Darcy
+                    fh.write(self.bc_xn.astype(numpy.int32))
+                    fh.write(self.bc_xp.astype(numpy.int32))
+                    fh.write(self.bc_yn.astype(numpy.int32))
+                    fh.write(self.bc_yp.astype(numpy.int32))
 
                 fh.write(self.bc_bot.astype(numpy.int32))
                 fh.write(self.bc_top.astype(numpy.int32))
@@ -3358,6 +3386,11 @@ class sim:
             self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
             self.k_c = numpy.ones(1, dtype=numpy.float64)*4.6e-10
 
+            self.bc_xn = numpy.ones(1, dtype=numpy.int32)*3
+            self.bc_xp = numpy.ones(1, dtype=numpy.int32)*3
+            self.bc_yn = numpy.ones(1, dtype=numpy.int32)*3
+            self.bc_yp = numpy.ones(1, dtype=numpy.int32)*3
+
         else:
             raise Exception('Value of cfd_solver not understood (' + \
                     str(self.cfd_solver[0]) + ')')
@@ -3464,6 +3497,80 @@ class sim:
         '''
         self.bc_top[0] = 4
         self.bc_top_flux[0] = specific_flux
+
+    def setFluidXFixedPressure(self):
+        '''
+        Set the X boundaries of the fluid domain to follow the fixed pressure
+        value (Dirichlet) boundary condition.
+
+        This is not the default behavior for the boundary. See also
+        :func:`setFluidXFixedPressure()`,
+        :func:`setFluidXNoFlow()`, and
+        :func:`setFluidXPeriodic()` (default)
+        '''
+        self.bc_xn[0] = 0
+        self.bc_xp[0] = 0
+
+    def setFluidXNoFlow(self):
+        '''
+        Set the X boundaries of the fluid domain to follow the no-flow
+        (Neumann) boundary condition.
+
+        This is not the default behavior for the boundary. See also
+        :func:`setFluidXFixedPressure()`,
+        :func:`setFluidXNoFlow()`, and
+        :func:`setFluidXPeriodic()` (default)
+        '''
+        self.bc_xn[0] = 1
+        self.bc_xp[0] = 1
+
+    def setFluidXPeriodic(self):
+        '''
+        Set the X boundaries of the fluid domain to follow the periodic
+        (cyclic) boundary condition.
+
+        This is the default behavior for the boundary. See also
+        :func:`setFluidXFixedPressure()` and
+        :func:`setFluidXNoFlow()`
+        '''
+        self.bc_xn[0] = 2
+        self.bc_xp[0] = 2
+
+    def setFluidYFixedPressure(self):
+        '''
+        Set the Y boundaries of the fluid domain to follow the fixed pressure
+        value (Dirichlet) boundary condition.
+
+        This is not the default behavior for the boundary. See also
+        :func:`setFluidYNoFlow()` and
+        :func:`setFluidYPeriodic()` (default)
+        '''
+        self.bc_yn[0] = 0
+        self.bc_yp[0] = 0
+
+    def setFluidYNoFlow(self):
+        '''
+        Set the Y boundaries of the fluid domain to follow the no-flow
+        (Neumann) boundary condition.
+
+        This is not the default behavior for the boundary. See also
+        :func:`setFluidYFixedPressure()` and
+        :func:`setFluidYPeriodic()` (default)
+        '''
+        self.bc_yn[0] = 1
+        self.bc_yp[0] = 1
+
+    def setFluidYPeriodic(self):
+        '''
+        Set the Y boundaries of the fluid domain to follow the periodic
+        (cyclic) boundary condition.
+
+        This is the default behavior for the boundary. See also
+        :func:`setFluidYFixedPressure()` and
+        :func:`setFluidYNoFlow()`
+        '''
+        self.bc_yn[0] = 2
+        self.bc_yp[0] = 2
 
     def setPermeabilityPrefactor(self, k_c, verbose=True):
         '''
