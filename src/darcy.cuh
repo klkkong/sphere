@@ -223,16 +223,34 @@ __global__ void setDarcyGhostNodes(
         const T val = dev_scalarfield[d_idx(x,y,z)];
 
         // x
-        if (x == 0)
-            dev_scalarfield[idx(nx,y,z)] = val;
-        if (x == nx-1)
-            dev_scalarfield[idx(-1,y,z)] = val;
+        if (x == 0 && bc_xn == 0)
+            dev_scalarfield[idx(-1,y,z)] = val;     // Dirichlet
+        if (x == 1 && bc_xn == 1)
+            dev_scalarfield[idx(-1,y,z)] = val;     // Neumann
+        if (x == 0 && bc_xn == 2)
+            dev_scalarfield[idx(nx,y,z)] = val;     // Periodic -y
+
+        if (x == nx-1 && bc_xp == 0)
+            dev_scalarfield[idx(nx,y,z)] = val;     // Dirichlet
+        if (x == nx-2 && bc_xp == 1)
+            dev_scalarfield[idx(nx,y,z)] = val;     // Neumann
+        if (x == nx-1 && bc_xp == 2)
+            dev_scalarfield[idx(-1,y,z)] = val;     // Periodic +x
 
         // y
-        if (y == 0)
-            dev_scalarfield[idx(x,ny,z)] = val;
-        if (y == ny-1)
-            dev_scalarfield[idx(x,-1,z)] = val;
+        if (y == 0 && bc_yn == 0)
+            dev_scalarfield[idx(x,-1,z)] = val;     // Dirichlet
+        if (y == 1 && bc_yn == 1)
+            dev_scalarfield[idx(x,-1,z)] = val;     // Neumann
+        if (y == 0 && bc_yn == 2)
+            dev_scalarfield[idx(x,ny,z)] = val;     // Periodic -y
+
+        if (y == ny-1 && bc_yp == 0)
+            dev_scalarfield[idx(x,ny,z)] = val;     // Dirichlet
+        if (y == ny-2 && bc_yp == 1)
+            dev_scalarfield[idx(x,ny,z)] = val;     // Neumann
+        if (y == ny-1 && bc_yp == 2)
+            dev_scalarfield[idx(x,-1,z)] = val;     // Periodic +y
 
         // z
         if (z == 0 && bc_bot == 0)

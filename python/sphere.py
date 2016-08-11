@@ -23,8 +23,8 @@ else:
 numpy.seterr(all='warn', over='raise')
 
 # Sphere version number. This field should correspond to the value in
-# `../src/constants.h`.
-VERSION = 2.11
+# `../src/version.h`.
+VERSION = 2.12
 
 # Transparency on plot legends
 legend_alpha = 0.5
@@ -330,7 +330,7 @@ class sim:
             self.p_mod_phi = numpy.zeros(1, dtype=numpy.float64) # Shift [rad]
 
             # Boundary conditions at the top and bottom of the fluid grid
-            # 0: Dirichlet
+            # 0: Dirichlet (default)
             # 1: Neumann free slip
             # 2: Neumann no slip
             # 3: Periodic
@@ -345,6 +345,15 @@ class sim:
             self.bc_bot_flux = numpy.zeros(1, dtype=numpy.float64)
             self.bc_top_flux = numpy.zeros(1, dtype=numpy.float64)
 
+            # Boundary conditions at the top and bottom of the fluid grid
+            # 0: Dirichlet
+            # 1: Neumann
+            # 2: Periodic (default)
+            # 3: Constant flux (Darcy solver only)
+            self.bc_xn = numpy.zeros(1, dtype=numpy.int32)*2  # Neg. x boundary
+            self.bc_xp = numpy.zeros(1, dtype=numpy.int32)*2  # Pos. x boundary
+            self.bc_yn = numpy.zeros(1, dtype=numpy.int32)*2  # Neg. y boundary
+            self.bc_yp = numpy.zeros(1, dtype=numpy.int32)*2  # Pos. y boundary
 
             ## Solver parameters
 
