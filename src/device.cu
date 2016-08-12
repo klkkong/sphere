@@ -984,13 +984,6 @@ __host__ void DEM::startTime()
     // MAIN CALCULATION TIME LOOP
     while (time.current <= time.total) {
 
-    // check if particle positions have finite values
-#ifdef CHECK_PARTICLES_FINITE
-        checkParticlePositions<<<dimGrid, dimBlock>>>(dev_x);
-        cudaThreadSynchronize();
-        checkForCudaErrorsIter("Post checkParticlePositions", iter);
-#endif
-
         // Print current step number to terminal
         //printf("\n\n@@@ DEM time step: %ld\n", iter);
 
@@ -998,6 +991,13 @@ __host__ void DEM::startTime()
         checkForCudaErrors("Start of main while loop");
 
         if (np > 0) {
+
+            // check if particle positions have finite values
+#ifdef CHECK_PARTICLES_FINITE
+            checkParticlePositions<<<dimGrid, dimBlock>>>(dev_x);
+            cudaThreadSynchronize();
+            checkForCudaErrorsIter("Post checkParticlePositions", iter);
+#endif
 
             // For each particle: 
             // Compute hash key (cell index) from position 
