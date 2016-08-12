@@ -435,325 +435,325 @@ class sim:
         TODO: Replace print(#) with print("field name")
         '''
         if self.version != other.version:
-            print(1)
+            print('version')
             return 1
         elif self.nd != other.nd:
-            print(2)
+            print('nd')
             return 2
         elif self.np != other.np:
-            print(4)
+            print('np')
             return 4
         elif self.time_dt != other.time_dt:
-            print(5)
+            print('time_dt')
             return 5
         elif self.time_current != other.time_current:
-            print(6)
+            print('time_current')
             return 6
         elif self.time_total != other.time_total:
-            print(7)
+            print('time_total')
             return 7
         elif self.time_file_dt != other.time_file_dt:
-            print(8)
+            print('time_file_dt')
             return 8
         elif self.time_step_count != other.time_step_count:
-            print(9)
+            print('time_step_count')
             return 9
         elif (self.origo != other.origo).any():
-            print(10)
+            print('origo')
             return 10
         elif (self.L != other.L).any():
-            print(11)
+            print('L')
             return 11
         elif (self.num != other.num).any():
-            print(12)
+            print('num')
             return 12
         elif self.periodic != other.periodic:
-            print(13)
+            print('periodic')
             return 13
         elif (self.x != other.x).any():
-            print(14)
+            print('x')
             return 14
         elif (self.radius != other.radius).any():
-            print(15)
+            print('radius')
             return 15
         elif (self.xyzsum != other.xyzsum).any():
-            print(16)
+            print('xyzsum')
             return 16
         elif (self.vel != other.vel).any():
-            print(17)
+            print('vel')
             return 17
         elif (self.fixvel != other.fixvel).any():
-            print(18)
+            print('fixvel')
             return 18
         elif (self.force != other.force).any():
-            print(19)
+            print('force')
             return 19
         elif (self.angpos != other.angpos).any():
-            print(20)
+            print('angpos')
             return 20
         elif (self.angvel != other.angvel).any():
-            print(21)
+            print('angvel')
             return 21
         elif (self.torque != other.torque).any():
-            print(22)
+            print('torque')
             return 22
         elif (self.es_dot != other.es_dot).any():
-            print(23)
+            print('es_dot')
             return 23
         elif (self.es != other.es).any():
-            print(24)
+            print('es')
             return 24
         elif (self.ev_dot != other.ev_dot).any():
-            print(25)
+            print('ev_dot')
             return 25
         elif (self.ev != other.ev).any():
-            print(26)
+            print('ev')
             return 26
         elif (self.p != other.p).any():
-            print(27)
+            print('p')
             return 27
         elif (self.g != other.g).any():
-            print(28)
+            print('g')
             return 28
         elif self.k_n != other.k_n:
-            print(29)
+            print('k_n')
             return 29
         elif self.k_t != other.k_t:
-            print(30)
+            print('k_t')
             return 30
         elif self.k_r != other.k_r:
-            print(31)
+            print('k_r')
             return 31
         elif self.gamma_n != other.gamma_n:
-            print(32)
+            print('gamma_n')
             return 32
         elif self.gamma_t != other.gamma_t:
-            print(33)
+            print('gamma_t')
             return 33
         elif self.gamma_r != other.gamma_r:
-            print(34)
+            print('gamma_r')
             return 34
         elif self.mu_s != other.mu_s:
-            print(35)
+            print('mu_s')
             return 35
         elif self.mu_d != other.mu_d:
-            print(36)
+            print('mu_d')
             return 36
         elif self.mu_r != other.mu_r:
-            print(37)
+            print('mu_r')
             return 37
         elif self.rho != other.rho:
-            print(38)
+            print('rho')
             return 38
         elif self.contactmodel != other.contactmodel:
-            print(39)
+            print('contactmodel')
             return 39
         elif self.kappa != other.kappa:
-            print(40)
+            print('kappa')
             return 40
         elif self.db != other.db:
-            print(41)
+            print('db')
             return 41
         elif self.V_b != other.V_b:
-            print(42)
+            print('V_b')
             return 42
         elif self.nw != other.nw:
-            print(43)
+            print('nw')
             return 43
         elif (self.wmode != other.wmode).any():
-            print(44)
+            print('wmode')
             return 44
         elif (self.w_n != other.w_n).any():
-            print(45)
+            print('w_n')
             return 45
         elif (self.w_x != other.w_x).any():
-            print(46)
+            print('w_x')
             return 46
         elif (self.w_m != other.w_m).any():
-            print(47)
+            print('w_m')
             return 47
         elif (self.w_vel != other.w_vel).any():
-            print(48)
+            print('w_vel')
             return 48
         elif (self.w_force != other.w_force).any():
-            print(49)
+            print('w_force')
             return 49
         elif (self.w_sigma0 != other.w_sigma0).any():
-            print(50)
+            print('w_sigma0')
             return 50
         elif self.w_sigma0_A != other.w_sigma0_A:
-            print(51)
+            print('w_sigma0_A')
             return 51
         elif self.w_sigma0_f != other.w_sigma0_f:
-            print(52)
+            print('w_sigma0_f')
             return 52
         elif self.w_tau_x != other.w_tau_x:
-            print(52.5)
+            print('w_tau_x')
             return 52.5
         elif self.gamma_wn != other.gamma_wn:
-            print(53)
+            print('gamma_wn')
             return 53
         elif self.gamma_wt != other.gamma_wt:
-            print(54)
+            print('gamma_wt')
             return 54
         elif self.lambda_bar != other.lambda_bar:
-            print(55)
+            print('lambda_bar')
             return 55
         elif self.nb0 != other.nb0:
-            print(56)
+            print('nb0')
             return 56
         elif self.sigma_b != other.sigma_b:
-            print(57)
+            print('sigma_b')
             return 57
         elif self.tau_b != other.tau_b:
-            print(58)
+            print('tau_b')
             return 58
         elif self.bonds != other.bonds:
-            print(59)
+            print('bonds')
             return 59
         elif self.bonds_delta_n != other.bonds_delta_n:
-            print(60)
+            print('bonds_delta_n')
             return 60
         elif self.bonds_delta_t != other.bonds_delta_t:
-            print(61)
+            print('bonds_delta_t')
             return 61
         elif self.bonds_omega_n != other.bonds_omega_n:
-            print(62)
+            print('bonds_omega_n')
             return 62
         elif self.bonds_omega_t != other.bonds_omega_t:
-            print(63)
+            print('bonds_omega_t')
             return 63
         elif self.fluid != other.fluid:
-            print(64)
+            print('fluid')
             return 64
 
         if self.fluid:
             if self.cfd_solver != other.cfd_solver:
-                print(91)
+                print('cfd_solver')
                 return 91
             elif self.mu != other.mu:
-                print(65)
+                print('mu')
                 return 65
             elif (self.v_f != other.v_f).any():
-                print(66)
+                print('v_f')
                 return 66
             elif (self.p_f != other.p_f).any():
-                print(67)
+                print('p_f')
                 return 67
             #elif self.phi != other.phi).any():
-                #print(68)
-                #return 68
+                #print('phi')
+                #return 68  # Porosities not initialized correctly
             elif (self.dphi != other.dphi).any():
-                print(69)
+                print('d_phi')
                 return 69
             elif self.rho_f != other.rho_f:
-                print(70)
+                print('rho_f')
                 return 70
             elif self.p_mod_A != other.p_mod_A:
-                print(71)
+                print('p_mod_A')
                 return 71
             elif self.p_mod_f != other.p_mod_f:
-                print(72)
+                print('p_mod_f')
                 return 72
             elif self.p_mod_phi != other.p_mod_phi:
-                print(73)
+                print('p_mod_phi')
                 return 73
             elif self.bc_bot != other.bc_bot:
-                print(74)
+                print('bc_bot')
                 return 74
             elif self.bc_top != other.bc_top:
-                print(75)
+                print('bc_top')
                 return 75
             elif self.free_slip_bot != other.free_slip_bot:
-                print(76)
+                print('free_slip_bot')
                 return 76
             elif self.free_slip_top != other.free_slip_top:
-                print(77)
+                print('free_slip_top')
                 return 77
             elif self.bc_bot_flux != other.bc_bot_flux:
-                print(91)
+                print('bc_bot_flux')
                 return 91
             elif self.bc_top_flux != other.bc_top_flux:
-                print(91)
+                print('bc_top_flux')
                 return 91
 
             if self.cfd_solver == 0:
                 if self.gamma != other.gamma:
-                    print(78)
+                    print('gamma')
                     return 78
                 elif self.theta != other.theta:
-                    print(79)
+                    print('theta')
                     return 79
                 elif self.beta != other.beta:
-                    print(80)
+                    print('beta')
                     return 80
                 elif self.tolerance != other.tolerance:
-                    print(81)
+                    print('tolerance')
                     return 81
                 elif self.maxiter != other.maxiter:
-                    print(82)
+                    print('maxiter')
                     return 82
                 elif self.ndem != other.ndem:
-                    print(83)
+                    print('ndem')
                     return 83
                 elif self.c_phi != other.c_phi:
-                    print(84)
+                    print('c_phi')
                     return(84)
                 elif self.c_v != other.c_v:
-                    print(85)
+                    print('c_v')
                 elif self.dt_dem_fac != other.dt_dem_fac:
-                    print(85)
+                    print('dt_dem_fac')
                     return(85)
                 elif (self.f_d != other.f_d).any():
-                    print(86)
+                    print('f_d')
                     return(86)
                 elif (self.f_p != other.f_p).any():
-                    print(87)
+                    print('f_p')
                     return(87)
                 elif (self.f_v != other.f_v).any():
-                    print(88)
+                    print('f_v')
                     return(88)
                 elif (self.f_sum != other.f_sum).any():
-                    print(89)
+                    print('f_sum')
                     return(89)
 
             if self.cfd_solver == 1:
                 if self.tolerance != other.tolerance:
-                    print(81)
+                    print('tolerance')
                     return 81
                 elif self.maxiter != other.maxiter:
-                    print(82)
+                    print('maxiter')
                     return 82
                 elif self.ndem != other.ndem:
-                    print(83)
+                    print('ndem')
                     return 83
                 elif self.c_phi != other.c_phi:
-                    print(84)
+                    print('c_phi')
                     return(84)
                 elif (self.f_p != other.f_p).any():
-                    print(86)
+                    print('f_p')
                     return(86)
                 elif self.beta_f != other.beta_f:
-                    print(87)
+                    print('beta_f')
                     return(87)
                 elif self.k_c != other.k_c:
-                    print(88)
+                    print('k_c')
                     return(88)
                 elif (self.bc_xn != other.bc_xn):
-                    print(92)
+                    print('bc_xn')
                     return 92
                 elif (self.bc_xp != other.bc_xp):
-                    print(93)
+                    print('bc_xp')
                     return 93
                 elif (self.bc_yn != other.bc_yn):
-                    print(94)
+                    print('bc_yn')
                     return 94
                 elif (self.bc_yp != other.bc_yp):
-                    print(95)
+                    print('bc_yp')
                     return 95
 
         if (self.color != other.color).any():
-            print(90)
+            print('color')
             return 90
 
         # All equal
@@ -1176,11 +1176,6 @@ class sim:
                             numpy.fromfile(fh, dtype=numpy.int32, count=1)
                         self.bc_yp =\
                             numpy.fromfile(fh, dtype=numpy.int32, count=1)
-                    elif self.cfd_solver == 1:
-                        self.bc_xn = numpy.zeros(1, dtype=numpy.int32)
-                        self.bc_xp = numpy.zeros(1, dtype=numpy.int32)
-                        self.bc_yn = numpy.zeros(1, dtype=numpy.int32)
-                        self.bc_yp = numpy.zeros(1, dtype=numpy.int32)
 
                     self.bc_bot =\
                             numpy.fromfile(fh, dtype=numpy.int32, count=1)
