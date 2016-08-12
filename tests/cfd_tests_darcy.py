@@ -2,9 +2,9 @@
 from pytestutils import *
 
 import sphere
-import sys
+#import sys
 import numpy
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 print("### CFD tests - Dirichlet BCs ###")
 
@@ -22,10 +22,10 @@ orig.initTemporal(total = 0.2, file_dt = 0.01, dt = 1.0e-7)
 #orig.g[2] = -10.0
 orig.time_file_dt = orig.time_dt*0.99
 orig.time_total = orig.time_dt*10
-orig.run(dry=True)
+#orig.run(dry=True)
 py = sphere.sim(sid = orig.sid, fluid = True)
-#orig.run(verbose=False)
-orig.run(verbose=True)
+orig.run(verbose=False)
+#orig.run(verbose=True)
 
 zeros = numpy.zeros((orig.num))
 py.readlast(verbose = False)
