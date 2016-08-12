@@ -1176,6 +1176,11 @@ class sim:
                             numpy.fromfile(fh, dtype=numpy.int32, count=1)
                         self.bc_yp =\
                             numpy.fromfile(fh, dtype=numpy.int32, count=1)
+                    elif self.cfd_solver == 1:
+                        self.bc_xn = numpy.zeros(1, dtype=numpy.int32)
+                        self.bc_xp = numpy.zeros(1, dtype=numpy.int32)
+                        self.bc_yn = numpy.zeros(1, dtype=numpy.int32)
+                        self.bc_yp = numpy.zeros(1, dtype=numpy.int32)
 
                     self.bc_bot =\
                             numpy.fromfile(fh, dtype=numpy.int32, count=1)

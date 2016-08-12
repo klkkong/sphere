@@ -296,7 +296,6 @@ void DEM::readbin(const char *target)
 
             ifs.read(as_bytes(ns.bc_top), sizeof(int));
             ifs.read(as_bytes(ns.bc_bot), sizeof(int));
-            ifs.read(as_bytes(ns.bc_top), sizeof(int));
             ifs.read(as_bytes(ns.free_slip_bot), sizeof(int));
             ifs.read(as_bytes(ns.free_slip_top), sizeof(int));
             ifs.read(as_bytes(ns.bc_bot_flux), sizeof(Float));
