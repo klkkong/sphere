@@ -3386,10 +3386,10 @@ class sim:
             self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
             self.k_c = numpy.ones(1, dtype=numpy.float64)*4.6e-10
 
-            self.bc_xn = numpy.ones(1, dtype=numpy.int32)*3
-            self.bc_xp = numpy.ones(1, dtype=numpy.int32)*3
-            self.bc_yn = numpy.ones(1, dtype=numpy.int32)*3
-            self.bc_yp = numpy.ones(1, dtype=numpy.int32)*3
+            self.bc_xn = numpy.ones(1, dtype=numpy.int32)*2
+            self.bc_xp = numpy.ones(1, dtype=numpy.int32)*2
+            self.bc_yn = numpy.ones(1, dtype=numpy.int32)*2
+            self.bc_yp = numpy.ones(1, dtype=numpy.int32)*2
 
         else:
             raise Exception('Value of cfd_solver not understood (' + \
