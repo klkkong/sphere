@@ -1427,7 +1427,7 @@ class sim:
                 fh.write(self.p_mod_f.astype(numpy.float64))
                 fh.write(self.p_mod_phi.astype(numpy.float64))
 
-                if self.cfd_solve[0] == 1:  # Sides only adjustable with Darcy
+                if self.cfd_solver[0] == 1:  # Sides only adjustable with Darcy
                     fh.write(self.bc_xn.astype(numpy.int32))
                     fh.write(self.bc_xp.astype(numpy.int32))
                     fh.write(self.bc_yn.astype(numpy.int32))
