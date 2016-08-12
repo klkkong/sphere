@@ -777,7 +777,6 @@ __global__ void copyDarcyPorositiesToBottom(
     // Grid dimensions
     const unsigned int nx = devC_grid.num[0];
     const unsigned int ny = devC_grid.num[1];
-    const unsigned int nz = devC_grid.num[2];
 
     // check that we are not outside the fluid grid
     if (devC_grid.periodic == 2 &&
@@ -1685,11 +1684,11 @@ __global__ void firstDarcySolution(
         //const Float  div_v_p = dev_darcy_div_v_p[cellidx];
         const Float3 vp_avg = dev_darcy_vp_avg[cellidx];
 
-        const Float p_xn  = dev_darcy_p[d_idx(x-1,y,z)];
+        Float p_xn  = dev_darcy_p[d_idx(x-1,y,z)];
         const Float p     = dev_darcy_p[cellidx];
-        const Float p_xp  = dev_darcy_p[d_idx(x+1,y,z)];
-        const Float p_yn  = dev_darcy_p[d_idx(x,y-1,z)];
-        const Float p_yp  = dev_darcy_p[d_idx(x,y+1,z)];
+        Float p_xp  = dev_darcy_p[d_idx(x+1,y,z)];
+        Float p_yn  = dev_darcy_p[d_idx(x,y-1,z)];
+        Float p_yp  = dev_darcy_p[d_idx(x,y+1,z)];
         Float p_zn = dev_darcy_p[d_idx(x,y,z-1)];
         Float p_zp = dev_darcy_p[d_idx(x,y,z+1)];
 
@@ -1751,8 +1750,8 @@ __global__ void firstDarcySolution(
         // dynamic
         if ((bc_bot == 0 && z == 0) || (bc_top == 0 && z == nz-1)
                 || (z >= wall0_iz && bc_top == 0)
-                || (bc_xn == 0 && x == 0) || (bc_xp == 0 && x = nx-1)
-                || (bc_yn == 0 && y == 0) || (bc_yp == 0 && y = nx-1))
+                || (bc_xn == 0 && x == 0) || (bc_xp == 0 && x == nx-1)
+                || (bc_yn == 0 && y == 0) || (bc_yp == 0 && y == nx-1))
             dp_expl = 0.0;
 
 #ifdef REPORT_FORCING_TERMS
@@ -1867,11 +1866,11 @@ __global__ void updateDarcySolution(
         const Float p_old   = dev_darcy_p_old[cellidx];
         const Float dp_expl = dev_darcy_dp_expl[cellidx];
 
-        const Float p_xn  = dev_darcy_p[d_idx(x-1,y,z)];
+        Float p_xn  = dev_darcy_p[d_idx(x-1,y,z)];
         const Float p     = dev_darcy_p[cellidx];
-        const Float p_xp  = dev_darcy_p[d_idx(x+1,y,z)];
-        const Float p_yn  = dev_darcy_p[d_idx(x,y-1,z)];
-        const Float p_yp  = dev_darcy_p[d_idx(x,y+1,z)];
+        Float p_xp  = dev_darcy_p[d_idx(x+1,y,z)];
+        Float p_yn  = dev_darcy_p[d_idx(x,y-1,z)];
+        Float p_yp  = dev_darcy_p[d_idx(x,y+1,z)];
         Float p_zn = dev_darcy_p[d_idx(x,y,z-1)];
         Float p_zp = dev_darcy_p[d_idx(x,y,z+1)];
 
@@ -1934,8 +1933,8 @@ __global__ void updateDarcySolution(
         // dynamic
         if ((bc_bot == 0 && z == 0) || (bc_top == 0 && z == nz-1)
                 || (z >= wall0_iz && bc_top == 0)
-                || (bc_xn == 0 && x == 0) || (bc_xp == 0 && x = nx-1)
-                || (bc_yn == 0 && y == 0) || (bc_yp == 0 && y = nx-1))
+                || (bc_xn == 0 && x == 0) || (bc_xp == 0 && x == nx-1)
+                || (bc_yn == 0 && y == 0) || (bc_yp == 0 && y == nx-1))
             dp_impl = 0.0;
             //p_new = p;
 
