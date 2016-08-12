@@ -334,10 +334,10 @@ class sim:
                 # 0: Dirichlet
                 # 1: Neumann
                 # 2: Periodic (default)
-                self.bc_xn = numpy.ones(1, dtype=numpy.int32)*3  # Neg. x bc
-                self.bc_xp = numpy.ones(1, dtype=numpy.int32)*3  # Pos. x bc
-                self.bc_yn = numpy.ones(1, dtype=numpy.int32)*3  # Neg. y bc
-                self.bc_yp = numpy.ones(1, dtype=numpy.int32)*3  # Pos. y bc
+                self.bc_xn = numpy.ones(1, dtype=numpy.int32)*2  # Neg. x bc
+                self.bc_xp = numpy.ones(1, dtype=numpy.int32)*2  # Pos. x bc
+                self.bc_yn = numpy.ones(1, dtype=numpy.int32)*2  # Neg. y bc
+                self.bc_yp = numpy.ones(1, dtype=numpy.int32)*2  # Pos. y bc
 
             # Boundary conditions at the top and bottom of the fluid grid
             # 0: Dirichlet (default)
