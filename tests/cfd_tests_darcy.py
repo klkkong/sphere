@@ -212,6 +212,38 @@ py = sphere.sim(sid = orig.sid, fluid = True)
 
 
 
+# Add horizontal pressure gradient along X
+print("# Pressure gradient along X")
+orig.cleanup()
+orig.p_f[:,:,:] = 0.0
+orig.p_f[0,:,-1] = 2.0
+orig.p_f[-1,:,-1] = 0.0
+orig.setFluidXFixedPressure()
+orig.setFluidYNoFlow()
+orig.setFluidTopFixedPressure()
+orig.setFluidBottomNoFlow()
+orig.initTemporal(total = 0.5, file_dt = 0.01, dt = 1.0e-6)
+#orig.time_dt[0] *= 0.01
+#orig.time_file_dt = orig.time_dt*0.99
+#orig.time_total = orig.time_dt*1
+#orig.run(device=2, verbose=False)
+orig.run(verbose=False)
+py.readlast(verbose = False)
+
+# Fluid flow direction, opposite of gradient (i.e. towards -z)
+if ((py.v_f[:,:,:,2] < 0.0).all()):
+    print("Flow field (Z):\t\t" + passed())
+else:
+    print("Flow field (Z):\t\t" + failed())
+    raise Exception("Failed")
+
+# Fluid flow direction, opposite of gradient (i.e. towards -z)
+if ((py.v_f[:,:,:,0] > 0.0).all()):
+    print("Flow field (X):\t\t" + passed())
+else:
+    print("Flow field (X):\t\t" + failed())
+    raise Exception("Failed")
+
 
 
 #cleanup(orig)
