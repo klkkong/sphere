@@ -667,7 +667,6 @@ void DEM::writebin(const char *target)
                 ofs.write(as_bytes(darcy.bc_xp), sizeof(int));
                 ofs.write(as_bytes(darcy.bc_yn), sizeof(int));
                 ofs.write(as_bytes(darcy.bc_yp), sizeof(int));
-                ofs.write(as_bytes(darcy.bc_top), sizeof(int));
                 ofs.write(as_bytes(darcy.bc_bot), sizeof(int));
                 ofs.write(as_bytes(darcy.bc_top), sizeof(int));
                 ofs.write(as_bytes(darcy.free_slip_bot), sizeof(int));
