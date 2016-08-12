@@ -979,8 +979,6 @@ __host__ void DEM::startTime()
     if (verbose == 1)
         cout << "  Current simulation time: " << time.current << " s.";
 
-
-
     // MAIN CALCULATION TIME LOOP
     while (time.current <= time.total) {
 
