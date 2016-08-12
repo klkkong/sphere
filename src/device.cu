@@ -37,11 +37,13 @@ int cudaCoresPerSM(int major, int minor)
         return 32;
     else if (major == 2 && minor == 1)
         return 48;
-    else if (major == 3 && minor == 0)
+    else if (major == 3)
         return 192;
-    else if (major == 3 && minor == 5)
-        return 192;
-    else if (major == 5 && minor == 0)
+    else if (major == 5)
+        return 128;
+    else if (major == 6 && minor == 0)
+        return 64;
+    else if (major == 6 && minor == 1)
         return 128;
     else
         printf("Error in cudaCoresPerSM",
@@ -1963,6 +1965,28 @@ __host__ void DEM::startTime()
                                 &t_findDarcyPorosities);
                     checkForCudaErrorsIter("Post findDarcyPorosities", iter);
 
+                    // copy porosities to the frictionless Y boundaries
+                    if (grid.periodic == 2) {
+                        copyDarcyPorositiesToEdges<<<dimGridFluid, 
+                            dimBlockFluid>>>(
+                                dev_darcy_phi,
+                                dev_darcy_dphi,
+                                dev_darcy_div_v_p,
+                                dev_darcy_vp_avg);
+                        cudaThreadSynchronize();
+                    }
+
+                    // copy porosities to the frictionless lower Z boundary
+                    if (grid.periodic == 2) {
+                        copyDarcyPorositiesToBottom<<<dimGridFluid, 
+                                dimBlockFluid>>>(
+                                dev_darcy_phi,
+                                dev_darcy_dphi,
+                                dev_darcy_div_v_p,
+                                dev_darcy_vp_avg);
+                        cudaThreadSynchronize();
+                    }
+
                     // Modulate the pressures at the upper boundary cells
                     if ((darcy.p_mod_A > 1.0e-5 || darcy.p_mod_A < -1.0e-5) &&
                             darcy.p_mod_f > 1.0e-7) {
@@ -2377,7 +2401,7 @@ __host__ void DEM::startTime()
                     velocity_state == 1) {
                 change_velocity_state = 1.0;
                 velocity_state = 2;
-            } else if (time.current >= 10.0 && velocity_state == 2) {
+            } else if (time.current >= v2_end && velocity_state == 2) {
                 change_velocity_state = -1.0;
                 velocity_state = 1;
             }
