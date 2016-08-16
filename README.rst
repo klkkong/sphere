@@ -22,8 +22,8 @@ Important release notes
 -----------------------
 2016-08-16: Scale-invariant grain-contact model implemented based on Ergenzinger 
 et al 2010 and Obermayr et al 2013.  To use specify a positive Young's modulus 
-using `setYoungsModulus()` in the Python module.  This overrides any contact 
-stiffnesses specified in `k_n` and `k_t`.
+using ``setYoungsModulus()`` in the Python module.  This overrides any contact 
+stiffnesses specified in ``k_n`` and ``k_t``.
 
 2016-08-14: Dirichlet and von Neumann horizontal boundary conditions implemented 
 in addition to horizontal periodicity for the Darcian fluid solver.
