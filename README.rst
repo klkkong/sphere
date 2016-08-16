@@ -20,6 +20,14 @@ See `LICENSE.txt <LICENSE.txt>`_ for more information.
 
 Important release notes
 -----------------------
+2016-08-16: Scale-invariant grain-contact model implemented based on Ergenzinger 
+et al 2010 and Obermayr et al 2013.  To use specify a positive Young's modulus 
+using `setYoungsModulus()` in the Python module.  This overrides any contact 
+stiffnesses specified in `k_n` and `k_t`.
+
+2016-08-14: Dirichlet and von Neumann horizontal boundary conditions implemented 
+for the fluid in the Darcy fluid solver.
+
 2015-09-06: A new flux boundary condition has been added to the Darcy fluid
 solver.
 
