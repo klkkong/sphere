@@ -9,6 +9,12 @@ add_test(wall_contact_model_tests ${PYTHON_EXECUTABLE}
 add_test(contact_model_tests ${PYTHON_EXECUTABLE} 
     ${CMAKE_CURRENT_BINARY_DIR}/contactmodel.py)
 
+add_test(wall_contact_model_young_tests ${PYTHON_EXECUTABLE} 
+    ${CMAKE_CURRENT_BINARY_DIR}/contactmodel_wall_young.py)
+
+add_test(contact_model_young_tests ${PYTHON_EXECUTABLE} 
+    ${CMAKE_CURRENT_BINARY_DIR}/contactmodel_young.py)
+
 add_test(io_tests_fluid ${PYTHON_EXECUTABLE} 
     ${CMAKE_CURRENT_BINARY_DIR}/io_tests_fluid.py)
 
