@@ -392,6 +392,11 @@ void DEM::reportValues()
         exit(1);
     }
 
+    if (params.E > 0.01)
+        cout << "  - Using Young's modulus for contact stiffness\n";
+    else
+        cout << "  - Using global value for contact stiffness\n";
+
     if (params.kappa > 0.0 && params.V_b > 0.0)
         cout << "  - Capillary cohesion enabled\n";
 
