@@ -17,7 +17,7 @@ orig = sphere.sim(np=1, nw=0, sid='contactmodeltest')
 sphere.cleanup(orig)
 orig.radius[:] = 1.0
 orig.x[0,:] = [5.0, 5.0, 1.05]
-orig.setYoungsModulus(70.0e9)
+orig.setYoungsModulus(7.0e9)
 orig.vel[0,2] = -0.1
 orig.defineWorldBoundaries(L=[10,10,10])
 orig.gamma_wn[0] = 0.0  # Disable wall viscosity
@@ -42,7 +42,7 @@ pytestutils.compareFloats(moment_before, moment_after,\
 orig = sphere.sim(np=1, sid='contactmodeltest')
 orig.radius[:] = 1.0
 orig.x[0,:] = [5.0, 5.0, 1.05]
-orig.setYoungsModulus(70.0e9)
+orig.setYoungsModulus(7.0e9)
 orig.vel[0,2] = -0.1
 orig.vel[0,0] =  0.1
 orig.defineWorldBoundaries(L=[10,10,10])
@@ -64,7 +64,7 @@ pytestutils.compareFloats(moment_before, moment_after,\
 orig = sphere.sim(np=1, sid='contactmodeltest')
 orig.radius[:] = 1.0
 orig.x[0,:] = [5.0, 5.0, 1.05]
-orig.setYoungsModulus(70.0e9)
+orig.setYoungsModulus(7.0e9)
 orig.vel[0,2] = -0.1
 orig.defineWorldBoundaries(L=[10,10,10])
 orig.gamma_wn[0] = 1.0e6
@@ -87,7 +87,7 @@ pytestutils.compareFloats(Ekin_before, Ekin_after+Ev_after,\
 orig = sphere.sim(np=1, sid='contactmodeltest')
 orig.radius[:] = 1.0
 orig.x[0,:] = [5.0, 5.0, 1.05]
-orig.setYoungsModulus(70.0e9)
+orig.setYoungsModulus(7.0e9)
 orig.vel[0,2] = -0.1
 orig.vel[0,0] =  0.1
 orig.defineWorldBoundaries(L=[10,10,10])
