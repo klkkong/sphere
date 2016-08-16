@@ -295,6 +295,11 @@ void DEM::checkValues(void)
         exit(1);
     }
 
+    if (params.E < 0.0) {
+        cerr << "Error: E = " << params.E << " N/m^3" << endl;
+        exit(1);
+    }
+
     if (params.rho <= 0.0) {
         cerr << "Error: rho = " << params.rho << " kg/m3" << endl;
         exit(1);
@@ -826,6 +831,8 @@ void DEM::forcechains(const std::string format, const int threedim,
 
         // Normal force on contact
         f_n = -params.k_n * delta_n;
+
+        // TODO: Use Young's modulus if it is greater than 0
 
         if (f_n < lower_cutoff)
             continue;   // skip the rest of this iteration

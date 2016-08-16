@@ -172,6 +172,7 @@ void DEM::readbin(const char *target)
     ifs.read(as_bytes(params.k_n), sizeof(params.k_n));
     ifs.read(as_bytes(params.k_t), sizeof(params.k_t));
     ifs.read(as_bytes(params.k_r), sizeof(params.k_r));
+    ifs.read(as_bytes(params.E), sizeof(params.E));
     ifs.read(as_bytes(params.gamma_n), sizeof(params.gamma_n));
     ifs.read(as_bytes(params.gamma_t), sizeof(params.gamma_t));
     ifs.read(as_bytes(params.gamma_r), sizeof(params.gamma_r));
@@ -497,6 +498,7 @@ void DEM::writebin(const char *target)
         ofs.write(as_bytes(params.k_n), sizeof(params.k_n));
         ofs.write(as_bytes(params.k_t), sizeof(params.k_t));
         ofs.write(as_bytes(params.k_r), sizeof(params.k_r));
+        ofs.write(as_bytes(params.E), sizeof(params.E));
         ofs.write(as_bytes(params.gamma_n), sizeof(params.gamma_n));
         ofs.write(as_bytes(params.gamma_t), sizeof(params.gamma_t));
         ofs.write(as_bytes(params.gamma_r), sizeof(params.gamma_r));

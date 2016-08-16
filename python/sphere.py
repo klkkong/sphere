@@ -24,7 +24,7 @@ numpy.seterr(all='warn', over='raise')
 
 # Sphere version number. This field should correspond to the value in
 # `../src/version.h`.
-VERSION = 2.12
+VERSION = 2.13
 
 # Transparency on plot legends
 legend_alpha = 0.5
@@ -160,6 +160,11 @@ class sim:
         # The Hookean coefficient for elastic stiffness opposite of contact
         # rotations. UNUSED
         self.k_r      = numpy.zeros(1, dtype=numpy.float64)
+
+        # Young's modulus for contact stiffness [Pa]. This value is used
+        # instead of the Hookean stiffnesses (k_n, k_t) when self.E is larger
+        # than 0.0.
+        self.E        = numpy.zeros(1, dtype=numpy.float64)
 
         # The viscosity normal to the contact [N/(m/s)]
         self.gamma_n  = numpy.zeros(1, dtype=numpy.float64)
@@ -524,6 +529,9 @@ class sim:
         elif self.k_r != other.k_r:
             print('k_r')
             return 31
+        elif self.E != other.E:
+            print('E')
+            return 31.5
         elif self.gamma_n != other.gamma_n:
             print('gamma_n')
             return 32
@@ -1042,6 +1050,10 @@ class sim:
             self.k_n          = numpy.fromfile(fh, dtype=numpy.float64, count=1)
             self.k_t          = numpy.fromfile(fh, dtype=numpy.float64, count=1)
             self.k_r          = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+            if self.version >= 2.13:
+                self.E = numpy.fromfile(fh, dtype=numpy.float64, count=1)
+            else:
+                self.E = numpy.zeros(1, dtype=numpy.float64)
             self.gamma_n      = numpy.fromfile(fh, dtype=numpy.float64, count=1)
             self.gamma_t      = numpy.fromfile(fh, dtype=numpy.float64, count=1)
             self.gamma_r      = numpy.fromfile(fh, dtype=numpy.float64, count=1)
@@ -1363,6 +1375,7 @@ class sim:
             fh.write(self.k_n.astype(numpy.float64))
             fh.write(self.k_t.astype(numpy.float64))
             fh.write(self.k_r.astype(numpy.float64))
+            fh.write(self.E.astype(numpy.float64))
             fh.write(self.gamma_n.astype(numpy.float64))
             fh.write(self.gamma_t.astype(numpy.float64))
             fh.write(self.gamma_r.astype(numpy.float64))
@@ -3239,7 +3252,11 @@ class sim:
 
             r_min = numpy.min(self.radius)
             m_min = self.rho * 4.0/3.0*numpy.pi*r_min**3
-            k_max = numpy.max([self.k_n[:], self.k_t[:]])
+
+            if self.E > 0.001:
+                k_max = numpy.max(numpy.pi/2.0*self.E*self.radius)
+            else:
+                k_max = numpy.max([self.k_n[:], self.k_t[:]])
 
             # Radjaii et al 2011
             self.time_dt[0] = epsilon/(numpy.sqrt(k_max/m_min))
@@ -3765,6 +3782,18 @@ class sim:
         :type k_t: float
         '''
         self.k_t[0] = k_t
+
+    def setYoungsModulus(self, E):
+        '''
+        Set the elastic Young's modulus (`E`) for the contact model.  This
+        parameter is used over normal stiffness (`k_n`) and tangential
+        stiffness (`k_t`) when its value is greater than zero. Using this
+        parameter produces size-invariant behavior.
+
+        :param E: The elastic modulus [Pa]
+        :type E: float
+        '''
+        self.E[0] = E
 
     def setDampingNormal(self, gamma, over_damping=False):
         '''

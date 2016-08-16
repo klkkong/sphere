@@ -233,6 +233,8 @@ __global__ void checkConstantValues(int* dev_equal,
         *dev_equal = 28; // Not ok
     if (dev_params->nb0 != devC_params.nb0)
         *dev_equal = 29; // Not ok
+    if (dev_params->E != devC_params.E)
+        *dev_equal = 30; // Not ok
 }
 
 __global__ void checkParticlePositions(

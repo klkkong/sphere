@@ -53,8 +53,18 @@ __device__ Float contactLinear_wall(
     const Float3 vel_t = vel - n * (dot(n, vel));
     const Float vel_t_length = length(vel_t);
 
+    // Use scale-invariant contact model (Ergenzinger et al 2010, Obermayr et al 
+    // 2013) based on Young's modulus if params.E > 0.0.
+    // Use the calculated stiffness for normal and tangential components.
+    Float k_n = devC_params.k_n;
+    Float k_t = devC_params.k_t;
+    if (devC_params.E > .001) {
+        k_n = 3.141592654/2.0 * devC_params.E * (radius_a + radius_b)/2.;
+        k_t = k_n;
+    }
+
     // Normal force component: Elastic - viscous damping
-    Float3 f_n = fmax(0.0, -devC_params.k_n*delta
+    Float3 f_n = fmax(0.0, -k_n*delta
                       - devC_params.gamma_wn*vel_n) * n;
     const Float f_n_length = length(f_n); // Save length for later use
 
@@ -168,8 +178,18 @@ __device__ void contactLinearViscous(
     Float3 vel_t_ab = vel_ab - (n_ab * dot(vel_ab, n_ab));
     Float  vel_t_ab_length = length(vel_t_ab);
 
+    // Use scale-invariant contact model (Ergenzinger et al 2010, Obermayr et al 
+    // 2013) based on Young's modulus if params.E > 0.0.
+    // Use the calculated stiffness for normal and tangential components.
+    Float k_n = devC_params.k_n;
+    Float k_t = devC_params.k_t;
+    if (devC_params.E > .001) {
+        k_n = 3.141592654/2.0 * devC_params.E * (radius_a + radius_b)/2.;
+        k_t = k_n;
+    }
+
     // Normal force component: Elastic - viscous damping
-    f_n = fmax(0.0, -devC_params.k_n * delta_ab
+    f_n = fmax(0.0, -k_n * delta_ab
                - devC_params.gamma_n * vel_n_ab) * n_ab;
 
     // Make sure the viscous damping doesn't exceed the elastic component,
@@ -304,7 +324,7 @@ __device__ void contactLinear(
     Float3 delta_t;
 
     // Normal force component: Elastic - viscous damping
-    f_n = fmax(0.0, -devC_params.k_n*delta + devC_params.gamma_n * vel_n) * n;
+    f_n = fmax(0.0, -k_n*delta + devC_params.gamma_n * vel_n) * n;
     Float f_n_length = length(f_n);
 
     // Store energy dissipated in normal viscous component
@@ -328,7 +348,7 @@ __device__ void contactLinear(
         delta_t = delta_t0 + vel_t * devC_dt;
 
         // Tangential force: Visco-Elastic, before limitation criterion
-        Float3 f_t_elast = -devC_params.k_t * delta_t;
+        Float3 f_t_elast = -k_t * delta_t;
         Float3 f_t_visc  = -devC_params.gamma_t * vel_t;
         f_t = f_t_elast + f_t_visc;
         Float f_t_length = length(f_t);
@@ -356,7 +376,7 @@ __device__ void contactLinear(
             // In the sliding friction case, the tangential spring is adjusted
             // to a length consistent with Coulombs (dynamic) condition (Luding
             // 2008)
-            delta_t = -1.0/devC_params.k_t
+            delta_t = -1.0/k_t
                 * (devC_params.mu_d * length(f_n-f_c) * t
                    + devC_params.gamma_t * vel_t);
 
@@ -463,9 +483,19 @@ __device__ void contactHertz(
     // New tangential displacement vector
     Float3 delta_t;
 
+    // Use scale-invariant contact model (Ergenzinger et al 2010, Obermayr et al 
+    // 2013) based on Young's modulus if params.E > 0.0.
+    // Use the calculated stiffness for normal and tangential components.
+    Float k_n = devC_params.k_n;
+    Float k_t = devC_params.k_t;
+    if (devC_params.E > .001) {
+        k_n = 3.141592654/2.0 * devC_params.E * (radius_a + radius_b)/2.;
+        k_t = k_n;
+    }
+
     // Normal force component
-    f_n = (-devC_params.k_n * powf(delta_ab, 3.0f/2.0f)  
-           -devC_params.gamma_n * powf(delta_ab, 1.0f/4.0f) * vel_n_ab)
+    f_n = (-k_n * powf(delta_ab, 3.0f/2.0f)  -devC_params.gamma_n * 
+           powf(delta_ab, 1.0f/4.0f) * vel_n_ab)
         * n_ab;
 
     // Store energy dissipated in normal viscous component
@@ -494,7 +524,7 @@ __device__ void contactHertz(
     if (delta_t0_length > 0.f || vel_t_ab_length > 0.f) {
 
         // Shear force: Visco-Elastic, limited by Coulomb friction
-        Float3 f_t_elast = -devC_params.k_t * powf(delta_ab, 1.0f/2.0f) * delta_t0;
+        Float3 f_t_elast = -k_t * powf(delta_ab, 1.0f/2.0f) * delta_t0;
         Float3 f_t_visc  = -devC_params.gamma_t * powf(delta_ab, 1.0f/4.0f) * vel_t_ab;
         Float f_t_limit;
 
@@ -523,12 +553,13 @@ __device__ void contactHertz(
             // length which is consistent with Coulomb's equation
             // (Hinrichsen and Wolf, 2004)
             delta_t = (f_t + devC_params.gamma_t * powf(delta_ab, 1.0f/4.0f) * vel_t_ab)
-                / (-devC_params.k_t * powf(delta_ab, 1.0f/2.0f));
+                / (-k_t * powf(delta_ab, 1.0f/2.0f));
 
             // Shear friction heat production rate: 
             // The energy lost from the tangential spring is dissipated as heat
             //*es_dot += -dot(vel_t_ab, f_t);
-            *es_dot += length(delta_t0 - delta_t) * devC_params.k_t / devC_dt; // Seen in EsyS-Particle
+            *es_dot += length(delta_t0 - delta_t) * k_t / devC_dt; // Seen in 
+            EsyS-Particle
             //*es_dot += fabs(dot(delta_t0 - delta_t, f_t)) / devC_dt; 
 
         } else { // Static case

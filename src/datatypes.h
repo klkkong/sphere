@@ -75,6 +75,7 @@ struct Params {
     Float k_n;            // Normal stiffness
     Float k_t;            // Tangential stiffness
     Float k_r;            // Rotational stiffness
+    Float E;              // Young's modulus
     Float gamma_n;        // Normal viscosity
     Float gamma_t;        // Tangential viscosity
     Float gamma_r;        // Rotational viscosity
