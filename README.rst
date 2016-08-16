@@ -26,7 +26,7 @@ using `setYoungsModulus()` in the Python module.  This overrides any contact
 stiffnesses specified in `k_n` and `k_t`.
 
 2016-08-14: Dirichlet and von Neumann horizontal boundary conditions implemented 
-for the fluid in the Darcy fluid solver.
+in addition to horizontal periodicity for the Darcian fluid solver.
 
 2015-09-06: A new flux boundary condition has been added to the Darcy fluid
 solver.
