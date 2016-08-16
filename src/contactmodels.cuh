@@ -57,10 +57,8 @@ __device__ Float contactLinear_wall(
     // 2013) based on Young's modulus if params.E > 0.0.
     // Use the calculated stiffness for normal and tangential components.
     Float k_n = devC_params.k_n;
-    Float k_t = devC_params.k_t;
     if (devC_params.E > .001) {
-        k_n = 3.141592654/2.0 * devC_params.E * (radius_a + radius_b)/2.;
-        k_t = k_n;
+        k_n = 3.141592654/2.0 * devC_params.E * radius_a;
     }
 
     // Normal force component: Elastic - viscous damping
@@ -182,10 +180,8 @@ __device__ void contactLinearViscous(
     // 2013) based on Young's modulus if params.E > 0.0.
     // Use the calculated stiffness for normal and tangential components.
     Float k_n = devC_params.k_n;
-    Float k_t = devC_params.k_t;
     if (devC_params.E > .001) {
         k_n = 3.141592654/2.0 * devC_params.E * (radius_a + radius_b)/2.;
-        k_t = k_n;
     }
 
     // Normal force component: Elastic - viscous damping
@@ -322,6 +318,16 @@ __device__ void contactLinear(
 
     // New tangential displacement vector
     Float3 delta_t;
+
+    // Use scale-invariant contact model (Ergenzinger et al 2010, Obermayr et al 
+    // 2013) based on Young's modulus if params.E > 0.0.
+    // Use the calculated stiffness for normal and tangential components.
+    Float k_n = devC_params.k_n;
+    Float k_t = devC_params.k_t;
+    if (devC_params.E > .001) {
+        k_n = 3.141592654/2.0 * devC_params.E * (radius_a + radius_b)/2.;
+        k_t = k_n;
+    }
 
     // Normal force component: Elastic - viscous damping
     f_n = fmax(0.0, -k_n*delta + devC_params.gamma_n * vel_n) * n;
@@ -558,8 +564,7 @@ __device__ void contactHertz(
             // Shear friction heat production rate: 
             // The energy lost from the tangential spring is dissipated as heat
             //*es_dot += -dot(vel_t_ab, f_t);
-            *es_dot += length(delta_t0 - delta_t) * k_t / devC_dt; // Seen in 
-            EsyS-Particle
+            *es_dot += length(delta_t0 - delta_t) * k_t / devC_dt; // Seen in EsyS-Particle
             //*es_dot += fabs(dot(delta_t0 - delta_t, f_t)) / devC_dt; 
 
         } else { // Static case
