@@ -1153,6 +1153,7 @@ __global__ void findDarcyPressureForceLinear(
     const Float*  __restrict__ dev_darcy_phi,    // in
     const unsigned int wall0_iz,                 // in
     const Float rho_f,                           // in
+    const int bc_top,                            // in
     Float4* __restrict__ dev_force,              // out
     Float4* __restrict__ dev_darcy_f_p)          // out
 {
@@ -1273,7 +1274,7 @@ __global__ void findDarcyPressureForceLinear(
 
         // Add Neumann BC at top wall
         //if (i_z >= wall0_iz - 1)
-        if (i_z >= wall0_iz)
+        if (bc_top == 0 && i_z >= wall0_iz)
             f_p.z = 0.0;
 
         //if (length(f_p) > 1.0e-12)
