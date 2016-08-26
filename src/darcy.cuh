@@ -1232,7 +1232,7 @@ __global__ void findDarcyPressureForceLinear(
                         grad_p_iter = MAKE_FLOAT3(0., 0., 0.);
 
                     // Add Neumann BC at top wall
-                    if (i_z + d_iz >= wall0_iz - 1)
+                    if (bc_top == 0 && i_z + d_iz >= wall0_iz - 1)
                         grad_p_iter.z = 0.0;
 
                     n = MAKE_FLOAT3(dx*d_ix, dy*d_iy, dz*d_iz);
