@@ -111,6 +111,7 @@ void DEM::readbin(const char *target)
     ifs.read(as_bytes(grid.L), sizeof(grid.L));
     ifs.read(as_bytes(grid.num), sizeof(grid.num));
     ifs.read(as_bytes(grid.periodic), sizeof(grid.periodic));
+    ifs.read(as_bytes(grid.adaptive), sizeof(grid.adaptive));
 
     // Read kinematic values
     for (i = 0; i<np; ++i) {
@@ -437,6 +438,7 @@ void DEM::writebin(const char *target)
         ofs.write(as_bytes(grid.L), sizeof(grid.L));
         ofs.write(as_bytes(grid.num), sizeof(grid.num));
         ofs.write(as_bytes(grid.periodic), sizeof(grid.periodic));
+        ofs.write(as_bytes(grid.adaptive), sizeof(grid.adaptive));
 
         // Write kinematic values
         for (i = 0; i<np; ++i) {

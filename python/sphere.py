@@ -24,7 +24,7 @@ numpy.seterr(all='warn', over='raise')
 
 # Sphere version number. This field should correspond to the value in
 # `../src/version.h`.
-VERSION = 2.13
+VERSION = 2.14
 
 # Transparency on plot legends
 legend_alpha = 0.5
@@ -102,6 +102,9 @@ class sim:
 
         # Whether to treat the lateral boundaries as periodic (1) or not (0)
         self.periodic = numpy.zeros(1, dtype=numpy.uint32)
+
+        # Adaptively resize grid to assemblage height (0: no, 1: yes)
+        self.adaptive = numpy.zeros(1, dtype=numpy.uint32)
 
         ## Particle data
         # Particle position vectors [m]
@@ -475,6 +478,9 @@ class sim:
         elif self.periodic != other.periodic:
             print('periodic')
             return 13
+        elif self.adaptive != other.adaptive:
+            print('adaptive')
+            return 13.5
         elif (self.x != other.x).any():
             print('x')
             return 14
@@ -1005,6 +1011,11 @@ class sim:
             self.num = numpy.fromfile(fh, dtype=numpy.uint32, count=self.nd)
             self.periodic = numpy.fromfile(fh, dtype=numpy.int32, count=1)
 
+            if self.version >= 2.14:
+                self.adaptive = numpy.fromfile(fh, dtype=numpy.int32, count=1)
+            else:
+                self.adaptive = 0
+
             # Per-particle vectors
             for i in numpy.arange(self.np):
                 self.x[i,:] =\
@@ -1344,6 +1355,7 @@ class sim:
             fh.write(self.L.astype(numpy.float64))
             fh.write(self.num.astype(numpy.uint32))
             fh.write(self.periodic.astype(numpy.uint32))
+            fh.write(self.adaptive.astype(numpy.uint32))
 
             # Per-particle vectors
             for i in numpy.arange(self.np):
@@ -2459,6 +2471,24 @@ class sim:
         '''
         self.periodic[0] = 2
 
+    def adaptiveGrid(self):
+        '''
+        Set the height of the fluid grid to automatically readjust to the
+        height of the granular assemblage, as dictated by the position of the
+        top wall.  This will readjust `self.L[2]` during the simulation to
+        equal the position of the top wall `self.w_x[0]`.
+
+        See also :func:`staticGrid()`
+        '''
+        self.adaptive[0] = 1
+
+    def staticGrid(self):
+        '''
+        Set the height of the fluid grid to be constant as set in `self.L[2]`.
+
+        See also :func:`adaptiveGrid()`
+        '''
+        self.adaptive[0] = 0
 
     def initRandomPos(self, gridnum = numpy.array([12, 12, 36])):
         '''
