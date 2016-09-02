@@ -138,6 +138,9 @@ class DEM {
                 const float imgw,
                 const float focalLength);
 
+        // Adjust grid size according to wall placement
+        void updateGridSize();
+
         // Allocate global device memory to hold data
         void allocateGlobalDeviceMemory();
         void rt_allocateGlobalDeviceMemory();

@@ -47,6 +47,7 @@ struct Grid {
     Float L[ND];            // World dimensions
     unsigned int num[ND];   // Neighbor-search cells along each axis
     int periodic;           // Behavior of boundaries at 1st and 2nd world edge
+    int adaptive;           // Continuously rescale grid size to wall positions
 };
 
 struct Sorting {

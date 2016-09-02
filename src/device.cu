@@ -348,6 +348,25 @@ __host__ void DEM::transferToConstantDeviceMemory()
     checkConstantMemory();
 }
 
+__host__ void DEM::updateGridSize()
+{
+    Float Lz;
+
+    // Get top wall position from dev_walls_nx[0].z
+    cudaMemcpy(&Lz, &dev_walls_nx[0].z, sizeof(Float), cudaMemcpyDeviceToHost);
+
+    // Write value to grid.L[2]
+    grid.L[2] = Lz;
+
+    // Write value to devC_grid.L[2]
+    cudaMemcpyToSymbol(devC_grid.L[2], &Lz, sizeof(Float)); 
+
+    checkForCudaErrors("After updating grid size");
+
+    // check value only during debugging
+    checkConstantMemory();
+}
+
 
 // Allocate device memory for particle variables,
 // tied to previously declared pointers in structures
@@ -998,6 +1017,12 @@ __host__ void DEM::startTime()
             cudaThreadSynchronize();
             checkForCudaErrorsIter("Post checkParticlePositions", iter);
 #endif
+
+            // If the grid is adaptive, readjust the grid height to equal the 
+            // positions of the dynamic walls
+            if (grid.adaptive == 1) {
+                updateGridSize();
+            }
 
             // For each particle: 
             // Compute hash key (cell index) from position 
