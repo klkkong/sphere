@@ -348,23 +348,47 @@ __host__ void DEM::transferToConstantDeviceMemory()
     checkConstantMemory();
 }
 
+__global__ void printWorldSize(Float4* dev_walls_nx)
+{
+    printf("\nL = %f, %f, %f\n",
+            devC_grid.L[0], devC_grid.L[1], devC_grid.L[2]);
+    printf("\ndev_walls_nx[0] = %f, %f, %f, %f\n",
+            dev_walls_nx[0].x,
+            dev_walls_nx[0].y,
+            dev_walls_nx[0].z,
+            dev_walls_nx[0].w);
+}
+
 __host__ void DEM::updateGridSize()
 {
-    Float Lz;
+    //printf("\nDEM::updateGridSize() start\n");
+    Float* Lz = new Float;
 
     // Get top wall position from dev_walls_nx[0].z
-    cudaMemcpy(&Lz, &dev_walls_nx[0].z, sizeof(Float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(Lz, &dev_walls_nx[0].w, sizeof(Float), cudaMemcpyDeviceToHost);
+    checkForCudaErrors("DEM::updateGridSize(): copying wall position");
+
+    //printWorldSize<<<1,1>>>(dev_walls_nx);
+    //cudaThreadSynchronize();
+    //checkForCudaErrors("DEM::updateGridSize(): first printWorldSize");
+
+    //printf("\nLz = %f\n", *Lz);
 
     // Write value to grid.L[2]
-    grid.L[2] = Lz;
+    grid.L[2] = *Lz;
 
     // Write value to devC_grid.L[2]
-    cudaMemcpyToSymbol(devC_grid.L[2], &Lz, sizeof(Float)); 
+    //cudaMemcpyToSymbol(devC_grid.L[2], &Lz, sizeof(Float)); 
+    cudaMemcpyToSymbol(devC_grid, &grid, sizeof(Grid));
 
-    checkForCudaErrors("After updating grid size");
+    checkForCudaErrors("DEM::updateGridSize(): write to devC_grid.L[2]");
+
+    //printWorldSize<<<1,1>>>(dev_walls_nx);
+    //cudaThreadSynchronize();
+    //checkForCudaErrors("DEM::updateGridSize(): second printWorldSize");
 
     // check value only during debugging
-    checkConstantMemory();
+    //checkConstantMemory();
 }
 
 
