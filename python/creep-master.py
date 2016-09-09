@@ -44,7 +44,7 @@ init.generateRadii(psd = 'uni', mean = 0.005, variance = 0.001)
 
 # Use default params
 init.defaultParams(gamma_n = 100.0, mu_s = 0.6, mu_d = 0.6)
-init.setYoungsModulus(1e9)  # Plastic like
+init.setYoungsModulus(1e8)
 
 # Add gravity
 init.g[2] = -9.81
