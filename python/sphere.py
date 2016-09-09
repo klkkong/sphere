@@ -3621,6 +3621,20 @@ class sim:
         self.bc_yn[0] = 2
         self.bc_yp[0] = 2
 
+    def setPermeabilityGrainSize(self, verbose=True):
+        '''
+        Set the permeability prefactor based on the mean grain size (Damsgaard
+        et al., 2015, eq. 10).
+
+        :param verbose: Print information about the realistic permeabilities
+            hydraulic conductivities to expect with the chosen permeability
+            prefactor.
+        :type verbose: bool
+        '''
+        setPermeabilityPrefactor(
+            k_c=numpy.mean(self.radius*2.0)**2.0/180.0,
+            verbose=verbose)
+
     def setPermeabilityPrefactor(self, k_c, verbose=True):
         '''
         Set the permeability prefactor from Goren et al 2011, eq. 24. The
