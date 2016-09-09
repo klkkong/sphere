@@ -3822,6 +3822,9 @@ class sim:
         stiffness (`k_t`) when its value is greater than zero. Using this
         parameter produces size-invariant behavior.
 
+        Example values are ~70e9 Pa for quartz,
+        http://www.engineeringtoolbox.com/young-modulus-d_417.html
+
         :param E: The elastic modulus [Pa]
         :type E: float
         '''
