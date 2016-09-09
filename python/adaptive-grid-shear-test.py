@@ -86,7 +86,7 @@ for devs in devslist:
         cons.setFluidBottomNoFlow()
         cons.setMaxIterations(2e5)
         cons.setPermeabilityPrefactor(2.0e-16)
-        cons.setFluidCompressibility(2.2e9)
+        cons.setFluidCompressibility(1/2.2e9)
 
     # Setup consolidation experiment
     cons.consolidate(normal_stress = devs)
@@ -132,7 +132,7 @@ for devs in devslist:
         shear.setFluidBottomNoFlow()
         shear.setMaxIterations(2e5)
         shear.setPermeabilityPrefactor(2.0e-16)
-        shear.setFluidCompressibility(2.2e9)
+        shear.setFluidCompressibility(1/2.2e9)
 
     # Setup shear experiment
     shear.shear(shear_strain_rate = 0.05)
