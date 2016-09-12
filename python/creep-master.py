@@ -6,7 +6,7 @@ import numpy
 
 ### EXPERIMENT SETUP ###
 initialization = False
-consolidation  = True
+consolidation  = False
 shearing       = True
 creeping       = True
 rendering      = False
@@ -92,6 +92,10 @@ cons.periodicBoundariesXY()
 # Setup consolidation experiment
 cons.consolidate(normal_stress = N)
 
+# Disable wall viscosities
+cons.gamma_wn[0] = 0.0
+cons.gamma_wt[0] = 0.0
+
 cons.rho[0] = rho_g
 cons.g[2] = g
 
@@ -133,6 +137,10 @@ shear.periodicBoundariesXY()
 
 shear.rho = rho_g
 shear.g[2] = g
+
+# Disable particle viscosities
+shear.gamma_n[0] = 0.0
+shear.gamma_t[0] = 0.0
 
 # Setup shear experiment
 shear.shear(shear_strain_rate = 0.1)
