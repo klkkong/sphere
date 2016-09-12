@@ -5,7 +5,7 @@ import sphere
 import numpy
 
 ### EXPERIMENT SETUP ###
-initialization = True
+initialization = False
 consolidation  = True
 shearing       = True
 creeping       = True
@@ -92,7 +92,7 @@ cons.periodicBoundariesXY()
 # Setup consolidation experiment
 cons.consolidate(normal_stress = N)
 
-cons.rho = rho_g
+cons.rho[0] = rho_g
 cons.g[2] = g
 
 # Set duration of simulation
