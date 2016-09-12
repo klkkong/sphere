@@ -1014,7 +1014,7 @@ class sim:
             if self.version >= 2.14:
                 self.adaptive = numpy.fromfile(fh, dtype=numpy.int32, count=1)
             else:
-                self.adaptive = 0
+                self.adaptive = numpy.zeros(1, dtype=numpy.float64)
 
             # Per-particle vectors
             for i in numpy.arange(self.np):
