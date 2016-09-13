@@ -135,7 +135,7 @@ shear.readbin("../output/" + sim_id +
 # Periodic x and y boundaries
 shear.periodicBoundariesXY()
 
-shear.rho = rho_g
+shear.rho[0] = rho_g
 shear.g[2] = g
 
 # Disable particle viscosities
