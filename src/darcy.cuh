@@ -761,9 +761,9 @@ __global__ void copyDarcyPorositiesToEdges(
 
 
 // Copy the porosity, porosity change, div_v_p and vp_avg values to the grid 
-// edges from the grid interior at the frictionless Y boundaries (grid.periodic 
+// bottom from the grid interior at the frictionless Y boundaries (grid.periodic 
 // == 2).
-__global__ void copyDarcyPorositiesToTop(
+__global__ void copyDarcyPorositiesToBottom(
         Float*  __restrict__ dev_darcy_phi,               // in + out
         Float*  __restrict__ dev_darcy_dphi,              // in + out
         Float*  __restrict__ dev_darcy_div_v_p,           // in + out
