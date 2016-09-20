@@ -3631,7 +3631,7 @@ class sim:
             prefactor.
         :type verbose: bool
         '''
-        setPermeabilityPrefactor(
+        self.setPermeabilityPrefactor(
             k_c=numpy.mean(self.radius*2.0)**2.0/180.0,
             verbose=verbose)
 
