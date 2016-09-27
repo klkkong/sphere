@@ -380,8 +380,8 @@ __device__ Float weightDist(
         return 0.0;
 }
 
-// Find the porosity in each cell on the base of a sphere, centered at the cell
-// center. 
+// Find the porosity in each cell on the base of a bilinear weighing scheme, 
+// centered at the cell center. 
 __global__ void findDarcyPorositiesLinear(
         const unsigned int* __restrict__ dev_cellStart,   // in
         const unsigned int* __restrict__ dev_cellEnd,     // in
@@ -610,13 +610,17 @@ __global__ void findDarcyPorositiesLinear(
                 }
             }
 
+            Float cell_volume = dx*dy*dz;
+            if (z == nz - 1)
+                cell_volume *= 0.75;
+
             // Make sure that the porosity is in the interval [0.0;1.0]
             //phi = fmin(0.9, fmax(0.1, void_volume/(dx*dy*dz)));
             //phi = fmin(1.0, fmax(0.01, 1.0 - solid_volume/(dx*dy*dz)));
-            phi = fmin(0.9, fmax(0.1, 1.0 - solid_volume/(dx*dy*dz)));
+            phi = fmin(0.9, fmax(0.1, 1.0 - solid_volume/cell_volume));
             //Float phi_new = fmin(1.0, fmax(0.01,
             Float phi_new = fmin(0.9, fmax(0.1,
-                        1.0 - solid_volume_new/(dx*dy*dz)));
+                        1.0 - solid_volume_new/cell_volume));
 
             Float dphi;
             Float3 vp_avg;

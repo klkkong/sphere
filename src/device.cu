@@ -2037,8 +2037,8 @@ __host__ void DEM::startTime()
                         cudaThreadSynchronize();
                     }
 
-                    // copy porosities to the frictionless lower Z boundary
-                    if (grid.adaptive == 1) {
+                    // copy porosities to the upper Z boundary
+                    /*if (grid.adaptive == 1) {
                         copyDarcyPorositiesToTop<<<dimGridFluid, 
                                 dimBlockFluid>>>(
                                 dev_darcy_phi,
@@ -2046,7 +2046,7 @@ __host__ void DEM::startTime()
                                 dev_darcy_div_v_p,
                                 dev_darcy_vp_avg);
                         cudaThreadSynchronize();
-                    }
+                    }*/
 
                     // Modulate the pressures at the upper boundary cells
                     if ((darcy.p_mod_A > 1.0e-5 || darcy.p_mod_A < -1.0e-5) &&
