@@ -612,7 +612,7 @@ __global__ void findDarcyPorositiesLinear(
 
             Float cell_volume = dx*dy*dz;
             if (z == nz - 1)
-                cell_volume *= 0.75;
+                cell_volume *= 0.875;
 
             // Make sure that the porosity is in the interval [0.0;1.0]
             //phi = fmin(0.9, fmax(0.1, void_volume/(dx*dy*dz)));
