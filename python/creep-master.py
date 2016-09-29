@@ -6,14 +6,14 @@ import numpy
 
 ### EXPERIMENT SETUP ###
 initialization = False
-consolidation  = False
+consolidation  = True
 shearing       = True
 creeping       = True
 rendering      = False
 plots          = True
 
 # Common simulation id
-sim_id = "creep1"
+sim_id = "creep2"
 
 # Fluid-pressure gradient [Pa/m]
 dpdx = -100.0
@@ -37,7 +37,8 @@ np = 1e4
 ### INITIALIZATION ###
 
 # New class
-init = sphere.sim(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
+#init = sphere.sim(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
+init = sphere.sim(np = np, nd = 3, nw = 0, sid = "creep1-init")
 
 # Uniform radii from 0.8 cm to 1.2 cm
 init.generateRadii(psd = 'uni', mean = 0.005, variance = 0.001)
@@ -47,7 +48,7 @@ init.defaultParams(gamma_n = 100.0, mu_s = 0.6, mu_d = 0.6)
 init.setYoungsModulus(1e8)
 
 # Add gravity
-init.g[2] = -9.81
+init.g[2] = -g
 
 # Periodic x and y boundaries
 init.periodicBoundariesXY()
@@ -97,7 +98,7 @@ cons.gamma_wn[0] = 0.0
 cons.gamma_wt[0] = 0.0
 
 cons.rho[0] = rho_g
-cons.g[2] = g
+cons.g[2] = -g
 
 # Set duration of simulation
 cons.initTemporal(total = 1.5)
@@ -136,7 +137,7 @@ shear.readbin("../output/" + sim_id +
 shear.periodicBoundariesXY()
 
 shear.rho[0] = rho_g
-shear.g[2] = g
+shear.g[2] = -g
 
 # Disable particle viscosities
 shear.gamma_n[0] = 0.0
@@ -191,12 +192,13 @@ creep.setFluidCompressibility(4.6e-10) # water at 25 C
 creep.setFluidTopNoFlow()
 creep.setFluidBottomNoFlow()
 creep.setFluidXFixedPressure()
+creep.adaptiveGrid()
 
 # set fluid pressures at the boundaries and internally
-dx = sim.L[0]/sim.num[0]
+dx = creep.L[0]/creep.num[0]
 for ix in range(creep.num[0]):
     x = ix + 0.5*dx
-    creep.p_f[ix,:,:] = numpy.abs(sim.L[0]*dpdx) - x*dpdx
+    creep.p_f[ix,:,:] = numpy.abs(creep.L[0]*dpdx) + x*dpdx
 
 creep.zeroKinematics()
 
@@ -211,7 +213,7 @@ creep.color[numpy.nonzero(creep.fixvel == 1)] == -1
 creep.adaptiveGrid()
 
 # Set duration of simulation
-creep.initTemporal(total = 60.0)
+creep.initTemporal(total = 20.0)
 
 if (creeping == True):
 
