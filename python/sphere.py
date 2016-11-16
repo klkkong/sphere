@@ -24,7 +24,7 @@ numpy.seterr(all='warn', over='raise')
 
 # Sphere version number. This field should correspond to the value in
 # `../src/version.h`.
-VERSION = 2.14
+VERSION = 2.15
 
 # Transparency on plot legends
 legend_alpha = 0.5
@@ -337,6 +337,8 @@ class sim:
             self.p_mod_f = numpy.zeros(1, dtype=numpy.float64)  # Frequency [Hz]
             self.p_mod_phi = numpy.zeros(1, dtype=numpy.float64) # Shift [rad]
 
+            ## Fluid solver parameters
+
             if self.cfd_solver[0] == 1:  # Darcy solver
                 # Boundary conditions at the sides of the fluid grid
                 # 0: Dirichlet
@@ -363,7 +365,10 @@ class sim:
             self.bc_bot_flux = numpy.zeros(1, dtype=numpy.float64)
             self.bc_top_flux = numpy.zeros(1, dtype=numpy.float64)
 
-            ## Solver parameters
+            # Hold pressures constant in fluid cell (0: True, 1: False)
+            self.p_f_constant = numpy.zeros(
+                (self.num[0], self.num[1], self.num[2]),
+                dtype=numpy.int32)
 
             # Navier-Stokes
             if self.cfd_solver[0] == 0:
@@ -690,6 +695,9 @@ class sim:
             elif self.bc_top_flux != other.bc_top_flux:
                 print('bc_top_flux')
                 return 91
+            elif (self.p_f_constant != other.p_f_constant).any():
+                print('p_f_constant')
+                return 96
 
             if self.cfd_solver == 0:
                 if self.gamma != other.gamma:
@@ -1190,7 +1198,7 @@ class sim:
                     self.p_mod_phi =\
                             numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
-                    if self.version >= 2.12 and self.cfd_solver == 1:
+                    if self.version >= 2.12 and self.cfd_solver[0] == 1:
                         self.bc_xn =\
                             numpy.fromfile(fh, dtype=numpy.int32, count=1)
                         self.bc_xp =\
@@ -1216,6 +1224,23 @@ class sim:
                     else:
                         self.bc_bot_flux = numpy.zeros(1, dtype=numpy.float64)
                         self.bc_top_flux = numpy.zeros(1, dtype=numpy.float64)
+
+                    if self.version >= 2.15:
+                        self.p_f_constant = \
+                            numpy.empty((self.num[0],self.num[1],self.num[2]),
+                                        dtype=numpy.int32)
+
+                        for z in numpy.arange(self.num[2]):
+                            for y in numpy.arange(self.num[1]):
+                                for x in numpy.arange(self.num[0]):
+                                    self.p_f_constant[x,y,z] = \
+                                        numpy.fromfile(fh,
+                                                    dtype=numpy.int32,
+                                                    count=1)
+                    else:
+                        self.p_f_constant = numpy.zeros(
+                            (self.num[0], self.num[1], self.num[2]),
+                            dtype=numpy.int32)
 
                 if self.version >= 2.0 and self.cfd_solver == 0:
                     self.gamma = \
@@ -1464,6 +1489,12 @@ class sim:
                 fh.write(self.free_slip_top.astype(numpy.int32))
                 fh.write(self.bc_bot_flux.astype(numpy.float64))
                 fh.write(self.bc_top_flux.astype(numpy.float64))
+
+                for z in numpy.arange(self.num[2]):
+                    for y in numpy.arange(self.num[1]):
+                        for x in numpy.arange(self.num[0]):
+                            fh.write(self.p_f_constant[x,y,z].astype(
+                                numpy.int32))
 
                 # Navier Stokes
                 if self.cfd_solver[0] == 0:
@@ -3403,6 +3434,10 @@ class sim:
         self.bc_bot_flux = numpy.zeros(1, dtype=numpy.float64)
         self.bc_top_flux = numpy.zeros(1, dtype=numpy.float64)
 
+        self.p_f_constant = numpy.zeros((self.num[0], self.num[1],
+                                         self.num[2]),
+                                        dtype=numpy.int32)
+
         # Fluid solver type
         # 0: Navier Stokes (fluid with inertia)
         # 1: Stokes-Darcy (fluid without inertia)
@@ -4459,7 +4494,7 @@ class sim:
         if dry:
             dryarg = "--dry "
         if valgrind:
-            valgrindbin = "valgrind -q "
+            valgrindbin = "valgrind -q --track-origins=yes "
         if cudamemcheck:
             cudamemchk = "cuda-memcheck --leak-check full "
         if self.fluid:

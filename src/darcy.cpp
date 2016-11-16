@@ -30,6 +30,7 @@ void DEM::initDarcyMem()
     darcy.norm  = new Float[ncells];     // normalized residual of epsilon
     darcy.f_p   = new Float4[np];        // pressure force on particles
     darcy.k     = new Float[ncells];     // hydraulic pressure
+    darcy.p_constant = new int[ncells];  // constant pressure (0: no, 1: yes)
 }
 
 unsigned int DEM::darcyCells()
@@ -59,6 +60,7 @@ void DEM::freeDarcyMem()
     delete[] darcy.norm;
     delete[] darcy.f_p;
     delete[] darcy.k;
+    delete[] darcy.p_constant;
 }
 
 // 3D index to 1D index

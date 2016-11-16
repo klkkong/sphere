@@ -41,6 +41,8 @@ void DEM::initDarcyMemDev(void)
     //cudaMalloc((void**)&dev_darcy_v_p_x, memSizeFace); // v_p.x
     //cudaMalloc((void**)&dev_darcy_v_p_y, memSizeFace); // v_p.y
     //cudaMalloc((void**)&dev_darcy_v_p_z, memSizeFace); // v_p.z
+    cudaMalloc((void**)&dev_darcy_p_constant,
+            sizeof(int)*darcyCells()); // grad(pressure)
 
     checkForCudaErrors("End of initDarcyMemDev");
 }
@@ -67,6 +69,7 @@ void DEM::freeDarcyMemDev()
     //cudaFree(dev_darcy_v_p_y);
     //cudaFree(dev_darcy_v_p_z);
     cudaFree(dev_darcy_grad_p);
+    cudaFree(dev_darcy_p_constant);
 }
 
 // Transfer to device
@@ -1686,6 +1689,7 @@ __global__ void firstDarcySolution(
         const int bc_top,                             // in
         const unsigned int ndem,                      // in
         const unsigned int wall0_iz,                  // in
+        const int* __restrict__ dev_darcy_p_constant, // in
         Float* __restrict__ dev_darcy_dp_expl)        // out
 {
     // 3D thread index
@@ -1722,6 +1726,7 @@ __global__ void firstDarcySolution(
         const Float  dphi   = dev_darcy_dphi[cellidx];
         //const Float  div_v_p = dev_darcy_div_v_p[cellidx];
         const Float3 vp_avg = dev_darcy_vp_avg[cellidx];
+        const int p_constant = dev_darcy_p_constant[cellidx];
 
         Float p_xn  = dev_darcy_p[d_idx(x-1,y,z)];
         const Float p     = dev_darcy_p[cellidx];
@@ -1790,7 +1795,8 @@ __global__ void firstDarcySolution(
         if ((bc_bot == 0 && z == 0) || (bc_top == 0 && z == nz-1)
                 || (z >= wall0_iz && bc_top == 0)
                 || (bc_xn == 0 && x == 0) || (bc_xp == 0 && x == nx-1)
-                || (bc_yn == 0 && y == 0) || (bc_yp == 0 && y == nx-1))
+                || (bc_yn == 0 && y == 0) || (bc_yp == 0 && y == nx-1)
+                || p_constant == 1)
             dp_expl = 0.0;
 
 #ifdef REPORT_FORCING_TERMS
@@ -1864,6 +1870,7 @@ __global__ void updateDarcySolution(
         const int bc_top,                             // in
         const unsigned int ndem,                      // in
         const unsigned int wall0_iz,                  // in
+        const int* __restrict__ dev_darcy_p_constant, // in
         Float* __restrict__ dev_darcy_p_new,          // out
         Float* __restrict__ dev_darcy_norm)           // out
 {
@@ -1901,6 +1908,7 @@ __global__ void updateDarcySolution(
         const Float  dphi   = dev_darcy_dphi[cellidx];
         //const Float  div_v_p = dev_darcy_div_v_p[cellidx];
         const Float3 vp_avg = dev_darcy_vp_avg[cellidx];
+        const int p_constant = dev_darcy_p_constant[cellidx];
 
         const Float p_old   = dev_darcy_p_old[cellidx];
         const Float dp_expl = dev_darcy_dp_expl[cellidx];
@@ -1973,7 +1981,8 @@ __global__ void updateDarcySolution(
         if ((bc_bot == 0 && z == 0) || (bc_top == 0 && z == nz-1)
                 || (z >= wall0_iz && bc_top == 0)
                 || (bc_xn == 0 && x == 0) || (bc_xp == 0 && x == nx-1)
-                || (bc_yn == 0 && y == 0) || (bc_yp == 0 && y == nx-1))
+                || (bc_yn == 0 && y == 0) || (bc_yp == 0 && y == nx-1)
+                || p_constant == 1)
             dp_impl = 0.0;
             //p_new = p;
 
