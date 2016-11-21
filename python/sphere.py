@@ -2118,6 +2118,14 @@ class sim:
             else:
                 K.SetNumberOfTuples(grid.GetNumberOfPoints())
 
+            p_f_constant = vtk.vtkDoubleArray()
+            p_f_constant.SetName("Constant pressure [-]")
+            p_f_constant.SetNumberOfComponents(1)
+            if cell_centered:
+                p_f_constant.SetNumberOfTuples(grid.GetNumberOfCells())
+            else:
+                p_f_constant.SetNumberOfTuples(grid.GetNumberOfPoints())
+
         # insert values
         for z in range(self.num[2]):
             for y in range(self.num[1]):
@@ -2131,6 +2139,7 @@ class sim:
                     if self.cfd_solver[0] == 1:
                         k.SetValue(idx, self.k[x,y,z])
                         K.SetValue(idx, self.K[x,y,z])
+                        p_f_constant.SetValue(idx, self.p_f_constant[x,y,z])
 
         # add pres array to grid
         if cell_centered:
@@ -2142,6 +2151,7 @@ class sim:
             if self.cfd_solver[0] == 1:
                 grid.GetCellData().AddArray(k)
                 grid.GetCellData().AddArray(K)
+                grid.GetCellData().AddArray(p_f_constant)
         else:
             grid.GetPointData().AddArray(pres)
             grid.GetPointData().AddArray(vel)
@@ -2151,6 +2161,7 @@ class sim:
             if self.cfd_solver[0] == 1:
                 grid.GetPointData().AddArray(k)
                 grid.GetPointData().AddArray(K)
+                grid.GetPointData().AddArray(p_f_constant)
 
         # write VTK XML image data file
         writer = vtk.vtkXMLImageDataWriter()
