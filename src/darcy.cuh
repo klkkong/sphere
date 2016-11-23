@@ -94,6 +94,8 @@ void DEM::transferDarcyToGlobalDeviceMemory(int statusmsg)
     cudaMemcpy(dev_darcy_dphi, darcy.dphi, memSizeF, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_darcy_f_p, darcy.f_p, sizeof(Float4)*np,
             cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_darcy_p_constant, darcy.p_constant, sizeof(int)*darcyCells(),
+            cudaMemcpyHostToDevice);
 
     checkForCudaErrors("End of transferDarcyToGlobalDeviceMemory");
     //if (verbose == 1 && statusmsg == 1)
@@ -117,6 +119,8 @@ void DEM::transferDarcyFromGlobalDeviceMemory(int statusmsg)
     cudaMemcpy(darcy.f_p, dev_darcy_f_p, sizeof(Float4)*np,
             cudaMemcpyDeviceToHost);
     cudaMemcpy(darcy.k, dev_darcy_k, memSizeF, cudaMemcpyDeviceToHost);
+    cudaMemcpy(darcy.p_constant, dev_darcy_p_constant, sizeof(int)*darcyCells(),
+            cudaMemcpyDeviceToHost);
 
     checkForCudaErrors("End of transferDarcyFromGlobalDeviceMemory", 0);
     if (verbose == 1 && statusmsg == 1)
