@@ -805,40 +805,6 @@ __global__ void copyDarcyPorositiesToBottom(
 }
 
 
-// Copy the porosity, porosity change, div_v_p and vp_avg values to the grid top 
-// from the grid interior if the grid is adaptive (grid.adaptive == 1).
-__global__ void copyDarcyPorositiesToTop(
-        Float*  __restrict__ dev_darcy_phi,               // in + out
-        Float*  __restrict__ dev_darcy_dphi,              // in + out
-        Float*  __restrict__ dev_darcy_div_v_p,           // in + out
-        Float3* __restrict__ dev_darcy_vp_avg)            // in + out
-{
-    // 3D thread index
-    const unsigned int x = blockDim.x * blockIdx.x + threadIdx.x;
-    const unsigned int y = blockDim.y * blockIdx.y + threadIdx.y;
-    const unsigned int z = blockDim.z * blockIdx.z + threadIdx.z;
-
-    // Grid dimensions
-    const unsigned int nx = devC_grid.num[0];
-    const unsigned int ny = devC_grid.num[1];
-    const unsigned int nz = devC_grid.num[2];
-
-    // check that we are not outside the fluid grid
-    if (devC_grid.adaptive == 1 &&
-            x < nx && y < ny && z == nz - 1) {
-
-            const unsigned int readidx = d_idx(x, y, nz - 2);
-            const unsigned int writeidx = d_idx(x, y, z);
-
-            __syncthreads();
-            dev_darcy_phi[writeidx] = dev_darcy_phi[readidx];
-            dev_darcy_dphi[writeidx] = dev_darcy_dphi[readidx];
-            dev_darcy_div_v_p[writeidx] = dev_darcy_div_v_p[readidx];
-            dev_darcy_vp_avg[writeidx] = dev_darcy_vp_avg[readidx];
-    }
-}
-
-
 // Find the porosity in each cell on the base of a sphere, centered at the cell
 // center. 
 __global__ void findDarcyPorosities(

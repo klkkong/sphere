@@ -1044,7 +1044,7 @@ __host__ void DEM::startTime()
 
             // If the grid is adaptive, readjust the grid height to equal the 
             // positions of the dynamic walls
-            if (grid.adaptive == 1) {
+            if (grid.adaptive == 1 && walls.nw > 0) {
                 updateGridSize();
             }
 
@@ -2036,17 +2036,6 @@ __host__ void DEM::startTime()
                                 dev_darcy_vp_avg);
                         cudaThreadSynchronize();
                     }
-
-                    // copy porosities to the upper Z boundary
-                    /*if (grid.adaptive == 1) {
-                        copyDarcyPorositiesToTop<<<dimGridFluid, 
-                                dimBlockFluid>>>(
-                                dev_darcy_phi,
-                                dev_darcy_dphi,
-                                dev_darcy_div_v_p,
-                                dev_darcy_vp_avg);
-                        cudaThreadSynchronize();
-                    }*/
 
                     // Modulate the pressures at the upper boundary cells
                     if ((darcy.p_mod_A > 1.0e-5 || darcy.p_mod_A < -1.0e-5) &&
