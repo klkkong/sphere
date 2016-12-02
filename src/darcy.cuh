@@ -1753,10 +1753,10 @@ __global__ void firstDarcySolution(
                 (p_zp - (p + p) + p_zn)/(dz*dz);
 
         Float dp_expl =
-            + ndem*devC_dt/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
+            ndem*devC_dt/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
             //- div_v_p/(beta_f*phi);
             //- dphi/(beta_f*phi*(1.0 - phi));
-            - ndem*devC_dt/(beta_f*phi*(1.0 - phi))
+            -(ndem*devC_dt/(beta_f*phi*(1.0 - phi)))
             *(dphi/(ndem*devC_dt) + dot(vp_avg, grad_phi));
 
         // Dirichlet BC at fixed-pressure boundaries and at the dynamic top 
@@ -1770,40 +1770,56 @@ __global__ void firstDarcySolution(
             dp_expl = 0.0;
 
 #ifdef REPORT_FORCING_TERMS
-            const Float dp_diff = (ndem*devC_dt)/(beta_f*phi*mu)
+            const Float dp_diff = 
+                ndem*devC_dt/(beta_f*phi*mu)
                 *(k*laplace_p + dot(grad_k, grad_p));
-            const Float dp_forc = -dphi/(beta_f*phi*(1.0 - phi));
+            //const Float dp_forc = -dphi/(beta_f*phi*(1.0 - phi));
             //const Float dp_forc = -div_v_p/(beta_f*phi);
+            const Float dp_forc =
+                -(ndem*devC_dt/(beta_f*phi*(1.0 - phi)))
+                *(dphi/(ndem*devC_dt) + dot(vp_avg, grad_phi));
+                
         printf("\n%d,%d,%d firstDarcySolution\n"
                 "p           = %e\n"
-                "p_x         = %e, %e\n"
-                "p_y         = %e, %e\n"
-                "p_z         = %e, %e\n"
+                //"p_x         = %e, %e\n"
+                //"p_y         = %e, %e\n"
+                //"p_z         = %e, %e\n"
                 "dp_expl     = %e\n"
                 "laplace_p   = %e\n"
-                "grad_p      = %e, %e, %e\n"
-                "grad_k      = %e, %e, %e\n"
+                //"grad_p      = %e, %e, %e\n"
+                //"grad_k      = %e, %e, %e\n"
                 "dp_diff     = %e\n"
                 "dp_forc     = %e\n"
                 //"div_v_p     = %e\n"
+                "phi         = %e\n"
                 "dphi        = %e\n"
                 "dphi/dt     = %e\n"
                 "vp_avg      = %e, %e, %e\n"
+                "grad_phi    = %e, %e, %e\n"
+                "ndem*dt/(beta*phi*(1-phi)) = %e\n"
+                "dphi/(ndem*dt)             = %e\n"
+                "dot(v_p,grad_phi)          = %e\n"
                 ,
                 x,y,z,
                 p,
-                p_xn, p_xp,
-                p_yn, p_yp,
-                p_zn, p_zp,
+                //p_xn, p_xp,
+                //p_yn, p_yp,
+                //p_zn, p_zp,
                 dp_expl,
                 laplace_p,
-                grad_p.x, grad_p.y, grad_p.z,
-                grad_k.x, grad_k.y, grad_k.z,
-                dp_diff, dp_forc,
+                //grad_p.x, grad_p.y, grad_p.z,
+                //grad_k.x, grad_k.y, grad_k.z,
+                dp_diff,
+                dp_forc,
                 //div_v_p//,
+                phi,
                 dphi,
                 dphi/(ndem*devC_dt),
-                vp_avg.x, vp_avg.y, vp_avg.z
+                vp_avg.x, vp_avg.y, vp_avg.z,
+                grad_phi.x, grad_phi.y, grad_phi.z,
+                ndem*devC_dt/(beta_f*phi*(1.0 - phi)),
+                dphi/(ndem*devC_dt),
+                dot(vp_avg, grad_phi)
                 );
 #endif
 
@@ -1942,7 +1958,7 @@ __global__ void updateDarcySolution(
             + ndem*devC_dt/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
             //- div_v_p/(beta_f*phi);
             //- dphi/(beta_f*phi*(1.0 - phi));
-            - ndem*devC_dt/(beta_f*phi*(1.0 - phi))
+            -(ndem*devC_dt/(beta_f*phi*(1.0 - phi)))
             *(dphi/(ndem*devC_dt) + dot(vp_avg, grad_phi));
 
         // Dirichlet BC at fixed-pressure boundaries and at the dynamic top 
@@ -1974,7 +1990,12 @@ __global__ void updateDarcySolution(
 #ifdef REPORT_FORCING_TERMS_JACOBIAN
         const Float dp_diff = (ndem*devC_dt)/(beta_f*phi*mu)
             *(k*laplace_p + dot(grad_k, grad_p));
-        const Float dp_forc = -dphi/(beta_f*phi*(1.0 - phi));
+        //const Float dp_forc = -dphi/(beta_f*phi*(1.0 - phi));
+        //const Float dp_forc = -div_v_p/(beta_f*phi);
+        const Float dp_forc =
+            -(ndem*devC_dt/(beta_f*phi*(1.0 - phi)))
+            *(dphi/(ndem*devC_dt) + dot(vp_avg, grad_phi));
+        //const Float dp_forc = -dphi/(beta_f*phi*(1.0 - phi));
         //const Float dp_forc = -div_v_p/(beta_f*phi);
         printf("\n%d,%d,%d updateDarcySolution\n"
                 "p_new       = %e\n"
