@@ -717,7 +717,7 @@ __global__ void findDarcyPorositiesLinear(
             //}
             //dev_darcy_phi[cellidx]  = phi;
             //dev_darcy_dphi[cellidx] = dphi;
-            dev_darcy_phi[cellidx]  = 0.999;
+            dev_darcy_phi[cellidx]  = 0.75;
             dev_darcy_dphi[cellidx] = 0.0;
 
             //dev_darcy_vp_avg[cellidx] = MAKE_FLOAT3(0.0, 0.0, 0.0);
@@ -969,8 +969,8 @@ __global__ void findDarcyPorosities(
             }
 
             // Make sure that the porosity is in the interval [0.0;1.0]
-            phi = fmin(0.9, fmax(0.1, void_volume/cell_volume));
-            Float phi_new = fmin(0.9, fmax(0.1, void_volume_new/cell_volume));
+            phi = fmin(0.75, fmax(0.1, void_volume/cell_volume));
+            Float phi_new = fmin(0.75, fmax(0.1, void_volume_new/cell_volume));
             //phi = fmin(0.99, fmax(0.01, void_volume/cell_volume));
             //phi = void_volume/cell_volume;
 
