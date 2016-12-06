@@ -1684,8 +1684,8 @@ __global__ void firstDarcySolution(
 
         // read values
         __syncthreads();
-        const Float  k      = dev_darcy_k[cellidx];
-        const Float3 grad_k = dev_darcy_grad_k[cellidx];
+        //const Float  k      = dev_darcy_k[cellidx];
+        //const Float3 grad_k = dev_darcy_grad_k[cellidx];
         const Float  phi_xn = dev_darcy_phi[d_idx(x-1,y,z)];
         const Float  phi    = dev_darcy_phi[cellidx];
         const Float  phi_xp = dev_darcy_phi[d_idx(x+1,y,z)];
@@ -1698,13 +1698,21 @@ __global__ void firstDarcySolution(
         const Float3 vp_avg = dev_darcy_vp_avg[cellidx];
         const int p_constant = dev_darcy_p_constant[cellidx];
 
-        Float p_xn  = dev_darcy_p[d_idx(x-1,y,z)];
-        const Float p     = dev_darcy_p[cellidx];
-        Float p_xp  = dev_darcy_p[d_idx(x+1,y,z)];
-        Float p_yn  = dev_darcy_p[d_idx(x,y-1,z)];
-        Float p_yp  = dev_darcy_p[d_idx(x,y+1,z)];
-        Float p_zn = dev_darcy_p[d_idx(x,y,z-1)];
-        Float p_zp = dev_darcy_p[d_idx(x,y,z+1)];
+        Float p_xn    = dev_darcy_p[d_idx(x-1,y,z)];
+        const Float p = dev_darcy_p[cellidx];
+        Float p_xp    = dev_darcy_p[d_idx(x+1,y,z)];
+        Float p_yn    = dev_darcy_p[d_idx(x,y-1,z)];
+        Float p_yp    = dev_darcy_p[d_idx(x,y+1,z)];
+        Float p_zn    = dev_darcy_p[d_idx(x,y,z-1)];
+        Float p_zp    = dev_darcy_p[d_idx(x,y,z+1)];
+
+        const Float k_xn    = dev_darcy_k[d_idx(x-1,y,z)];
+        const Float k       = dev_darcy_k[cellidx];
+        const Float k_xp    = dev_darcy_k[d_idx(x+1,y,z)];
+        const Float k_yn    = dev_darcy_k[d_idx(x,y-1,z)];
+        const Float k_yp    = dev_darcy_k[d_idx(x,y+1,z)];
+        const Float k_zn    = dev_darcy_k[d_idx(x,y,z-1)];
+        const Float k_zp    = dev_darcy_k[d_idx(x,y,z+1)];
 
         // Neumann BCs
         if (x == 0 && bc_xn == 1)
@@ -1720,31 +1728,81 @@ __global__ void firstDarcySolution(
         if (z == nz-1 && bc_top == 1)
             p_zp = p;
 
-        // upwind coefficients for grad(p) determined from values of k
-        // k =  1.0: backwards difference
-        // k = -1.0: forwards difference
-        /*const Float3 e_k = MAKE_FLOAT3(
-                copysign(1.0, grad_k.x),
-                copysign(1.0, grad_k.y),
-                copysign(1.0, grad_k.z));
-
-        // gradient approximated by first-order forward differences
-        const Float3 grad_p = MAKE_FLOAT3(
-                ((1.0 + e_k.x)*(p - p_xn) + (1.0 - e_k.x)*(p_xp - p))/(dx + dx),
-                ((1.0 + e_k.y)*(p - p_yn) + (1.0 - e_k.y)*(p_yp - p))/(dy + dy),
-                ((1.0 + e_k.z)*(p - p_zn) + (1.0 - e_k.z)*(p_zp - p))/(dz + dz)
-                );*/
-
-        // gradient approximated by first-order central differences
-        const Float3 grad_p = MAKE_FLOAT3(
+        // gradients approximated by first-order central differences, order of 
+        // approximation is O(dx*dx)
+        const Float3 grad_p_central = MAKE_FLOAT3(
                 (p_xp - p_xn)/(dx + dx),
                 (p_yp - p_yn)/(dy + dy),
                 (p_zp - p_zn)/(dz + dz));
 
-        const Float3 grad_phi = MAKE_FLOAT3(
+        const Float3 grad_k_central = MAKE_FLOAT3(
+                (k_xp - k_xn)/(dx + dx),
+                (k_yp - k_yn)/(dy + dy),
+                (k_zp - k_zn)/(dz + dz));
+
+        const Float3 grad_phi_central = MAKE_FLOAT3(
                 (phi_xp - phi_xn)/(dx + dx),
                 (phi_yp - phi_yn)/(dy + dy),
                 (phi_zp - phi_zn)/(dz + dz));
+
+        // upwind coefficients for grad(p) determined from values of k
+        // e_p =  1.0: backwards difference
+        // e_p = -1.0: forwards difference
+        const Float3 e_p = MAKE_FLOAT3(
+                copysign(1.0, -(p_xp - p_xn)),
+                copysign(1.0, -(p_yp - p_yn)),
+                copysign(1.0, -(p_zp - p_zn)));
+
+        // gradient approximated by first-order forward differences, order of 
+        // approximation is O(dx)
+        const Float3 grad_p_upwind = MAKE_FLOAT3(
+                ((1.0 + e_p.x)*(p - p_xn) + (1.0 - e_p.x)*(p_xp - p))/dx,
+                ((1.0 + e_p.y)*(p - p_yn) + (1.0 - e_p.y)*(p_yp - p))/dy,
+                ((1.0 + e_p.z)*(p - p_zn) + (1.0 - e_p.z)*(p_zp - p))/dz
+                );
+
+        const Float3 grad_k_upwind = MAKE_FLOAT3(
+                ((1.0 + e_p.x)*(k - k_xn) + (1.0 - e_p.x)*(k_xp - k))/dx,
+                ((1.0 + e_p.y)*(k - k_yn) + (1.0 - e_p.y)*(k_yp - k))/dy,
+                ((1.0 + e_p.z)*(k - k_zn) + (1.0 - e_p.z)*(k_zp - k))/dz
+                );
+
+        const Float3 grad_phi_upwind = MAKE_FLOAT3(
+                ((1.0 + e_p.x)*(phi - phi_xn) 
+                 + (1.0 - e_p.x)*(phi_xp - phi))/dx,
+                ((1.0 + e_p.y)*(phi - phi_yn) 
+                 + (1.0 - e_p.y)*(phi_yp - phi))/dy,
+                ((1.0 + e_p.z)*(phi - phi_zn) 
+                 + (1.0 - e_p.z)*(phi_zp - phi))/dz
+                );
+
+        // Average central and upwind discretizations to get intermediate order 
+        // of approximation
+        Float gamma = 0.0;  // in [0;1], where 0: fully central, 1: fully upwind
+
+        const Float3 grad_p = MAKE_FLOAT3(
+                gamma*grad_p_upwind.x,
+                gamma*grad_p_upwind.y,
+                gamma*grad_p_upwind.z) + MAKE_FLOAT3(
+                    (1.0 - gamma) * grad_p_central.x,
+                    (1.0 - gamma) * grad_p_central.y,
+                    (1.0 - gamma) * grad_p_central.z);
+
+        const Float3 grad_k = MAKE_FLOAT3(
+                gamma*grad_k_upwind.x,
+                gamma*grad_k_upwind.y,
+                gamma*grad_k_upwind.z) + MAKE_FLOAT3(
+                    (1.0 - gamma) * grad_k_central.x,
+                    (1.0 - gamma) * grad_k_central.y,
+                    (1.0 - gamma) * grad_k_central.z);
+
+        const Float3 grad_phi = MAKE_FLOAT3(
+                gamma*grad_phi_upwind.x,
+                gamma*grad_phi_upwind.y,
+                gamma*grad_phi_upwind.z) + MAKE_FLOAT3(
+                    (1.0 - gamma) * grad_phi_central.x,
+                    (1.0 - gamma) * grad_phi_central.y,
+                    (1.0 - gamma) * grad_phi_central.z);
 
         // laplacian approximated by second-order central differences
         const Float laplace_p =
@@ -1781,13 +1839,13 @@ __global__ void firstDarcySolution(
                 
         printf("\n%d,%d,%d firstDarcySolution\n"
                 "p           = %e\n"
-                //"p_x         = %e, %e\n"
-                //"p_y         = %e, %e\n"
-                //"p_z         = %e, %e\n"
+                "p_x         = %e, %e\n"
+                "p_y         = %e, %e\n"
+                "p_z         = %e, %e\n"
                 "dp_expl     = %e\n"
                 "laplace_p   = %e\n"
-                //"grad_p      = %e, %e, %e\n"
-                //"grad_k      = %e, %e, %e\n"
+                "grad_p      = %e, %e, %e\n"
+                "grad_k      = %e, %e, %e\n"
                 "dp_diff     = %e\n"
                 "dp_forc     = %e\n"
                 //"div_v_p     = %e\n"
@@ -1796,19 +1854,19 @@ __global__ void firstDarcySolution(
                 "dphi/dt     = %e\n"
                 "vp_avg      = %e, %e, %e\n"
                 "grad_phi    = %e, %e, %e\n"
-                "ndem*dt/(beta*phi*(1-phi)) = %e\n"
-                "dphi/(ndem*dt)             = %e\n"
-                "dot(v_p,grad_phi)          = %e\n"
+                //"ndem*dt/(beta*phi*(1-phi)) = %e\n"
+                //"dphi/(ndem*dt)             = %e\n"
+                //"dot(v_p,grad_phi)          = %e\n"
                 ,
                 x,y,z,
                 p,
-                //p_xn, p_xp,
-                //p_yn, p_yp,
-                //p_zn, p_zp,
+                p_xn, p_xp,
+                p_yn, p_yp,
+                p_zn, p_zp,
                 dp_expl,
                 laplace_p,
-                //grad_p.x, grad_p.y, grad_p.z,
-                //grad_k.x, grad_k.y, grad_k.z,
+                grad_p.x, grad_p.y, grad_p.z,
+                grad_k.x, grad_k.y, grad_k.z,
                 dp_diff,
                 dp_forc,
                 //div_v_p//,
@@ -1816,10 +1874,10 @@ __global__ void firstDarcySolution(
                 dphi,
                 dphi/(ndem*devC_dt),
                 vp_avg.x, vp_avg.y, vp_avg.z,
-                grad_phi.x, grad_phi.y, grad_phi.z,
-                ndem*devC_dt/(beta_f*phi*(1.0 - phi)),
-                dphi/(ndem*devC_dt),
-                dot(vp_avg, grad_phi)
+                grad_phi.x, grad_phi.y, grad_phi.z//,
+                //ndem*devC_dt/(beta_f*phi*(1.0 - phi)),
+                //dphi/(ndem*devC_dt),
+                //dot(vp_avg, grad_phi)
                 );
 #endif
 
@@ -1882,8 +1940,8 @@ __global__ void updateDarcySolution(
 
         // read values
         __syncthreads();
-        const Float k       = dev_darcy_k[cellidx];
-        const Float3 grad_k = dev_darcy_grad_k[cellidx];
+        //const Float k       = dev_darcy_k[cellidx];
+        //const Float3 grad_k = dev_darcy_grad_k[cellidx];
         const Float  phi_xn = dev_darcy_phi[d_idx(x-1,y,z)];
         const Float  phi    = dev_darcy_phi[cellidx];
         const Float  phi_xp = dev_darcy_phi[d_idx(x+1,y,z)];
@@ -1899,13 +1957,21 @@ __global__ void updateDarcySolution(
         const Float p_old   = dev_darcy_p_old[cellidx];
         const Float dp_expl = dev_darcy_dp_expl[cellidx];
 
-        Float p_xn  = dev_darcy_p[d_idx(x-1,y,z)];
-        const Float p     = dev_darcy_p[cellidx];
-        Float p_xp  = dev_darcy_p[d_idx(x+1,y,z)];
-        Float p_yn  = dev_darcy_p[d_idx(x,y-1,z)];
-        Float p_yp  = dev_darcy_p[d_idx(x,y+1,z)];
-        Float p_zn = dev_darcy_p[d_idx(x,y,z-1)];
-        Float p_zp = dev_darcy_p[d_idx(x,y,z+1)];
+        Float p_xn    = dev_darcy_p[d_idx(x-1,y,z)];
+        const Float p = dev_darcy_p[cellidx];
+        Float p_xp    = dev_darcy_p[d_idx(x+1,y,z)];
+        Float p_yn    = dev_darcy_p[d_idx(x,y-1,z)];
+        Float p_yp    = dev_darcy_p[d_idx(x,y+1,z)];
+        Float p_zn    = dev_darcy_p[d_idx(x,y,z-1)];
+        Float p_zp    = dev_darcy_p[d_idx(x,y,z+1)];
+
+        const Float k_xn    = dev_darcy_k[d_idx(x-1,y,z)];
+        const Float k       = dev_darcy_k[cellidx];
+        const Float k_xp    = dev_darcy_k[d_idx(x+1,y,z)];
+        const Float k_yn    = dev_darcy_k[d_idx(x,y-1,z)];
+        const Float k_yp    = dev_darcy_k[d_idx(x,y+1,z)];
+        const Float k_zn    = dev_darcy_k[d_idx(x,y,z-1)];
+        const Float k_zp    = dev_darcy_k[d_idx(x,y,z+1)];
 
         // Neumann BCs
         if (x == 0 && bc_xn == 1)
@@ -1921,31 +1987,81 @@ __global__ void updateDarcySolution(
         if (z == nz-1 && bc_top == 1)
             p_zp = p;
 
-        // upwind coefficients for grad(p) determined from values of k
-        // k =  1.0: backwards difference
-        // k = -1.0: forwards difference
-        /*const Float3 e_k = MAKE_FLOAT3(
-                copysign(1.0, grad_k.x),
-                copysign(1.0, grad_k.y),
-                copysign(1.0, grad_k.z));
-
-        // gradient approximated by first-order forward differences
-        const Float3 grad_p = MAKE_FLOAT3(
-                ((1.0 + e_k.x)*(p - p_xn) + (1.0 - e_k.x)*(p_xp - p))/(dx + dx),
-                ((1.0 + e_k.y)*(p - p_yn) + (1.0 - e_k.y)*(p_yp - p))/(dy + dy),
-                ((1.0 + e_k.z)*(p - p_zn) + (1.0 - e_k.z)*(p_zp - p))/(dz + dz)
-                );*/
-
-        // gradient approximated by first-order central differences
-        const Float3 grad_p = MAKE_FLOAT3(
+        // gradients approximated by first-order central differences, order of 
+        // approximation is O(dx*dx)
+        const Float3 grad_p_central = MAKE_FLOAT3(
                 (p_xp - p_xn)/(dx + dx),
                 (p_yp - p_yn)/(dy + dy),
                 (p_zp - p_zn)/(dz + dz));
 
-        const Float3 grad_phi = MAKE_FLOAT3(
+        const Float3 grad_k_central = MAKE_FLOAT3(
+                (k_xp - k_xn)/(dx + dx),
+                (k_yp - k_yn)/(dy + dy),
+                (k_zp - k_zn)/(dz + dz));
+
+        const Float3 grad_phi_central = MAKE_FLOAT3(
                 (phi_xp - phi_xn)/(dx + dx),
                 (phi_yp - phi_yn)/(dy + dy),
                 (phi_zp - phi_zn)/(dz + dz));
+
+        // upwind coefficients for grad(p) determined from values of k
+        // e_p =  1.0: backwards difference
+        // e_p = -1.0: forwards difference
+        const Float3 e_p = MAKE_FLOAT3(
+                copysign(1.0, -(p_xp - p_xn)),
+                copysign(1.0, -(p_yp - p_yn)),
+                copysign(1.0, -(p_zp - p_zn)));
+
+        // gradient approximated by first-order forward differences, order of 
+        // approximation is O(dx)
+        const Float3 grad_p_upwind = MAKE_FLOAT3(
+                ((1.0 + e_p.x)*(p - p_xn) + (1.0 - e_p.x)*(p_xp - p))/dx,
+                ((1.0 + e_p.y)*(p - p_yn) + (1.0 - e_p.y)*(p_yp - p))/dy,
+                ((1.0 + e_p.z)*(p - p_zn) + (1.0 - e_p.z)*(p_zp - p))/dz
+                );
+
+        const Float3 grad_k_upwind = MAKE_FLOAT3(
+                ((1.0 + e_p.x)*(k - k_xn) + (1.0 - e_p.x)*(k_xp - k))/dx,
+                ((1.0 + e_p.y)*(k - k_yn) + (1.0 - e_p.y)*(k_yp - k))/dy,
+                ((1.0 + e_p.z)*(k - k_zn) + (1.0 - e_p.z)*(k_zp - k))/dz
+                );
+
+        const Float3 grad_phi_upwind = MAKE_FLOAT3(
+                ((1.0 + e_p.x)*(phi - phi_xn) 
+                 + (1.0 - e_p.x)*(phi_xp - phi))/dx,
+                ((1.0 + e_p.y)*(phi - phi_yn) 
+                 + (1.0 - e_p.y)*(phi_yp - phi))/dy,
+                ((1.0 + e_p.z)*(phi - phi_zn) 
+                 + (1.0 - e_p.z)*(phi_zp - phi))/dz
+                );
+
+        // Average central and upwind discretizations to get intermediate order 
+        // of approximation
+        Float gamma = 0.0;  // in [0;1], where 0: fully central, 1: fully upwind
+
+        const Float3 grad_p = MAKE_FLOAT3(
+                gamma*grad_p_upwind.x,
+                gamma*grad_p_upwind.y,
+                gamma*grad_p_upwind.z) + MAKE_FLOAT3(
+                    (1.0 - gamma) * grad_p_central.x,
+                    (1.0 - gamma) * grad_p_central.y,
+                    (1.0 - gamma) * grad_p_central.z);
+
+        const Float3 grad_k = MAKE_FLOAT3(
+                gamma*grad_k_upwind.x,
+                gamma*grad_k_upwind.y,
+                gamma*grad_k_upwind.z) + MAKE_FLOAT3(
+                    (1.0 - gamma) * grad_k_central.x,
+                    (1.0 - gamma) * grad_k_central.y,
+                    (1.0 - gamma) * grad_k_central.z);
+
+        const Float3 grad_phi = MAKE_FLOAT3(
+                gamma*grad_phi_upwind.x,
+                gamma*grad_phi_upwind.y,
+                gamma*grad_phi_upwind.z) + MAKE_FLOAT3(
+                    (1.0 - gamma) * grad_phi_central.x,
+                    (1.0 - gamma) * grad_phi_central.y,
+                    (1.0 - gamma) * grad_phi_central.z);
 
         // laplacian approximated by second-order central differences
         const Float laplace_p =
@@ -1955,7 +2071,7 @@ __global__ void updateDarcySolution(
 
         //Float p_new = p_old
         Float dp_impl =
-            + ndem*devC_dt/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
+            ndem*devC_dt/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
             //- div_v_p/(beta_f*phi);
             //- dphi/(beta_f*phi*(1.0 - phi));
             -(ndem*devC_dt/(beta_f*phi*(1.0 - phi)))
