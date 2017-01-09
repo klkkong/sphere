@@ -1816,24 +1816,25 @@ __global__ void firstDarcySolution(
 
         // Solve div(k*grad(p)) as a single term, using harmonic mean for 
         // permeability. k_HM*grad(p) is found between the pressure nodes.
-        const Float3 div_k_grad_p = MAKE_FLOAT3(
+        const Float div_k_grad_p =
                 (2.*k_xp*k/(k_xp + k) *
                  (p_xp - p)/dx
                  -
                  2.*k_xn*k/(k_xn + k)
-                 (p - p_xn)/dx)/dx,
+                 (p - p_xn)/dx)/dx
+            +
 
                 (2.*k_yp*k/(k_yp + k) *
                  (p_yp - p)/dy
                  -
                  2.*k_yn*k/(k_yn + k)
-                 (p - p_yn)/dy)/dy,
-
+                 (p - p_yn)/dy)/dy
+            +
                 (2.*k_zp*k/(k_zp + k) *
                  (p_zp - p)/dz
                  -
                  2.*k_zn*k/(k_zn + k)
-                 (p - p_zn)/dz)/dz);
+                 (p - p_zn)/dz)/dz;
 
         Float dp_expl =
             //ndem*devC_dt/(beta_f*phi*mu)*(k*laplace_p + dot(grad_k, grad_p))
@@ -2105,24 +2106,24 @@ __global__ void updateDarcySolution(
 
         // Solve div(k*grad(p)) as a single term, using harmonic mean for 
         // permeability. k_HM*grad(p) is found between the pressure nodes.
-        const Float3 div_k_grad_p = MAKE_FLOAT3(
+        const Float div_k_grad_p =
                 (2.*k_xp*k/(k_xp + k) *
                  (p_xp - p)/dx
                  -
                  2.*k_xn*k/(k_xn + k)
-                 (p - p_xn)/dx)/dx,
-
+                 (p - p_xn)/dx)/dx
+            +
                 (2.*k_yp*k/(k_yp + k) *
                  (p_yp - p)/dy
                  -
                  2.*k_yn*k/(k_yn + k)
-                 (p - p_yn)/dy)/dy,
-
+                 (p - p_yn)/dy)/dy
+            +
                 (2.*k_zp*k/(k_zp + k) *
                  (p_zp - p)/dz
                  -
                  2.*k_zn*k/(k_zn + k)
-                 (p - p_zn)/dz)/dz);
+                 (p - p_zn)/dz)/dz;
 
 
         //Float p_new = p_old
