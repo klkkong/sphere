@@ -1820,20 +1820,19 @@ __global__ void firstDarcySolution(
                 (2.*k_xp*k/(k_xp + k) *
                  (p_xp - p)/dx
                  -
-                 2.*k_xn*k/(k_xn + k)
+                 2.*k_xn*k/(k_xn + k) *
                  (p - p_xn)/dx)/dx
             +
-
                 (2.*k_yp*k/(k_yp + k) *
                  (p_yp - p)/dy
                  -
-                 2.*k_yn*k/(k_yn + k)
+                 2.*k_yn*k/(k_yn + k) *
                  (p - p_yn)/dy)/dy
             +
                 (2.*k_zp*k/(k_zp + k) *
                  (p_zp - p)/dz
                  -
-                 2.*k_zn*k/(k_zn + k)
+                 2.*k_zn*k/(k_zn + k) *
                  (p - p_zn)/dz)/dz;
 
         Float dp_expl =
@@ -2110,19 +2109,19 @@ __global__ void updateDarcySolution(
                 (2.*k_xp*k/(k_xp + k) *
                  (p_xp - p)/dx
                  -
-                 2.*k_xn*k/(k_xn + k)
+                 2.*k_xn*k/(k_xn + k) *
                  (p - p_xn)/dx)/dx
             +
                 (2.*k_yp*k/(k_yp + k) *
                  (p_yp - p)/dy
                  -
-                 2.*k_yn*k/(k_yn + k)
+                 2.*k_yn*k/(k_yn + k) *
                  (p - p_yn)/dy)/dy
             +
                 (2.*k_zp*k/(k_zp + k) *
                  (p_zp - p)/dz
                  -
-                 2.*k_zn*k/(k_zn + k)
+                 2.*k_zn*k/(k_zn + k) *
                  (p - p_zn)/dz)/dz;
 
 
