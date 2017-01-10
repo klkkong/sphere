@@ -2556,10 +2556,10 @@ __host__ void DEM::startTime()
                 << time.total << " s. ("
                 << t_ratio << " s_real/s_sim, ETA: "
                 << time_eta->tm_yday << "d "
-                << std::setw(2) << std::setfill('0')
-                << time_eta->tm_hour << ":"
-                << time_eta->tm_min << ":"
-                << time_eta->tm_sec << ")       "; // << std::flush;
+                << std::setw(2) << std::setfill('0') << time_eta->tm_hour << ":"
+                << std::setw(2) << std::setfill('0') << time_eta->tm_min << ":"
+                << std::setw(2) << std::setfill('0') << time_eta->tm_sec
+                << ")       "; // << std::flush;
         }
 
 
