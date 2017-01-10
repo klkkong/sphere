@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <cuda.h>
 #include <helper_math.h>
+#include <iomanip>
+#include <time.h>
 
 #include "vector_arithmetic.h"  // for arbitrary prec. vectors
 //#include <vector_functions.h> // for single prec. vectors
@@ -2547,11 +2549,17 @@ __host__ void DEM::startTime()
 
             // Real time it takes to compute a second of model time
             t_ratio = time_spent/(time.current - t_start);
+            time_t estimated_seconds_left(t_ratio*(time.total - time.current));
+            tm *time_eta = gmtime(&estimated_seconds_left);
 
-            cout << "\r  Current simulation time: " 
-                << time.current << "/"
+            cout << "\r  Current time: " << time.current << "/"
                 << time.total << " s. ("
-                << t_ratio << " s_real/s_sim)       "; // << std::flush;
+                << t_ratio << " s_real/s_sim, ETA: "
+                << time_eta->tm_yday << "d "
+                << std::setw(2) << std::setfill('0')
+                << time_eta->tm_hour << ":"
+                << time_eta->tm_min << ":"
+                << time_eta->tm_sec << ")       "; // << std::flush;
         }
 
 
