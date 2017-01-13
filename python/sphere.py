@@ -440,7 +440,6 @@ class sim:
         '''
         Called when to sim objects are compared. Returns 0 if the values
         are identical.
-        TODO: Replace print(#) with print("field name")
         '''
         if self.version != other.version:
             print('version')
