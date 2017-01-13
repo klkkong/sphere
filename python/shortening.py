@@ -60,15 +60,15 @@ for z in range(nz):
 
 # move to x=0
 min_x = numpy.min(sim.x[:,0] - sim.radius[:])
-sim.x[:,0] = sim.x[:,0] - min_x 
+sim.x[:,0] = sim.x[:,0] - min_x
 
 # move to y=0
 min_y = numpy.min(sim.x[:,1] - sim.radius[:])
-sim.x[:,1] = sim.x[:,1] - min_y 
+sim.x[:,1] = sim.x[:,1] - min_y
 
 # move to z=0
 min_z = numpy.min(sim.x[:,2] - sim.radius[:])
-sim.x[:,2] = sim.x[:,2] - min_z 
+sim.x[:,2] = sim.x[:,2] - min_z
 
 #sim.defineWorldBoundaries(L=[Lx, Lz*3, Ly])
 sim.defineWorldBoundaries(L=[numpy.max(sim.x[:,0] + sim.radius[:]), Lz*3, Ly])
@@ -98,9 +98,9 @@ sim.uniaxialStrainRate(wvel = 0.0)
 sim.initTemporal(total=3.0, file_dt = 0.01)
 sim.zeroKinematics()
 
-#sim.run(dry=True)
-#sim.run()
-#sim.writeVTKall()
+sim.run(dry=True)
+sim.run()
+sim.writeVTKall()
 
 
 ## Shortening

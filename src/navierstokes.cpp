@@ -41,6 +41,7 @@ void DEM::initNSmem()
     ns.f_p = new Float4[np]; // pressure force on particles
     ns.f_v = new Float4[np]; // viscous force on particles
     ns.f_sum = new Float4[np]; // sum of fluid forces on particles
+    ns.p_constant = new int[ncells];  // unused
 }
 
 unsigned int DEM::NScells()
@@ -81,6 +82,7 @@ void DEM::freeNSmem()
     delete[] ns.f_p;
     delete[] ns.f_v;
     delete[] ns.f_sum;
+    delete[] ns.p_constant;
 }
 
 // 3D index to 1D index

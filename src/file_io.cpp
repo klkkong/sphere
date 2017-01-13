@@ -204,7 +204,7 @@ void DEM::readbin(const char *target)
     // Wall mass (x), velocity (y), force (z), and deviatoric stress (w)
     walls.nx    = new Float4[walls.nw];
     walls.mvfd  = new Float4[walls.nw];
-    walls.tau_x = new Float[walls.nw];
+    walls.tau_x = new Float[1];
 
     for (i = 0; i<walls.nw; ++i)
         ifs.read(as_bytes(walls.wmode[i]), sizeof(walls.wmode[i]));
@@ -303,6 +303,12 @@ void DEM::readbin(const char *target)
             ifs.read(as_bytes(ns.bc_bot_flux), sizeof(Float));
             ifs.read(as_bytes(ns.bc_top_flux), sizeof(Float));
 
+            for (z = 0; z<grid.num[2]; ++z)
+                for (y = 0; y<grid.num[1]; ++y)
+                    for (x = 0; x<grid.num[0]; ++x)
+                        ifs.read(as_bytes(ns.p_constant[idx(x,y,z)]),
+                                sizeof(int));
+
             ifs.read(as_bytes(ns.gamma), sizeof(Float));
             ifs.read(as_bytes(ns.theta), sizeof(Float));
             ifs.read(as_bytes(ns.beta), sizeof(Float));
@@ -376,6 +382,12 @@ void DEM::readbin(const char *target)
             ifs.read(as_bytes(darcy.free_slip_top), sizeof(int));
             ifs.read(as_bytes(darcy.bc_bot_flux), sizeof(Float));
             ifs.read(as_bytes(darcy.bc_top_flux), sizeof(Float));
+
+            for (z = 0; z<darcy.nz; ++z)
+                for (y = 0; y<darcy.ny; ++y)
+                    for (x = 0; x<darcy.nx; ++x)
+                        ifs.read(as_bytes(darcy.p_constant[d_idx(x,y,z)]),
+                                sizeof(int));
 
             ifs.read(as_bytes(darcy.tolerance), sizeof(Float));
             ifs.read(as_bytes(darcy.maxiter), sizeof(unsigned int));
@@ -603,6 +615,12 @@ void DEM::writebin(const char *target)
                 ofs.write(as_bytes(ns.bc_bot_flux), sizeof(Float));
                 ofs.write(as_bytes(ns.bc_top_flux), sizeof(Float));
 
+                for (z = 0; z<ns.nz; ++z)
+                    for (y = 0; y<ns.ny; ++y)
+                        for (x = 0; x<ns.nx; ++x)
+                            ofs.write(as_bytes(ns.p_constant[idx(x,y,z)]),
+                                    sizeof(int));
+
                 ofs.write(as_bytes(ns.gamma), sizeof(Float));
                 ofs.write(as_bytes(ns.theta), sizeof(Float));
                 ofs.write(as_bytes(ns.beta), sizeof(Float));
@@ -677,6 +695,12 @@ void DEM::writebin(const char *target)
                 ofs.write(as_bytes(darcy.free_slip_top), sizeof(int));
                 ofs.write(as_bytes(darcy.bc_bot_flux), sizeof(Float));
                 ofs.write(as_bytes(darcy.bc_top_flux), sizeof(Float));
+
+                for (z = 0; z<darcy.nz; ++z)
+                    for (y = 0; y<darcy.ny; ++y)
+                        for (x = 0; x<darcy.nx; ++x)
+                            ofs.write(as_bytes(darcy.p_constant[d_idx(x,y,z)]),
+                                    sizeof(int));
 
                 ofs.write(as_bytes(darcy.tolerance), sizeof(Float));
                 ofs.write(as_bytes(darcy.maxiter), sizeof(unsigned int));

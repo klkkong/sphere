@@ -6,8 +6,8 @@ import numpy
 
 ### EXPERIMENT SETUP ###
 initialization = False
-consolidation  = True
-shearing       = True
+consolidation  = False
+shearing       = False
 creeping       = True
 rendering      = False
 plots          = True
@@ -38,7 +38,7 @@ np = 1e4
 
 # New class
 #init = sphere.sim(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
-init = sphere.sim(np = np, nd = 3, nw = 0, sid = "creep1-init")
+init = sphere.sim(np = np, nd = 3, nw = 0, sid = 'creep1' + "-init")
 
 # Uniform radii from 0.8 cm to 1.2 cm
 init.generateRadii(psd = 'uni', mean = 0.005, variance = 0.001)
@@ -85,7 +85,9 @@ cons = sphere.sim(np = init.np, nw = 1, sid = sim_id +
 
 # Read last output file of initialization step
 lastf = init.status()
-cons.readbin("../output/" + sim_id + "-init.output{:0=5}.bin".format(lastf), verbose=False)
+#cons.readbin("../output/" + sim_id + "-init.output{:0=5}.bin".format(lastf), verbose=False)
+cons.readbin("../output/" + 'creep1' + "-init.output{:0=5}.bin".format(lastf),
+             verbose=False)
 
 # Periodic x and y boundaries
 cons.periodicBoundariesXY()

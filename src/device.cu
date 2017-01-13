@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <cuda.h>
 #include <helper_math.h>
+#include <iomanip>
+#include <time.h>
 
 #include "vector_arithmetic.h"  // for arbitrary prec. vectors
 //#include <vector_functions.h> // for single prec. vectors
@@ -1044,7 +1046,7 @@ __host__ void DEM::startTime()
 
             // If the grid is adaptive, readjust the grid height to equal the 
             // positions of the dynamic walls
-            if (grid.adaptive == 1) {
+            if (grid.adaptive == 1 && walls.nw > 0) {
                 updateGridSize();
             }
 
@@ -2037,17 +2039,6 @@ __host__ void DEM::startTime()
                         cudaThreadSynchronize();
                     }
 
-                    // copy porosities to the upper Z boundary
-                    /*if (grid.adaptive == 1) {
-                        copyDarcyPorositiesToTop<<<dimGridFluid, 
-                                dimBlockFluid>>>(
-                                dev_darcy_phi,
-                                dev_darcy_dphi,
-                                dev_darcy_div_v_p,
-                                dev_darcy_vp_avg);
-                        cudaThreadSynchronize();
-                    }*/
-
                     // Modulate the pressures at the upper boundary cells
                     if ((darcy.p_mod_A > 1.0e-5 || darcy.p_mod_A < -1.0e-5) &&
                             darcy.p_mod_f > 1.0e-7) {
@@ -2238,6 +2229,7 @@ __host__ void DEM::startTime()
                                     darcy.bc_top,
                                     darcy.ndem,
                                     wall0_iz,
+                                    dev_darcy_p_constant,
                                     dev_darcy_dp_expl);
                             cudaThreadSynchronize();
                             if (PROFILING == 1)
@@ -2271,6 +2263,7 @@ __host__ void DEM::startTime()
                                 darcy.bc_top,
                                 darcy.ndem,
                                 wall0_iz,
+                                dev_darcy_p_constant,
                                 dev_darcy_p_new,
                                 dev_darcy_norm);
                         cudaThreadSynchronize();
@@ -2556,11 +2549,17 @@ __host__ void DEM::startTime()
 
             // Real time it takes to compute a second of model time
             t_ratio = time_spent/(time.current - t_start);
+            time_t estimated_seconds_left(t_ratio*(time.total - time.current));
+            tm *time_eta = gmtime(&estimated_seconds_left);
 
-            cout << "\r  Current simulation time: " 
-                << time.current << "/"
+            cout << "\r  Current time: " << time.current << "/"
                 << time.total << " s. ("
-                << t_ratio << " s_real/s_sim)       "; // << std::flush;
+                << t_ratio << " s_real/s_sim, ETA: "
+                << time_eta->tm_yday << "d "
+                << std::setw(2) << std::setfill('0') << time_eta->tm_hour << ":"
+                << std::setw(2) << std::setfill('0') << time_eta->tm_min << ":"
+                << std::setw(2) << std::setfill('0') << time_eta->tm_sec
+                << ")       "; // << std::flush;
         }
 
 
