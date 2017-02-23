@@ -10,8 +10,15 @@ allows for optional simulation of two-way coupled fluid flow using the
 Navier-Stokes or Darcy formulations.
 
 A powerful Nvidia GPU with proper support for double precision floating is
-highly recommended. ``sphere`` has been tested with the Nvidia Tesla K20 and
-Nvidia Tesla M2050 GPUs.
+highly recommended. ``sphere`` has been tested with Nvidia Tesla GPUs, and has 
+successfully been employed on the clusters `Grendel 
+<http://www.cscaa.dk/grendel/hardware/>`_ (Aarhus University), `ICME 
+<https://icme.stanford.edu/computer-resources/gpu-cluster>`_ (Stanford 
+University), `Comet <http://www.sdsc.edu/services/hpc/hpc_systems.html#comet>`_ 
+(San Diego Supercomputing Center),  `Bridges 
+<https://psc.edu/index.php/resources/computing/bridges>`_ (Portland 
+Supercomputing Center), and `Stampede <https://www.tacc.utexas.edu/stampede/>`_ 
+(Texas Advanced Supercomputing Center).
 
 License
 -------
