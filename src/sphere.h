@@ -317,6 +317,7 @@ class DEM {
         Float3* dev_darcy_grad_k;    // Spatial gradient of permeability
         Float3* dev_darcy_grad_p;    // Spatial gradient of fluid pressure
         Float3* dev_darcy_vp_avg;    // Average particle velocity in cell
+        int* dev_darcy_p_constant;   // Constant pressure (0: False, 1: True)
 
         // Darcy functions
         void initDarcyMem();

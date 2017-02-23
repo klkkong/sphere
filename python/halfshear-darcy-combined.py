@@ -15,17 +15,18 @@ matplotlib.rcParams.update({'font.size': 7, 'font.family': 'sans-serif'})
 matplotlib.rc('text', usetex=True)
 matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 
-if len(sys.argv) > 1:
-    sid = sys.argv[1]
-else:
-    raise Exception('Missing sid')
+#if len(sys.argv) > 1:
+    #sid = sys.argv[1]
+#else:
+    #raise Exception('Missing sid')
+sid = 'halfshear-darcy-sigma0=80000.0-k_c=3.5e-13-mu=1.04e-07-ss=10000.0-A=70000.0-f=0.2'
 outformat = 'pdf'
 fluid = True
 #threshold = 100.0 # [N]
 if len(sys.argv) > 3:
     calculateforcechains = bool(int(sys.argv[3]))
 else:
-    calculateforcechains = True
+    calculateforcechains = False
 calculateforcechainhistory = False
 legend_alpha=0.7
 linewidth=0.5
@@ -35,10 +36,10 @@ rasterized=True # rasterize colored areas (pcolormesh and colorbar)
 izfactor = 1 # factor for vertical discretization in poros
 
 
-if len(sys.argv) > 2:
-    t_DEM_to_t_real = float(sys.argv[2])
-else:
-    raise Exception('Missing t_DEM_to_t_real')
+#if len(sys.argv) > 2:
+#    t_DEM_to_t_real = float(sys.argv[2])
+#else:
+#    raise Exception('Missing t_DEM_to_t_real')
 
 
 ###################
@@ -149,6 +150,7 @@ else:
     n, nkept, coordinationnumber = numpy.loadtxt(sid + '-fc.txt')
 
 # Transform time from model time to real time [s]
+t_DEM_to_t_real = sim.mu/1.787e-3
 t = t/t_DEM_to_t_real
 
 ## integrate velocities to displacement along x (xdispint)
@@ -225,11 +227,14 @@ ax1.text(bbox_x, bbox_y, 'a',
 
 ## ax3: v, ax4: unused
 ax3 = plt.subplot(5, 1, 2, sharex=ax1)
+#ax3.semilogy(t, v*t_DEM_to_t_real, 'k', linewidth=linewidth)
 ax3.semilogy(t, v, 'k', linewidth=linewidth)
 ax3.set_ylabel('Shear velocity [ms$^{-1}$]')
+#ax3.set_ylabel('Shear velocity [ma$^{-1}$]')
+#ax3.set_ylabel('Shear velocity [ma$^{-1}$]')
 # shade stick periods
 collection = matplotlib.collections.BrokenBarHCollection.span_where(
-                t, ymin=1.0e-11, ymax=1.0,
+                t, ymin=1.0e-11, ymax=1.0e4,
                 where=numpy.isclose(v, 0.0),
                 facecolor='black', alpha=0.2,
                 linewidth=0)

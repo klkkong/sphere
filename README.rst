@@ -103,6 +103,10 @@ Publications
 ``sphere`` has been used to produce results in the following scientific
 publications and presentations:
 
+- Damsgaard, A., D.L. Egholm, L.H. Beem, S. Tulaczyk, N.K. Larsen, J.A.  
+  Piotrowski, and M.R. Siegfried (2016), Ice flow dynamics forced by water 
+  pressure variations in subglacial granular beds, Geophysical Research Letters, 
+  43, `doi:10.1002/2016GL071579 <http://dx.doi.org/10.1002/2016GL071579>`_.
 - Damsgaard, A., D.L. Egholm, J.A. Piotrowski, S. Tulaczyk, N.K. Larsen, and
   C.F. Brædstrup (2015), A new methodology to simulate subglacial deformation of
   water-saturated granular material, The Cryosphere, 9, 2183-2200,

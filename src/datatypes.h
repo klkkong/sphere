@@ -136,6 +136,7 @@ struct NavierStokes {
     int     free_slip_top;  // 0: no, 1: yes
     Float   bc_bot_flux;    // Flux normal to boundary
     Float   bc_top_flux;    // Flux normal to boundary
+    int*    p_constant;     // Keep pressure in cell constant (0: False, 1:True)
     Float   gamma;          // Solver parameter: Smoothing
     Float   theta;          // Solver parameter: Under-relaxation
     Float   beta;           // Solver parameter: Solution method
@@ -176,6 +177,7 @@ struct Darcy {
     int     free_slip_top;  // 0: no, 1: yes
     Float   bc_bot_flux;    // Flux normal to boundary
     Float   bc_top_flux;    // Flux normal to boundary
+    int*    p_constant;     // Keep pressure in cell constant (0: False, 1:True)
     Float   tolerance;      // Solver parameter: Max residual tolerance
     unsigned int maxiter;   // Solver parameter: Max iterations to perform
     unsigned int ndem;      // Solver parameter: DEM time steps per CFD step
