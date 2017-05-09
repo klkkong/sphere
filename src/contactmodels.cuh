@@ -362,9 +362,6 @@ __device__ void contactLinear(
         // Static frictional limit
         Float f_t_limit = devC_params.mu_s * length(f_n-f_c);
 
-        // Add tangential displacement to total tangential displacement
-        delta_t = delta_t0 + vel_t * devC_dt;
-
         // Store energy dissipated in tangential viscous component
         *ev_dot += 0.5 * devC_params.gamma_t * vel_t_length * vel_t_length;
 
