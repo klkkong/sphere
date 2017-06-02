@@ -1904,6 +1904,12 @@ class sim:
 
     def writeVTKforces(self, folder = '../output/', verbose = True):
         '''
+        Writes a VTK file with particle-interaction information to the
+        ``../output/`` folder by default. The file name will be in the format
+        ``<self.sid>.vtp``.  The vtp files can be used to visualize the
+        particle interactions in ParaView.  First use the "Cell Data to Point
+        Data" filter, and afterwards show the contact network with the "Tube"
+        filter.
 
         :param folder: The folder where to place the output file (default
             (default = '../output/')
