@@ -108,46 +108,52 @@ class sim:
 
         ## Particle data
         # Particle position vectors [m]
-        self.x       = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.x       = numpy.zeros((self.np[0], self.nd[0]),
+                                   dtype=numpy.float64)
 
         # Particle radii [m]
-        self.radius  = numpy.ones(self.np, dtype=numpy.float64)
+        self.radius  = numpy.ones(self.np[0], dtype=numpy.float64)
 
         # The sums of x and y movement [m]
-        self.xyzsum  = numpy.zeros((self.np, 3), dtype=numpy.float64)
+        self.xyzsum  = numpy.zeros((self.np[0], 3), dtype=numpy.float64)
 
         # The linear velocities [m/s]
-        self.vel     = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.vel     = numpy.zeros((self.np[0], self.nd[0]),
+                                   dtype=numpy.float64)
 
         # Fix the particle horizontal velocities? 0: No, 1: Yes
-        self.fixvel  = numpy.zeros(self.np, dtype=numpy.float64)
+        self.fixvel  = numpy.zeros(self.np[0], dtype=numpy.float64)
 
         # The linear force vectors [N]
-        self.force   = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.force   = numpy.zeros((self.np[0], self.nd[0]),
+                                   dtype=numpy.float64)
 
         # The angular position vectors [rad]
-        self.angpos  = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.angpos  = numpy.zeros((self.np[0], self.nd[0]),
+                                   dtype=numpy.float64)
 
         # The angular velocity vectors [rad/s]
-        self.angvel  = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.angvel  = numpy.zeros((self.np[0], self.nd[0]),
+                                   dtype=numpy.float64)
 
         # The torque vectors [N*m]
-        self.torque  = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.torque  = numpy.zeros((self.np[0], self.nd[0]),
+                                   dtype=numpy.float64)
 
         # The shear friction energy dissipation rates [W]
-        self.es_dot  = numpy.zeros(self.np, dtype=numpy.float64)
+        self.es_dot  = numpy.zeros(self.np[0], dtype=numpy.float64)
 
         # The total shear energy dissipations [J]
-        self.es      = numpy.zeros(self.np, dtype=numpy.float64)
+        self.es      = numpy.zeros(self.np[0], dtype=numpy.float64)
 
         # The viscous energy dissipation rates [W]
-        self.ev_dot  = numpy.zeros(self.np, dtype=numpy.float64)
+        self.ev_dot  = numpy.zeros(self.np[0], dtype=numpy.float64)
 
         # The total viscois energy dissipation [J]
-        self.ev      = numpy.zeros(self.np, dtype=numpy.float64)
+        self.ev      = numpy.zeros(self.np[0], dtype=numpy.float64)
 
         # The total particle pressures [Pa]
-        self.p       = numpy.zeros(self.np, dtype=numpy.float64)
+        self.p       = numpy.zeros(self.np[0], dtype=numpy.float64)
 
         # The gravitational acceleration vector [N*m/s]
         self.g        = numpy.array([0.0, 0.0, 0.0], dtype=numpy.float64)
@@ -228,35 +234,36 @@ class sim:
         # 1: Normal stress condition
         # 2: Normal velocity condition
         # 3: Normal stress and shear stress condition
-        self.wmode   = numpy.zeros(self.nw, dtype=numpy.int32)
+        self.wmode   = numpy.zeros(self.nw[0], dtype=numpy.int32)
 
         # Wall normals
-        self.w_n     = numpy.zeros((self.nw, self.nd), dtype=numpy.float64)
-        if self.nw >= 1:
+        self.w_n     = numpy.zeros((self.nw[0], self.nd[0]),
+                                   dtype=numpy.float64)
+        if self.nw[0] >= 1:
             self.w_n[0,2] = -1.0
-        if self.nw >= 2:
+        if self.nw[0] >= 2:
             self.w_n[1,0] = -1.0
-        if self.nw >= 3:
+        if self.nw[0] >= 3:
             self.w_n[2,0] =  1.0
-        if self.nw >= 4:
+        if self.nw[0] >= 4:
             self.w_n[3,1] = -1.0
-        if self.nw >= 5:
+        if self.nw[0] >= 5:
             self.w_n[4,1] =  1.0
 
         # Wall positions on the axes that are parallel to the wall normal [m]
-        self.w_x     = numpy.ones(self.nw, dtype=numpy.float64)
+        self.w_x     = numpy.ones(self.nw[0], dtype=numpy.float64)
 
         # Wall masses [kg]
-        self.w_m     = numpy.zeros(self.nw, dtype=numpy.float64)
+        self.w_m     = numpy.zeros(self.nw[0], dtype=numpy.float64)
 
         # Wall velocities on the axes that are parallel to the wall normal [m/s]
-        self.w_vel   = numpy.zeros(self.nw, dtype=numpy.float64)
+        self.w_vel   = numpy.zeros(self.nw[0], dtype=numpy.float64)
 
         # Wall forces on the axes that are parallel to the wall normal [m/s]
-        self.w_force = numpy.zeros(self.nw, dtype=numpy.float64)
+        self.w_force = numpy.zeros(self.nw[0], dtype=numpy.float64)
 
         # Wall stress on the axes that are parallel to the wall normal [Pa]
-        self.w_sigma0  = numpy.zeros(self.nw, dtype=numpy.float64)
+        self.w_sigma0  = numpy.zeros(self.nw[0], dtype=numpy.float64)
 
         # Wall stress modulation amplitude [Pa]
         self.w_sigma0_A = numpy.zeros(1, dtype=numpy.float64)
@@ -281,20 +288,20 @@ class sim:
         self.tau_b = numpy.ones(1, dtype=numpy.uint32) * numpy.infty
 
         # Bond pairs
-        self.bonds = numpy.zeros((self.nb0, 2), dtype=numpy.uint32)
+        self.bonds = numpy.zeros((self.nb0[0], 2), dtype=numpy.uint32)
 
         # Parallel bond movement
-        self.bonds_delta_n = numpy.zeros(self.nb0, dtype=numpy.float64)
+        self.bonds_delta_n = numpy.zeros(self.nb0[0], dtype=numpy.float64)
 
         # Shear bond movement
-        self.bonds_delta_t = numpy.zeros((self.nb0, self.nd),
+        self.bonds_delta_t = numpy.zeros((self.nb0[0], self.nd[0]),
                                          dtype=numpy.float64)
 
         # Twisting bond movement
-        self.bonds_omega_n = numpy.zeros(self.nb0, dtype=numpy.float64)
+        self.bonds_omega_n = numpy.zeros(self.nb0[0], dtype=numpy.float64)
 
         # Bending bond movement
-        self.bonds_omega_t = numpy.zeros((self.nb0, self.nd),
+        self.bonds_omega_t = numpy.zeros((self.nb0[0], self.nd[0]),
                                          dtype=numpy.float64)
 
         ## Fluid parameters
@@ -404,10 +411,14 @@ class sim:
                 self.dt_dem_fac = numpy.ones(1, dtype=numpy.float64)
 
                 ## Interaction forces
-                self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-                self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-                self.f_v = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-                self.f_sum = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+                self.f_d = numpy.zeros((self.np[0], self.nd[0]),
+                                       dtype=numpy.float64)
+                self.f_p = numpy.zeros((self.np[0], self.nd[0]),
+                                       dtype=numpy.float64)
+                self.f_v = numpy.zeros((self.np[0], self.nd[0]),
+                                       dtype=numpy.float64)
+                self.f_sum = numpy.zeros((self.np[0], self.nd[0]),
+                                         dtype=numpy.float64)
 
             # Darcy
             elif self.cfd_solver[0] == 1:
@@ -425,7 +436,8 @@ class sim:
                 self.c_phi = numpy.ones(1, dtype=numpy.float64)
 
                 # Interaction forces
-                self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+                self.f_p = numpy.zeros((self.np[0], self.nd[0]),
+                                                dtype=numpy.float64)
 
                 # Adiabatic fluid compressibility [1/Pa].
                 # Fluid bulk modulus = 1/self.beta_f
@@ -439,7 +451,7 @@ class sim:
                         str(self.cfd_solver[0]) + ')')
 
         # Particle color marker
-        self.color = numpy.zeros(self.np, dtype=numpy.int32)
+        self.color = numpy.zeros(self.np[0], dtype=numpy.int32)
 
     def __cmp__(self, other):
         '''
