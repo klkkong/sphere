@@ -321,7 +321,7 @@ class sim:
 
             # Fluid velocities [m/s]
             self.v_f = numpy.zeros(
-                (self.num[0], self.num[1], self.num[2], self.nd),
+                (self.num[0], self.num[1], self.num[2], self.nd[0]),
                 dtype=numpy.float64)
 
             # Fluid pressures [Pa]
@@ -942,25 +942,25 @@ class sim:
         Deletes all particles in the simulation object.
         '''
         self.np[0]   = 0
-        self.x       = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-        self.radius  = numpy.ones(self.np, dtype=numpy.float64)
-        self.xyzsum  = numpy.zeros((self.np, 3), dtype=numpy.float64)
-        self.vel     = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-        self.fixvel  = numpy.zeros(self.np, dtype=numpy.float64)
-        self.force   = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-        self.angpos  = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-        self.angvel  = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-        self.torque  = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-        self.es_dot  = numpy.zeros(self.np, dtype=numpy.float64)
-        self.es      = numpy.zeros(self.np, dtype=numpy.float64)
-        self.ev_dot  = numpy.zeros(self.np, dtype=numpy.float64)
-        self.ev      = numpy.zeros(self.np, dtype=numpy.float64)
-        self.p       = numpy.zeros(self.np, dtype=numpy.float64)
-        self.color   = numpy.zeros(self.np, dtype=numpy.int32)
-        self.f_d     = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-        self.f_p     = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-        self.f_v     = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-        self.f_sum   = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+        self.x       = numpy.zeros((self.np[0], self.nd[0]), dtype=numpy.float64)
+        self.radius  = numpy.ones(self.np[0], dtype=numpy.float64)
+        self.xyzsum  = numpy.zeros((self.np[0], 3), dtype=numpy.float64)
+        self.vel     = numpy.zeros((self.np[0], self.nd[0]), dtype=numpy.float64)
+        self.fixvel  = numpy.zeros(self.np[0], dtype=numpy.float64)
+        self.force   = numpy.zeros((self.np[0], self.nd[0]), dtype=numpy.float64)
+        self.angpos  = numpy.zeros((self.np[0], self.nd[0]), dtype=numpy.float64)
+        self.angvel  = numpy.zeros((self.np[0], self.nd[0]), dtype=numpy.float64)
+        self.torque  = numpy.zeros((self.np[0], self.nd[0]), dtype=numpy.float64)
+        self.es_dot  = numpy.zeros(self.np[0], dtype=numpy.float64)
+        self.es      = numpy.zeros(self.np[0], dtype=numpy.float64)
+        self.ev_dot  = numpy.zeros(self.np[0], dtype=numpy.float64)
+        self.ev      = numpy.zeros(self.np[0], dtype=numpy.float64)
+        self.p       = numpy.zeros(self.np[0], dtype=numpy.float64)
+        self.color   = numpy.zeros(self.np[0], dtype=numpy.int32)
+        self.f_d     = numpy.zeros((self.np[0], self.nd[0]), dtype=numpy.float64)
+        self.f_p     = numpy.zeros((self.np[0], self.nd[0]), dtype=numpy.float64)
+        self.f_v     = numpy.zeros((self.np[0], self.nd[0]), dtype=numpy.float64)
+        self.f_sum   = numpy.zeros((self.np[0], self.nd[0]), dtype=numpy.float64)
 
     def readbin(self, targetbin, verbose = True, bonds = True, sigma0mod = True,
             esysparticle = False):
@@ -1013,21 +1013,21 @@ class sim:
                     numpy.fromfile(fh, dtype=numpy.uint32, count=1)
 
             # Allocate array memory for particles
-            self.x       = numpy.empty((self.np, self.nd), dtype=numpy.float64)
-            self.radius  = numpy.empty(self.np, dtype=numpy.float64)
-            self.xyzsum  = numpy.empty((self.np, 3), dtype=numpy.float64)
-            self.vel     = numpy.empty((self.np, self.nd), dtype=numpy.float64)
-            self.fixvel  = numpy.empty(self.np, dtype=numpy.float64)
-            self.es_dot  = numpy.empty(self.np, dtype=numpy.float64)
-            self.es      = numpy.empty(self.np, dtype=numpy.float64)
-            self.ev_dot  = numpy.empty(self.np, dtype=numpy.float64)
-            self.ev      = numpy.empty(self.np, dtype=numpy.float64)
-            self.p       = numpy.empty(self.np, dtype=numpy.float64)
+            self.x       = numpy.empty((self.np[0], self.nd[0]), dtype=numpy.float64)
+            self.radius  = numpy.empty(self.np[0], dtype=numpy.float64)
+            self.xyzsum  = numpy.empty((self.np[0], 3), dtype=numpy.float64)
+            self.vel     = numpy.empty((self.np[0], self.nd[0]), dtype=numpy.float64)
+            self.fixvel  = numpy.empty(self.np[0], dtype=numpy.float64)
+            self.es_dot  = numpy.empty(self.np[0], dtype=numpy.float64)
+            self.es      = numpy.empty(self.np[0], dtype=numpy.float64)
+            self.ev_dot  = numpy.empty(self.np[0], dtype=numpy.float64)
+            self.ev      = numpy.empty(self.np[0], dtype=numpy.float64)
+            self.p       = numpy.empty(self.np[0], dtype=numpy.float64)
 
             # Read remaining data from binary
-            self.origo = numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
-            self.L = numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
-            self.num = numpy.fromfile(fh, dtype=numpy.uint32, count=self.nd)
+            self.origo = numpy.fromfile(fh, dtype=numpy.float64, count=self.nd[0])
+            self.L = numpy.fromfile(fh, dtype=numpy.float64, count=self.nd[0])
+            self.num = numpy.fromfile(fh, dtype=numpy.uint32, count=self.nd[0])
             self.periodic = numpy.fromfile(fh, dtype=numpy.int32, count=1)
 
             if self.version >= 2.14:
@@ -1038,32 +1038,32 @@ class sim:
             # Per-particle vectors
             for i in numpy.arange(self.np):
                 self.x[i,:] =\
-                        numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
+                        numpy.fromfile(fh, dtype=numpy.float64, count=self.nd[0])
                 self.radius[i] =\
                         numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
             if self.version >= 1.03:
                 self.xyzsum = numpy.fromfile(fh, dtype=numpy.float64,\
-                        count=self.np*3).reshape(self.np,3)
+                        count=self.np*3).reshape(self.np[0],3)
             else:
                 self.xyzsum = numpy.fromfile(fh, dtype=numpy.float64,\
-                        count=self.np*2).reshape(self.np,2)
+                        count=self.np*2).reshape(self.np[0],2)
 
             for i in numpy.arange(self.np):
                 self.vel[i,:] =\
-                        numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
+                        numpy.fromfile(fh, dtype=numpy.float64, count=self.nd[0])
                 self.fixvel[i] =\
                         numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
             self.force = numpy.fromfile(fh, dtype=numpy.float64,\
-                    count=self.np*self.nd).reshape(self.np, self.nd)
+                    count=self.np*self.nd[0]).reshape(self.np[0], self.nd[0])
 
             self.angpos = numpy.fromfile(fh, dtype=numpy.float64,\
-                    count=self.np*self.nd).reshape(self.np, self.nd)
+                    count=self.np*self.nd[0]).reshape(self.np[0], self.nd[0])
             self.angvel = numpy.fromfile(fh, dtype=numpy.float64,\
-                    count=self.np*self.nd).reshape(self.np, self.nd)
+                    count=self.np*self.nd[0]).reshape(self.np[0], self.nd[0])
             self.torque = numpy.fromfile(fh, dtype=numpy.float64,\
-                    count=self.np*self.nd).reshape(self.np, self.nd)
+                    count=self.np*self.nd[0]).reshape(self.np[0], self.nd[0])
 
             if esysparticle:
                 return
@@ -1076,7 +1076,7 @@ class sim:
             self.p      = numpy.fromfile(fh, dtype=numpy.float64, count=self.np)
 
             # Constant, global physical parameters
-            self.g      = numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
+            self.g      = numpy.fromfile(fh, dtype=numpy.float64, count=self.nd[0])
             self.k_n          = numpy.fromfile(fh, dtype=numpy.float64, count=1)
             self.k_t          = numpy.fromfile(fh, dtype=numpy.float64, count=1)
             self.k_r          = numpy.fromfile(fh, dtype=numpy.float64, count=1)
@@ -1102,21 +1102,21 @@ class sim:
 
             # Wall data
             self.nw      = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
-            self.wmode   = numpy.empty(self.nw, dtype=numpy.int32)
+            self.wmode   = numpy.empty(self.nw[0], dtype=numpy.int32)
             self.w_n     = numpy.empty(self.nw*self.nd, dtype=numpy.float64)\
-                    .reshape(self.nw,self.nd)
-            self.w_x     = numpy.empty(self.nw, dtype=numpy.float64)
-            self.w_m     = numpy.empty(self.nw, dtype=numpy.float64)
-            self.w_vel   = numpy.empty(self.nw, dtype=numpy.float64)
-            self.w_force = numpy.empty(self.nw, dtype=numpy.float64)
-            self.w_sigma0  = numpy.empty(self.nw, dtype=numpy.float64)
+                    .reshape(self.nw[0],self.nd[0])
+            self.w_x     = numpy.empty(self.nw[0], dtype=numpy.float64)
+            self.w_m     = numpy.empty(self.nw[0], dtype=numpy.float64)
+            self.w_vel   = numpy.empty(self.nw[0], dtype=numpy.float64)
+            self.w_force = numpy.empty(self.nw[0], dtype=numpy.float64)
+            self.w_sigma0  = numpy.empty(self.nw[0], dtype=numpy.float64)
 
-            self.wmode   = numpy.fromfile(fh, dtype=numpy.int32, count=self.nw)
-            for i in numpy.arange(self.nw):
+            self.wmode   = numpy.fromfile(fh, dtype=numpy.int32, count=self.nw[0])
+            for i in numpy.arange(self.nw[0]):
                 self.w_n[i,:] =\
-                        numpy.fromfile(fh, dtype=numpy.float64, count=self.nd)
+                        numpy.fromfile(fh, dtype=numpy.float64, count=self.nd[0])
                 self.w_x[i]   = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-            for i in numpy.arange(self.nw):
+            for i in numpy.arange(self.nw[0]):
                 self.w_m[i]   = numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.w_vel[i] = numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.w_force[i] =\
@@ -1137,20 +1137,20 @@ class sim:
                 self.nb0 = numpy.fromfile(fh, dtype=numpy.uint32, count=1)
                 self.sigma_b = numpy.fromfile(fh, dtype=numpy.float64, count=1)
                 self.tau_b = numpy.fromfile(fh, dtype=numpy.float64, count=1)
-                self.bonds = numpy.empty((self.nb0, 2), dtype=numpy.uint32)
-                for i in numpy.arange(self.nb0):
+                self.bonds = numpy.empty((self.nb0[0], 2), dtype=numpy.uint32)
+                for i in numpy.arange(self.nb0[0]):
                     self.bonds[i,0] = numpy.fromfile(fh, dtype=numpy.uint32,
                             count=1)
                     self.bonds[i,1] = numpy.fromfile(fh, dtype=numpy.uint32,
                             count=1)
                 self.bonds_delta_n = numpy.fromfile(fh, dtype=numpy.float64,
-                        count=self.nb0)
+                        count=self.nb0[0])
                 self.bonds_delta_t = numpy.fromfile(fh, dtype=numpy.float64,
-                        count=self.nb0*self.nd).reshape(self.nb0, self.nd)
+                        count=self.nb0*self.nd[0]).reshape(self.nb0[0], self.nd[0])
                 self.bonds_omega_n = numpy.fromfile(fh, dtype=numpy.float64,
-                        count=self.nb0)
+                        count=self.nb0[0])
                 self.bonds_omega_t = numpy.fromfile(fh, dtype=numpy.float64,
-                        count=self.nb0*self.nd).reshape(self.nb0, self.nd)
+                        count=self.nb0*self.nd[0]).reshape(self.nb0[0], self.nd[0])
             else:
                 self.nb0 = numpy.zeros(1, dtype=numpy.uint32)
 
@@ -1165,7 +1165,7 @@ class sim:
                 self.mu = numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
                 self.v_f = numpy.empty(
-                        (self.num[0], self.num[1], self.num[2], self.nd),
+                        (self.num[0], self.num[1], self.num[2], self.nd[0]),
                         dtype=numpy.float64)
                 self.p_f = \
                         numpy.empty((self.num[0],self.num[1],self.num[2]),
@@ -1298,27 +1298,27 @@ class sim:
                         for i in numpy.arange(self.np[0]):
                             self.f_d[i,:] = \
                                     numpy.fromfile(fh, dtype=numpy.float64,
-                                            count=self.nd)
+                                            count=self.nd[0])
                         for i in numpy.arange(self.np[0]):
                             self.f_p[i,:] = \
                                     numpy.fromfile(fh, dtype=numpy.float64,
-                                            count=self.nd)
+                                            count=self.nd[0])
                         for i in numpy.arange(self.np[0]):
                             self.f_v[i,:] = \
                                     numpy.fromfile(fh, dtype=numpy.float64,
-                                            count=self.nd)
+                                            count=self.nd[0])
                         for i in numpy.arange(self.np[0]):
                             self.f_sum[i,:] = \
                                     numpy.fromfile(fh, dtype=numpy.float64,
-                                            count=self.nd)
+                                            count=self.nd[0])
                     else:
-                        self.f_d = numpy.zeros((self.np, self.nd),
+                        self.f_d = numpy.zeros((self.np[0], self.nd[0]),
                                 dtype=numpy.float64)
-                        self.f_p = numpy.zeros((self.np, self.nd),
+                        self.f_p = numpy.zeros((self.np[0], self.nd[0]),
                                 dtype=numpy.float64)
-                        self.f_v = numpy.zeros((self.np, self.nd),
+                        self.f_v = numpy.zeros((self.np[0], self.nd[0]),
                                 dtype=numpy.float64)
-                        self.f_sum = numpy.zeros((self.np, self.nd),
+                        self.f_sum = numpy.zeros((self.np[0], self.nd[0]),
                                 dtype=numpy.float64)
 
                 elif self.version >= 2.0 and self.cfd_solver == 1:
@@ -1334,7 +1334,7 @@ class sim:
                     for i in numpy.arange(self.np[0]):
                         self.f_p[i,:] = \
                                 numpy.fromfile(fh, dtype=numpy.float64,
-                                        count=self.nd)
+                                        count=self.nd[0])
                     self.beta_f = \
                             numpy.fromfile(fh, dtype=numpy.float64, count=1)
 
@@ -1345,7 +1345,7 @@ class sim:
                 self.color =\
                   numpy.fromfile(fh, dtype=numpy.int32, count=self.np)
             else:
-                self.color = numpy.zeros(self.np, dtype=numpy.int32)
+                self.color = numpy.zeros(self.np[0], dtype=numpy.int32)
 
         finally:
             self.version[0] = VERSION
@@ -1441,13 +1441,13 @@ class sim:
             fh.write(self.V_b.astype(numpy.float64))
 
             fh.write(self.nw.astype(numpy.uint32))
-            for i in numpy.arange(self.nw):
+            for i in numpy.arange(self.nw[0]):
                 fh.write(self.wmode[i].astype(numpy.int32))
-            for i in numpy.arange(self.nw):
+            for i in numpy.arange(self.nw[0]):
                 fh.write(self.w_n[i,:].astype(numpy.float64))
                 fh.write(self.w_x[i].astype(numpy.float64))
 
-            for i in numpy.arange(self.nw):
+            for i in numpy.arange(self.nw[0]):
                 fh.write(self.w_m[i].astype(numpy.float64))
                 fh.write(self.w_vel[i].astype(numpy.float64))
                 fh.write(self.w_force[i].astype(numpy.float64))
@@ -1460,7 +1460,7 @@ class sim:
             fh.write(self.nb0.astype(numpy.uint32))
             fh.write(self.sigma_b.astype(numpy.float64))
             fh.write(self.tau_b.astype(numpy.float64))
-            for i in numpy.arange(self.nb0):
+            for i in numpy.arange(self.nb0[0]):
                 fh.write(self.bonds[i,0].astype(numpy.uint32))
                 fh.write(self.bonds[i,1].astype(numpy.uint32))
             fh.write(self.bonds_delta_n.astype(numpy.float64))
@@ -2585,7 +2585,7 @@ class sim:
                 overlaps = False
 
                 # Draw random position
-                for d in range(self.nd):
+                for d in range(self.nd[0]):
                     self.x[i,d] = (self.L[d] - self.origo[d] - 2*r_max) \
                             * numpy.random.random_sample() \
                             + self.origo[d] + r_max
@@ -2768,7 +2768,7 @@ class sim:
             gridpos[2] = numpy.floor(i/((self.num[0])*(self.num[1]))) #\
                     #% ((self.num[0])*(self.num[1]))
 
-            for d in range(self.nd):
+            for d in range(self.nd[0]):
                 self.x[i,d] = gridpos[d] * cellsize + 0.5*cellsize
 
             # Allow pushing every 2.nd level out of lateral boundaries
@@ -2829,7 +2829,7 @@ class sim:
 
             # Place particles in grid structure, and randomly adjust the
             # positions within the oversized cells (uniform distribution)
-            for d in range(self.nd):
+            for d in range(self.nd[0]):
                 r = self.radius[i]*1.05
                 self.x[i,d] = gridpos[d] * cellsize \
                         + ((cellsize-r) - r) * numpy.random.random_sample() + r
@@ -2933,18 +2933,18 @@ class sim:
         when output from one simulation is reused in another simulation.
         '''
 
-        self.force = numpy.zeros((self.np, self.nd))
-        self.torque = numpy.zeros((self.np, self.nd))
+        self.force = numpy.zeros((self.np[0], self.nd[0]))
+        self.torque = numpy.zeros((self.np[0], self.nd[0]))
         self.vel = numpy.zeros(self.np*self.nd, dtype=numpy.float64)\
-                .reshape(self.np, self.nd)
+                .reshape(self.np[0], self.nd[0])
         self.angvel = numpy.zeros(self.np*self.nd, dtype=numpy.float64)\
-                .reshape(self.np, self.nd)
+                .reshape(self.np[0], self.nd[0])
         self.angpos = numpy.zeros(self.np*self.nd, dtype=numpy.float64)\
-                .reshape(self.np, self.nd)
-        self.es = numpy.zeros(self.np, dtype=numpy.float64)
-        self.ev = numpy.zeros(self.np, dtype=numpy.float64)
+                .reshape(self.np[0], self.nd[0])
+        self.es = numpy.zeros(self.np[0], dtype=numpy.float64)
+        self.ev = numpy.zeros(self.np[0], dtype=numpy.float64)
         self.xyzsum = numpy.zeros(self.np*3, dtype=numpy.float64)\
-                .reshape(self.np, 3)
+                .reshape(self.np[0], 3)
 
     def adjustUpperWall(self, z_adjust = 1.1):
         '''
@@ -2959,7 +2959,7 @@ class sim:
         self.nw = numpy.ones(1)
         self.wmode = numpy.zeros(1) # fixed BC
         self.w_n = numpy.zeros(self.nw*self.nd, dtype=numpy.float64).reshape(\
-                self.nw,self.nd)
+                self.nw[0],self.nd[0])
         self.w_n[0,2] = -1.0
         self.w_vel = numpy.zeros(1)
         self.w_force = numpy.zeros(1)
@@ -3444,7 +3444,7 @@ class sim:
                     self.p_f[:,:,iz] = p + (depth-dz) * rho * -self.g[2]
 
 
-        self.v_f = numpy.zeros((self.num[0], self.num[1], self.num[2], self.nd),
+        self.v_f = numpy.zeros((self.num[0], self.num[1], self.num[2], self.nd[0]),
                 dtype=numpy.float64)
         self.phi = numpy.ones((self.num[0], self.num[1], self.num[2]),
                 dtype=numpy.float64)
@@ -3483,19 +3483,19 @@ class sim:
             self.c_v = numpy.ones(1, dtype=numpy.float64)
             self.dt_dem_fac = numpy.ones(1, dtype=numpy.float64)
 
-            self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-            self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-            self.f_v = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
-            self.f_sum = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+            self.f_d = numpy.zeros((self.np[0], self.nd[0]), dtype=numpy.float64)
+            self.f_p = numpy.zeros((self.np[0], self.nd[0]), dtype=numpy.float64)
+            self.f_v = numpy.zeros((self.np[0], self.nd[0]), dtype=numpy.float64)
+            self.f_sum = numpy.zeros((self.np[0], self.nd[0]), dtype=numpy.float64)
 
         elif self.cfd_solver[0] == 1:
             self.tolerance = numpy.array(1.0e-3)
             self.maxiter = numpy.array(1e4)
             self.ndem = numpy.array(1)
             self.c_phi = numpy.ones(1, dtype=numpy.float64)
-            self.f_d = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+            self.f_d = numpy.zeros((self.np[0], self.nd[0]), dtype=numpy.float64)
             self.beta_f = numpy.ones(1, dtype=numpy.float64)*4.5e-10
-            self.f_p = numpy.zeros((self.np, self.nd), dtype=numpy.float64)
+            self.f_p = numpy.zeros((self.np[0], self.nd[0]), dtype=numpy.float64)
             self.k_c = numpy.ones(1, dtype=numpy.float64)*4.6e-10
 
             self.bc_xn = numpy.ones(1, dtype=numpy.int32)*2
@@ -3822,7 +3822,7 @@ class sim:
 
         # Contact normal viscosity. Critical damping: 2*sqrt(m*k_n).
         # Normal force component elastic if nu = 0.0.
-        #self.gamma_n = numpy.ones(self.np, dtype=numpy.float64) \
+        #self.gamma_n = numpy.ones(self.np[0], dtype=numpy.float64) \
                 #          * nu_frac * 2.0 * math.sqrt(4.0/3.0 * math.pi \
                 #          * numpy.amin(self.radius)**3 \
                 #          * self.rho[0] * self.k_n[0])
@@ -4888,7 +4888,7 @@ class sim:
         particle). Requires a previous call to :func:`findOverlaps()`. Values
         are stored in ``self.coordinationnumber``.
         '''
-        self.coordinationnumber = numpy.zeros(self.np, dtype=numpy.int)
+        self.coordinationnumber = numpy.zeros(self.np[0], dtype=numpy.int)
         for i in numpy.arange(self.overlaps.size):
             self.coordinationnumber[self.pairs[0,i]] += 1
             self.coordinationnumber[self.pairs[1,i]] += 1
@@ -5134,7 +5134,7 @@ class sim:
         # contacts
         strikelist = [] # strike direction of the normal vector, [0:360[
         diplist = [] # dip of the normal vector, [0:90]
-        for n in numpy.arange(self.nb0):
+        for n in numpy.arange(self.nb0[0]):
 
             i = self.bonds[n,0]
             j = self.bonds[n,1]
@@ -6469,7 +6469,7 @@ class sim:
         '''
 
         lastfile = self.status()
-        sb = sim(sid = self.sid, np = self.np, nw = self.nw, fluid = self.fluid)
+        sb = sim(sid = self.sid, np = self.np[0], nw = self.nw[0], fluid = self.fluid)
 
         ### Plotting
         if outformat != 'txt':
