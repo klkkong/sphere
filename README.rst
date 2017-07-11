@@ -142,7 +142,5 @@ publications and presentations:
 
 Author
 ------
-Anders Damsgaard, `adamsgaard@ucsd.edu <mailto:adamsgaard@ucsd.edu>`_,
-`webpage <https://cs.au.dk/~adc>`_.
-
-With contributions from Cooper Elsworth.
+Anders Damsgaard, `andersd@princeton.edu <mailto:andersd@princeton.edu>`_,
+`webpage <https://adamsgaard.dk>`_.
