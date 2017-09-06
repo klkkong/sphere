@@ -6,6 +6,7 @@
 SET(CUDA_SDK_ROOT_DIR "/usr/local/cuda-5.0/samples")
 INCLUDE_DIRECTORIES("${CUDA_SDK_ROOT_DIR}/common/inc")
 INCLUDE_DIRECTORIES("${CMAKE_BINARY_DIR}/src")
+SET(EXECUTABLE_OUTPUT_PATH "../")
 
 # Include FindCUDA script
 INCLUDE(FindCUDA)
@@ -23,13 +24,13 @@ ELSE()  # Fermi
 ENDIF (GPU_GENERATION EQUAL 1)
 
 # Rule to build executable program 
-CUDA_ADD_EXECUTABLE(../sphere
+CUDA_ADD_EXECUTABLE(sphere
     main.cpp file_io.cpp sphere.cpp device.cu utility.cu utility.cpp
     navierstokes.cpp darcy.cpp)
-CUDA_ADD_EXECUTABLE(../porosity
+CUDA_ADD_EXECUTABLE(porosity
     porosity.cpp file_io.cpp sphere.cpp device.cu utility.cu utility.cpp
     navierstokes.cpp darcy.cpp)
-CUDA_ADD_EXECUTABLE(../forcechains
+CUDA_ADD_EXECUTABLE(forcechains
     forcechains.cpp file_io.cpp sphere.cpp device.cu utility.cu utility.cpp
     navierstokes.cpp darcy.cpp)
 
@@ -39,4 +40,4 @@ CUDA_ADD_EXECUTABLE(../forcechains
 #                      ${Boost_SYSTEM_LIBRARY}
 #                      ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
-ADD_EXECUTABLE(../sphere_status sphere_status.c)
+ADD_EXECUTABLE(sphere_status sphere_status.c)
