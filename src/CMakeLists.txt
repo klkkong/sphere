@@ -22,6 +22,7 @@ ELSE()  # Fermi
         #"--use_fast_math;-O3;-gencode=arch=compute_20,code=\"sm_20,compute_20\";--fmad=false -ccbin gcc-4.6")
         "--use_fast_math;-O3;-gencode=arch=compute_20,code=\"sm_20,compute_20\";--fmad=false -ccbin gcc")
 ENDIF (GPU_GENERATION EQUAL 1)
+SET(CMAKE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
 
 # Rule to build executable program 
 CUDA_ADD_EXECUTABLE(sphere
