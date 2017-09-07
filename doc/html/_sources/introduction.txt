@@ -1,5 +1,5 @@
-Introduction
-============
+Introduction and Installation
+=============================
 
 The ``sphere``-software is used for three-dimensional discrete element method 
 (DEM) particle simulations. The source code is written in C++, CUDA C and
@@ -37,11 +37,11 @@ The build requirements are:
   * `CMake <http://www.cmake.org>`_, version 2.8 or newer
   * The `GNU Compiler Collection <http://gcc.gnu.org/>`_ (GCC)
   * The `Nvidia CUDA toolkit <https://developer.nvidia.com/cuda-downloads>`_,
-    version 5.0 or newer
+    version 8.0 or newer
 
 In Debian GNU/Linux, these dependencies can be installed by running::
 
- $ sudo apt-get install build-essential cmake nvidia-cuda-toolkit
+ $ sudo apt-get install build-essential cmake nvidia-cuda-toolkit clang-3.8
 
 Unfortunately, the Nvidia Toolkit is shipped under a non-free license. In order
 to install it in Debian GNU/Linux, add ``non-free`` archives to your
@@ -50,7 +50,7 @@ to install it in Debian GNU/Linux, add ``non-free`` archives to your
 The runtime requirements are:
 
   * A `CUDA-enabled GPU <http://www.nvidia.com/object/cuda_gpus.html>`_ with
-    compute capability 1.1 or greater.
+    compute capability 2.0 or greater.
   * A Nvidia CUDA-enabled GPU and device driver
 
 Optional tools, required for simulation setup and data processing:
@@ -113,11 +113,6 @@ Building ``sphere``
 ``sphere`` is built using ``cmake``, the platform-specific C/C++ compilers,
 and ``nvcc`` from the Nvidia CUDA toolkit.
 
-If you plan to run ``sphere`` on a Kepler GPU, execute the following commands
-from the root directory::
-
- $ cmake . && make
-
 If you instead plan to execute it on a Fermi GPU, change ``set(GPU_GENERATION
 1)`` to ``set(GPU_GENERATION 0`` in ``CMakeLists.txt``.
 
@@ -132,19 +127,27 @@ sample subdirectory ``common/inc/helper_math.h`` into the sphere ``src/``
 directory, and run ``cmake`` and ``make`` again. Due to license restrictions,
 sphere cannot be distributed with this file.
 
+If you plan to run ``sphere`` on a Kepler GPU, execute the following commands
+from the root directory::
+
+ $ cmake . && make
+
+NOTE: If your system does not have a GCC compiler (e.g. GCC-5 for CUDA 8) 
+compatible with the installed CUDA version, try using ``clang-3.8`` instead::
+
+ $ export CC=$(which clang-3.8) && export CXX=$(which clang++-3.8) && cmake . && make
+
 After a successfull installation, the ``sphere`` executable will be located
 in the root folder. To make sure that all components are working correctly,
 execute::
 
  $ make test
 
-All instructions required for building ``sphere`` are provided in a number of
-``Makefile``'s. To generate the main ``sphere`` command-line executable, go to
-the root directory, and invoke CMake and GNU Make::
+Disclaimer: On some systems the Navier-Stokes related tests will fail.  If you 
+do encounter these problems, but do not plan on using the Navier Stokes solver 
+for fluid dynamics, carry on.
 
- $ cmake . && make
-
-If successfull, the Makefiles will create the required data folders, object
+If successful the Makefiles will create the required data folders, object
 files, as well as the ``sphere`` executable in the root folder. Issue the
 following commands to check the executable::
 

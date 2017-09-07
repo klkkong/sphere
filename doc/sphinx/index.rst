@@ -14,7 +14,7 @@ supervision of David Lundbek Egholm and Jan A. Piotrowski, all of the Department
 of Geoscience, Aarhus University, Denmark. The author welcomes interested third
 party developers. This document is a work in progress.
 
-Contact: Anders Damsgaard, `<http://cs.au.dk/~adc>`_,
+Contact: Anders Damsgaard, `<https://adamsgaard.dk>`_,
 `<anders.damsgaard@geo.au.dk>`_
 
 
@@ -27,7 +27,7 @@ Contents
    dem
    cfd
    python_api
-   .. sphere_internals
+   sphere_internals
 
 
 
