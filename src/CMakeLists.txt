@@ -8,6 +8,10 @@ INCLUDE_DIRECTORIES("${CUDA_SDK_ROOT_DIR}/common/inc")
 INCLUDE_DIRECTORIES("${CMAKE_BINARY_DIR}/src")
 SET(EXECUTABLE_OUTPUT_PATH "../")
 
+FILE(DOWNLOAD
+    "https://raw.githubusercontent.com/pathscale/nvidia_sdk_samples/master/matrixMul/common/inc/helper_math.h" 
+    ./helper_math.h)
+
 # Include FindCUDA script
 INCLUDE(FindCUDA)
 
