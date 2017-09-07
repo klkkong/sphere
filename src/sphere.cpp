@@ -21,7 +21,7 @@ DEM::DEM(const std::string inputbin,
          const int transferConstMem,
          const int fluidFlow,
          const int device)
-: verbose(verbosity), fluid(fluidFlow), device(device)
+: verbose(verbosity), device(device), fluid(fluidFlow)
 {
     using std::cout;
     using std::cerr;
@@ -874,7 +874,7 @@ void DEM::forcechains(const std::string format, const int threedim,
                 cout << k.x[i].z;
                 cout << " to " << k.x[j].x << ',';
                 if (threedim == 1)
-                    cout << k.x[j].y, ',';
+                    cout << k.x[j].y << ',';
                 cout << k.x[j].z;
                 cout << " nohead "
                     << "lw " << ratio * thickness_scaling

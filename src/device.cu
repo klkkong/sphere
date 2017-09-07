@@ -48,15 +48,14 @@ int cudaCoresPerSM(int major, int minor)
     else if (major == 6 && minor == 1)
         return 128;
     else
-        printf("Error in cudaCoresPerSM",
-               "Device compute capability value (%d.%d) not recognized.",
-               major, minor);
+        printf("Error in cudaCoresPerSM Device compute capability value "
+                "(%d.%d) not recognized.", major, minor);
     return -1;
 }
 
 // Wrapper function for initializing the CUDA components.
 // Called from main.cpp
-__host__ void DEM::initializeGPU(void)
+void DEM::initializeGPU(void)
 {
     using std::cout; // stdout
 
@@ -149,13 +148,13 @@ __host__ void DEM::initializeGPU(void)
 }
 
 // Start timer for kernel profiling
-__host__ void startTimer(cudaEvent_t* kernel_tic)
+void startTimer(cudaEvent_t* kernel_tic)
 {
     cudaEventRecord(*kernel_tic);
 }
 
 // Stop timer for kernel profiling and time to function sum
-__host__ void stopTimer(cudaEvent_t *kernel_tic,
+void stopTimer(cudaEvent_t *kernel_tic,
         cudaEvent_t *kernel_toc,
         float *kernel_elapsed,
         double* sum)
@@ -280,7 +279,7 @@ __global__ void checkParticlePositions(
 // Copy the constant data components to device memory,
 // and check whether the values correspond to the 
 // values in constant memory.
-__host__ void DEM::checkConstantMemory()
+void DEM::checkConstantMemory()
 {
     // Allocate space in global device memory
     Grid* dev_grid;
@@ -322,7 +321,7 @@ __host__ void DEM::checkConstantMemory()
 }
 
 // Copy selected constant components to constant device memory.
-__host__ void DEM::transferToConstantDeviceMemory()
+void DEM::transferToConstantDeviceMemory()
 {
     using std::cout;
 
@@ -361,7 +360,7 @@ __global__ void printWorldSize(Float4* dev_walls_nx)
             dev_walls_nx[0].w);
 }
 
-__host__ void DEM::updateGridSize()
+void DEM::updateGridSize()
 {
     //printf("\nDEM::updateGridSize() start\n");
     Float* Lz = new Float;
@@ -396,7 +395,7 @@ __host__ void DEM::updateGridSize()
 
 // Allocate device memory for particle variables,
 // tied to previously declared pointers in structures
-__host__ void DEM::allocateGlobalDeviceMemory(void)
+void DEM::allocateGlobalDeviceMemory(void)
 {
     // Particle memory size
     unsigned int memSizeF  = sizeof(Float) * np;
@@ -482,7 +481,7 @@ __host__ void DEM::allocateGlobalDeviceMemory(void)
 
 // Allocate global memory on other devices required for "interact" function.
 // The values of domain_size[ndevices] must be set beforehand.
-__host__ void DEM::allocateHelperDeviceMemory(void)
+void DEM::allocateHelperDeviceMemory(void)
 {
     // Particle memory size
     unsigned int memSizeF4 = sizeof(Float4) * np;
@@ -555,7 +554,7 @@ __host__ void DEM::allocateHelperDeviceMemory(void)
     cudaSetDevice(device); // select main GPU
 }
 
-__host__ void DEM::freeHelperDeviceMemory()
+void DEM::freeHelperDeviceMemory()
 {
     for (int d=0; d<ndevices; d++) {
 
@@ -593,7 +592,7 @@ __host__ void DEM::freeHelperDeviceMemory()
     cudaSetDevice(device); // select primary GPU
 }
 
-__host__ void DEM::freeGlobalDeviceMemory()
+void DEM::freeGlobalDeviceMemory()
 {
     if (verbose == 1)
         printf("\nFreeing device memory:                           ");
@@ -658,7 +657,7 @@ __host__ void DEM::freeGlobalDeviceMemory()
 }
 
 
-__host__ void DEM::transferToGlobalDeviceMemory(int statusmsg)
+void DEM::transferToGlobalDeviceMemory(int statusmsg)
 {
     if (verbose == 1 && statusmsg == 1)
         std::cout << "  Transfering data to the device:                 ";
@@ -745,7 +744,7 @@ __host__ void DEM::transferToGlobalDeviceMemory(int statusmsg)
         std::cout << "Done" << std::endl;
 }
 
-__host__ void DEM::transferFromGlobalDeviceMemory()
+void DEM::transferFromGlobalDeviceMemory()
 {
     //std::cout << "  Transfering data from the device:               ";
 
@@ -824,7 +823,7 @@ __host__ void DEM::transferFromGlobalDeviceMemory()
 
 
 // Iterate through time by explicit time integration
-__host__ void DEM::startTime()
+void DEM::startTime()
 {
     using std::cout;
     using std::cerr;
@@ -1002,16 +1001,18 @@ __host__ void DEM::startTime()
     unsigned int wall0_iz = 10000000;
     // weight of fluid between two cells in z direction
     Float dp_dz;
-    if (cfd_solver == 0)
-        dp_dz = fabs(ns.rho_f*params.g[2]*grid.L[2]/grid.num[2]);
-    else if (cfd_solver == 1) {
-        dp_dz = fabs(darcy.rho_f*params.g[2]*grid.L[2]/grid.num[2]);
+    if (fluid == 1) {
+        if (cfd_solver == 0)
+            dp_dz = fabs(ns.rho_f*params.g[2]*grid.L[2]/grid.num[2]);
+        else if (cfd_solver == 1) {
+            dp_dz = fabs(darcy.rho_f*params.g[2]*grid.L[2]/grid.num[2]);
 
-        // determine pressure at top wall at t=0
-        darcy.p_top_orig = darcy.p[d_idx(0,0,darcy.nz-1)]
-                            - darcy.p_mod_A
-                            *sin(2.0*M_PI*darcy.p_mod_f*time.current
-                                    + darcy.p_mod_phi);
+            // determine pressure at top wall at t=0
+            darcy.p_top_orig = darcy.p[d_idx(0,0,darcy.nz-1)]
+                                - darcy.p_mod_A
+                                *sin(2.0*M_PI*darcy.p_mod_f*time.current
+                                        + darcy.p_mod_phi);
+        }
     }
     //std::cout << "dp_dz = " << dp_dz << std::endl;
 
@@ -2589,13 +2590,15 @@ __host__ void DEM::startTime()
                     iter);
 
             // Empty the dphi values after device to host transfer
-            if (fluid == 1 && cfd_solver == 1) {
-                setDarcyZeros<Float> <<<dimGridFluid, dimBlockFluid>>>
-                    (dev_darcy_dphi);
-                cudaThreadSynchronize();
-                checkForCudaErrorsIter(
-                        "After setDarcyZeros(dev_darcy_dphi) after transfer",
-                        iter);
+            if (fluid == 1) {
+                if (cfd_solver == 1) {
+                    setDarcyZeros<Float> <<<dimGridFluid, dimBlockFluid>>>
+                        (dev_darcy_dphi);
+                    cudaThreadSynchronize();
+                    checkForCudaErrorsIter(
+                            "After setDarcyZeros(dev_darcy_dphi) after transfer",
+                            iter);
+                }
             }
 
             // Pause the CPU thread until all CUDA calls previously issued are
@@ -2603,8 +2606,9 @@ __host__ void DEM::startTime()
             cudaThreadSynchronize();
 
             // Check the numerical stability of the NS solver
-            if (fluid == 1 && cfd_solver == 0)
-                checkNSstability();
+            if (fluid == 1)
+                if (cfd_solver == 0)
+                    checkNSstability();
 
             // Write binary output file
             time.step_count += 1;

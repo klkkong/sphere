@@ -27,6 +27,7 @@ compare(orig, py, "Python IO:")
 # Test C++ IO routines
 #orig.run(verbose=True, hideinputfile=True)
 orig.run(dry=True)
+#orig.run(valgrind=True)
 orig.run()
 cpp = sphere.sim()
 cpp.readbin("../output/" + orig.sid + ".output00000.bin", verbose=False)

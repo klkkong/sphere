@@ -3,7 +3,7 @@
 #LINK_LIBRARIES("-L${CUDA_SDK_ROOT_DIR}/lib -lcutil_x86_64") # For 64 bit systems
 
 # Ohter folders to include
-SET(CUDA_SDK_ROOT_DIR "/usr/local/cuda-5.0/samples")
+#SET(CUDA_SDK_ROOT_DIR "/usr/local/cuda-5.0/samples")
 INCLUDE_DIRECTORIES("${CUDA_SDK_ROOT_DIR}/common/inc")
 INCLUDE_DIRECTORIES("${CMAKE_BINARY_DIR}/src")
 SET(EXECUTABLE_OUTPUT_PATH "../")
@@ -16,13 +16,16 @@ INCLUDE(FindCUDA)
 IF (GPU_GENERATION EQUAL 1) # Kepler
     SET(CUDA_NVCC_FLAGS
         #"--use_fast_math;-O3;-gencode=arch=compute_35,code=\"sm_35,compute_35\";--fmad=false -ccbin gcc-4.6")
-        "--use_fast_math;-O3;-gencode=arch=compute_35,code=\"sm_35,compute_35\";--fmad=false -ccbin gcc")
+        #"--use_fast_math;-O3;-gencode=arch=compute_35,code=\"sm_35,compute_35\";--fmad=false -ccbin gcc-4.6")
+        #"--use_fast_math;-O3;-gencode=arch=compute_35,code=\"sm_35,compute_35\";--fmad=false -ccbin gcc;-Xcompiler -fPIC")
+        "--use_fast_math;-O3;-gencode=arch=compute_35,code=\"sm_35,compute_35\";--fmad=false;-ccbin clang-3.8")
 ELSE()  # Fermi
     SET(CUDA_NVCC_FLAGS
         #"--use_fast_math;-O3;-gencode=arch=compute_20,code=\"sm_20,compute_20\";--fmad=false -ccbin gcc-4.6")
-        "--use_fast_math;-O3;-gencode=arch=compute_20,code=\"sm_20,compute_20\";--fmad=false -ccbin gcc")
+        #"--use_fast_math;-O3;-gencode=arch=compute_20,code=\"sm_20,compute_20\";--fmad=false -ccbin gcc;-Xcompiler -fPIC")
+        "--use_fast_math;-O3;-gencode=arch=compute_20,code=\"sm_20,compute_20\";--fmad=false;-ccbin clang-3.8")
 ENDIF (GPU_GENERATION EQUAL 1)
-SET(CMAKE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
+#SET(CMAKE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
 
 # Rule to build executable program 
 CUDA_ADD_EXECUTABLE(sphere
