@@ -2,6 +2,7 @@
 #ifndef SPHERE_H_
 #define SPHERE_H_
 
+#include <string>
 #include <vector>
 
 //#include "eigen-nvcc/Eigen/Core"
