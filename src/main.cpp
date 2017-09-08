@@ -85,9 +85,9 @@ int main(const int argc, const char *argv[])
                 "|       | |                           |\n"
                 "|       |_|           Version: %.2f   |\n"           
                 "`-------------------------------------´\n"
-                " A discrete element method particle dynamics simulator.\n"
+                " A discrete-element method particle dynamics simulator.\n"
                 " Written by Anders Damsgaard, license GPLv3+.\n"
-                " https://cs.au.dk/~adc/\n", VERSION);
+                " https://adamsgaard.dk\n", VERSION);
             return 0;
         }
 

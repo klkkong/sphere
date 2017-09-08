@@ -132,9 +132,11 @@ from the root directory::
 
  $ cmake . && make
 
-NOTE: If your system does not have a GCC compiler (e.g. GCC-5 for CUDA 8) 
-compatible with the installed CUDA version, try using ``clang-3.8`` instead::
+NOTE: If your system does not have a GCC compiler compatible with the installed
+CUDA version (e.g. GCC-5 for CUDA 8), you will see errors at the linker stage.  
+In that case, try using ``clang-3.8`` as the C and C++ compiler instead::
 
+ $ rm -rf CMakeCache.txt CMakeFiles/
  $ export CC=$(which clang-3.8) && export CXX=$(which clang++-3.8) && cmake . && make
 
 After a successfull installation, the ``sphere`` executable will be located
@@ -156,10 +158,6 @@ following commands to check the executable::
 The output should look similar to this:
 
 .. program-output:: ../../sphere --version
-
-The build can be verified by running a number of automated tests::
-
- $ make test
 
 The documentation can be read in the `reStructuredText
 <http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html>`_-format in
@@ -193,10 +191,9 @@ After compiling the ``sphere`` binary, the procedure of a creating and handling
 a simulation is typically arranged in the following order:
 
   * Setup of particle assemblage, physical properties and conditions using the
-    Python API.
+    Python API (``python/sphere.py``).
   * Execution of ``sphere`` software, which simulates the particle behavior as a
     function of time, as a result of the conditions initially specified in the
     input file.
   * Inspection, analysis, interpretation and visualization of ``sphere`` output
     in Python, and/or scene rendering using the built-in ray tracer.
-

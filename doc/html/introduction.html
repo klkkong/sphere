@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Introduction and Installation &#8212; sphere 1.00-alpha documentation</title>
+    <title>Introduction and Installation &#8212; sphere 2.15-beta documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.00-alpha',
+        VERSION:     '2.15-beta',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="sphere 1.00-alpha documentation" href="index.html" />
+    <link rel="top" title="sphere 2.15-beta documentation" href="index.html" />
     <link rel="next" title="Discrete element method" href="dem.html" />
     <link rel="prev" title="The sphere documentation" href="index.html" /> 
   </head>
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="index.html" title="The sphere documentation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">sphere 1.00-alpha documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">sphere 2.15-beta documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -185,9 +185,11 @@ from the root directory:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ cmake . &amp;&amp; make
 </pre></div>
 </div>
-<p>NOTE: If your system does not have a GCC compiler (e.g. GCC-5 for CUDA 8)
-compatible with the installed CUDA version, try using <code class="docutils literal"><span class="pre">clang-3.8</span></code> instead:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ export CC=$(which clang-3.8) &amp;&amp; export CXX=$(which clang++-3.8) &amp;&amp; cmake . &amp;&amp; make
+<p>NOTE: If your system does not have a GCC compiler compatible with the installed
+CUDA version (e.g. GCC-5 for CUDA 8), you will see errors at the linker stage.
+In that case, try using <code class="docutils literal"><span class="pre">clang-3.8</span></code> as the C and C++ compiler instead:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ rm -rf CMakeCache.txt CMakeFiles/
+$ export CC=$(which clang-3.8) &amp;&amp; export CXX=$(which clang++-3.8) &amp;&amp; cmake . &amp;&amp; make
 </pre></div>
 </div>
 <p>After a successfull installation, the <code class="docutils literal"><span class="pre">sphere</span></code> executable will be located
@@ -216,13 +218,9 @@ following commands to check the executable:</p>
 |       | |                           |
 |       |_|           Version: 2.15   |
 `-------------------------------------´
- A discrete element method particle dynamics simulator.
+ A discrete-element method particle dynamics simulator.
  Written by Anders Damsgaard, license GPLv3+.
- https://cs.au.dk/~adc/
-</pre></div>
-</div>
-<p>The build can be verified by running a number of automated tests:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ make test
+ https://adamsgaard.dk
 </pre></div>
 </div>
 <p>The documentation can be read in the <a class="reference external" href="http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html">reStructuredText</a>-format in
@@ -254,7 +252,7 @@ a simulation is typically arranged in the following order:</p>
 <blockquote>
 <div><ul class="simple">
 <li>Setup of particle assemblage, physical properties and conditions using the
-Python API.</li>
+Python API (<code class="docutils literal"><span class="pre">python/sphere.py</span></code>).</li>
 <li>Execution of <code class="docutils literal"><span class="pre">sphere</span></code> software, which simulates the particle behavior as a
 function of time, as a result of the conditions initially specified in the
 input file.</li>
@@ -325,7 +323,7 @@ in Python, and/or scene rendering using the built-in ray tracer.</li>
         <li class="right" >
           <a href="index.html" title="The sphere documentation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">sphere 1.00-alpha documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">sphere 2.15-beta documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

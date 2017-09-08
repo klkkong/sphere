@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>sphere internals &#8212; sphere 1.00-alpha documentation</title>
+    <title>sphere internals &#8212; sphere 2.15-beta documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.00-alpha',
+        VERSION:     '2.15-beta',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="sphere 1.00-alpha documentation" href="index.html" />
+    <link rel="top" title="sphere 2.15-beta documentation" href="index.html" />
     <link rel="prev" title="Python API" href="python_api.html" /> 
   </head>
   <body role="document">
@@ -41,7 +41,7 @@
         <li class="right" >
           <a href="python_api.html" title="Python API"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">sphere 1.00-alpha documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">sphere 2.15-beta documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -217,8 +217,8 @@ item Update of verb&#8221;&lt;simulation_ID&gt;.status#..bin&#8221; (texttt{devi
 </ol>
 <p>The length of the computational time steps (texttt{time.dt}) is calculated via equation ref{eq:dt}, where length of the time intervals is defined by:</p>
 <div class="math">
-<p><img src="_images/math/6af8f3510a4e3f1aea74c1b180c9d93ef248128c.png" alt="\Delta t = 0.075 \min \left( m/\max(k_n,k_t) \right)"/></p>
-</div><p>where <img class="math" src="_images/math/c4bb40dd65eae6c11b325989b14e0b8d35e4e3ef.png" alt="m"/> is the particle mass, and <img class="math" src="_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> are the elastic stiffnesses.
+<p><img src="_images/math/f068b70724ff65c62363e69535c2b276fab6dad3.png" alt="\Delta t = 0.075 \min \left( m/\max(k_n,k_t) \right)"/></p>
+</div><p>where <img class="math" src="_images/math/edba97b4c0d864d26e92ea7ea73767fa38eef3f7.png" alt="m"/> is the particle mass, and <img class="math" src="_images/math/0b7c1e16a3a8a849bb8ffdcdbf86f65fd1f30438.png" alt="k"/> are the elastic stiffnesses.
 The time step is set by this relationship in <code class="xref py py-func docutils literal"><span class="pre">initTemporal()</span></code>.
 This equation ensures that the elastic wave (traveling at the speed of sound) is resolved a number of times while traveling through the smallest particle.</p>
 <p>subsubsection{Host and device memory types}
@@ -302,7 +302,7 @@ An important note is that the texttt{C} examples of the NVIDIA CUDA SDK should b
         <li class="right" >
           <a href="python_api.html" title="Python API"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">sphere 1.00-alpha documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">sphere 2.15-beta documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
