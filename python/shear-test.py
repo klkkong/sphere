@@ -14,11 +14,10 @@ plots          = True
 np = 1e4
 
 # Common simulation id
-sim_id = "shear-test-devs3"
+sim_id = "shear-test"
 
 # Deviatoric stress [Pa]
-devslist = [80e3, 10e3, 20e3, 40e3, 60e3, 120e3]
-#devs = 0
+Nlist = [80e3]
 
 ### INITIALIZATION ###
 
@@ -63,12 +62,13 @@ if (initialization == True):
 
 
 # For each normal stress, consolidate and subsequently shear the material
-for devs in devslist:
+for N in Nlist:
 
     ### CONSOLIDATION ###
 
     # New class
-    cons = sphere.sim(np = init.np, nw = 1, sid = sim_id + "-cons-devs{}".format(devs))
+    cons = sphere.sim(np = init.np, nw = 1, sid = sim_id +
+                      "-cons-N{}".format(N))
 
     # Read last output file of initialization step
     lastf = status(sim_id + "-init")
@@ -78,7 +78,8 @@ for devs in devslist:
     cons.periodicBoundariesXY()
 
     # Setup consolidation experiment
-    cons.consolidate(normal_stress = devs, periodic = init.periodic)
+    cons.consolidate(normal_stress = N, periodic = init.periodic)
+    cons.adaptiveGrid()
 
 
     # Set duration of simulation
@@ -108,23 +109,27 @@ for devs in devslist:
 
         if (rendering == True):
             # Render images with raytracer
-            cons.render(method = "pres", max_val = 2.0*devs, verbose = False)
+            cons.render(method = "pres", max_val = 2.0*N, verbose = False)
 
 
     ### SHEARING ###
 
     # New class
-    shear = sphere.sim(np = cons.np, nw = cons.nw, sid = sim_id + "-shear-devs{}".format(devs))
+    shear = sphere.sim(np = cons.np, nw = cons.nw, sid = sim_id +
+                       "-shear-N{}".format(N))
 
     # Read last output file of initialization step
-    lastf = status(sim_id + "-cons-devs{}".format(devs))
-    shear.readbin("../output/" + sim_id + "-cons-devs{}.output{:0=5}.bin".format(devs, lastf), verbose = False)
+    lastf = status(sim_id + "-cons-N{}".format(N))
+    shear.readbin("../output/" + sim_id +
+                  "-cons-N{}.output{:0=5}.bin".format(N, lastf),
+                  verbose = False)
 
     # Periodic x and y boundaries
     shear.periodicBoundariesXY()
 
     # Setup shear experiment
     shear.shear(shear_strain_rate = 0.05, periodic = init.periodic)
+    shear.adaptiveGrid()
 
     # Set duration of simulation
     shear.initTemporal(total = 20.0)
@@ -144,4 +149,4 @@ for devs in devslist:
 
         if (rendering == True):
             # Render images with raytracer
-            shear.render(method = "pres", max_val = 2.0*devs, verbose = False)
+            shear.render(method = "pres", max_val = 2.0*N, verbose = False)
