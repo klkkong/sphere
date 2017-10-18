@@ -4383,7 +4383,7 @@ class sim:
         '''
         Calculates the current void ratio
 
-        :returns: The void ratio, in [0:1]
+        :returns: The void ratio (pore volume relative to solid volume)
         :return type: float
         '''
 
