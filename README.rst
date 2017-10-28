@@ -109,6 +109,11 @@ Publications
 ``sphere`` has been used to produce results in the following scientific
 publications and presentations:
 
+- Damsgaard, A., A. Cabrales-Vargas, J. Suckale, and L. Goren (2017), The 
+  coupled dynamics of meltwater percolation and granular deformation in the 
+  sediment layer underlying parts of the big ice sheets, Poromechanics VI, 
+  `doi:10.1061/9780784480779.024 
+  <https://dx.doi.org/10.1061/9780784480779.024>`_.
 - Damsgaard, A., D.L. Egholm, L.H. Beem, S. Tulaczyk, N.K. Larsen, J.A.  
   Piotrowski, and M.R. Siegfried (2016), Ice flow dynamics forced by water 
   pressure variations in subglacial granular beds, Geophysical Research Letters, 
