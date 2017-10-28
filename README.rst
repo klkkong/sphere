@@ -29,7 +29,7 @@ Important release notes
 -----------------------
 2017-09-07: CUDA 8 comes with new requirements to the host CC/C++ compiler.  If 
 GCC5 is not available on the system, run the following command before invoking 
-`make`:
+`make`::
 
     export CC=$(which clang-3.8) && export CXX=$(which clang++-3.8) && cmake .
 
