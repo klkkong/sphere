@@ -7,7 +7,7 @@ import sphere
 initialization = True
 consolidation  = True
 shearing       = True
-rendering      = True
+rendering      = False
 plots          = True
 
 # Number of particles
@@ -28,7 +28,7 @@ Nshear = 10e3
 init = sphere.sim(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
 
 # Save radii with uniform size distribution
-init.generateRadii(mean = 9e-4, var = 3e-4, histogram = True)
+init.generateRadii(mean = 9e-4, variance = 3e-4, histogram = True)
 
 # Use default params
 init.defaultParams(gamma_n = 1e2, mu_s = 0.5, mu_d = 0.5)
@@ -62,7 +62,6 @@ if (initialization == True):
     if (rendering == True):
         # Render images with raytracer
         init.render(method = "angvel", max_val = 0.3, verbose = False)
-
 
 
 # For each normal stress, consolidate and subsequently shear the material
@@ -112,7 +111,7 @@ for N in Nlist:
                        "-relax-from-N{}".format(N))
     lastf = status(sim_id + "-cons-N{}".format(N))
     relax.readbin("../output/" + sim_id +
-                  "-cons-N{}.output{:0=5}.bin".format(N, lastf),
+                  "-cons-N{}.output{:0=5}.bin".format(N, lastf))
 
     relax.periodicBoundariesXY()
 
