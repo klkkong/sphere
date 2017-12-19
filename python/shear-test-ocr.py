@@ -11,7 +11,7 @@ rendering      = False
 plots          = True
 
 # Number of particles
-np = 2e4
+np = 1e4
 
 # Common simulation id
 sim_id = "shear-test-ocr"
@@ -28,7 +28,7 @@ Nshear = 10e3
 init = sphere.sim(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
 
 # Save radii with uniform size distribution
-init.generateRadii(mean = 9e-4, variance = 3e-4, histogram = True)
+init.generateRadii(psd = 'uni', mean = 1e-2, variance = 2e-3, histogram = True)
 
 # Use default params
 init.defaultParams(gamma_n = 1e2, mu_s = 0.5, mu_d = 0.5)
@@ -45,7 +45,7 @@ hcells = np**(1.0/3.0)
 init.initRandomGridPos(gridnum = [hcells, hcells, 1e9])
 
 # Set duration of simulation
-init.initTemporal(total = 10.0)
+init.initTemporal(total = 10.0, epsilon = 0.07)
 
 if (initialization == True):
 
