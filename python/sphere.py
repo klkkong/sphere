@@ -66,10 +66,10 @@ class sim:
         self.version = numpy.ones(1, dtype=numpy.float64)*VERSION
 
         # The number of spatial dimensions. Values other that 3 do not work
-        self.nd = numpy.ones(1, dtype=numpy.int32)*nd
+        self.nd = numpy.ones(1, dtype=numpy.int32)*int(nd)
 
         # The number of particles
-        self.np = numpy.ones(1, dtype=numpy.uint32)*np
+        self.np = numpy.ones(1, dtype=numpy.uint32)*int(np)
 
         # The simulation id (text string)
         self.sid = sid
