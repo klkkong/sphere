@@ -30,11 +30,16 @@ init = sphere.sim(np = np, nd = 3, nw = 0, sid = sim_id + "-init")
 # Save radii with uniform size distribution
 init.generateRadii(psd = 'uni', mean = 1e-2, variance = 2e-3, histogram = True)
 
-# Use default params
-init.defaultParams(gamma_n = 1e2, mu_s = 0.5, mu_d = 0.5)
+# Set mechanical parameters
 init.setYoungsModulus(7e8)
+init.setStaticFriction(0.5)
+init.setDynamicFriction(0.5)
+init.setDampingNormal(1e2)
+init.setDampingTangential(0.0)
 
-# Add gravity
+# Add gravitational acceleration
+init.g[0] = 0.0
+init.g[1] = 0.0
 init.g[2] = -9.81
 
 # Periodic x and y boundaries
@@ -43,6 +48,8 @@ init.periodicBoundariesXY()
 # Initialize positions in random grid (also sets world size)
 hcells = np**(1.0/3.0)
 init.initRandomGridPos(gridnum = [hcells, hcells, 1e9])
+
+init.checkerboardColors(nx=init.num[0]/2, ny=init.num[1]/2, nz=init.num[2]/2)
 
 # Set duration of simulation
 init.initTemporal(total = 10.0, epsilon = 0.07)
@@ -74,9 +81,9 @@ for N in Nlist:
                       "-cons-N{}".format(N))
 
     # Read last output file of initialization step
-    lastf = status(sim_id + "-init")
+    lastf = sphere.status(sim_id + "-init")
     cons.readbin("../output/" + sim_id + "-init.output{:0=5}.bin".format(lastf), verbose=False)
-    cons.gamma_n[0] = 0.
+    cons.setDampingNormal(0.0)
 
     # Periodic x and y boundaries
     cons.periodicBoundariesXY()
@@ -84,6 +91,7 @@ for N in Nlist:
     # Setup consolidation experiment
     cons.consolidate(normal_stress = N, periodic = init.periodic)
     cons.adaptiveGrid()
+    cons.checkerboardColors(nx=cons.num[0]/2, ny=cons.num[1]/2, nz=cons.num[2]/2)
 
     # Set duration of simulation
     cons.initTemporal(total = 1.5)
@@ -109,7 +117,7 @@ for N in Nlist:
     ### RELAXATION at Nshear ###
     relax = sphere.sim(np = cons.np, nw = cons.nw, sid = sim_id +
                        "-relax-from-N{}".format(N))
-    lastf = status(sim_id + "-cons-N{}".format(N))
+    lastf = sphere.status(sim_id + "-cons-N{}".format(N))
     relax.readbin("../output/" + sim_id +
                   "-cons-N{}.output{:0=5}.bin".format(N, lastf))
 
@@ -118,6 +126,8 @@ for N in Nlist:
     # Setup relaxation experiment
     relax.consolidate(normal_stress = Nshear, periodic = init.periodic)
     relax.adaptiveGrid()
+    relax.checkerboardColors(nx=relax.num[0]/2, ny=relax.num[1]/2,
+            nz=relax.num[2]/2)
 
     # Set duration of simulation
     relax.initTemporal(total = 1.0)
@@ -146,7 +156,7 @@ for N in Nlist:
                        "-shear-N{}-OCR{}".format(Nshear, N/Nshear))
 
     # Read last output file of initialization step
-    lastf = status(sim_id + "-relax-from-N{}".format(N))
+    lastf = sphere.status(sim_id + "-relax-from-N{}".format(N))
     shear.readbin("../output/" + sim_id +
                   "-relax-from-N{}.output{:0=5}.bin".format(N, lastf),
                   verbose = False)
@@ -157,6 +167,8 @@ for N in Nlist:
     # Setup shear experiment
     shear.shear(shear_strain_rate = 0.05, periodic = init.periodic)
     shear.adaptiveGrid()
+    shear.checkerboardColors(nx=shear.num[0]/2, ny=shear.num[1]/2,
+            nz=shear.num[2]/2)
 
     # Set duration of simulation
     shear.initTemporal(total = 20.0)
