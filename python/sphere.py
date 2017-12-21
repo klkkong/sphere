@@ -2956,7 +2956,7 @@ class sim:
         '''
 
         # Initialize upper wall
-        self.nw = numpy.ones(1)
+        self.nw = numpy.ones(1, dtype=numpy.int32)
         self.wmode = numpy.zeros(1) # fixed BC
         self.w_n = numpy.zeros(self.nw*self.nd, dtype=numpy.float64).reshape(\
                 self.nw[0],self.nd[0])
