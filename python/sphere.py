@@ -227,7 +227,7 @@ class sim:
         # nw = 1: Uniaxial (also used for shear experiments)
         # nw = 2: Biaxial
         # nw = 5: Triaxial
-        self.nw      = numpy.ones(1, dtype=numpy.uint32) * nw
+        self.nw      = numpy.ones(1, dtype=numpy.uint32) * int(nw)
 
         # Wall modes
         # 0: Fixed
@@ -282,10 +282,10 @@ class sim:
         self.nb0 = numpy.zeros(1, dtype=numpy.uint32)
 
         # Bond tensile strength [Pa]
-        self.sigma_b = numpy.ones(1, dtype=numpy.uint32) * numpy.infty
+        self.sigma_b = numpy.ones(1, dtype=numpy.float64) * numpy.infty
 
         # Bond shear strength [Pa]
-        self.tau_b = numpy.ones(1, dtype=numpy.uint32) * numpy.infty
+        self.tau_b = numpy.ones(1, dtype=numpy.float64) * numpy.infty
 
         # Bond pairs
         self.bonds = numpy.zeros((self.nb0[0], 2), dtype=numpy.uint32)
