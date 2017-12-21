@@ -12,9 +12,9 @@ Navier-Stokes or Darcy formulations.
 A powerful Nvidia GPU with proper support for double precision floating is
 highly recommended. ``sphere`` has been tested with Nvidia Tesla GPUs, and has 
 successfully been employed on the clusters `Grendel 
-<http://www.cscaa.dk/grendel/hardware/>`_ (Aarhus University), `ICME 
+<https://www.cscaa.dk/grendel/hardware/>`_ (Aarhus University), `ICME 
 <https://icme.stanford.edu/computer-resources/gpu-cluster>`_ (Stanford 
-University), `Comet <http://www.sdsc.edu/services/hpc/hpc_systems.html#comet>`_ 
+University), `Comet <https://www.sdsc.edu/services/hpc/hpc_systems.html#comet>`_ 
 (San Diego Supercomputing Center),  `Bridges 
 <https://psc.edu/index.php/resources/computing/bridges>`_ (Portland 
 Supercomputing Center), and `Stampede <https://www.tacc.utexas.edu/stampede/>`_ 
@@ -81,7 +81,7 @@ the `html <doc/html/index.html>`_ and `pdf <doc/pdf/sphere.pdf>`_ formats.
 
 Examples
 --------
-All examples are visualized using `ParaView <http://www.paraview.org>`_.
+All examples are visualized using `ParaView <https://www.paraview.org>`_.
 
 .. figure:: doc/sphinx/img/stokes.png
    :scale: 75%
@@ -109,19 +109,24 @@ Publications
 ``sphere`` has been used to produce results in the following scientific
 publications and presentations:
 
+- Damsgaard, A., J. Suckale, J. A. Piotrowski, M. Houssais, M. R. Siegfried, H.
+  A. Fricker (2017), Sediment behavior controls equilibrium width of subglacial
+  channels, Journal of Glaciology, 
+  `doi:10.1017/jog.2017.71 
+  <https://doi.org/10.1017/jog.2017.71>`_.
 - Damsgaard, A., A. Cabrales-Vargas, J. Suckale, and L. Goren (2017), The 
   coupled dynamics of meltwater percolation and granular deformation in the 
   sediment layer underlying parts of the big ice sheets, Poromechanics VI, 
   `doi:10.1061/9780784480779.024 
-  <https://dx.doi.org/10.1061/9780784480779.024>`_.
+  <https://doi.org/10.1061/9780784480779.024>`_.
 - Damsgaard, A., D.L. Egholm, L.H. Beem, S. Tulaczyk, N.K. Larsen, J.A.  
   Piotrowski, and M.R. Siegfried (2016), Ice flow dynamics forced by water 
   pressure variations in subglacial granular beds, Geophysical Research Letters, 
-  43, `doi:10.1002/2016GL071579 <http://dx.doi.org/10.1002/2016GL071579>`_.
+  43, `doi:10.1002/2016GL071579 <https://doi.org/10.1002/2016GL071579>`_.
 - Damsgaard, A., D.L. Egholm, J.A. Piotrowski, S. Tulaczyk, N.K. Larsen, and
   C.F. Brædstrup (2015), A new methodology to simulate subglacial deformation of
   water-saturated granular material, The Cryosphere, 9, 2183-2200,
-  `doi:10.5194/tc-9-2183-2015 <http://dx.doi.org/10.5194/tc-9-2183-2015>`_.
+  `doi:10.5194/tc-9-2183-2015 <https://doi.org/10.5194/tc-9-2183-2015>`_.
 - Damsgaard, A., D.L. Egholm, J.A. Piotrowski, S. Tulaczyk, N.K. Larsen, and
   C.F. Brædstrup (2014), Numerical modeling of particle-fluid mixtures in a
   subglacial setting. `Poster at Americal Geophysical Union Fall Meeting
@@ -129,7 +134,7 @@ publications and presentations:
 - Damsgaard, A., D.L. Egholm, J.A. Piotrowski, S. Tulaczyk, N.K. Larsen, and
   K. Tylmann (2013), Discrete element modeling of subglacial sediment
   deformation, J. Geophys. Res. Earth Surf., 118, 2230–2242,
-  `doi:10.1002/2013JF002830 <http://dx.doi.org/10.1002/2013JF002830>`_.
+  `doi:10.1002/2013JF002830 <https://doi.org/10.1002/2013JF002830>`_.
 - Damsgaard, A., D.L. Egholm, J.A. Piotrowski, S. Tulaczyk, and N.K. Larsen
   (2013), Discrete element modeling of subglacial sediment deformation.
   Talk at American Geophysical Fall Meeting 2013.
