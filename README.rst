@@ -156,6 +156,10 @@ publications and presentations:
   `Poster at European Geosciences Union General Assembly 2011
   <https://cs.au.dk/~adc/files/EGU2011-Poster.pdf>`_.
 
+If you use `sphere` for scientific publications, please get in touch to add your
+entry to the above list. It would be appreciated if the `sphere` development is
+acknowledged by citing one of the above *Damsgaard et al.* publications.
+
 Author
 ------
 Anders Damsgaard, `andersd@princeton.edu <mailto:andersd@princeton.edu>`_,
