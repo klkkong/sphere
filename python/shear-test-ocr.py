@@ -4,7 +4,7 @@
 import sphere
 
 ### EXPERIMENT SETUP ###
-initialization = True
+initialization = False
 consolidation  = True
 shearing       = True
 rendering      = False
@@ -34,7 +34,7 @@ init.generateRadii(psd = 'uni', mean = 1e-2, variance = 2e-3, histogram = True)
 init.setYoungsModulus(7e8)
 init.setStaticFriction(0.5)
 init.setDynamicFriction(0.5)
-init.setDampingNormal(1e2)
+init.setDampingNormal(5e1)
 init.setDampingTangential(0.0)
 
 # Add gravitational acceleration
@@ -89,7 +89,7 @@ for N in Nlist:
     cons.periodicBoundariesXY()
 
     # Setup consolidation experiment
-    cons.consolidate(normal_stress = N, periodic = init.periodic)
+    cons.consolidate(normal_stress = N)
     cons.adaptiveGrid()
     cons.checkerboardColors(nx=cons.num[0]/2, ny=cons.num[1]/2, nz=cons.num[2]/2)
 
@@ -124,7 +124,7 @@ for N in Nlist:
     relax.periodicBoundariesXY()
 
     # Setup relaxation experiment
-    relax.consolidate(normal_stress = Nshear, periodic = init.periodic)
+    relax.consolidate(normal_stress = Nshear)
     relax.adaptiveGrid()
     relax.checkerboardColors(nx=relax.num[0]/2, ny=relax.num[1]/2,
             nz=relax.num[2]/2)
@@ -165,7 +165,7 @@ for N in Nlist:
     shear.periodicBoundariesXY()
 
     # Setup shear experiment
-    shear.shear(shear_strain_rate = 0.05, periodic = init.periodic)
+    shear.shear(shear_strain_rate = 0.05)
     shear.adaptiveGrid()
     shear.checkerboardColors(nx=shear.num[0]/2, ny=shear.num[1]/2,
             nz=shear.num[2]/2)
