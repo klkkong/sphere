@@ -4,20 +4,21 @@
 import sphere
 
 ### EXPERIMENT SETUP ###
-initialization = False
+initialization = True
 consolidation  = True
+relaxation     = True
 shearing       = True
 rendering      = False
 plots          = True
 
 # Number of particles
-np = 1e4
+np = 2e4
 
 # Common simulation id
 sim_id = "shear-test-ocr"
 
 # Effective normal stresses during consolidation [Pa]
-Nlist = [5e3, 10e3, 25e3, 50e3, 100e3, 250e3, 500e3]
+Nlist = [10e3, 25e3, 50e3, 100e3, 250e3, 500e3]
 
 # Effective normal stresses during relaxation and shear [Pa]
 Nshear = 10e3
@@ -94,7 +95,7 @@ for N in Nlist:
     cons.checkerboardColors(nx=cons.num[0]/2, ny=cons.num[1]/2, nz=cons.num[2]/2)
 
     # Set duration of simulation
-    cons.initTemporal(total = 1.5)
+    cons.initTemporal(total = 4.0)
 
     if (consolidation == True):
 
@@ -130,7 +131,7 @@ for N in Nlist:
             nz=relax.num[2]/2)
 
     # Set duration of simulation
-    relax.initTemporal(total = 1.0)
+    relax.initTemporal(total = 3.0)
 
     if (relaxation == True):
 
