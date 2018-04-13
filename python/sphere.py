@@ -6437,7 +6437,7 @@ class sim:
 
     def visualize(self, method='energy', savefig=True, outformat='png',
             figsize=False, pickle=False, xlim=False, firststep=0, f_min=None,
-            f_max=None, cmap=None):
+            f_max=None, cmap=None, smoothing=0, smoothing_window='hanning'):
         '''
         Visualize output from the simulation, where the temporal progress is
         of interest. The output will be saved in the current folder with a name
@@ -6466,6 +6466,14 @@ class sim:
         :param cmap: Choose custom color map, e.g.
             `cmap=matplotlib.cm.get_cmap('afmhot')`
         :type cmap: matplotlib.colors.LinearSegmentedColormap
+        :param smoothing: Apply smoothing across a number of output files to the
+            `method='shear'` plot. A value of less than 3 means that no
+            smoothing occurs.
+        :type smoothing: int
+        :param smoothing_window: Type of smoothing to use when `smoothing >= 3`.
+            Valid values are 'flat', 'hanning' (default), 'hamming', 'bartlett',
+            and 'blackman'.
+        :type smoothing_window: str
         '''
 
         lastfile = self.status()
@@ -6808,6 +6816,28 @@ class sim:
 
             self.shear_strain = self.xdisp/w_x0
 
+            # Copy values so they can be modified during smoothing
+            shear_strain = self.shear_strain
+            tau = self.tau
+            sigma_def = self.sigma_def
+
+            # Optionally smooth the shear stress
+            if smoothing > 2:
+
+                if not smoothing_window in ['flat', 'hanning', 'hamming',
+                        'bartlett', 'blackman']:
+                    raise ValueError
+
+                s = numpy.r_[2*tau[0]-tau[smoothing:1:-1], tau,
+                        2*tau[-1]-tau[-1:-smoothing:-1]]
+
+                if smoothing_window == 'flat': # moving average
+                    w = numpy.ones(smoothing, 'd')
+                else:
+                    w = getattr(numpy, smoothing_window)(smoothing)
+                y = numpy.convolve(w/w.sum(), s, mode='same')
+                tau = y[smoothing-1:-smoothing+1]
+
             # Plot stresses
             if outformat != 'txt':
                 shearinfo = "$\\tau_p$ = {:.3} Pa at $\gamma$ = {:.3}".format(\
@@ -6822,11 +6852,17 @@ class sim:
                 #ax1.plot(xdisp / w_x0, sigma_eff, '+-g', label="$\sigma'$")
                 #ax1.plot(xdisp / w_x0, sigma_def, '+-b', label="$\sigma_0$")
                 #ax1.plot(xdisp / w_x0, tau, '+-r', label="$\\tau$")
-                ax1.plot(self.shear_strain[1:],\
-                        self.tau[1:]/self.sigma_def[1:],\
-                        #self.tau[1:]/self.sigma_eff[1:],\
-                        '-', label="$\\tau/\\sigma_0$")
-                        #'.-', label="$\\tau$")
+                if smoothing > 2:
+                    ax1.plot(shear_strain[1:-(smoothing+1)/2],
+                            tau[1:-(smoothing+1)/2] /
+                            sigma_def[1:-(smoothing+1)/2],
+                            '-', label="$\\tau/\\sigma_0$")
+                else:
+                    ax1.plot(shear_strain[1:],\
+                            tau[1:]/sigma_def[1:],\
+                            #self.tau[1:]/self.sigma_eff[1:],\
+                            '-', label="$\\tau/\\sigma_0$")
+                            #'.-', label="$\\tau$")
                 #ax1.legend(loc=4)
                 ax1.grid()
 
@@ -6837,7 +6873,11 @@ class sim:
                 #ax2.set_ylabel('Dilation [%]')
                 ax2.set_ylabel('Dilation, $\Delta h/(2\\bar{r})$ [m]')
                 #ax2.plot(self.shear_strain, self.dilation, '.-')
-                ax2.plot(self.shear_strain, self.dilation, '-')
+                if smoothing > 2:
+                    ax2.plot(self.shear_strain[1:-(smoothing+1)/2],
+                        self.dilation[1:-(smoothing+1)/2], '-')
+                else:
+                    ax2.plot(self.shear_strain, self.dilation, '-')
                 ax2.grid()
 
                 if xlim:
