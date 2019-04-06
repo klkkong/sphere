@@ -40,12 +40,9 @@ __device__ Float contactLinear_wall(
 
     // Contact velocity is the sum of the linear and
     // rotational components
-    //Float3 vel = vel_linear + radius_a*cross(n, angvel) + wvel;
     Float3 vel = vel_linear + (radius_a + delta/2.0) * cross(n, angvel) + wvel;
 
     // Normal component of the contact velocity
-    //Float vel_n = dot(vel, n);
-    //Float vel_n = -dot(vel, n);
     Float vel_n = dot(vel_linear, n);
 
     // The tangential velocity is the contact velocity
@@ -560,9 +557,7 @@ __device__ void contactHertz(
 
             // Shear friction heat production rate: 
             // The energy lost from the tangential spring is dissipated as heat
-            //*es_dot += -dot(vel_t_ab, f_t);
             *es_dot += length(delta_t0 - delta_t) * k_t / devC_dt; // Seen in EsyS-Particle
-            //*es_dot += fabs(dot(delta_t0 - delta_t, f_t)) / devC_dt; 
 
         } else { // Static case
 
@@ -578,9 +573,6 @@ __device__ void contactHertz(
         //T_res = -angvel_ab/angvel_ab_length * devC_params.mu_r * R_bar * length(f_n);
 
         // New rolling resistance model
-        /*T_res = -1.0f * fmin(devC_params.gamma_r * R_bar * angvel_ab_length,
-          devC_params.mu_r * R_bar * f_n_length)
-          * angvel_ab/angvel_ab_length;*/
         T_res = -1.0f * fmin(devC_params.gamma_r * radius_a * angvel_ab_length,
                              devC_params.mu_r * radius_a * f_n_length)
             * angvel_ab/angvel_ab_length;
@@ -588,7 +580,6 @@ __device__ void contactHertz(
 
     // Add force components from this collision to total force for particle
     *F += f_n + f_t + f_c; 
-    //*T += -R_bar * cross(n_ab, f_t) + T_res;
     *T += -(radius_a + delta_ab/2.0f) * cross(n_ab, f_t) + T_res;
 
     // Pressure excerted onto the particle from this contact
