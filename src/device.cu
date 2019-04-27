@@ -31,6 +31,7 @@
 
 // Returns the number of cores per streaming multiprocessor, which is
 // a function of the device compute capability
+// https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compute-capabilities
 int cudaCoresPerSM(int major, int minor)
 {
     if (major == 1)
@@ -41,12 +42,18 @@ int cudaCoresPerSM(int major, int minor)
         return 48;
     else if (major == 3)
         return 192;
+    else if (major == 4)
+        return 128;
     else if (major == 5)
         return 128;
     else if (major == 6 && minor == 0)
         return 64;
     else if (major == 6 && minor == 1)
         return 128;
+    else if (major == 6 && minor == 2)
+        return 128;
+    else if (major == 7)
+        return 32;
     else
         printf("Error in cudaCoresPerSM Device compute capability value "
                 "(%d.%d) not recognized.", major, minor);
